@@ -28,8 +28,6 @@ constructor(
     override fun ScriptContext.startup() {
         onOpLoc1(LEFT) { open(it.loc) }
         onOpLoc1(RIGHT) { open(it.loc) }
-        onOpLoc1(LEFT_OPEN) { walkThrough(it.loc) }
-        onOpLoc1(RIGHT_OPEN) { walkThrough(it.loc) }
     }
 
     private suspend fun ProtectedAccess.open(door: BoundLocInfo) {
@@ -42,11 +40,12 @@ constructor(
             return
         }
         soundSynth(OPEN_SOUND)
+        // The open door pieces would still block the doorway, so the doors are simply taken out of
+        // the way for a few seconds and the player walks through like any other gate.
         for (tile in DOOR_TILES) {
             for (piece in locRepo.findAll(tile)) {
-                when (piece.id) {
-                    leftId -> locRepo.add(piece.coords, LEFT_OPEN, OPEN_TICKS, piece.angle, piece.shape)
-                    rightId -> locRepo.add(piece.coords, RIGHT_OPEN, OPEN_TICKS, piece.angle, piece.shape)
+                if (piece.id == leftId || piece.id == rightId) {
+                    locRepo.del(piece, OPEN_TICKS)
                 }
             }
         }
@@ -54,13 +53,30 @@ constructor(
         walkThrough(door)
     }
 
-    /** Puts the player on whichever side of the wall they are not already on. */
+    /**
+     * Walks the player to the far side of the wall. The doorway tiles are map-blocked, so the
+     * routefinder cannot cross them even with the doors gone; the player is stepped across one
+     * tile per cycle instead, which the client draws as an ordinary walk.
+     */
     private suspend fun ProtectedAccess.walkThrough(door: BoundLocInfo) {
         val z = door.coords.z.coerceIn(GATE_MIN_Z, GATE_MAX_Z)
-        val dest = if (player.coords.x <= WALL_WEST_X) CoordGrid(EAST_SIDE_X, z, 0) else CoordGrid(WEST_SIDE_X, z, 0)
-        anim(WALK_SEQ)
-        delay(1)
-        teleport(dest)
+        val eastbound = player.coords.x <= WALL_WEST_X
+        val destX = if (eastbound) EAST_SIDE_X else WEST_SIDE_X
+        val startX = if (eastbound) WEST_SIDE_X else EAST_SIDE_X
+        if (player.coords.x != startX || player.coords.z != z) {
+            playerWalk(CoordGrid(startX, z, 0))
+            if (player.coords.x != startX || player.coords.z != z) {
+                teleport(CoordGrid(startX, z, 0))
+                delay(1)
+            }
+        }
+        val step = if (eastbound) 1 else -1
+        var x = startX + step
+        while (x != destX + step) {
+            teleport(CoordGrid(x, z, 0))
+            delay(1)
+            x += step
+        }
     }
 
     private val leftId = LEFT.asRSCM(RSCMType.LOC)
@@ -69,8 +85,6 @@ constructor(
     private companion object {
         const val LEFT = "loc.ardougnedoor_l"
         const val RIGHT = "loc.ardougnedoor_r"
-        const val LEFT_OPEN = "loc.ardougnedoor_l_open"
-        const val RIGHT_OPEN = "loc.ardougnedoor_r_open"
 
         val DOOR_TILES =
             listOf(
@@ -87,7 +101,7 @@ constructor(
         const val GATE_MAX_Z = 3300
 
         const val OPEN_SOUND = "synth.big_wooden_door_open"
-        const val WALK_SEQ = "seq.human_walk_fence_north"
-        const val OPEN_TICKS = 10
+        /** Long enough to stroll through; the doors come back on their own afterwards. */
+        const val OPEN_TICKS = 15
     }
 }

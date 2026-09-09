@@ -1,6 +1,11 @@
 package org.rsmod.content.quest.area.ardougne.biohazard
 
+import dev.openrune.rscm.RSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
+import org.rsmod.api.config.refs.params
+import org.rsmod.api.player.righthand
+import org.rsmod.game.type.getInvObj
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
@@ -70,8 +75,20 @@ constructor(
     private suspend fun ProtectedAccess.hitDummy(dummy: BoundLocInfo) {
         arriveDelay()
         faceLoc(dummy)
-        anim(PUNCH_SEQ)
-        soundSynth(PUNCH_SOUND)
+        // Swing whatever is wielded, the way a real attack would; bare hands throw a punch.
+        val weapon = player.righthand?.let { getInvObj(it) }
+        val attackAnim = weapon?.paramOrNull(params.attack_anim_stance1)
+        val attackSound = weapon?.paramOrNull(params.attack_sound_stance1)
+        if (attackAnim != null) {
+            anim(RSCM.getReverseMapping(RSCMType.SEQ, attackAnim.id))
+        } else {
+            anim(PUNCH_SEQ)
+        }
+        if (attackSound != null) {
+            soundSynth(attackSound.id)
+        } else {
+            soundSynth(PUNCH_SOUND)
+        }
         delay(1)
         val hits = biohazard.dummyHits.get(player)
         if (hits >= MAX_REWARDED_HITS) {
@@ -111,7 +128,7 @@ constructor(
 
         const val PUNCH_SEQ = "seq.human_unarmedpunch"
         const val SQUEEZE_SEQ = "seq.human_walk_fence_north"
-        const val PUNCH_SOUND = "synth.human_unarmedblock"
+        const val PUNCH_SOUND = "synth.human_unarmedpunch"
         const val SQUEEZE_SOUND = "synth.squeeze_thru_crack"
     }
 }

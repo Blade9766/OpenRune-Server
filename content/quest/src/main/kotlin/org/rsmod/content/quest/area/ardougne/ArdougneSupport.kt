@@ -118,7 +118,10 @@ class QuestDoors @Inject constructor(private val locRepo: LocRepository) {
         }
     }
 
-    /** Opens a picket-style gate pair. */
+    /**
+     * Opens a gate pair. Picket gates fold both leaves onto the left post (the generic behaviour);
+     * with [symmetric] each leaf swings on its own post instead, the way the metal gates do.
+     */
     fun openGate(
         access: ProtectedAccess,
         left: LocInfo?,
@@ -126,6 +129,7 @@ class QuestDoors @Inject constructor(private val locRepo: LocRepository) {
         right: LocInfo?,
         rightOpened: String,
         sound: String = GATE_OPEN,
+        symmetric: Boolean = true,
     ) {
         access.soundSynth(sound)
         left?.let {
@@ -134,9 +138,12 @@ class QuestDoors @Inject constructor(private val locRepo: LocRepository) {
             locRepo.add(coords, leftOpened, DURATION, it.angle.turn(3), it.shape)
         }
         right?.let {
-            val coords = it.coords + GateTranslations.rightGateOpen(it.shape, it.angle)
+            val coords =
+                if (symmetric) it.coords + GateTranslations.leftGateOpen(it.shape, it.angle)
+                else it.coords + GateTranslations.rightGateOpen(it.shape, it.angle)
+            val angle = if (symmetric) it.angle.turn(1) else it.angle.turn(3)
             locRepo.del(it, DURATION)
-            locRepo.add(coords, rightOpened, DURATION, it.angle.turn(3), it.shape)
+            locRepo.add(coords, rightOpened, DURATION, angle, it.shape)
         }
     }
 
