@@ -571,3 +571,10 @@ id = "varbit.drew_sandstone_empty_buckets"
 varp = "varp.drew_sandstone"
 startBit = 16
 endBit = 32
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.sos_sceptre_charges"
+varp = "varp.sos_sceptre"
+startBit = 0
+endBit = 7
