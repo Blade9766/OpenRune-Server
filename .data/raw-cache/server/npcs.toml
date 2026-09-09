@@ -4745,3 +4745,119 @@ defaultMode = "Wander"
 "param.attack_anim"="seq.small_spider_update_attack"
 "param.defend_anim"="seq.small_spider_update_defend"
 "param.death_anim"="seq.small_spider_update_death"
+
+# Goblin Diplomacy: the village soldiers argue about armour colour out loud. The timer drives
+# their shouted taunts (see VillageGoblins).
+[[npc]]
+id = "npc.goblin_red_soldier_2"
+inherit = "npc.goblin_red_soldier_2"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_3"
+inherit = "npc.goblin_red_soldier_3"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_4"
+inherit = "npc.goblin_red_soldier_4"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_5"
+inherit = "npc.goblin_red_soldier_5"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_6"
+inherit = "npc.goblin_red_soldier_6"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_7"
+inherit = "npc.goblin_red_soldier_7"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_8"
+inherit = "npc.goblin_red_soldier_8"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_2"
+inherit = "npc.goblin_green_soldier_2"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_3"
+inherit = "npc.goblin_green_soldier_3"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_4"
+inherit = "npc.goblin_green_soldier_4"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_5"
+inherit = "npc.goblin_green_soldier_5"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_6"
+inherit = "npc.goblin_green_soldier_6"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_7"
+inherit = "npc.goblin_green_soldier_7"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_8"
+inherit = "npc.goblin_green_soldier_8"
+timer = 1
+
+
+# Plague City / Biohazard: Elena at home. Her house is small and its door swings open along the
+# inside of the doorway, so if she wanders into the corner by the door nobody can reach her to
+# start Biohazard. She stays at her desk in the middle of the room instead.
+[[npc]]
+id = "npc.elena2"
+inherit = "npc.elena2"
+wanderRange = 0
+
+# Biohazard: the chemist's errand boys in the Dancing Donkey Inn. Chancy and Da Vinci are
+# invisible click targets sitting inside the animated npc table (the seated figures are part
+# of the table model), so they must never leave their seats or nothing is left to talk to.
+[[npc]]
+id = "npc.gambler2"
+inherit = "npc.gambler2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.artist2"
+inherit = "npc.artist2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.drunk2"
+inherit = "npc.drunk2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+# Biohazard: Guidor stays in his rocking chair and King Lathas on his throne; both have seated
+# idle animations and drifting off the seat made them awkward or impossible to reach.
+[[npc]]
+id = "npc.guidor"
+inherit = "npc.guidor"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.kinglathas"
+inherit = "npc.kinglathas"
+moveRestrict = "NoMove"
+wanderRange = 0

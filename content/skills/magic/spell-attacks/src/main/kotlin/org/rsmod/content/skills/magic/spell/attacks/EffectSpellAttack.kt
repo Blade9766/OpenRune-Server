@@ -28,6 +28,11 @@ import org.rsmod.game.type.getOrNull
  * @param targetCheck rejects targets the spell does not affect (Crumble Undead on the living, a
  *   demonbane on a goblin); the returned message is shown and the cast is cancelled.
  * @param onLand runs when the spell lands, with the damage dealt (`0` for a curse).
+ * @param castCheck a second rejection check with access to the caster, run after [targetCheck];
+ *   a returned message is shown and the cast is cancelled before any runes are taken.
+ * @param onCast runs once the runes have been taken, before the spell is resolved, so it fires
+ *   for splashes as well as hits.
+ * @param maxHitBonus is added to [baseMaxHit] for the cast (the Charge spell's boost).
  */
 class EffectSpellAttack(
     private val manager: SpellAttackManager,
@@ -43,6 +48,9 @@ class EffectSpellAttack(
     private val baseMaxHit: (magicLvl: Int) -> Int = { 0 },
     private val targetCheck: (PathingEntity) -> String? = { null },
     private val onLand: ProtectedAccess.(target: PathingEntity, damage: Int) -> Unit = { _, _ -> },
+    private val castCheck: ProtectedAccess.(target: PathingEntity) -> String? = { null },
+    private val onCast: ProtectedAccess.(target: PathingEntity) -> Unit = {},
+    private val maxHitBonus: ProtectedAccess.() -> Int = { 0 },
 ) : SpellAttack {
     override suspend fun ProtectedAccess.attack(target: Npc, attack: CombatAttack.Spell) {
         cast(target, attack)
@@ -59,10 +67,17 @@ class EffectSpellAttack(
             mes(rejection)
             return
         }
+        val castRejection = castCheck(target)
+        if (castRejection != null) {
+            manager.stopCombat(this)
+            mes(castRejection)
+            return
+        }
         val castResult = manager.attemptCast(this, attack)
         if (castResult.isFailure()) {
             return
         }
+        onCast(this, target)
         val weaponType = getOrNull(attack.weapon)
         val castAnim =
             if (weaponType != null && weaponType.isCategoryType("category.staff")) staffAnim
@@ -90,7 +105,7 @@ class EffectSpellAttack(
             return
         }
 
-        val maxHit = baseMaxHit(player.magicLvl)
+        val maxHit = baseMaxHit(player.magicLvl) + maxHitBonus(this)
         val damage = if (maxHit > 0) manager.rollMaxHit(this, target, attack, castResult, maxHit) else 0
         manager.playHitFx(
             source = this,

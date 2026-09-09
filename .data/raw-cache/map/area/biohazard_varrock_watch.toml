@@ -1,0 +1,14 @@
+# The block of south-east Varrock around Guidor's house and the Dancing Donkey Inn. During
+# Biohazard a guard searches anyone walking in here and confiscates Elena's vials.
+[[area]]
+name = "Biohazard Varrock watch"
+area_id = "area.biohazard_varrock_watch"
+levels = [0]
+
+[[area.polygons]]
+vertices = [
+    [3265, 3376],
+    [3290, 3376],
+    [3290, 3399],
+    [3265, 3399],
+]

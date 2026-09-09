@@ -3,9 +3,7 @@ package org.rsmod.content.quest.manager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.vars.intVarp
 import org.rsmod.api.script.onPlayerLogin
-import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -70,10 +68,9 @@ class QuestRewardBuilder {
     fun build(): QuestReward = QuestReward(_xp, _items, _extraText)
 }
 
-
 abstract class QuestScript(
     val questKey: String,
-    val questVarp : String,
+    val questVarp: String,
     val rewards: QuestReward,
     val completedQuestItemDisplay: ItemRewardDisplay,
     /**
@@ -81,11 +78,19 @@ abstract class QuestScript(
      * constants); longer quests pass their own variant.
      */
     val completionJingle: Int = Quest.DEFAULT_COMPLETION_JINGLE,
+    /** Stage varbit for quests whose varp is shared with unrelated flags; see [Quest.questVarbit]. */
+    val questVarbit: String? = null,
 ) : PluginScript() {
 
-    private var Player.questState by intVarp(questVarp)
-
-    val quest = Quest.register(questKey, questVarp, completedQuestItemDisplay, rewards, completionJingle)
+    val quest =
+        Quest.register(
+            questKey,
+            questVarp,
+            completedQuestItemDisplay,
+            rewards,
+            completionJingle,
+            questVarbit,
+        )
 
     abstract fun subTitle(): String
 
@@ -94,7 +99,6 @@ abstract class QuestScript(
     abstract fun completedLog(player: ProtectedAccess): String
 
     abstract fun ScriptContext.init()
-
 
     override fun ScriptContext.startup() {
         RSCM.requireRSCM(RSCMType.DBROW, "dbrow.${questKey}")
@@ -109,7 +113,7 @@ abstract class QuestScript(
         )
 
         onPlayerLogin {
-            player.questState = quest.getQuestStage(player)
+            quest.syncState(player)
         }
 
         this.init()
@@ -125,4 +129,3 @@ abstract class QuestScript(
         builder: QuestJournalBuilder.() -> Unit
     ): String = buildCompletionJournal(player, quest, builder)
 }
-

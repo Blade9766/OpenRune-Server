@@ -1,5 +1,10 @@
 package org.rsmod.content.skills.magic.spell.attacks.standard
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
+import dev.openrune.types.ItemServerType
+import jakarta.inject.Inject
 import org.rsmod.api.spells.attack.SpellAttackManager
 import org.rsmod.api.spells.attack.SpellAttackMap
 import org.rsmod.api.spells.attack.SpellAttackRepository
@@ -13,7 +18,7 @@ import org.rsmod.game.entity.Player
  * and the three god spells. Their staff and cape requirements come from the spell data and are
  * checked when the runes are taken.
  */
-class StandardCombatSpells : SpellAttackMap {
+class StandardCombatSpells @Inject constructor(private val godSpellHooks: GodSpellHooks) : SpellAttackMap {
     override fun SpellAttackRepository.register(manager: SpellAttackManager) {
         register(
             spell = "obj.39_crumble_undead",
@@ -74,7 +79,7 @@ class StandardCombatSpells : SpellAttackMap {
         register(
             spell = "obj.60_saradomin_strike",
             attack =
-                godSpell(manager, impact = "spotanim.saradomin_lightning", sound = "synth.saradomin_strike_cast") { target ->
+                godSpell(manager, spellObj("obj.60_saradomin_strike"), impact = "spotanim.saradomin_lightning", sound = "synth.saradomin_strike_cast") { target ->
                     if (target is Player) {
                         SpellEffects.drainFlat(target, SpellEffects.PRAYER, SARADOMIN_PRAYER_DRAIN)
                     }
@@ -83,22 +88,26 @@ class StandardCombatSpells : SpellAttackMap {
         register(
             spell = "obj.60_claws_of_guthix",
             attack =
-                godSpell(manager, impact = "spotanim.guthix_claw_green", sound = "synth.claws_of_guthix_cast") { target ->
+                godSpell(manager, spellObj("obj.60_claws_of_guthix"), impact = "spotanim.guthix_claw_green", sound = "synth.claws_of_guthix_cast") { target ->
                     SpellEffects.drainPercent(target, SpellEffects.DEFENCE, GOD_SPELL_DRAIN_PERCENT)
                 },
         )
         register(
             spell = "obj.60_flames_of_zamorak",
             attack =
-                godSpell(manager, impact = "spotanim.zamorak_flame", sound = "synth.flames_of_zamorak_cast") { target ->
+                godSpell(manager, spellObj("obj.60_flames_of_zamorak"), impact = "spotanim.zamorak_flame", sound = "synth.flames_of_zamorak_cast") { target ->
                     SpellEffects.drainPercent(target, SpellEffects.MAGIC, GOD_SPELL_DRAIN_PERCENT)
                 },
         )
     }
 
-    /** God spells strike straight down on the target: no projectile, just the impact. */
+    /**
+     * God spells strike straight down on the target: no projectile, just the impact. Where they
+     * may be cast, and how hard they hit, is left to the [GodSpellHooks] the Mage Arena installs.
+     */
     private fun godSpell(
         manager: SpellAttackManager,
+        spell: ItemServerType,
         impact: String,
         sound: String,
         effect: (target: org.rsmod.game.entity.PathingEntity) -> Unit,
@@ -114,7 +123,13 @@ class StandardCombatSpells : SpellAttackMap {
             hitSound = null,
             baseMaxHit = { GOD_SPELL_MAX_HIT },
             onLand = { target, damage -> if (damage > 0) effect(target) },
+            castCheck = { target -> godSpellHooks.validate(player, spell, target) },
+            onCast = { target -> godSpellHooks.notifyCast(player, spell, target) },
+            maxHitBonus = { godSpellHooks.maxHitBonus(player, spell) },
         )
+
+    private fun spellObj(name: String): ItemServerType =
+        ServerCacheManager.getItem(name.asRSCM(RSCMType.OBJ)) ?: error("Missing spell obj: $name")
 
     private companion object {
         private const val CRUMBLE_UNDEAD_MAX_HIT = 15

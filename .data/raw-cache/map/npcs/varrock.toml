@@ -10,6 +10,11 @@ coords = "0_50_53_3_32"
 npc = "npc.artist2"
 coords = "0_51_52_8_61"
 
+# Biohazard: the guard searching everyone heading into the district around Guidor's house.
+[[spawn]]
+npc = "npc.bioguard1"
+coords = "0_51_52_1_58"
+
 [[spawn]]
 npc = "npc.banker1_new"
 coords = "0_49_53_11_56"
