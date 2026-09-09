@@ -23,6 +23,7 @@ import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomac
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest.Companion.colourName
 import org.rsmod.content.quest.area.varrock.demonslayer.fadeFromBlack
 import org.rsmod.content.quest.area.varrock.demonslayer.fadeToBlack
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.map.Direction
 import org.rsmod.map.CoordGrid
@@ -39,6 +40,7 @@ class GoblinGenerals
 @Inject
 constructor(
     private val goblinDiplomacy: GoblinDiplomacyQuest,
+    private val dragonSlayer: DragonSlayerQuest,
     private val random: GameRandom,
     private val search: NpcSearch,
     private val collision: CollisionFlagMap,
@@ -71,6 +73,9 @@ constructor(
     /* Talk-to */
 
     private suspend fun Dialogue.generals() {
+        if (seekingLozarsMap() && askAboutMap()) {
+            return
+        }
         if (quest.isQuestCompleted(player)) {
             afterQuest()
             return
@@ -143,6 +148,32 @@ constructor(
             }
         }
         options()
+    }
+
+    /* Dragon Slayer: Lozar's map piece */
+
+    private fun Dialogue.seekingLozarsMap(): Boolean =
+        dragonSlayer.stage(player) in DragonSlayerQuest.STAGE_BRIEFED..DragonSlayerQuest.STAGE_SHIP_REPAIRED &&
+            !dragonSlayer.hasMapPiece(player, DragonSlayerQuest.MAP_PART_LOZAR)
+
+    /** Returns true when the player asked about the map and the conversation is over. */
+    private suspend fun Dialogue.askAboutMap(): Boolean {
+        val asked =
+            choice2(
+                "I've heard that one of your number has got hold of part of a map.", 1,
+                "So how is life for the goblins?", 2,
+            )
+        if (asked != 1) {
+            chatPlayer(quiz, "So how is life for the goblins?")
+            return false
+        }
+        chatPlayer(quiz, "I've heard that one of your number has got hold of part of a map.")
+        bent(neutral, "Aha, that'd be Wormbrain.")
+        chatPlayer(quiz, "Where would he be?")
+        bent(laugh, "Wormbrain steals too much. He got caught. Now he lives in Port Sarim town jail.")
+        dragonSlayer.askedGenerals.set(player, true)
+        dragonSlayer.syncVars(player)
+        return true
     }
 
     /** The main menu; every branch that says "previous" comes back here. */
