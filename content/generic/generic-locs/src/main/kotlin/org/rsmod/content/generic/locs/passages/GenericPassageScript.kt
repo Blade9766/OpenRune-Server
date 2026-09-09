@@ -23,14 +23,9 @@ import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocShape
-import org.rsmod.game.map.collision.get
-import org.rsmod.game.map.collision.isWalkBlocked
-import org.rsmod.game.map.collision.isZoneValid
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
-import org.rsmod.routefinder.collision.CollisionFlagMap
-import org.rsmod.routefinder.flag.CollisionFlag
 
 /**
  * Catch-all for the doors, gates, ladders, staircases, trapdoors, cave mouths and stiles that no
@@ -46,15 +41,15 @@ import org.rsmod.routefinder.flag.CollisionFlag
  * original panels back exactly where they were.
  *
  * Ladders and stairs move the player one level, or between the surface and the dungeon copy of
- * the map 6400 tiles north, and land them on the nearest free tile. Cave mouths do the same
- * surface/dungeon swap.
+ * the map 6400 tiles north, and put them at the foot of the matching stairs on the other level
+ * (see [StairNavigator]). Cave mouths do the same surface/dungeon swap.
  */
 class GenericPassageScript
 @Inject
 constructor(
     private val locRepo: LocRepository,
-    private val collision: CollisionFlagMap,
     private val locInteractions: LocInteractions,
+    private val stairs: StairNavigator,
 ) : PluginScript() {
     /** Open panels spawned by this script, keyed by where they stand, and how to undo them. */
     private val openedPanels = HashMap<PanelKey, OpenedPassage>()
@@ -99,9 +94,9 @@ constructor(
             PassageAction.OpenDoor -> openDoor(loc, type)
             PassageAction.CloseDoor -> closeDoor(loc, type)
             PassageAction.OpenTrapdoor -> openTrapdoor(loc, type)
-            PassageAction.ClimbUp -> climb(type, up = true)
-            PassageAction.ClimbDown -> climb(type, up = false)
-            PassageAction.ClimbEither -> climbEither(type)
+            PassageAction.ClimbUp -> climb(loc, type, up = true)
+            PassageAction.ClimbDown -> climb(loc, type, up = false)
+            PassageAction.ClimbEither -> climbEither(loc, type)
             PassageAction.Enter -> enter()
             PassageAction.ClimbOver -> climbOver(loc)
         }
@@ -381,18 +376,33 @@ constructor(
             return
         }
         // No open form in the cache: go straight down.
-        climb(type, up = false)
+        climb(loc, type, up = false)
     }
 
     /* Ladders, stairs and ropes */
 
-    private suspend fun ProtectedAccess.climbEither(type: ObjectServerType) {
-        val up = choice2("Climb up.", true, "Climb down.", false, title = "Climb up or down?")
-        climb(type, up)
+    /**
+     * A flight with a single "Climb" op goes whichever way has stairs to meet it; only when both
+     * levels have some, or neither does, is the player asked.
+     */
+    private suspend fun ProtectedAccess.climbEither(loc: BoundLocInfo, type: ObjectServerType) {
+        val hasUp = stairs.hasCounterpart(loc, up = true)
+        val hasDown = stairs.hasCounterpart(loc, up = false)
+        val up =
+            when {
+                hasUp && !hasDown -> true
+                hasDown && !hasUp -> false
+                else -> choice2("Climb up.", true, "Climb down.", false, title = "Climb up or down?")
+            }
+        climb(loc, type, up)
     }
 
-    private suspend fun ProtectedAccess.climb(type: ObjectServerType, up: Boolean) {
-        val dest = Passages.climbDestination(coords, up)?.let(::landing)
+    private suspend fun ProtectedAccess.climb(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+        up: Boolean,
+    ) {
+        val dest = stairs.destination(loc, coords, up)
         if (dest == null) {
             mes(if (up) "You cannot see a way up from here." else "You cannot see a way down from here.")
             return
@@ -410,7 +420,7 @@ constructor(
     /* Caves, tunnels and other mouths of the underground */
 
     private suspend fun ProtectedAccess.enter() {
-        val dest = landing(Passages.enterDestination(coords))
+        val dest = stairs.landing(Passages.enterDestination(coords))
         if (dest == null) {
             mes("You cannot see a way through.")
             return
@@ -423,46 +433,11 @@ constructor(
 
     private suspend fun ProtectedAccess.climbOver(loc: BoundLocInfo) {
         val dest = Passages.farSide(loc, coords)
-        if (dest == null || !walkable(dest)) {
+        if (dest == null || !stairs.walkable(dest)) {
             mes("You cannot climb over from here.")
             return
         }
         hopTo(dest, CLIMB_OVER_ANIM, ticks = 2)
-    }
-
-    /**
-     * The nearest free tile to [dest], or `null` if everything around it is blocked or the map
-     * there is featureless filler rather than somewhere a player can be.
-     */
-    private fun landing(dest: CoordGrid): CoordGrid? {
-        if (!hasSurroundings(dest)) {
-            return null
-        }
-        return Passages.landingCandidates(dest).firstOrNull(::walkable)
-    }
-
-    private fun walkable(coords: CoordGrid): Boolean =
-        collision.isZoneValid(coords) && !collision.isWalkBlocked(coords)
-
-    /**
-     * Whether anything at all (a wall, a loc, a blocked tile) sits within [SURROUNDINGS_RADIUS]
-     * tiles of [centre]. Real rooms and caves always have something close by; the black filler
-     * that pads out a map square has nothing, and a guessed destination that lands in it would
-     * strand the player.
-     */
-    private fun hasSurroundings(centre: CoordGrid): Boolean {
-        for (dz in -SURROUNDINGS_RADIUS..SURROUNDINGS_RADIUS) {
-            for (dx in -SURROUNDINGS_RADIUS..SURROUNDINGS_RADIUS) {
-                val tile = centre.translate(dx, dz)
-                if (!collision.isZoneValid(tile)) {
-                    continue
-                }
-                if (collision[tile] and SURROUNDINGS_MASK != 0) {
-                    return true
-                }
-            }
-        }
-        return false
     }
 
     private companion object {
@@ -478,11 +453,6 @@ constructor(
 
         /** Cache-name fragments of the wooden fence gates that fold to one side. */
         private val PICKET_GATE_NAMES = listOf("fence", "wooden", "pvpa_access_gate")
-
-        private const val SURROUNDINGS_RADIUS = 8
-
-        /** Every collision flag except the roof marker. */
-        private const val SURROUNDINGS_MASK = CollisionFlag.ROOF.inv()
 
         private const val DEFAULT_OPEN_SOUND = "synth.door_open"
         private const val DEFAULT_CLOSE_SOUND = "synth.door_close"
