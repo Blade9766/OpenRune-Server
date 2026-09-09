@@ -72,8 +72,10 @@ public fun Player.finishNpcHit(
     modifier: PlayerHitModifier,
     defendClientDelay: Int = 0,
 ): Hit {
-    // Queued before the hit and with the same delay: the hit's strong queue interrupts whatever
-    // the player is doing when it lands, and the retaliation queued alongside it fights back.
+    // Queued before the hit and with the same delay, so the retaliation fires the cycle the hit
+    // lands. Neither strong queue drops the player's current interaction: a player who is already
+    // fighting (or casting a spell by hand) keeps doing so, and `combatRetaliate` only engages an
+    // idle player.
     queueCombatRetaliate(source, delay.coerceAtLeast(1))
     val hit = queueHit(source, delay, type, damage, modifier)
     if (type != HitType.Magic) {

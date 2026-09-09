@@ -22,26 +22,23 @@ constructor(private val eventBus: EventBus, private val protectedAccess: Protect
         player.publishExpiredWeakQueues()
     }
 
+    private fun Player.hasStrongQueueDue(): Boolean =
+        queueList.anyDue(QueueCategory.Strong, currentMapClock)
+
     /**
-     * Strong queues interrupt the player: modals close and the current interaction and route are
-     * dropped so the queue can launch.
+     * A strong queue that fires this cycle closes the player's modals so the queue can launch. It
+     * does _not_ drop the current interaction or route: every hit and auto-retaliate is a strong
+     * queue, so clearing them here would replace whatever the player was doing (a manually cast
+     * spell, say) with a plain retaliation attack on every hit they take. Scripts that need to
+     * stop the player's action, such as the death sequence, do so themselves.
      *
      * A script that is already mid-way - suspended in a delay or a dialogue - is left to finish:
      * closing the modals is enough to unwind a dialogue, and a delayed script (the death sequence
      * itself, for one) must not be cancelled by the very queue it is servicing. The strong queue
      * launches once the script has ended, which [canLaunchQueue] enforces.
      */
-    private fun Player.hasStrongQueueDue(): Boolean =
-        queueList.anyDue(QueueCategory.Strong, currentMapClock)
-
     private fun Player.interruptForStrongQueue() {
         ifClose(eventBus)
-        // Delayed, or a coroutine is suspended: the same test [canLaunchQueue] applies.
-        if (isModalButtonProtected) {
-            return
-        }
-        clearInteraction()
-        abortRoute()
     }
 
     private fun Player.publishExpiredQueues() {
@@ -90,8 +87,9 @@ constructor(private val eventBus: EventBus, private val protectedAccess: Protect
     private fun Player.canLaunchQueue(queue: PlayerQueueList.Queue): Boolean =
         when (queue.category) {
             QueueCategory.Soft.id -> true
-            // The interaction was cleared by [interruptForStrongQueue]; only a coroutine that is
-            // still suspended (mid-delay) holds a strong queue back.
+            // Modals were closed by [interruptForStrongQueue]; an interaction never blocks a
+            // queue, so only a delay or a coroutine that is still suspended holds a strong queue
+            // back.
             QueueCategory.Strong.id -> !isModalButtonProtected
             else -> !isAccessProtected
         }
