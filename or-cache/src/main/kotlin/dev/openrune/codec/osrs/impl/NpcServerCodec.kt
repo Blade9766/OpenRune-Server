@@ -163,6 +163,8 @@ class NpcServerCodec(
         magic = obj.magic
         paramsRaw = obj.params?.toMutableMap() ?: mutableMapOf()
 
+        examine = examines[obj.id] ?: ""
+
         val customData = custom?.get(id)
 
         if (customData != null) {
@@ -179,7 +181,7 @@ class NpcServerCodec(
             defaultMode = customData.defaultMode
             blockWalk = customData.blockWalk
             respawnRate = customData.respawnRate
-            examine = customData.examine.takeIf { it.isNotEmpty() } ?: examines[obj.id] ?: ""
+            customData.examine.takeIf { it.isNotEmpty() }?.let { examine = it }
             maxRange = customData.maxRange
             wanderRange = customData.wanderRange
             attackRange = customData.attackRange

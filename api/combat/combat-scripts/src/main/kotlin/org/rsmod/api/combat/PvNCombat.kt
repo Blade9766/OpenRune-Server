@@ -319,7 +319,9 @@ constructor(
             return false
         }
 
-        val hasAttackOp = npc.visType.hasOp(InteractionOp.Op2.slot)
+        // Multi-npcs (quest npcs whose form follows a varbit) often carry the Attack option only
+        // on the form this player sees, so resolve that form rather than the spawned base type.
+        val hasAttackOp = npcVisType(npc).hasOp(InteractionOp.Op2.slot)
         if (!hasAttackOp) {
             mes("You can't attack this npc.")
             return false
