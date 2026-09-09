@@ -9,6 +9,7 @@ kotlin {
 
 dependencies {
     implementation(libs.guice)
+    implementation(projects.api.areaChecker)
     implementation(projects.api.combatAccuracy)
     implementation(projects.api.combatMaxhit)
     implementation(projects.api.combat.combatCommons)

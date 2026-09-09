@@ -2,6 +2,7 @@ package org.rsmod.content.quest.manager
 
 import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
+import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
@@ -16,6 +17,12 @@ import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
 import org.rsmod.content.quest.area.varrock.demonslayer.WallyVision
+import org.rsmod.content.quest.area.varrock.dragonslayer.DoorPassage
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerInstances
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerWearHook
+import org.rsmod.content.quest.area.varrock.dragonslayer.Voyage
+import org.rsmod.content.quest.area.varrock.dragonslayer.WormbrainAttackHook
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest
 import org.rsmod.content.quest.area.wilderness.magearena.FollowerSpawns
 import org.rsmod.content.quest.area.wilderness.magearena.GodFollowerKillHook
@@ -46,8 +53,14 @@ public class QuestModule : PluginModule() {
         bindInstance<MageArena2Quest>()
         bindInstance<KolodionFights>()
         bindInstance<FollowerSpawns>()
+        bindInstance<DragonSlayerQuest>()
+        bindInstance<DragonSlayerInstances>()
+        bindInstance<DoorPassage>()
+        bindInstance<Voyage>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
+        addSetBinding<PlayerRestrictionHook>(DragonSlayerWearHook::class.java)
         addSetBinding<NpcDeathKillHook>(GodFollowerKillHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MageArenaTeleBlockHook::class.java)
     }

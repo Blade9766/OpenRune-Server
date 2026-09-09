@@ -10,6 +10,7 @@ import org.rsmod.content.other.special.attacks.melee.HammerSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.MiscMeleeSpecialAttacks
 import org.rsmod.content.other.special.attacks.ranged.DarkBowSpecialAttack
 import org.rsmod.content.other.special.attacks.ranged.RangedSpecialAttacks
+import org.rsmod.content.other.special.attacks.ranged.WebweaverSpecialAttack
 import org.rsmod.plugin.module.PluginModule
 
 class SpecialAttackModule : PluginModule() {
@@ -23,5 +24,6 @@ class SpecialAttackModule : PluginModule() {
         addSetBinding<SpecialAttackMap>(HammerSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(MiscMeleeSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(RangedSpecialAttacks::class.java)
+        addSetBinding<SpecialAttackMap>(WebweaverSpecialAttack::class.java)
     }
 }

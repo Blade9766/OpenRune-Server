@@ -195,3 +195,25 @@ angle = 8
 lengthAdjustment = 15
 progress = 11
 stepMultiplier = 5
+
+[[projectile]]
+isServerOnly = true
+id = "projanim.webweaver_swarm_three"
+startHeight = 163
+endHeight = 146
+delay = 41
+angle = 15
+lengthAdjustment = 23
+progress = 11
+stepMultiplier = 15
+
+[[projectile]]
+isServerOnly = true
+id = "projanim.webweaver_swarm_four"
+startHeight = 163
+endHeight = 146
+delay = 41
+angle = 5
+lengthAdjustment = 32
+progress = 11
+stepMultiplier = 20

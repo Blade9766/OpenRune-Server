@@ -24,6 +24,7 @@ public object EquipmentChecks {
     public fun isCrystalBow(obj: InvObj?): Boolean =
         obj.isAnyType(
             "obj.crystal_bow",
+            "obj.crystal_bow_2500",
             "obj.bow_of_faerdhinen",
             "obj.bow_of_faerdhinen_infinite",
             "obj.bow_of_faerdhinen_infinite_ithell",

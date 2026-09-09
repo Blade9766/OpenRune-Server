@@ -13,7 +13,7 @@ import org.rsmod.game.hit.HitType
  * by one every [TICK_INTERVAL] cycles, dealing [PlayerPoison.damageForSeverity] each time until it
  * runs out. The severity lives in `varn.npc_poison_severity`; the ticking is `timer.npc_poison`.
  */
-internal object NpcPoison {
+object NpcPoison {
     const val TIMER: String = "timer.npc_poison"
     const val TICK_INTERVAL: Int = PlayerPoison.TICK_INTERVAL
 

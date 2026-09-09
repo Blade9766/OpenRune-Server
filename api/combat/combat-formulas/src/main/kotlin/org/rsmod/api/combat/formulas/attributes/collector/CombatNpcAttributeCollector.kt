@@ -2,6 +2,7 @@ package org.rsmod.api.combat.formulas.attributes.collector
 
 import dev.openrune.types.NpcServerType
 import java.util.EnumSet
+import org.rsmod.api.area.checker.isInWildernessBasic
 import org.rsmod.api.combat.formulas.attributes.CombatNpcAttributes
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
@@ -30,7 +31,10 @@ public class CombatNpcAttributeCollector {
             attributes += CombatNpcAttributes.SlayerTask
         }
 
-        // TODO(combat): "In wilderness" area check.
+        // Revenant weapons only get their boost against npcs standing in the Wilderness.
+        if (npc != null && npc.coords.isInWildernessBasic()) {
+            attributes += CombatNpcAttributes.Wilderness
+        }
 
         val sizeAttribute =
             when (val size = type.size) {
