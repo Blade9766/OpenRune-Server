@@ -10,7 +10,6 @@ import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.quiver
 import org.rsmod.api.weapons.RangedWeapon
 import org.rsmod.api.weapons.WeaponAttackManager
 import org.rsmod.api.weapons.WeaponMap
@@ -53,7 +52,8 @@ class DarkBowWeapons @Inject constructor(private val ammunition: RangedAmmoManag
 
         private fun ProtectedAccess.shoot(target: PathingEntity, attack: CombatAttack.Ranged) {
             val righthandType = getInvObj(attack.weapon)
-            val quiverType = getOrNull(player.quiver)
+            val quiver = ammunition.activeAmmo(player, righthandType)
+            val quiverType = getOrNull(quiver)
 
             val canUseAmmo = ammunition.attemptAmmoUsage(player, righthandType, quiverType)
             if (!canUseAmmo) {
@@ -70,7 +70,7 @@ class DarkBowWeapons @Inject constructor(private val ammunition: RangedAmmoManag
             }
 
             val launchSpotanim = quiverType.paramOrNull(params.proj_launch)
-            val quiverCount = player.quiver?.count ?: 0
+            val quiverCount = quiver?.count ?: 0
 
             if (quiverCount == 1) {
                 shootSingleArrow(target, attack, quiverType, RSCM.getReverseMapping(RSCMType.SPOTANIM,launchSpotanim!!.id), RSCM.getReverseMapping(RSCMType.SPOTANIM,travelSpotanim.id))
@@ -156,7 +156,7 @@ class DarkBowWeapons @Inject constructor(private val ammunition: RangedAmmoManag
 
             manager.queueRangedDamage(this, target, quiverType, damage2, hitDelay2)
 
-            if (player.quiver?.count == 1) {
+            if (ammunition.activeAmmo(player, getInvObj(attack.weapon))?.count == 1) {
                 mes("You now have only 1 arrow left in your quiver.")
             }
         }

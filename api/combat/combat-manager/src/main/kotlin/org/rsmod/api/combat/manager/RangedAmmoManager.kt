@@ -8,6 +8,7 @@ import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.InvObj
 import org.rsmod.game.queue.WorldQueueList
 import org.rsmod.map.CoordGrid
 import org.rsmod.routefinder.collision.CollisionFlagMap
@@ -21,6 +22,16 @@ constructor(
     private val worldQueues: WorldQueueList,
     private val objRepo: ObjRepository,
 ) {
+    /**
+     * Resolves the ammunition [player] would fire from [weapon]: the ammo slot obj, or the
+     * ammunition stored in a worn Dizana's quiver when the ammo slot cannot supply anything the
+     * weapon can fire. Use this instead of reading the ammo slot directly so the quiver works.
+     *
+     * @see [RangedAmmunition.activeAmmo]
+     */
+    public fun activeAmmo(player: Player, weapon: ItemServerType): InvObj? =
+        RangedAmmunition.activeAmmo(player, weapon)
+
     /**
      * Validates whether the given [weapon] and [ammo] combination are usable by [player].
      *

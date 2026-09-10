@@ -833,3 +833,9 @@ isServerOnly = true
 id = "varp.sos_sceptre"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.radas_blessing_teleports"
+scope = "Perm"
+transmit = "Never"

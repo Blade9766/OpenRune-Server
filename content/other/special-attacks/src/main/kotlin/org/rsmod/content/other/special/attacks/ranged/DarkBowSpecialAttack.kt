@@ -3,14 +3,12 @@ package org.rsmod.content.other.special.attacks.ranged
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.quiver
 import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
@@ -51,7 +49,8 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             attack: CombatAttack.Ranged,
         ): Boolean {
             val righthandType = getInvObj(attack.weapon)
-            val quiverType = getOrNull(player.quiver)
+            val quiver = ammunition.activeAmmo(player, righthandType)
+            val quiverType = getOrNull(quiver)
 
             val canUseAmmo = ammunition.attemptAmmoUsage(player, righthandType, quiverType)
             if (!canUseAmmo) {
@@ -67,7 +66,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
                 return false
             }
 
-            val quiverCount = player.quiver?.count ?: 0
+            val quiverCount = quiver?.count ?: 0
             if (quiverCount < 2) {
                 manager.stopCombat(this)
                 mes("You need to have at least 2 arrows in your quiver for this special attack.")
@@ -146,7 +145,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
 
             manager.queueRangedDamage(this, target, quiverType, damage[1], hitDelay2)
 
-            if (player.quiver?.count == 1) {
+            if (ammunition.activeAmmo(player, getInvObj(attack.weapon))?.count == 1) {
                 mes("You now have only 1 arrow left in your quiver.")
             }
         }
@@ -210,7 +209,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
 
             manager.queueRangedDamage(this, target, quiverType, damage[1], hitDelay2)
 
-            if (player.quiver?.count == 1) {
+            if (ammunition.activeAmmo(player, getInvObj(attack.weapon))?.count == 1) {
                 mes("You now have only 1 arrow left in your quiver.")
             }
         }

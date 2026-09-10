@@ -12,7 +12,6 @@ import org.rsmod.api.config.refs.params
 import org.rsmod.api.hunt.NpcSearch
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.quiver
 import org.rsmod.api.player.righthand
 import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
@@ -75,7 +74,8 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
 
         private fun ProtectedAccess.fire(target: PathingEntity, attack: CombatAttack.Ranged): Boolean {
             val weaponType = getInvObj(attack.weapon)
-            val quiverType = getOrNull(player.quiver)
+            val quiver = ammunition.activeAmmo(player, weaponType)
+            val quiverType = getOrNull(quiver)
             if (!ammunition.attemptAmmoUsage(player, weaponType, quiverType)) {
                 manager.stopCombat(this)
                 return false
@@ -85,7 +85,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
                 mes("You have no ammunition to fire.")
                 return false
             }
-            val count = player.quiver?.count ?: 0
+            val count = quiver?.count ?: 0
             if (count < ammoRequired) {
                 manager.stopCombat(this)
                 mes("You need at least $ammoRequired pieces of ammunition for this special attack.")

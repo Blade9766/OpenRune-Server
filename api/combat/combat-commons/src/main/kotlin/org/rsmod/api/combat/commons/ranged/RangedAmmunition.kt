@@ -1,19 +1,20 @@
 package org.rsmod.api.combat.commons.ranged
 
-import dev.openrune.rscm.RSCM.asRSCM
-import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.aconverted.CategoryType
 import dev.openrune.util.Wearpos
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.back
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.torso
+import org.rsmod.api.player.worn.DizanasQuiver
+import org.rsmod.api.player.worn.RangedAmmoValidation
+import org.rsmod.api.player.worn.RangedAmmoValidation.Validation
 import org.rsmod.api.player.worn.WornUnequipOp
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.InvObj
 import org.rsmod.game.inv.isType
 import org.rsmod.game.map.collision.isWalkBlocked
 import org.rsmod.game.obj.Obj
@@ -28,6 +29,19 @@ public object RangedAmmunition {
 
     /** The obj spawn duration when an ammunition is dropped on the ground after being fired. */
     public const val DEFAULT_AMMO_DROP_DURATION: Int = 200
+
+    /**
+     * Resolves the ammunition [player] would fire from [weapon].
+     *
+     * This is the obj in the ammo slot, unless the player wears a Dizana's quiver whose stored
+     * ammunition the weapon can fire while the ammo slot cannot supply anything usable (it is empty,
+     * holds a blessing, or holds ammunition of the wrong kind). The ammo slot always has priority.
+     *
+     * Pass the result to [attemptAmmoUsage] and later to the ammo consumption functions, which know
+     * whether it came from the ammo slot or the quiver.
+     */
+    public fun activeAmmo(player: Player, weapon: ItemServerType): InvObj? =
+        DizanasQuiver.activeAmmo(player, weapon)
 
     /**
      * Verifies that [weapon] can use [ammo] as valid ammunition and sends an appropriate error
@@ -114,21 +128,34 @@ public object RangedAmmunition {
         return true
     }
 
+    /**
+     * Rolls whether the worn cape conserves the ammunition about to be fired. Ava's devices carry
+     * their chance as an `ammo_recovery_rate` param; a Dizana's quiver only conserves ammunition
+     * once one of those devices has been applied to it (see [DizanasQuiver.ammoSaveRate]).
+     */
     public fun conserveAmmo(player: Player, random: GameRandom): Boolean {
-        val cape = getOrNull(player.back)
-        if (cape != null) {
-            val recoveryRate = cape.paramOrNull(params.ammo_recovery_rate) ?: return false
+        val cape = getOrNull(player.back) ?: return false
 
-            val body = getOrNull(player.torso)
-            if (body != null && body.param(params.metallic_interference)) {
-                return false
+        val recoveryRate =
+            if (DizanasQuiver.isQuiver(cape)) {
+                DizanasQuiver.ammoSaveRate(player) ?: return false
+            } else {
+                cape.paramOrNull(params.ammo_recovery_rate) ?: return false
             }
 
-            return recoveryRate > random.of(maxExclusive = 100)
+        val body = getOrNull(player.torso)
+        if (body != null && body.param(params.metallic_interference)) {
+            return false
         }
-        return false
+
+        return recoveryRate > random.of(maxExclusive = 100)
     }
 
+    /**
+     * Removes [detract] ammunition of type [wornType] from [wearpos]. When [wearpos] is the ammo
+     * slot but the ammunition being fired is the one stored in a worn Dizana's quiver, the stored
+     * stack is reduced instead.
+     */
     public fun detractAmmo(
         player: Player,
         wearpos: Wearpos,
@@ -137,6 +164,10 @@ public object RangedAmmunition {
         eventBus: EventBus,
     ) {
         val startObj = player.worn[wearpos.slot]
+        if (wearpos == Wearpos.Quiver && !startObj.isType(wornType)) {
+            detractStoredAmmo(player, wornType, detract)
+            return
+        }
         check(startObj.isType(wornType)) {
             "Expected worn obj to match `wornType`: wearpos=$wearpos, obj=$startObj, type=$wornType"
         }
@@ -163,6 +194,18 @@ public object RangedAmmunition {
         }
     }
 
+    private fun detractStoredAmmo(player: Player, ammoType: ItemServerType, detract: Int) {
+        val stored = checkNotNull(DizanasQuiver.storedAmmo(player)) { "No quiver ammo stored." }
+        check(stored.isType(ammoType)) {
+            "Expected quiver ammo to match `wornType`: stored=$stored, type=$ammoType"
+        }
+        check(stored.count >= detract) {
+            "Unexpected low quiver ammo count: ${stored.count} (expected=$detract)"
+        }
+        val remaining = stored.count - detract
+        DizanasQuiver.setStoredAmmo(player, if (remaining > 0) stored.copy(count = remaining) else null)
+    }
+
     public fun attemptAmmoDrop(
         player: Player,
         delay: Int,
@@ -187,72 +230,12 @@ public object RangedAmmunition {
         worldQueues.add(delay) { objRepo.add(obj, dropDuration) }
     }
 
-    public val defualtArrows: CategoryType = CategoryType("category.arrows".asRSCM(RSCMType.CATEGORY))
+    public fun validateArrows(weapon: ItemServerType, ammo: ItemServerType): Validation =
+        RangedAmmoValidation.validateArrows(weapon, ammo)
 
-    public fun validateArrows(weapon: ItemServerType, ammo: ItemServerType): Validation {
+    public fun validateBolts(weapon: ItemServerType, ammo: ItemServerType): Validation =
+        RangedAmmoValidation.validateBolts(weapon, ammo)
 
-        val requiredAmmo = weapon.paramOrNull(params.required_ammo) ?: defualtArrows
-
-        // Dragon arrows have a separate category from standard arrows, but any bow that accepts
-        // regular arrows can also use dragon arrows, provided the `levelrequire` threshold is met.
-        val isAlternativeAmmo =
-            requiredAmmo.isType("category.arrows") && ammo.isCategoryType("category.dragon_arrow")
-
-        if (!ammo.isCategory(requiredAmmo) && !isAlternativeAmmo) {
-            return Validation.Invalid.IncorrectAmmo
-        }
-
-        if (ammo.param(params.levelrequire) > weapon.param(params.levelrequire)) {
-            return Validation.Invalid.LevelTooHigh
-        }
-
-        return Validation.Valid
-    }
-
-    public fun validateBolts(weapon: ItemServerType, ammo: ItemServerType): Validation {
-        val requiredAmmo = weapon.paramOrNull(params.required_ammo) ?: CategoryType("category.crossbow_bolt".asRSCM(RSCMType.CATEGORY))
-
-        if (!ammo.isCategory(requiredAmmo)) {
-            return if (weapon.param(params.bone_weapon) != 0) {
-                Validation.Invalid.BoneWeaponIncorrectAmmo
-            } else {
-                Validation.Invalid.IncorrectAmmo
-            }
-        }
-
-        if (ammo.param(params.bone_weapon) != 0 && weapon.param(params.bone_weapon) == 0) {
-            return Validation.Invalid.ExpectedBoneWeapon
-        }
-
-        if (ammo.param(params.levelrequire) > weapon.param(params.levelrequire)) {
-            return Validation.Invalid.LevelTooHigh
-        }
-
-        return Validation.Valid
-    }
-
-    public fun validateJavelins(weapon: ItemServerType, ammo: ItemServerType): Validation {
-        val requiredAmmo = weapon.paramOrNull(params.required_ammo) ?: CategoryType("category.javelin".asRSCM(RSCMType.CATEGORY))
-        return if (!ammo.isCategory(requiredAmmo)) {
-            Validation.Invalid.IncorrectAmmo
-        } else {
-            return Validation.Valid
-        }
-    }
-
-    public sealed class Validation {
-        public data object Valid : Validation()
-
-        public sealed class Invalid : Validation() {
-            public data object LevelTooHigh : Invalid()
-
-            public sealed class Ammo : Invalid()
-
-            public data object IncorrectAmmo : Ammo()
-
-            public data object BoneWeaponIncorrectAmmo : Ammo()
-
-            public data object ExpectedBoneWeapon : Ammo()
-        }
-    }
+    public fun validateJavelins(weapon: ItemServerType, ammo: ItemServerType): Validation =
+        RangedAmmoValidation.validateJavelins(weapon, ammo)
 }

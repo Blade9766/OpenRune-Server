@@ -19,7 +19,6 @@ import org.rsmod.api.config.refs.params
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.lefthand
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.quiver
 import org.rsmod.api.player.righthand
 import org.rsmod.api.specials.SpecialAttackRegistry
 import org.rsmod.api.specials.SpecialAttackType
@@ -159,7 +158,9 @@ constructor(
             return
         }
 
-        val quiver = player.quiver
+        // The ammo slot, or the ammunition stored in a worn Dizana's quiver when the ammo slot
+        // cannot supply anything this weapon can fire.
+        val quiver = ammunition.activeAmmo(player, righthandType)
         val quiverType = getOrNull(quiver)
 
         val canUseAmmo = ammunition.attemptAmmoUsage(player, righthandType, quiverType)

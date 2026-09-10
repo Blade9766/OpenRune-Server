@@ -110,8 +110,12 @@ data class ItemServerType(
     public val lowAlch: Int
         get() = cost * 40 / 100
 
+    /**
+     * Whether the second inventory op equips this obj. The cache labels it `Wield`, `Wear` or, for
+     * ammo-slot items such as Rada's blessings and the god blessings, `Equip`.
+     */
     public val isEquipable: Boolean
-        get() = wearpos1 != -1 && (interfaceOptions[1] == "Wield" || interfaceOptions[1] == "Wear")
+        get() = wearpos1 != -1 && interfaceOptions[1] in EQUIP_OPS
 
     public fun hasOp(interactionOp: Int): Boolean {
         val text = options.getOpOrNull(interactionOp - 1) ?: return false
@@ -173,4 +177,8 @@ data class ItemServerType(
         return this.id == other.asRSCM(RSCMType.OBJ)
     }
 
+    public companion object {
+        /** Inventory op labels the cache uses for the equip op (op 2). */
+        public val EQUIP_OPS: Set<String> = setOf("Wield", "Wear", "Equip")
+    }
 }
