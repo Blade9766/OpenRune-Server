@@ -51,3 +51,9 @@ id = "varn.guaranteed_hit"
 
 [[varn]]
 id = "varn.venenatis_attacks"
+
+[[varn]]
+id = "varn.awakened_state"
+
+[[varn]]
+id = "varn.skip_killcount"

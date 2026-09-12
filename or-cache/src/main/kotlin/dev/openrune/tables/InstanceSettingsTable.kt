@@ -179,7 +179,7 @@ object InstanceSettingsTable {
 
         row("dbrow.instance_vardorvis") {
             column(KEY, "vardorvis")
-            columnCoord(EXIT_COORD, CoordGrid(1117, 3431, 0))
+            columnCoord(EXIT_COORD, CoordGrid(1117, 3428, 0))
             columnCoord(ENTER_COORD, CoordGrid(1119, 3428, 0))
             column(FEE, 0)
             column(MAX_PLAYERS, 1)
@@ -202,5 +202,22 @@ object InstanceSettingsTable {
             columnRSCM(EXIT_OBJECT, "loc.vardorvis_exit")
         }
 
+        row("dbrow.instance_amoxliatl") {
+            column(KEY, "amoxliatl")
+            columnCoord(EXIT_COORD, CoordGrid(1602, 9631, 0))
+            columnCoord(ENTER_COORD, CoordGrid(1376, 4511, 0))
+            column(FEE, 0)
+            column(MAX_PLAYERS, 1)
+            column(TIME_LIMIT_MINUTES, 0)
+            column(GRACE_MINUTES, 10)
+            columnRSCM(BOSS_NPC, "npc.amoxliatl")
+            column(BOSS_NAME, "Amoxliatl")
+            column(RECOMMENDED_COMBAT, 70, 90)
+            column(TEAM_SIZE, 1)
+            column(LOOT_MULTIPLIER, "x1.0")
+            column(DESCRIPTION, "A powerful frost nagua dwelling beneath the ruins of Cam Torum.")
+            columnRSCM(ENTER_OBJECT, "loc.vmq3_ruins_door_multi")
+            columnRSCM(EXIT_OBJECT, "loc.amoxliatl_exit")
+        }
     }
 }

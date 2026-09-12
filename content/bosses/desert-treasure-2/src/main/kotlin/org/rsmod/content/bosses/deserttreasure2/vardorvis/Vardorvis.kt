@@ -1,4 +1,4 @@
-package org.rsmod.content.bosses.vardorvis
+package org.rsmod.content.bosses.deserttreasure2.vardorvis
 
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
@@ -99,6 +99,7 @@ constructor(
                         deps.worldQueues.add(AXE_FIRST_DELAY) { runAxeSet(npc, allowStrangle = false) }
                     }
                 } else {
+                    if (isAwakened(npc)) npc.respawns = false
                     deps.worldQueues.add(BARRIER_DEATH_DELAY) { dropArenaBarrier(npc, animated = true) }
                 }
             }
@@ -583,8 +584,7 @@ constructor(
         }
     }
 
-    // Placeholder
-    private fun isAwakened(npc: Npc): Boolean = false
+    private fun isAwakened(npc: Npc): Boolean = npc.vars["varn.awakened_state"] == 1
 
     private fun Npc.hpFraction(): Double =
         hitpoints.toDouble() / baseHitpointsLvl.coerceAtLeast(1)
@@ -688,7 +688,6 @@ constructor(
         private const val MAYBE_HEAD_GAZE = "vardorvis.maybe_head_gaze"
 
         private const val DASH = "vardorvis.dash"
-
 
         private const val AXE_TENDRIL_NPC = "npc.vardorvis_big_tentacle"
         private const val AXE_FLYING_NPC = "npc.vardorvis_axe"
@@ -803,10 +802,8 @@ constructor(
                 "spotanim.vardorvis_spike_despawn_tall",
             )
 
-
         private const val BARRIER_RISE_CYCLES_PER_TILE = 2
         private const val BARRIER_DEATH_DELAY = 5
-
 
         private const val HEAD_GAZE_HP_THRESHOLD = 570
         private const val HEAD_GAZE_MIN_INTERVAL = 7
