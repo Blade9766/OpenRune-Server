@@ -51,3 +51,6 @@ dragonslayer_melzar_spell = 3759
 dragonslayer_thunder = 3762
 stone_door = 86
 hammer_and_build = 1767
+
+[gamevals.clientscript]
+quest_available_set = 45550

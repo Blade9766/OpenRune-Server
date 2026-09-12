@@ -839,3 +839,9 @@ isServerOnly = true
 id = "varp.radas_blessing_teleports"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.overhead_lock_expiration"
+scope = "Temp"
+transmit = "Never"
