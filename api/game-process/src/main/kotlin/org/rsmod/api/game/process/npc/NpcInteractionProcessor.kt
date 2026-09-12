@@ -29,6 +29,7 @@ import org.rsmod.game.interact.InteractionNpc
 import org.rsmod.game.interact.InteractionNpcOp
 import org.rsmod.game.interact.InteractionNpcT
 import org.rsmod.game.interact.InteractionObj
+import org.rsmod.game.interact.InteractionObjT
 import org.rsmod.game.interact.InteractionPlayer
 import org.rsmod.game.interact.InteractionPlayerOp
 import org.rsmod.game.interact.InteractionPlayerT
@@ -151,6 +152,7 @@ constructor(
             is InteractionLoc -> preMovementStep(interaction)
             is InteractionNpc -> preMovementStep(interaction)
             is InteractionObj -> preMovementStep(interaction)
+            is InteractionObjT -> InteractionStep.Continue
             is InteractionPlayer -> preMovementStep(interaction)
         }
 
@@ -159,6 +161,7 @@ constructor(
             is InteractionLoc -> postMovementStep(interaction)
             is InteractionNpc -> postMovementStep(interaction)
             is InteractionObj -> postMovementStep(interaction)
+            is InteractionObjT -> InteractionStep.Continue
             is InteractionPlayer -> postMovementStep(interaction)
         }
 
@@ -169,6 +172,9 @@ constructor(
             is InteractionNpcOp -> triggerOp(this, interaction)
             is InteractionNpcT -> triggerOp(this, interaction)
             is InteractionObj -> triggerOp(this, interaction)
+            is InteractionObjT -> {
+                /* Npcs do not use interface components on objs. */
+            }
             is InteractionPlayerOp -> triggerOp(this, interaction)
             is InteractionPlayerT -> triggerOp(this, interaction)
         }
@@ -180,6 +186,9 @@ constructor(
             is InteractionNpcOp -> triggerAp(this, interaction)
             is InteractionNpcT -> triggerAp(this, interaction)
             is InteractionObj -> triggerAp(this, interaction)
+            is InteractionObjT -> {
+                /* Npcs do not use interface components on objs. */
+            }
             is InteractionPlayerOp -> triggerAp(this, interaction)
             is InteractionPlayerT -> triggerAp(this, interaction)
         }
@@ -389,6 +398,7 @@ constructor(
             is InteractionLoc -> !interaction.isValid(this)
             is InteractionNpc -> !interaction.isValid(this)
             is InteractionObj -> !interaction.isValid(this)
+            is InteractionObjT -> true
             is InteractionPlayer -> !interaction.isValid(this)
         }
 

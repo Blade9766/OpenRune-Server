@@ -38,3 +38,16 @@ bubbling_vials = 3118
 godspell_charge = 1651
 godspell_charge_gone = 1650
 magearena_pool_plop = 1658
+# Dragon Slayer I (dbrow.synth_dragonslayerqip)
+dragonslayer_bgsound_magicdoor = 3739
+dragonslayer_burningfire = 3741
+dragonslayer_crash_ship = 3742
+dragonslayer_cutoffhead = 3743
+dragonslayer_dragonbreath = 3750
+dragonslayer_dragonscream = 3751
+dragonslayer_flapwings = 3754
+dragonslayer_magicdoor = 3758
+dragonslayer_melzar_spell = 3759
+dragonslayer_thunder = 3762
+stone_door = 86
+hammer_and_build = 1767

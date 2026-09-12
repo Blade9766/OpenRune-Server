@@ -23,6 +23,11 @@ public object QuestRequirements {
 
     public fun satisfies(player: Player, quest: String, requirement: QuestRequirement): Boolean {
         val active = policy
+        // "In progress" is never something to assume: quest-item drops and mid-quest dialogue
+        // depend on the player's real stage whatever the completion policy says.
+        if (requirement == QuestRequirement.InProgress) {
+            return realProgressSatisfies(player, quest, requirement)
+        }
         return when (active.mode) {
             QuestRequirementMode.RespectProgress -> realProgressSatisfies(player, quest, requirement)
             QuestRequirementMode.AssumeCompleted -> requirement == QuestRequirement.Completed
@@ -48,4 +53,3 @@ public object QuestRequirements {
         }
     }
 }
-

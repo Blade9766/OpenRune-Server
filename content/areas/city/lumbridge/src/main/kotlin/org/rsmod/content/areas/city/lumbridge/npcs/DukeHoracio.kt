@@ -4,21 +4,25 @@ import jakarta.inject.Inject
 import org.rsmod.api.config.Constants
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.vars.intVarp
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.rmTalisman
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.ownsAntiDragonShield
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQuest) : PluginScript() {
+class DukeHoracio
+@Inject
+constructor(
+    private val runeMysteries: RuneMysteriesQuest,
+    private val dragonSlayer: DragonSlayerQuest,
+) : PluginScript() {
 
     private val quest
         get() = runeMysteries.quest
-
-    private var Player.dragonQuest by intVarp("varp.dragonquest")
 
     override fun ScriptContext.startup() {
         onOpNpc1("npc.duke_of_lumbridge") { startDukeDialogue(it.npc) }
@@ -31,8 +35,8 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
     private suspend fun Dialogue.dukeDialogue(npc: Npc) {
         chatNpc(happy, "Greetings. Welcome to my castle.")
 
-        val hasShield = player.inv.contains(ANTI_DRAGON_SHIELD)
-        val showShieldOption = !hasShield && player.dragonQuest >= 1
+        val hasShield = player.ownsAntiDragonShield()
+        val showShieldOption = !hasShield && dragonSlayer.stage(player) >= DragonSlayerQuest.STAGE_STARTED
         val stage = quest.getQuestStage(player)
         val questOption =
             when {
@@ -231,7 +235,7 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
             }
             2 -> {
                 chatPlayer(quiz, "Oh, no dragon in particular. I just feel like killing a dragon.")
-                if (player.dragonQuest >= 2) {
+                if (dragonSlayer.quest.isQuestCompleted(player)) {
                     chatNpc(
                         happy,
                         "Of course. Now you've slain Elvarg, you've earned the right to call the " +
@@ -283,6 +287,6 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
         player.inv.contains(RuneMysteriesQuest.AIR_TALISMAN)
 
     private companion object {
-        const val ANTI_DRAGON_SHIELD = "obj.antidragonbreathshield"
+        const val ANTI_DRAGON_SHIELD = DragonSlayerQuest.ANTI_DRAGON_SHIELD
     }
 }
