@@ -17,7 +17,8 @@ import org.rsmod.plugin.scripts.ScriptContext
 
 class AudioSettingsScript @Inject constructor(private val musicPlayer: MusicPlayer) : PluginScript() {
 
-    internal data class VolumeWithOpArg(val volume: Int, val option: Int) : IfScriptArgs
+    /** Sent by the All Settings volume sliders as `(setting id, volume)`. */
+    internal data class VolumeWithOpArg(val option: Int, val volume: Int) : IfScriptArgs
 
     internal data class VolumeArg(val volume: Int) : IfScriptArgs
 

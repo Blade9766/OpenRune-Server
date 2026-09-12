@@ -250,6 +250,13 @@ internal constructor(private val random: GameRandom, private val repo: MusicRepo
         VarPlayerIntMapSetter.set(player, playlistSlotVarbit(playlist, slot), 0)
     }
 
+    public fun clearPlaylist(player: Player, playlist: Int) {
+        require(playlist in 1..PLAYLIST_COUNT) { "Playlist must be in range 1..$PLAYLIST_COUNT." }
+        for (slot in 1..PLAYLIST_SIZE) {
+            VarPlayerIntMapSetter.set(player, playlistSlotVarbit(playlist, slot), 0)
+        }
+    }
+
     private fun playlistSlot(player: Player, playlist: Int, music: Music): Int? {
         require(playlist in 1..PLAYLIST_COUNT) { "Playlist must be in range 1..$PLAYLIST_COUNT." }
         if (!music.canUnlock) {

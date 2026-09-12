@@ -1,6 +1,6 @@
 [number_settings]
 
-[number_settings.38]
+[number_settings.39]
 prompt = "Set threshold value:"
 min = 0
 max = 500000000
@@ -26,3 +26,13 @@ max = 500
 prompt = "Set energy threshold for auto-enabling run mode:"
 min = 0
 max = 100
+
+[number_settings.449]
+prompt = "Set value threshold for birdhouse warnings:"
+min = 0
+max = 500000000
+
+[number_settings.450]
+prompt = "Set number of cannonballs to load:"
+min = 1
+max = 30
