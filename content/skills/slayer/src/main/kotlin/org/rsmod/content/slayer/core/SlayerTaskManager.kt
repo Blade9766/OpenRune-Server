@@ -696,7 +696,7 @@ object SlayerTaskManager {
 
     private const val TURAEL_MASTER_ID = 1
     private const val KONAR_MASTER_ID = 8
-    private const val TOTAL_TASKS_NO_POINTS_THRESHOLD = 5
+    private const val TOTAL_TASKS_NO_POINTS_THRESHOLD = 4
     private const val STREAK_MILESTONE_WRAP_THRESHOLD = 16_000
     private const val MILESTONE_CYCLE = 1_000
     private const val SLAYER_XP_HP_CAP = 2000
