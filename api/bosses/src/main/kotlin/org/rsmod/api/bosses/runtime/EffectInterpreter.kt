@@ -14,6 +14,7 @@ import org.rsmod.api.combat.commons.player.finishNpcHit
 import org.rsmod.api.combat.commons.player.queueCombatRetaliate
 import org.rsmod.api.combat.commons.types.MeleeAttackType
 import org.rsmod.api.npc.access.StandardNpcAccess
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.player.disablePrayers
 import org.rsmod.api.player.hit.queueImpactHit
 import org.rsmod.api.player.hit.modifier.PlayerHitModifier
@@ -35,6 +36,7 @@ class EffectInterpreter(
 ) {
 
     suspend fun run(access: StandardNpcAccess, effect: Effect) {
+        if (!npc.isAliveInWorld()) return
         when (effect) {
             is Effect.Anim -> access.anim(effect.seq)
             is Effect.Say -> access.say(effect.text)
@@ -223,6 +225,7 @@ class EffectInterpreter(
         tiles.forEach { deps.worldRepo.spotanimMap(telegraphSpot, it) }
 
         deps.worldQueues.add(effect.windup) {
+            if (!npc.isAliveInWorld()) return@add
             effect.impact?.let { impact ->
                 val impactSpot = SpotanimType(impact.asRSCM(RSCMType.SPOTANIM))
                 tileSet.forEach { deps.worldRepo.spotanimMap(impactSpot, it) }

@@ -7,6 +7,7 @@ import org.rsmod.api.bosses.spec.BossSpec
 import org.rsmod.api.bosses.validation.SpecValidator
 import org.rsmod.api.npc.access.StandardNpcAccess
 import org.rsmod.api.npc.events.NpcHitEvents
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.script.onAiApPlayer2
 import org.rsmod.api.script.onAiOpPlayer2
 import org.rsmod.api.script.onEvent
@@ -94,6 +95,7 @@ object BossCombat {
         spec: BossSpec,
         deps: BossDeps,
     ) {
+        if (!npc.isAliveInWorld()) return
         val encounter = deps.encounterRegistry.of(npc)
         if (encounter.currentPhase == null) return
         val tick = deps.mapClock.cycle

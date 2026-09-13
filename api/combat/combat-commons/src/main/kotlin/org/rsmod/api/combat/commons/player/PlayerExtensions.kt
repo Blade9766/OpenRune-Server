@@ -6,6 +6,7 @@ import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import kotlin.math.min
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.player.hit.modifier.PlayerHitModifier
 import org.rsmod.api.player.hit.queueHit
 import org.rsmod.api.player.lefthand
@@ -23,6 +24,9 @@ import org.rsmod.game.type.getOrNull
 private val ProtectedAccess.autoRetaliateDisabled by boolVarp("varp.option_nodef")
 
 public fun Player.queueCombatRetaliate(source: Npc, delay: Int = 1) {
+    if (!source.isAliveInWorld()) {
+        return
+    }
     strongQueue("queue.com_retaliate_npc", delay, source.uid)
 }
 
