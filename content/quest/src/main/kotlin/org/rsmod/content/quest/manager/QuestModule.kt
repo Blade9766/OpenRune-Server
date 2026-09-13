@@ -18,7 +18,6 @@ import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
 import org.rsmod.content.quest.area.varrock.demonslayer.WallyVision
 import org.rsmod.content.quest.area.varrock.dragonslayer.DoorPassage
-import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerInstances
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerWearHook
 import org.rsmod.content.quest.area.varrock.dragonslayer.Voyage
@@ -54,7 +53,7 @@ public class QuestModule : PluginModule() {
         bindInstance<KolodionFights>()
         bindInstance<FollowerSpawns>()
         bindInstance<DragonSlayerQuest>()
-        bindInstance<DragonSlayerInstances>()
+        bindInstance<QuestInstances>()
         bindInstance<DoorPassage>()
         bindInstance<Voyage>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)

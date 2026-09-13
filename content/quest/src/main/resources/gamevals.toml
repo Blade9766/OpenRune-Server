@@ -54,6 +54,7 @@ hammer_and_build = 1767
 # Tree Gnome Village
 chest_close = 51
 chest_open = 52
+grandtree_machinery = 1586
 
 # Waterfall Quest
 splash_and_river = 1308
@@ -63,6 +64,21 @@ contact_rumble = 1464
 turn_book_page = 2417
 watersplash = 2496
 vial_pour = 2613
+
+# Horror from the Deep (dbrow.synth_horrorfromthedeep, plus jump/fire/glass effects)
+dagganoth_attack = 1615
+dagganoth_changes = 1617
+dagganoth_chitters = 1618
+dagganoth_death = 1621
+dagganoth_hit = 1622
+dagganoth_spines = 1623
+strangedoor_close = 1625
+strangedoor_open = 1626
+strangedoor_sound = 1627
+fire_quiet_to_loud = 1672
+glass_chink_1 = 2129
+jump_land_bridge = 2458
+jump = 2461
 
 [gamevals.clientscript]
 quest_available_set = 45550

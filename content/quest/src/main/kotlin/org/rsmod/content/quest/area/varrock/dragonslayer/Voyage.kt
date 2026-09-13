@@ -10,6 +10,7 @@ import org.rsmod.content.quest.area.varrock.demonslayer.beginCutscene
 import org.rsmod.content.quest.area.varrock.demonslayer.endCutscene
 import org.rsmod.content.quest.area.varrock.demonslayer.fadeFromBlack
 import org.rsmod.content.quest.area.varrock.demonslayer.fadeToBlack
+import org.rsmod.content.quest.manager.QuestInstances
 import org.rsmod.game.map.Direction
 import org.rsmod.map.CoordGrid
 
@@ -27,7 +28,7 @@ class Voyage
 @Inject
 constructor(
     private val dragonSlayer: DragonSlayerQuest,
-    private val instances: DragonSlayerInstances,
+    private val instances: QuestInstances,
     private val worldRepo: WorldRepository,
 ) {
     /** The first crossing, with the full scene. */
@@ -85,7 +86,7 @@ constructor(
         dragonSlayer.syncVars(player)
     }
 
-    private suspend fun ProtectedAccess.playScene(visit: DragonSlayerInstances.Visit) {
+    private suspend fun ProtectedAccess.playScene(visit: QuestInstances.Visit) {
         beginCutscene()
         camMoveTo(visit.at(CAMERA_FROM), height = CAMERA_HEIGHT, rate = CAMERA_RATE, rate2 = CAMERA_RATE)
         camLookAt(visit.at(CAMERA_AT), height = LOOK_HEIGHT, rate = CAMERA_RATE, rate2 = CAMERA_RATE)
@@ -151,7 +152,7 @@ constructor(
         delay(2)
     }
 
-    private fun ProtectedAccess.rainFire(visit: DragonSlayerInstances.Visit, tiles: List<CoordGrid>) {
+    private fun ProtectedAccess.rainFire(visit: QuestInstances.Visit, tiles: List<CoordGrid>) {
         soundSynth(SOUND_FIRE)
         for (tile in tiles) {
             spotanimMap(worldRepo, FIRE_SPOTANIM, visit.at(tile), height = FIRE_HEIGHT)

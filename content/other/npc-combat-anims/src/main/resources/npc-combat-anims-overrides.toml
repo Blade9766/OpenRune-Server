@@ -35,4 +35,13 @@ npc = [
     { id = "npc.dragonslayer_ghost_3", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
     { id = "npc.dragonslayer_ghost_4", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
     { id = "npc.dragonslayer_ghost_5", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
+    # Horror from the Deep's dagannoth and the mother's six colours: the generator gave them the
+    # dagannoth animations but no voice (dbrow.synth_horrorfromthedeep).
+    { id = "npc.horror_dagannoth_jr4", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    { id = "npc.horror_dagganoth_air", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    { id = "npc.horror_dagganoth_water", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    { id = "npc.horror_dagganoth_fire", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    { id = "npc.horror_dagganoth_earth", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    { id = "npc.horror_dagganoth_ranged", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    { id = "npc.horror_dagganoth_melee", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
 ]

@@ -27,6 +27,7 @@ import org.rsmod.api.table.MusicRow
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.ELVARGS_HEAD
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.STAGE_ELVARG_SLAIN
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.STAGE_ON_CRANDOR
+import org.rsmod.content.quest.manager.QuestInstances
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
@@ -48,7 +49,7 @@ class ElvargFight
 @Inject
 constructor(
     private val dragonSlayer: DragonSlayerQuest,
-    private val instances: DragonSlayerInstances,
+    private val instances: QuestInstances,
     private val deps: BossDeps,
     private val npcRepo: NpcRepository,
     private val playerList: PlayerList,
