@@ -258,7 +258,7 @@ constructor(
         delay(DEATH_TICKS)
         npcRepo.del(npc, Int.MAX_VALUE)
         if (hero != null) {
-            launchWhenIdle(hero, { dagannothSlain() })
+            launchWhenFree(hero) { dagannothSlain() }
         }
     }
 
@@ -323,7 +323,7 @@ constructor(
         delay(DEATH_TICKS)
         npcRepo.del(npc, Int.MAX_VALUE)
         if (hero != null) {
-            launchWhenIdle(hero, { motherSlain() })
+            launchWhenFree(hero) { motherSlain() }
         }
     }
 
@@ -351,29 +351,14 @@ constructor(
         chatNpcSpecific(JOSSIK_NAME, JOSSIK_INJURED, quiz, "Bring it to me there. It looks oddly familiar...")
     }
 
-    /**
-     * Runs [block] for [player] once they have had no script running and nothing in their queue
-     * for [IDLE_CYCLES] cycles in a row. A strong queue that falls due closes the player's
-     * interfaces and cancels a dialogue waiting on its continue button, and the beast's last
-     * attack can still land (with its retaliation queue) a cycle or two after it has gone, so a
-     * single empty cycle is not proof the player is clear. Tries each cycle for a few seconds, then
-     * settles for the player merely being free.
-     */
-    private fun launchWhenIdle(
-        player: Player,
-        block: suspend ProtectedAccess.() -> Unit,
-        attempts: Int = LAUNCH_ATTEMPTS,
-        idleCycles: Int = 0,
-    ) {
-        val idle = !player.isAccessProtected && !player.queueList.isNotEmpty
-        val streak = if (idle) idleCycles + 1 else 0
-        if ((streak >= IDLE_CYCLES || attempts <= 1) && launcher.launch(player, block = block)) {
+    private fun launchWhenFree(player: Player, block: suspend ProtectedAccess.() -> Unit) {
+        if (launcher.launch(player, block = block)) {
             return
         }
         val uid = player.uid
         worldQueues.add(1) {
             val target = uid.resolve(playerList) ?: return@add
-            launchWhenIdle(target, block, (attempts - 1).coerceAtLeast(1), streak)
+            launchWhenFree(target, block)
         }
     }
 
@@ -419,8 +404,6 @@ constructor(
         const val COLOUR_TICKS = 30
         const val EMERGE_STEP_TICKS = 2
         const val DEATH_TICKS = 3
-        const val LAUNCH_ATTEMPTS = 25
-        const val IDLE_CYCLES = 3
 
         const val IMMUNE_MELEE = "varn.immune_melee"
         const val IMMUNE_RANGED = "varn.immune_ranged"
