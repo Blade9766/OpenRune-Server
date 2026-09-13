@@ -288,7 +288,7 @@ them from the repo root.
 Windows (PowerShell):
 
 ```powershell
-foreach ($dir in ".runelite", ".rsprox") {
+foreach ($dir in ".runelite", ".rsprox", ".rlcustom") {
   $target = "$env:USERPROFILE\$dir\sideloaded-plugins"
   New-Item -ItemType Directory -Force $target | Out-Null
   curl.exe -L -o "$target\OpenRune-Developer-Tools.jar" `
@@ -304,7 +304,7 @@ if (-not (Test-Path .claude\settings.local.json)) {
 Linux / macOS:
 
 ```bash
-for dir in .runelite .rsprox; do
+for dir in .runelite .rsprox .rlcustom; do
   mkdir -p "$HOME/$dir/sideloaded-plugins"
   curl -L -o "$HOME/$dir/sideloaded-plugins/OpenRune-Developer-Tools.jar" \
     https://github.com/OpenRune/OpenRune-Developer-Tools/releases/latest/download/OpenRune-Developer-Tools.jar
@@ -316,7 +316,25 @@ mkdir -p .claude
 ```
 
 Then start the client with `--developer-mode` (sideloaded plugins only load then)
-and enable **OpenRune-DeveloperTools** once in the plugin sidebar (persists).
+and enable **OpenRune-DeveloperTools** once in the plugin sidebar (persists). It is a
+separate entry from RuneLite's built-in **Developer Tools**, which also appears in
+developer mode.
+
+Which sideload folder a client reads depends on how it was launched:
+
+| Client | Sideload folder |
+|---|---|
+| Stock RuneLite / FluxRSClient | `~/.runelite/sideloaded-plugins` |
+| RuneLite launched from RSProx | `~/.rlcustom/sideloaded-plugins` (RSProx patches the RuneLite dir; the log still goes to `~/.runelite/logs/client.log`) |
+
+The plugin's auto-updater only writes to `.runelite` and `.rsprox`, so after an
+update re-copy the jar into `.rlcustom` for RSProx clients.
+
+If `http://127.0.0.1:7780/` doesn't load, check `client.log` for
+`Side-loading plugin <path>` (missing = jar is in the wrong folder or developer
+mode is off) and `MCP server listening on http://127.0.0.1:7780/mcp` (missing =
+plugin not enabled). Claude Code only connects to `flux` at session start, so
+start a new session once the dashboard loads.
 
 If `.claude/settings.local.json` already exists, the scripts leave it alone — merge
 `"mcp__flux"` into its `permissions.allow` array manually.
