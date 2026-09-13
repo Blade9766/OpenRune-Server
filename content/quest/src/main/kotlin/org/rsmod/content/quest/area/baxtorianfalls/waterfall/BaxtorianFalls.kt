@@ -1,0 +1,209 @@
+package org.rsmod.content.quest.area.baxtorianfalls.waterfall
+
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
+import dev.openrune.types.hunt.HuntVis
+import jakarta.inject.Inject
+import org.rsmod.api.config.constants
+import org.rsmod.api.hunt.NpcSearch
+import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.script.onApLoc1
+import org.rsmod.api.script.onApLocT
+import org.rsmod.api.script.onOpLoc1
+import org.rsmod.api.script.onOpLocU
+import org.rsmod.content.quest.area.ardougne.fadeFromBlack
+import org.rsmod.content.quest.area.ardougne.fadeToBlack
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.HUDON
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.ROPE
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_ENTERED_FALLS
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_STARTED
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.npcs.geraldGreetsWashedUp
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.npcs.hudonFirstMeeting
+import org.rsmod.game.loc.BoundLocInfo
+import org.rsmod.plugin.scripts.PluginScript
+import org.rsmod.plugin.scripts.ScriptContext
+
+/**
+ * The way down Baxtorian Falls to the waterfall door: the log raft behind Almera's house runs
+ * aground on Hudon's island, a rope tied to the rock pulls the player across to the dead tree,
+ * and a rope tied to the tree lowers them onto the ledge. Every shortcut (swimming, climbing
+ * without a rope, forcing the door without Glarial's amulet) sweeps them down the river to
+ * Gerald's bank; the barrel on the ledge does the same, but gently.
+ *
+ * The rock and the tree stand in the water, so both are worked from a distance. A used item
+ * arrives as a `LocT` interaction and only its op step is bridged to `onOpLocU`, so the rope's
+ * approach handlers are registered on the inventory component directly.
+ */
+class BaxtorianFalls
+@Inject
+constructor(
+    private val waterfall: WaterfallQuest,
+    private val search: NpcSearch,
+) : PluginScript() {
+
+    override fun ScriptContext.startup() {
+        onOpLoc1(RAFT) { boardRaft() }
+        onOpLoc1(RIVER) { swim() }
+        onApLoc1(ROCK) { apRock(it.loc) { swim() } }
+        onOpLoc1(ROCK) { swim() }
+        val inventory = ServerCacheManager.fromComponent(INVENTORY.asRSCM(RSCMType.COMPONENT))
+        onApLocT(ROCK, inventory) {
+            if (it.objType?.id == ROPE.asRSCM(RSCMType.OBJ)) apRock(it.loc) { ropeAcross(it.loc) } else apRange(-1)
+        }
+        onOpLocU(ROCK, ROPE) { ropeAcross(it.loc) }
+        onApLoc1(TREE) { apTree(it.loc) { climbWithoutRope() } }
+        onOpLoc1(TREE) { climbWithoutRope() }
+        onApLocT(TREE, inventory) {
+            if (it.objType?.id == ROPE.asRSCM(RSCMType.OBJ)) apTree(it.loc) { ropeDown() } else apRange(-1)
+        }
+        onOpLocU(TREE, ROPE) { ropeDown() }
+        onOpLoc1(LEDGE_DOOR) { enterFalls() }
+        onOpLoc1(BARREL) { rideBarrel() }
+    }
+
+    private suspend fun ProtectedAccess.boardRaft() {
+        if (waterfall.stage(player) == 0) {
+            mesbox("The raft doesn't look very safe. You decide to leave it alone.")
+            return
+        }
+        mesbox("You climb aboard the little raft and push off downstream...")
+        soundSynth(RIVER_SOUND)
+        fadeToBlack()
+        telejump(WaterfallCoords.RAFT_CRASH, TeleportType.Exempt)
+        delay(1)
+        fadeFromBlack()
+        soundSynth(CRASH_SOUND)
+        mesbox("...and run aground on a small island.")
+        if (waterfall.stage(player) == STAGE_STARTED) {
+            val hudon = npcFind(player.coords, HUDON, HUDON_SEARCH_RADIUS, HuntVis.Off, search) ?: return
+            startDialogue(hudon) { hudonFirstMeeting(waterfall) }
+        }
+    }
+
+    private suspend fun ProtectedAccess.swim() {
+        anim(SWIM_SEQ)
+        mesbox("You wade out into the water...")
+        mesbox("...but the current is far too strong, and it carries you away downstream.")
+        washDownstream(bruised = false)
+        geraldGreetsWashedUp(waterfall)
+    }
+
+    private suspend fun ProtectedAccess.apRock(rock: BoundLocInfo, action: suspend ProtectedAccess.() -> Unit) {
+        if (!WaterfallCoords.onHudonIsland(player.coords)) {
+            apRange(-1)
+            return
+        }
+        if (!isWithinApRange(rock, ROCK_RANGE)) {
+            return
+        }
+        action()
+    }
+
+    private suspend fun ProtectedAccess.apTree(tree: BoundLocInfo, action: suspend ProtectedAccess.() -> Unit) {
+        if (!WaterfallCoords.onTreeIsland(player.coords)) {
+            apRange(-1)
+            return
+        }
+        if (!isWithinApRange(tree, TREE_RANGE)) {
+            return
+        }
+        action()
+    }
+
+    private suspend fun ProtectedAccess.ropeAcross(rock: BoundLocInfo) {
+        faceSquare(rock.coords)
+        anim(THROW_ROPE_SEQ)
+        soundSynth(TIE_ROPE_SOUND)
+        delay(2)
+        mes("You tie the rope around the rock and pull yourself through the water towards it.")
+        anim(SWIM_SEQ)
+        soundSynth(SWIM_SOUND)
+        exactMove(
+            start = player.coords,
+            end = WaterfallCoords.TREE_ISLAND,
+            delay1 = 0,
+            delay2 = SWIM_TICKS * CLIENT_CYCLES_PER_TICK,
+            dir = constants.em_face_south,
+            teleportType = TeleportType.Exempt,
+        )
+        delay(SWIM_TICKS)
+        resetAnim()
+    }
+
+    private suspend fun ProtectedAccess.climbWithoutRope() {
+        mesbox("You try to use the tree to climb down...")
+        anim(CLIMB_DOWN_SEQ)
+        delay(1)
+        mesbox("...but you lose your grip and tumble into the water.")
+        washDownstream(bruised = true)
+        geraldGreetsWashedUp(waterfall)
+    }
+
+    private suspend fun ProtectedAccess.ropeDown() {
+        soundSynth(TIE_ROPE_SOUND)
+        mesbox("You tie the rope to the tree and lower yourself down onto the ledge below.")
+        anim(CLIMB_DOWN_SEQ)
+        soundSynth(ROPE_CLIMB_SOUND)
+        exactMove(
+            start = player.coords,
+            end = WaterfallCoords.LEDGE,
+            delay1 = 0,
+            delay2 = CLIMB_TICKS * CLIENT_CYCLES_PER_TICK,
+            dir = constants.em_face_north,
+            teleportType = TeleportType.Exempt,
+        )
+        delay(CLIMB_TICKS)
+        resetAnim()
+    }
+
+    private suspend fun ProtectedAccess.enterFalls() {
+        if (!waterfall.isComplete(player) && !player.hasAmulet()) {
+            mesbox("As you reach for the door, a surge of water floods across the ledge...")
+            mesbox("...and sweeps you over the edge of the waterfall into the river.")
+            washDownstream(bruised = true)
+            return
+        }
+        soundSynth(DOOR_SOUND)
+        mesbox("You step inside the waterfall.")
+        telejump(WaterfallCoords.FALLS_ENTRY, TeleportType.Exempt)
+        waterfall.advanceTo(this, STAGE_ENTERED_FALLS)
+    }
+
+    private suspend fun ProtectedAccess.rideBarrel() {
+        mesbox("You squeeze into the barrel and tip it off the edge. The river carries you away.")
+        anim(BARREL_SEQ)
+        washDownstream(bruised = false)
+        geraldGreetsWashedUp(waterfall)
+    }
+
+    private companion object {
+        const val INVENTORY = "component.inventory:items"
+        const val RAFT = "loc.lograft_waterfall_quest"
+        const val RIVER = "loc.waterfall_swim_point"
+        const val ROCK = "loc.crossing_rock_waterfall_quest"
+        const val TREE = "loc.overhanging_tree1_waterfall_quest"
+        const val LEDGE_DOOR = "loc.waterfall_ledge_door"
+        const val BARREL = "loc.barrel_waterfall_quest"
+
+        const val HUDON_SEARCH_RADIUS = 8
+        const val ROCK_RANGE = 10
+        const val TREE_RANGE = 3
+
+        const val SWIM_SEQ = "seq.human_swim"
+        const val THROW_ROPE_SEQ = "seq.human_throwrope"
+        const val CLIMB_DOWN_SEQ = "seq.human_climbing_down"
+        const val BARREL_SEQ = "seq.human_pickupfloor"
+        const val SWIM_TICKS = 4
+        const val CLIMB_TICKS = 2
+        const val CLIENT_CYCLES_PER_TICK = 30
+
+        const val RIVER_SOUND = "synth.splash_and_river"
+        const val CRASH_SOUND = "synth.watersplash"
+        const val SWIM_SOUND = "synth.cf_swim"
+        const val TIE_ROPE_SOUND = "synth.cf_tierope"
+        const val ROPE_CLIMB_SOUND = "synth.ropeclimb"
+        const val DOOR_SOUND = "synth.door_open"
+    }
+}

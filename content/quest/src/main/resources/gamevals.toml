@@ -51,6 +51,18 @@ dragonslayer_melzar_spell = 3759
 dragonslayer_thunder = 3762
 stone_door = 86
 hammer_and_build = 1767
+# Tree Gnome Village
+chest_close = 51
+chest_open = 52
+
+# Waterfall Quest
+splash_and_river = 1308
+cf_swim = 1436
+cf_tierope = 1439
+contact_rumble = 1464
+turn_book_page = 2417
+watersplash = 2496
+vial_pour = 2613
 
 [gamevals.clientscript]
 quest_available_set = 45550
