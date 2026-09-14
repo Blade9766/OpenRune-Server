@@ -10,6 +10,7 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
+import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritDrezel
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusCoords
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
@@ -52,6 +53,7 @@ constructor(
     private val priestInPeril: PriestInPerilQuest,
     private val doors: PaterdomusDoors,
     private val objRepo: ObjRepository,
+    private val natureSpirit: NatureSpiritDrezel,
 ) : PluginScript() {
 
     private val finalEssenceGiven = priestInPeril.quest.attribute(name = "FINAL_ESSENCE_GIVEN", default = false)
@@ -621,14 +623,13 @@ constructor(
         priestInPeril.blessed.set(player, true)
         drezel(happy, "Good luck out there. Stay safe.")
         when (choice2("Do you know of anything I can do in Morytania?", true, "And you. See you later.", false)) {
-            true -> moryHelp()
+            true -> natureSpiritTalk()
             false -> chatPlayer(happy, "And you. See you later.")
         }
     }
 
-    private suspend fun Dialogue.moryHelp() {
-        chatPlayer(quiz, "Do you know of anything I can do in Morytania?")
-        drezel(neutral, "Well... I don't think so. There's not much to do in that place.")
+    private suspend fun Dialogue.natureSpiritTalk() {
+        with(natureSpirit) { talk { mood, text -> drezel(mood, text) } }
     }
 
     private suspend fun Dialogue.afterQuest() {
@@ -648,8 +649,7 @@ constructor(
             chatPlayer(happy, "Thanks for that!")
             return
         }
-        chatPlayer(happy, "Hello again, Drezel. Is there anything that I can help you out with around here?")
-        moryHelp()
+        natureSpiritTalk()
     }
 
     private companion object {

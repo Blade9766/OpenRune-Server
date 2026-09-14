@@ -87,5 +87,19 @@ knock_knock = 1735
 well_fill = 2615
 prayer_recharge = 2674
 
+# Nature Spirit
+ghast_appear = 432
+ghast_attack = 433
+bloom_branch = 1489
+bloom_mushroom = 1491
+bloom_pears = 1492
+spirit_transform = 1490
+spirit_transform_start = 1495
+swamp_gas = 2138
+
 [gamevals.clientscript]
 quest_available_set = 45550
+
+[gamevals.timer]
+# Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
+mortmyre_swamp_decay = 124

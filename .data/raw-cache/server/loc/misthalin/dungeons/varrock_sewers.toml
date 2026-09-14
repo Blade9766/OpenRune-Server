@@ -1,3 +1,9 @@
+# Plain copy of the cache def: incremental cache builds delete a loc whose entry is removed
+# instead of restoring it, which leaves every manhole on the map an invalid loc.
+[[object]]
+id = "loc.manholeclosed"
+inherit = "loc.manholeclosed"
+
 [[object]]
 id = "loc.fai_varrock_manhole_ladder"
 inherit = "loc.fai_varrock_manhole_ladder"
