@@ -168,9 +168,12 @@ constructor(
         val swingsOntoPlayer =
             clicked.shape == LocShape.WallDiagonal && plan?.opened?.any { it.coords == coords } == true
         if (plan == null || swingsOntoPlayer) {
-            // A shape we cannot swing, or a diagonal door that would land on the player: just let
-            // them pass.
-            locRepo.del(loc, DOOR_DURATION)
+            val dest = Passages.tileAcross(loc, coords)
+            if (dest == null || !stairs.walkable(dest)) {
+                mes("You can't get through the door from here.")
+                return
+            }
+            stepThrough(loc, type, dest)
             return
         }
         logger.debug {
@@ -216,7 +219,7 @@ constructor(
         val base = ServerCacheManager.getObject(loc.id) ?: type
         val plan = planOpen(Panel(loc.coords, loc.shape, loc.angle, base, type))
         if (plan == null || loc.shape == LocShape.WallDiagonal) {
-            locRepo.del(loc, WALK_THROUGH_TICKS)
+            stepThrough(loc, type, dest)
         } else {
             for (panel in plan.closed) {
                 findPanel(panel)?.let { locRepo.del(it, WALK_THROUGH_TICKS) }
@@ -224,8 +227,8 @@ constructor(
             for (panel in plan.opened) {
                 locRepo.add(panel.coords, panel.base, WALK_THROUGH_TICKS, panel.angle, panel.shape)
             }
+            player.walk(dest)
         }
-        player.walk(dest)
 
         val closeSound = type.paramOrNull(params.closesound)
         val uid = player.uid
@@ -233,6 +236,52 @@ constructor(
             val walker = uid.resolve(playerList) ?: return@add
             if (closeSound != null) walker.soundSynth(closeSound) else walker.soundSynth(DEFAULT_CLOSE_SOUND)
         }
+    }
+
+    /**
+     * Moves the player to [dest] through a door that cannot swing on a hinge: a free-standing
+     * door loc (the Underground Pass temple doors, the Dagannoth pressure doors) or a diagonal
+     * door. The door, and the other leaf beside it, show their open form in place for a moment
+     * when the cache has one; otherwise the door stays standing while the player walks through.
+     *
+     * Swapping the door ends the player's script, so nothing here suspends.
+     */
+    private fun ProtectedAccess.stepThrough(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+        dest: CoordGrid,
+    ) {
+        val leaves = listOf(loc to type) + neighbouringLeaves(loc, type)
+        for ((leaf, leafType) in leaves) {
+            val open = findTwin(leafType, "Close") ?: continue
+            locRepo.change(leaf, open, PASS_THROUGH_TICKS)
+        }
+        glideTo(dest, WALK_ANIM, PASS_THROUGH_TICKS)
+    }
+
+    /** Closed doors of the same kind standing on a tile orthogonally beside [loc]. */
+    private fun ProtectedAccess.neighbouringLeaves(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+    ): List<Pair<BoundLocInfo, ObjectServerType>> {
+        if (loc.shape == LocShape.WallDiagonal) {
+            return emptyList()
+        }
+        val leaves = mutableListOf<Pair<BoundLocInfo, ObjectServerType>>()
+        for ((dx, dz) in LEAF_OFFSETS) {
+            for (candidate in locRepo.findAll(loc.coords.translate(dx, dz))) {
+                if (candidate.shape != loc.shape) {
+                    continue
+                }
+                val base = ServerCacheManager.getObject(candidate.entity.id) ?: continue
+                val vis = visibleType(candidate, base)
+                if (vis.name != type.name || vis.actions.getOpOrNull(0) != "Open") {
+                    continue
+                }
+                leaves += BoundLocInfo(candidate, base) to vis
+            }
+        }
+        return leaves
     }
 
     /**
@@ -557,5 +606,11 @@ constructor(
         private const val LADDER_ANIM = "seq.human_reachforladder"
         private const val CLIMB_DOWN_ANIM = "seq.human_pickupfloor"
         private const val CLIMB_OVER_ANIM = "seq.human_walk_style"
+        private const val WALK_ANIM = "seq.human_walk_f"
+
+        /** Ticks a door without a hinge stays open while the player walks through it. */
+        private const val PASS_THROUGH_TICKS = 2
+
+        private val LEAF_OFFSETS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
     }
 }

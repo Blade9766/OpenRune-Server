@@ -17,6 +17,15 @@ private const val CLIENT_CYCLES_PER_TICK = 30
  * them standing on [dest]. Used for hopping stiles and jumping the Wilderness ditch.
  */
 internal suspend fun ProtectedAccess.hopTo(dest: CoordGrid, seq: String, ticks: Int) {
+    glideTo(dest, seq, ticks)
+    delay(ticks)
+}
+
+/**
+ * Starts gliding the player from their tile to [dest] over [ticks] while [seq] plays, without
+ * suspending, so it can be issued in the same cycle as a loc swap that ends the player's script.
+ */
+internal fun ProtectedAccess.glideTo(dest: CoordGrid, seq: String, ticks: Int) {
     val start = coords
     anim(seq)
     exactMove(
@@ -27,7 +36,6 @@ internal suspend fun ProtectedAccess.hopTo(dest: CoordGrid, seq: String, ticks: 
         dir = faceTowards(start, dest),
         teleportType = TeleportType.Exempt,
     )
-    delay(ticks)
 }
 
 /** Number of server ticks [seq] plays for, or [fallback] when the cache holds no duration. */
