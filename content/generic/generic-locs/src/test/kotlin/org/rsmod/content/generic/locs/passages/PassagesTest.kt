@@ -19,6 +19,9 @@ class PassagesTest {
         assertEquals(PassageAction.OpenDoor, Passages.classify("Door", "Open", LocShape.WallStraight))
         assertEquals(PassageAction.CloseDoor, Passages.classify("Gate", "Close", LocShape.WallStraight))
         assertEquals(PassageAction.OpenTrapdoor, Passages.classify("Trapdoor", "Open", ground))
+        assertEquals(PassageAction.CloseTrapdoor, Passages.classify("Trapdoor", "Close", ground))
+        assertEquals(PassageAction.OpenTrapdoor, Passages.classify("Manhole", "Open", ground))
+        assertEquals(PassageAction.ClimbDown, Passages.classify("Manhole", "Climb-down", ground))
         assertEquals(PassageAction.ClimbUp, Passages.classify("Ladder", "Climb-up", ground))
         assertEquals(PassageAction.ClimbDown, Passages.classify("Stairs", "Climb-down", ground))
         assertEquals(PassageAction.ClimbEither, Passages.classify("Staircase", "Climb", ground))
@@ -60,6 +63,35 @@ class PassagesTest {
         val turned =
             ditch.copy(entity = LocEntity(23271, LocShape.CentrepieceStraight.id, LocAngle.North.id))
         assertEquals(CoordGrid(3089, 3521), Passages.farSide(turned, CoordGrid(3086, 3521)))
+    }
+
+    @Test
+    fun `a door is crossed to the tile on the far side of its wall`() {
+        fun door(x: Int, z: Int, shape: LocShape, angle: LocAngle) =
+            BoundLocInfo(
+                coords = CoordGrid(x, z),
+                entity = LocEntity(20925, shape.id, angle.id),
+                layer = 0,
+                width = 1,
+                length = 1,
+                forceApproachFlags = 0,
+            )
+
+        // Fishing Guild door: south edge of its tile, the guild to the north.
+        val south = door(2611, 3394, LocShape.WallStraight, LocAngle.South)
+        assertEquals(CoordGrid(2611, 3394), Passages.tileAcross(south, CoordGrid(2611, 3393)))
+        assertEquals(CoordGrid(2611, 3393), Passages.tileAcross(south, CoordGrid(2611, 3394)))
+
+        // Warriors' Guild door: west edge of its tile.
+        val west = door(2877, 3546, LocShape.WallStraight, LocAngle.West)
+        assertEquals(CoordGrid(2877, 3546), Passages.tileAcross(west, CoordGrid(2876, 3546)))
+        assertEquals(CoordGrid(2876, 3546), Passages.tileAcross(west, CoordGrid(2877, 3546)))
+
+        // Ranging Guild door: a diagonal wall crossed to the mirrored tile.
+        val diagonal = door(2658, 3438, LocShape.WallDiagonal, LocAngle.West)
+        assertEquals(CoordGrid(2659, 3438), Passages.tileAcross(diagonal, CoordGrid(2657, 3438)))
+        assertEquals(CoordGrid(2658, 3437), Passages.tileAcross(diagonal, CoordGrid(2658, 3439)))
+        assertNull(Passages.tileAcross(diagonal, CoordGrid(2658, 3438)))
     }
 
     @Test

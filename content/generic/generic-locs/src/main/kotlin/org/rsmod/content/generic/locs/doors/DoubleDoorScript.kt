@@ -77,7 +77,7 @@ class DoubleDoorScript @Inject constructor(private val locRepo: LocRepository) :
     }
 
     private fun ProtectedAccess.closeLeftDoor(left: BoundLocInfo, type: ObjectServerType) {
-        val sound = type.param(params.opensound)
+        val sound = type.param(params.closesound)
         soundSynth(sound)
 
         left.let {
@@ -104,7 +104,7 @@ class DoubleDoorScript @Inject constructor(private val locRepo: LocRepository) :
     }
 
     private fun ProtectedAccess.closeRightDoor(right: BoundLocInfo, type: ObjectServerType) {
-        val sound = type.param(params.opensound)
+        val sound = type.param(params.closesound)
         soundSynth(sound)
 
         right.let {

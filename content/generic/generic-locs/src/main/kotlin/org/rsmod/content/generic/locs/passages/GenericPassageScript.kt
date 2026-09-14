@@ -7,6 +7,7 @@ import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ObjectServerType
 import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.events.interact.LocDefaultEvents
@@ -14,15 +15,19 @@ import org.rsmod.api.player.events.interact.OpDefaultEvent
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.output.ChatType
+import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.repo.loc.LocRepository
+import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onProtectedEvent
 import org.rsmod.content.generic.locs.doors.DoorTranslations
 import org.rsmod.content.generic.locs.gate.GateTranslations
+import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocShape
+import org.rsmod.game.queue.WorldQueueList
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -44,12 +49,15 @@ import org.rsmod.plugin.scripts.ScriptContext
  * the map 6400 tiles north, and put them at the foot of the matching stairs on the other level
  * (see [StairNavigator]). Cave mouths do the same surface/dungeon swap.
  */
+@Singleton
 class GenericPassageScript
 @Inject
 constructor(
     private val locRepo: LocRepository,
     private val locInteractions: LocInteractions,
     private val stairs: StairNavigator,
+    private val worldQueues: WorldQueueList,
+    private val playerList: PlayerList,
 ) : PluginScript() {
     /** Open panels spawned by this script, keyed by where they stand, and how to undo them. */
     private val openedPanels = HashMap<PanelKey, OpenedPassage>()
@@ -72,12 +80,14 @@ constructor(
     }
 
     override fun ScriptContext.startup() {
-        onProtectedEvent<LocDefaultEvents.Op1>(OpDefaultEvent.ID) { interact(it.loc, it.type, 0) }
-        onProtectedEvent<LocDefaultEvents.Op2>(OpDefaultEvent.ID) { interact(it.loc, it.type, 1) }
-        onProtectedEvent<LocDefaultEvents.Op3>(OpDefaultEvent.ID) { interact(it.loc, it.type, 2) }
+        onProtectedEvent<LocDefaultEvents.Op1>(OpDefaultEvent.ID) { passage(it.loc, it.type, 0) }
+        onProtectedEvent<LocDefaultEvents.Op2>(OpDefaultEvent.ID) { passage(it.loc, it.type, 1) }
+        onProtectedEvent<LocDefaultEvents.Op3>(OpDefaultEvent.ID) { passage(it.loc, it.type, 2) }
+        // The Varrock manhole's server config climbs straight down from the closed cover.
+        onOpLoc1("loc.manholeclosed") { passage(it.loc, it.type, 0) }
     }
 
-    private suspend fun ProtectedAccess.interact(
+    suspend fun ProtectedAccess.passage(
         loc: BoundLocInfo,
         type: ObjectServerType,
         opIndex: Int,
@@ -94,6 +104,7 @@ constructor(
             PassageAction.OpenDoor -> openDoor(loc, type)
             PassageAction.CloseDoor -> closeDoor(loc, type)
             PassageAction.OpenTrapdoor -> openTrapdoor(loc, type)
+            PassageAction.CloseTrapdoor -> closeTrapdoor(loc, type)
             PassageAction.ClimbUp -> climb(loc, type, up = true)
             PassageAction.ClimbDown -> climb(loc, type, up = false)
             PassageAction.ClimbEither -> climbEither(loc, type)
@@ -160,6 +171,46 @@ constructor(
                 openedPanels.remove(key)
             }
             openedPanels[key] = plan
+        }
+    }
+
+    /**
+     * Opens [loc] (and its partner panel) only long enough for the player to step through, walks
+     * them to the far side and shuts it behind them. For entrances that check requirements, which
+     * must never be left standing open for someone else to follow through.
+     *
+     * Deleting the loc ends the player's script, so the walk starts in the same cycle and the
+     * closing sound is left to the world queue.
+     */
+    suspend fun ProtectedAccess.walkThrough(loc: BoundLocInfo, type: ObjectServerType) {
+        arriveDelay()
+        val dest = Passages.tileAcross(loc, coords)
+        if (dest == null) {
+            mes(constants.dm_default, ChatType.Engine)
+            return
+        }
+        val openSound = type.paramOrNull(params.opensound)
+        if (openSound != null) soundSynth(openSound) else soundSynth(DEFAULT_OPEN_SOUND)
+
+        val base = ServerCacheManager.getObject(loc.id) ?: type
+        val plan = planOpen(Panel(loc.coords, loc.shape, loc.angle, base, type))
+        if (plan == null || loc.shape == LocShape.WallDiagonal) {
+            locRepo.del(loc, WALK_THROUGH_TICKS)
+        } else {
+            for (panel in plan.closed) {
+                findPanel(panel)?.let { locRepo.del(it, WALK_THROUGH_TICKS) }
+            }
+            for (panel in plan.opened) {
+                locRepo.add(panel.coords, panel.base, WALK_THROUGH_TICKS, panel.angle, panel.shape)
+            }
+        }
+        player.walk(dest)
+
+        val closeSound = type.paramOrNull(params.closesound)
+        val uid = player.uid
+        worldQueues.add(WALK_THROUGH_TICKS) {
+            val walker = uid.resolve(playerList) ?: return@add
+            if (closeSound != null) walker.soundSynth(closeSound) else walker.soundSynth(DEFAULT_CLOSE_SOUND)
         }
     }
 
@@ -371,12 +422,20 @@ constructor(
     private suspend fun ProtectedAccess.openTrapdoor(loc: BoundLocInfo, type: ObjectServerType) {
         val opened = findTwin(type, "Climb-down") ?: findTwin(type, "Close")
         if (opened != null) {
-            soundSynth(DEFAULT_OPEN_SOUND)
+            anim(CLIMB_DOWN_ANIM)
+            soundSynth(if (type.name == "Manhole") MANHOLE_OPEN_SOUND else TRAPDOOR_OPEN_SOUND)
             locRepo.change(loc, opened, DOOR_DURATION)
             return
         }
         // No open form in the cache: go straight down.
         climb(loc, type, up = false)
+    }
+
+    private fun ProtectedAccess.closeTrapdoor(loc: BoundLocInfo, type: ObjectServerType) {
+        val closed = findTwin(type, "Open") ?: return
+        anim(CLIMB_DOWN_ANIM)
+        soundSynth(if (type.name == "Manhole") MANHOLE_CLOSE_SOUND else TRAPDOOR_CLOSE_SOUND)
+        locRepo.change(loc, closed, DOOR_DURATION)
     }
 
     /* Ladders, stairs and ropes */
@@ -410,8 +469,10 @@ constructor(
         val climbAnim = type.paramOrNull(params.climb_anim)
         if (climbAnim != null) {
             anim(RSCM.getReverseMapping(RSCMType.SEQ, climbAnim.id))
-        } else if (type.name in LADDER_NAMES) {
+        } else if (up && type.name in LADDER_NAMES) {
             anim(LADDER_ANIM)
+        } else if (!up && (type.name in LADDER_NAMES || type.name in DROP_DOWN_NAMES)) {
+            anim(CLIMB_DOWN_ANIM)
         }
         delay(1)
         telejump(dest, TeleportType.Exempt)
@@ -446,17 +507,27 @@ constructor(
         /** How long (in cycles) an opened door or trapdoor stays changed before it resets. */
         private const val DOOR_DURATION = 500
 
+        /** Long enough to walk the one or two tiles through a doorway. */
+        private const val WALK_THROUGH_TICKS = 3
+
         private val TWIN_SEARCH_OFFSETS =
             listOf(1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 8, -8, 10, -10, 12, -12)
 
         private val LADDER_NAMES = setOf("Ladder", "Rope", "Rope ladder")
+
+        private val DROP_DOWN_NAMES = Passages.HATCH_NAMES + "Hole"
 
         /** Cache-name fragments of the wooden fence gates that fold to one side. */
         private val PICKET_GATE_NAMES = listOf("fence", "wooden", "pvpa_access_gate")
 
         private const val DEFAULT_OPEN_SOUND = "synth.door_open"
         private const val DEFAULT_CLOSE_SOUND = "synth.door_close"
+        private const val TRAPDOOR_OPEN_SOUND = "synth.trapdoor_open"
+        private const val TRAPDOOR_CLOSE_SOUND = "synth.trapdoor_close"
+        private const val MANHOLE_OPEN_SOUND = "synth.manhole_open"
+        private const val MANHOLE_CLOSE_SOUND = "synth.manhole_close"
         private const val LADDER_ANIM = "seq.human_reachforladder"
+        private const val CLIMB_DOWN_ANIM = "seq.human_pickupfloor"
         private const val CLIMB_OVER_ANIM = "seq.human_walk_style"
     }
 }

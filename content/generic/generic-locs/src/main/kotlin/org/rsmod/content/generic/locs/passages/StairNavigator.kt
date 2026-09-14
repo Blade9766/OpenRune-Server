@@ -136,8 +136,15 @@ class StairNavigator(
         return Passages.landingCandidates(dest).firstOrNull(::walkable)
     }
 
-    /** Whether a player can stand on [coords]: real map, no blocked tile, no loc on it. */
+    /**
+     * Whether a player can be put down on [coords]: real map, no blocked tile or loc on it, and a
+     * free tile beside it to step onto. The last rules out a tile boxed in by locs, such as the
+     * middle of the ring of ladders over the Mining Guild.
+     */
     fun walkable(coords: CoordGrid): Boolean =
+        standable(coords) && EXITS.any { (dx, dz) -> standable(coords.translate(dx, dz)) }
+
+    private fun standable(coords: CoordGrid): Boolean =
         collision.isZoneValid(coords) && collision[coords] and BLOCKED == 0
 
     /**
@@ -171,6 +178,8 @@ class StairNavigator(
         private const val COUNTERPART_SLACK = 1
 
         private const val BLOCKED = CollisionFlag.BLOCK_WALK or CollisionFlag.LOC
+
+        private val EXITS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
 
         private const val SURROUNDINGS_RADIUS = 8
 

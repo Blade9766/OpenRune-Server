@@ -14,6 +14,7 @@ enum class PassageAction {
     OpenDoor,
     CloseDoor,
     OpenTrapdoor,
+    CloseTrapdoor,
     ClimbUp,
     ClimbDown,
     ClimbEither,
@@ -43,8 +44,11 @@ object Passages {
             "Iron gate",
         )
 
+    val HATCH_NAMES = setOf("Trapdoor", "Manhole")
+
     private val CLIMB_NAMES =
         setOf(
+            "Manhole",
             "Ladder",
             "Staircase",
             "Stairs",
@@ -114,11 +118,16 @@ object Passages {
         return when (op) {
             "Open" ->
                 when {
-                    name == "Trapdoor" -> PassageAction.OpenTrapdoor
+                    name in HATCH_NAMES -> PassageAction.OpenTrapdoor
                     name in DOOR_NAMES || isWall -> PassageAction.OpenDoor
                     else -> null
                 }
-            "Close" -> if (name in DOOR_NAMES || isWall) PassageAction.CloseDoor else null
+            "Close" ->
+                when {
+                    name in HATCH_NAMES -> PassageAction.CloseTrapdoor
+                    name in DOOR_NAMES || isWall -> PassageAction.CloseDoor
+                    else -> null
+                }
             "Climb-up",
             "Walk-up" -> if (name in CLIMB_NAMES) PassageAction.ClimbUp else null
             "Climb-down",
@@ -199,6 +208,27 @@ object Passages {
             return null
         }
         return CoordGrid(x, z, from.level)
+    }
+
+    /**
+     * The tile on the other side of a door or gate [loc] from [from]. A straight wall sits on one
+     * edge of its own tile (angle 0 west, 1 north, 2 east, 3 south), a diagonal wall is crossed to
+     * the tile mirrored through it, and anything else is crossed like a stile.
+     */
+    fun tileAcross(loc: BoundLocInfo, from: CoordGrid): CoordGrid? {
+        val tile = loc.coords
+        return when (loc.shape) {
+            LocShape.WallStraight ->
+                when (loc.angle) {
+                    LocAngle.West -> if (from.x >= tile.x) tile.translateX(-1) else tile
+                    LocAngle.North -> if (from.z > tile.z) tile else tile.translateZ(1)
+                    LocAngle.East -> if (from.x > tile.x) tile else tile.translateX(1)
+                    LocAngle.South -> if (from.z >= tile.z) tile.translateZ(-1) else tile
+                }
+            LocShape.WallDiagonal ->
+                if (from == tile) null else tileOrNull(2 * tile.x - from.x, 2 * tile.z - from.z, from.level)
+            else -> farSide(loc, from)
+        }
     }
 
     /**

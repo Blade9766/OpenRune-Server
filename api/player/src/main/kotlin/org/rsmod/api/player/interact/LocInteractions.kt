@@ -61,11 +61,26 @@ constructor(private val boundValidator: BoundValidator, private val eventBus: Ev
         op: InteractionOp,
         type: ObjectServerType = ServerCacheManager.getObject(loc.id)!!,
         base: BoundLocInfo = loc,
+    ): OpEvent? =
+        specificOpTrigger(player, loc, op, type, base)
+            ?: fallbackOpTrigger(player, loc, op, type, base)
+
+    /**
+     * Type, content and category handlers, the visible multiloc variant's first. These are all
+     * checked before any unimplemented or default handler, so a script on a multiloc's base loc
+     * is not shadowed by a catch-all that would otherwise claim the variant.
+     */
+    private fun specificOpTrigger(
+        player: Player,
+        loc: BoundLocInfo,
+        op: InteractionOp,
+        type: ObjectServerType,
+        base: BoundLocInfo,
     ): OpEvent? {
         val multiLoc = multiLoc(loc, type, player.vars)
         if (multiLoc != null) {
             val multiLocType = ServerCacheManager.getObject(multiLoc.id)!!
-            val multiLocTrigger = opTrigger(player, multiLoc, op, multiLocType, base)
+            val multiLocTrigger = specificOpTrigger(player, multiLoc, op, multiLocType, base)
             if (multiLocTrigger != null) {
                 return multiLocTrigger
             }
@@ -85,6 +100,24 @@ constructor(private val boundValidator: BoundValidator, private val eventBus: Ev
             val categoryEvent = toCategoryOp(base, loc, type, type.category, op)
             if (eventBus.contains(categoryEvent::class.java, categoryEvent.id)) {
                 return categoryEvent
+            }
+        }
+        return null
+    }
+
+    private fun fallbackOpTrigger(
+        player: Player,
+        loc: BoundLocInfo,
+        op: InteractionOp,
+        type: ObjectServerType,
+        base: BoundLocInfo,
+    ): OpEvent? {
+        val multiLoc = multiLoc(loc, type, player.vars)
+        if (multiLoc != null) {
+            val multiLocType = ServerCacheManager.getObject(multiLoc.id)!!
+            val multiLocTrigger = fallbackOpTrigger(player, multiLoc, op, multiLocType, base)
+            if (multiLocTrigger != null) {
+                return multiLocTrigger
             }
         }
 
@@ -113,11 +146,21 @@ constructor(private val boundValidator: BoundValidator, private val eventBus: Ev
         op: InteractionOp,
         type: ObjectServerType = ServerCacheManager.getObject(loc.id)!!,
         base: BoundLocInfo = loc,
+    ): ApEvent? =
+        specificApTrigger(player, loc, op, type, base)
+            ?: defaultApTrigger(player, loc, op, type, base)
+
+    private fun specificApTrigger(
+        player: Player,
+        loc: BoundLocInfo,
+        op: InteractionOp,
+        type: ObjectServerType,
+        base: BoundLocInfo,
     ): ApEvent? {
         val multiLoc = multiLoc(loc, type, player.vars)
         if (multiLoc != null) {
             val multiLocType = ServerCacheManager.getObject(multiLoc.id)!!
-            val multiLocTrigger = apTrigger(player, multiLoc, op, multiLocType, base)
+            val multiLocTrigger = specificApTrigger(player, multiLoc, op, multiLocType, base)
             if (multiLocTrigger != null) {
                 return multiLocTrigger
             }
@@ -136,6 +179,24 @@ constructor(private val boundValidator: BoundValidator, private val eventBus: Ev
         val categoryEvent = toCategoryAp(base, loc, type, type.category, op)
         if (eventBus.contains(categoryEvent::class.java, categoryEvent.id)) {
             return categoryEvent
+        }
+        return null
+    }
+
+    private fun defaultApTrigger(
+        player: Player,
+        loc: BoundLocInfo,
+        op: InteractionOp,
+        type: ObjectServerType,
+        base: BoundLocInfo,
+    ): ApEvent? {
+        val multiLoc = multiLoc(loc, type, player.vars)
+        if (multiLoc != null) {
+            val multiLocType = ServerCacheManager.getObject(multiLoc.id)!!
+            val multiLocTrigger = defaultApTrigger(player, multiLoc, op, multiLocType, base)
+            if (multiLocTrigger != null) {
+                return multiLocTrigger
+            }
         }
 
         val defaultEvent = toDefaultAp(base, loc, type, op)
