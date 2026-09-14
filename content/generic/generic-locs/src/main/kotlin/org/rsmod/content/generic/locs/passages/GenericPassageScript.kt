@@ -151,6 +151,9 @@ constructor(
 
     private data class PanelKey(val coords: CoordGrid, val locId: Int)
 
+    /** One separate loc that a door's open form is made of, [dx]/[dz] from the closed origin. */
+    private data class OpenLeaf(val loc: String, val dx: Int, val dz: Int)
+
     private data class OpenedPassage(val opened: List<Panel>, val closed: List<Panel>)
 
     private fun ProtectedAccess.openDoor(loc: BoundLocInfo, type: ObjectServerType) {
@@ -251,10 +254,19 @@ constructor(
         type: ObjectServerType,
         dest: CoordGrid,
     ) {
-        val leaves = listOf(loc to type) + neighbouringLeaves(loc, type)
-        for ((leaf, leafType) in leaves) {
-            val open = findTwin(leafType, "Close") ?: continue
-            locRepo.change(leaf, open, PASS_THROUGH_TICKS)
+        val split = SPLIT_OPEN_FORMS[type.internalNameOrEmpty()]
+        if (split != null) {
+            locRepo.del(loc, SPLIT_OPEN_TICKS)
+            for (leaf in split) {
+                val coords = loc.coords.translate(leaf.dx, leaf.dz)
+                locRepo.add(coords, leaf.loc, SPLIT_OPEN_TICKS, loc.angle, loc.shape)
+            }
+        } else {
+            val leaves = listOf(loc to type) + neighbouringLeaves(loc, type)
+            for ((leaf, leafType) in leaves) {
+                val open = findTwin(leafType, "Close") ?: continue
+                locRepo.change(leaf, open, PASS_THROUGH_TICKS)
+            }
         }
         glideTo(dest, WALK_ANIM, PASS_THROUGH_TICKS)
     }
@@ -612,5 +624,21 @@ constructor(
         private const val PASS_THROUGH_TICKS = 2
 
         private val LEAF_OFFSETS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
+
+        /**
+         * Doors whose open form is several locs rather than one, by the closed loc's cache name.
+         * Offsets were matched by eye against the closed model on the map's only spawn of each.
+         */
+        private val SPLIT_OPEN_FORMS =
+            mapOf(
+                "gnome_areagate" to
+                    listOf(
+                        OpenLeaf("loc.gnome_areagate_open_left", dx = 0, dz = 0),
+                        OpenLeaf("loc.gnome_areagate_open_right", dx = 2, dz = 0),
+                    ),
+            )
+
+        /** Split gates stay open a tick past the player's walk so they are not seen closing on them. */
+        private const val SPLIT_OPEN_TICKS = PASS_THROUGH_TICKS + 1
     }
 }
