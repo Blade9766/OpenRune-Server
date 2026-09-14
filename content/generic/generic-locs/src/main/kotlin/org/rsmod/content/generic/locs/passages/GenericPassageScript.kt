@@ -74,6 +74,27 @@ constructor(
         }
     }
 
+    /** Open or closed forms that share a door's models but not its name, by the door's id. */
+    private val modelTwins: Map<Int, ObjectServerType> by lazy {
+        val ids = ConstantProvider.mappings[RSCMType.LOC.prefix].orEmpty()
+        val stream =
+            GenericPassageScript::class.java.classLoader.getResourceAsStream(MODEL_TWINS_RESOURCE)
+                ?: return@lazy emptyMap()
+        val twins = HashMap<Int, ObjectServerType>()
+        stream.bufferedReader().useLines { lines ->
+            for (line in lines) {
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue
+                }
+                val (from, to) = line.split('\t', limit = 2)
+                val fromId = ids[from] ?: continue
+                val twin = ids[to]?.let(ServerCacheManager::getObject) ?: continue
+                twins[fromId] = twin
+            }
+        }
+        twins
+    }
+
     /** Every named loc in the cache grouped by [twinKey]. */
     private val locsByTwinKey: Map<String, List<ObjectServerType>> by lazy {
         ServerCacheManager.getObjects().values.filter { it.id in locNames }.groupBy { twinKey(it) }
@@ -377,7 +398,9 @@ constructor(
      * The open or closed counterpart of [type]: a loc with the same footprint whose first op is
      * [firstOp] and whose cache name is the same once "open" and "closed" are taken out of it
      * (`poordoor`/`poordooropen`, `metalgateclosedl`/`metalgateopenl`, `door_l`/`door_l_open`).
-     * Failing that, the nearest loc by id with the same display name and footprint.
+     * Failing that, the form with the same models listed in [MODEL_TWINS_RESOURCE] (Lumbridge
+     * Castle's doors open into `wild_doubledoor_open_l/r`), then the nearest loc by id with the
+     * same display name and footprint.
      */
     private fun findTwin(type: ObjectServerType, firstOp: String): ObjectServerType? {
         val sameName = locsByTwinKey[twinKey(type)]?.filter { it.id != type.id && it.sameFootprint(type) }
@@ -390,6 +413,9 @@ constructor(
                 }
         if (byName != null) {
             return byName
+        }
+        modelTwins[type.id]?.takeIf { it.actions.getOpOrNull(0) == firstOp }?.let {
+            return it
         }
         for (offset in TWIN_SEARCH_OFFSETS) {
             val candidate = ServerCacheManager.getObject(type.id + offset) ?: continue
@@ -509,6 +535,8 @@ constructor(
 
         /** Long enough to walk the one or two tiles through a doorway. */
         private const val WALK_THROUGH_TICKS = 3
+
+        private const val MODEL_TWINS_RESOURCE = "door-model-twins.tsv"
 
         private val TWIN_SEARCH_OFFSETS =
             listOf(1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 8, -8, 10, -10, 12, -12)
