@@ -352,7 +352,8 @@ constructor(
     }
 
     private fun launchWhenFree(player: Player, block: suspend ProtectedAccess.() -> Unit) {
-        if (launcher.launch(player, block = block)) {
+        // Hits from spines fired before the kill are strong queues and would close the dialogue.
+        if (player.queueList.strongQueues == 0 && launcher.launch(player, block = block)) {
             return
         }
         val uid = player.uid
