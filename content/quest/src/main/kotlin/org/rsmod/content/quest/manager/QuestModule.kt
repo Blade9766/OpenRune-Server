@@ -12,6 +12,10 @@ import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.lostcity.LostCityQuest
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
+import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
+import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHook
+import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
+import org.rsmod.content.quest.area.paterdomus.priestinperil.TempleGuardianAttackHook
 import org.rsmod.content.quest.area.rimmington.witchspotion.WitchsPotionQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
@@ -56,11 +60,15 @@ public class QuestModule : PluginModule() {
         bindInstance<QuestInstances>()
         bindInstance<DoorPassage>()
         bindInstance<Voyage>()
+        bindInstance<PriestInPerilQuest>()
+        bindInstance<PaterdomusDoors>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
         addSetBinding<PlayerRestrictionHook>(DragonSlayerWearHook::class.java)
         addSetBinding<NpcDeathKillHook>(GodFollowerKillHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MageArenaTeleBlockHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(TempleGuardianAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(PriestInPerilKillHook::class.java)
     }
 }

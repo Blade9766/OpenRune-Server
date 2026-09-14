@@ -80,5 +80,12 @@ glass_chink_1 = 2129
 jump_land_bridge = 2458
 jump = 2461
 
+# Priest in Peril
+big_wooden_door_close = 43
+holy_water_pour = 1733
+knock_knock = 1735
+well_fill = 2615
+prayer_recharge = 2674
+
 [gamevals.clientscript]
 quest_available_set = 45550

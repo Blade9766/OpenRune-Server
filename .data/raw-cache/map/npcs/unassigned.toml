@@ -10827,10 +10827,6 @@ npc = "npc.port_roberts_veg_trader"
 coords = "0_29_51_8_33"
 
 [[spawn]]
-npc = "npc.priestperil_guardian_model"
-coords = "0_53_154_13_46"
-
-[[spawn]]
 npc = "npc.priestperilguarddog"
 coords = "0_53_154_13_46"
 

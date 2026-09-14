@@ -44,4 +44,7 @@ npc = [
     { id = "npc.horror_dagganoth_earth", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
     { id = "npc.horror_dagganoth_ranged", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
     { id = "npc.horror_dagganoth_melee", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },
+    # Priest in Peril's Temple Guardian stabs, and wears the model the original dark beasts shared,
+    # so it carries their voice (dark_beast_attack/hit/death).
+    { id = "npc.priestperilguarddog", attack_anim = "seq.dm_attack", attack_type = "category.attacktype_stab", attack_sound = 389, defend_anim = "seq.dm_block", defend_sound = 391, death_anim = "seq.dm_death", death_sound = 390 },
 ]
