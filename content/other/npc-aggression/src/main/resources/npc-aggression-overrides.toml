@@ -2,4 +2,9 @@
 # Set `aggressive = false` to stop a generated entry hunting, or list an npc the wiki misses.
 
 npc = [
+    # Shilo Village: the wiki lists every undead one as aggressive, but its unarmed zombie variants
+    # were missing from the generated file.
+    { id = "npc.zqzombie_unarmed", wiki = "Undead one" },
+    { id = "npc.zqzombie_unarmed2", wiki = "Undead one" },
+    { id = "npc.zqzombie_unarmed3", wiki = "Undead one" },
 ]

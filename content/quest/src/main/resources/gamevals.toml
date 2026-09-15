@@ -97,9 +97,18 @@ spirit_transform = 1490
 spirit_transform_start = 1495
 swamp_gas = 2138
 
+# Shilo Village
+bone_door_close = 47
+bone_door_open = 48
+grate_close = 68
+grate_open = 69
+ghost_attack = 436
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
 mortmyre_swamp_decay = 124
+# Shilo Village: balance checks while crossing the bridge to Cairn Isle.
+shilo_cairn_bridge = 125

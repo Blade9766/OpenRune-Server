@@ -14,15 +14,8 @@ import org.rsmod.game.entity.Player
 @JvmField
 public val undeadOneDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Undead one Drops",
-    npcs = npcs("npc.zqskeleton_armed", "npc.zqskeleton_armed2", "npc.zqskeleton_unarmed", "npc.zqskeleton_unarmed2", "npc.zqzombie_armed", "npc.zqzombie_armed2", "npc.zqzombie_armed3", "npc.zqzombie_unarmed", "npc.zqzombie_unarmed2", "npc.zqzombie_unarmed3"),
+    npcs = npcs("npc.zqzombie_armed", "npc.zqzombie_armed2", "npc.zqzombie_armed3", "npc.zqzombie_unarmed", "npc.zqzombie_unarmed2", "npc.zqzombie_unarmed3"),
     tertiaries = rsPlayerTertiaryTable {
-        1 outOf 5000 weight "obj.champions_challenge_skeleton" count 1 condition { player ->
-            // Drops Need Manual: Skeleton champion scrolls are only dropped by the skeletal variant.
-             true
-        }
-        1 outOf 5000 weight "obj.champions_challenge_zombie" count 1 condition { player ->
-            // Drops Need Manual: Zombie champion scrolls are only dropped by the zombie variant.
-             true
-        }
+        1 outOf 5000 weight "obj.champions_challenge_zombie" count 1
     },
 )

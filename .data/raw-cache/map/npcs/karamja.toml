@@ -1951,10 +1951,6 @@ npc = "npc.wgs_thaerisk_cemphier_multinpc1_instance"
 coords = "1_44_46_53_38"
 
 [[spawn]]
-npc = "npc.zadimus_ghost"
-coords = "0_43_48_44_17"
-
-[[spawn]]
 npc = "npc.zembo"
 coords = "0_45_49_47_9"
 

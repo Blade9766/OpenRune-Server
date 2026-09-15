@@ -8,6 +8,11 @@ import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest
+import org.rsmod.content.quest.area.karamja.shilovillage.Nazastarool
+import org.rsmod.content.quest.area.karamja.shilovillage.NazastaroolAttackHook
+import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
+import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageKillHook
+import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.lostcity.LostCityQuest
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
@@ -72,6 +77,9 @@ public class QuestModule : PluginModule() {
         bindInstance<NatureSpiritDrezel>()
         bindInstance<SpiritSpawns>()
         bindInstance<Ghasts>()
+        bindInstance<ShiloVillageQuest>()
+        bindInstance<ShiloUndead>()
+        bindInstance<Nazastarool>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
@@ -82,5 +90,7 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(PriestInPerilKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GhastAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(GhastKillHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(NazastaroolAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(ShiloVillageKillHook::class.java)
     }
 }

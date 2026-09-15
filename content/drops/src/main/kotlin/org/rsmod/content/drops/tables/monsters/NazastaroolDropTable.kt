@@ -17,9 +17,6 @@ import org.rsmod.game.entity.Player
 public val nazastaroolDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Nazastarool Drops",
     npcs = npcs("npc.zq_mainzombie1", "npc.zq_mainzombie2", "npc.zq_mainzombie3"),
-    guaranteed = rsPlayerGuaranteedTable {
-        "obj.zqcorpse" count 1
-    },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 4 weight "obj.rag_zombie_bone" count 1 condition {
             player -> player.isOnQuest("quest_ragandboneman2")
