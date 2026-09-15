@@ -26,7 +26,6 @@ import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Comp
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_ENTERED_SWAMP
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_PUZZLE_SOLVED
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_SHOWN_MIRROR
-import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_TRANSFORMED
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.USED_SPELL
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.WASHING_BOWL
 import org.rsmod.content.quest.area.mortmyre.naturespirit.npcs.Filliman

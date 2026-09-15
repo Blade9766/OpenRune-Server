@@ -110,7 +110,6 @@ constructor(private val waterfall: WaterfallQuest, private val objRepo: ObjRepos
         const val PAGE_LEFT = "component.book:page_left_button"
         const val PAGE_RIGHT = "component.book:page_right_button"
 
-
         val UNINTERESTING =
             listOf(
                 "Nothing here looks worth reading.",

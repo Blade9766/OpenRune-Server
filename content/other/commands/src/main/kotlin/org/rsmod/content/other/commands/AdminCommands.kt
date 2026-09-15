@@ -183,7 +183,7 @@ constructor(
         onCommand("god", "Toggle god mode (invincibility)", ::god)
         onCommand("componentdebug", "Toggle interface component click debug output", ::componentDebug)
         onCommand("maxhit", "Toggle always max hit", ::maxhit)
-        onCommand("openbank", "Open the bank", ::bank)
+        onCommand("openbank", "Open the bank from anywhere", ::bank, aliases = listOf("bank"))
         onCommand("transmog", "Transmog player to NPC appearance (no args to reset)", ::transmog) {
             invalidArgs = "Use as ::transmog npcNameOrId (ex: goblin or 126) or ::transmog to reset"
         }
