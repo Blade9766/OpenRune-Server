@@ -84,7 +84,7 @@ constructor(
         soundSynth(GAS_SOUND)
         val damage = random.of(1, MAX_DECAY).coerceAtMost(player.hitpoints)
         if (damage > 0) {
-            queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+            queueHit(delay = 1, type = HitType.Typeless, damage = damage)
         }
         timer(DECAY_TIMER, DECAY_CYCLES)
     }

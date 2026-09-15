@@ -199,7 +199,7 @@ class EffectInterpreter(
         }
         for (t in targets) {
             val damage = evaluateDamage(aoe.damage, aoe.type, t)
-            t.finishNpcHit(npc, 0, aoe.type.toEngine(), damage, deps.playerHitModifier)
+            t.finishNpcHit(npc, 1, aoe.type.toEngine(), damage, deps.playerHitModifier)
         }
     }
 

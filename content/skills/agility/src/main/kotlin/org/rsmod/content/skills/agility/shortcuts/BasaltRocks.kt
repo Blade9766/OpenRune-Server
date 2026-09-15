@@ -75,7 +75,7 @@ class BasaltRocks : PluginScript() {
         resetAnim()
         statAdvance("stat.agility", FAIL_XP)
         val damage = random.of(1, MAX_FALL_DAMAGE).coerceAtMost(player.hitpoints)
-        queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+        queueHit(delay = 1, type = HitType.Typeless, damage = damage)
         mes("The current washes you up on the shore.")
     }
 

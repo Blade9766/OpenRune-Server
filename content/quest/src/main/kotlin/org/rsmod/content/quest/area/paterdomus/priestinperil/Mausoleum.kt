@@ -155,7 +155,7 @@ constructor(
         mes("You try to take the ${monument.item} from the monument but a holy power stops you!")
         val damage = HOLY_DAMAGE.coerceAtMost(player.hitpoints - 1)
         if (damage > 0) {
-            queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+            queueHit(delay = 1, type = HitType.Typeless, damage = damage)
         }
     }
 

@@ -234,7 +234,7 @@ public fun Npc.isStyleImmuneTo(type: HitType): Boolean =
 private fun Npc.modifyAndQueueHit(delay: Int, builder: HitBuilder, modifier: NpcHitModifier): Hit {
     modifier.modify(builder, this)
     val hit = builder.build()
-    queue("queue.hit", delay, hit)
+    queue("queue.hit", delay.coerceAtLeast(1), hit)
     return hit
 }
 

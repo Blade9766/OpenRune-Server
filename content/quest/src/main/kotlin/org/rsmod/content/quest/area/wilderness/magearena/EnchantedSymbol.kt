@@ -87,7 +87,7 @@ constructor(
     /** "The symbol will take a blood sacrifice every time it's used." */
     private fun ProtectedAccess.sacrifice() {
         val damage = random.of(1..SACRIFICE_MAX)
-        queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+        queueHit(delay = 1, type = HitType.Typeless, damage = damage)
     }
 
     private suspend fun ProtectedAccess.summonFollower(god: God, target: CoordGrid) {

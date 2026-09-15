@@ -98,7 +98,7 @@ class BrokenBridge @Inject constructor(private val horror: HorrorFromTheDeepQues
         }
         statAdvance("stat.agility", FAIL_XP)
         val damage = random.of(1, MAX_DAMAGE).coerceAtMost(player.hitpoints)
-        queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+        queueHit(delay = 1, type = HitType.Typeless, damage = damage)
         say("Ouch!")
         mes("You land awkwardly and hurt yourself.")
     }

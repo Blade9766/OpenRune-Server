@@ -96,7 +96,7 @@ constructor(
             mes("You nearly drown in the disgusting swamp.")
             val damage = random.of(1, MAX_FALL_DAMAGE).coerceAtMost(player.hitpoints - 1)
             if (damage > 0) {
-                queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+                queueHit(delay = 1, type = HitType.Typeless, damage = damage)
             }
             statAdvance(AGILITY, FAIL_XP)
         }

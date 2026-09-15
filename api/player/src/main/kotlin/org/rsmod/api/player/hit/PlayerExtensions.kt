@@ -206,7 +206,7 @@ private fun Player.modifyAndStrongQueueHit(
 ): Hit {
     modifier.modify(builder, this)
     val hit = builder.build()
-    strongQueue("queue.hit", delay, hit)
+    strongQueue("queue.hit", delay.coerceAtLeast(1), hit)
     return hit
 }
 
@@ -217,7 +217,7 @@ private fun Player.modifyAndQueueHit(
 ): Hit {
     modifier.modify(builder, this)
     val hit = builder.build()
-    queue("queue.hit", delay, hit)
+    queue("queue.hit", delay.coerceAtLeast(1), hit)
     return hit
 }
 

@@ -58,7 +58,7 @@ internal suspend fun ProtectedAccess.washDownstream(bruised: Boolean) {
     if (bruised) {
         val damage = FALL_DAMAGE.coerceAtMost(player.hitpoints - 1)
         if (damage > 0) {
-            queueHit(delay = 0, type = HitType.Typeless, damage = damage)
+            queueHit(delay = 1, type = HitType.Typeless, damage = damage)
         }
         say("Ouch!")
     }
