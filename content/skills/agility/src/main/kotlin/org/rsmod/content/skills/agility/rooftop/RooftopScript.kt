@@ -9,10 +9,10 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.balanceAlong
 import org.rsmod.content.skills.agility.climbTo
+import org.rsmod.content.skills.agility.dropTo
 import org.rsmod.content.skills.agility.fallTo
 import org.rsmod.content.skills.agility.leapTo
 import org.rsmod.content.skills.agility.seqGlideTicks
-import org.rsmod.content.skills.agility.seqTicks
 import org.rsmod.content.skills.agility.stepOnto
 import org.rsmod.content.skills.agility.successChance
 import org.rsmod.content.skills.agility.zipTo
@@ -93,8 +93,15 @@ class RooftopScript @Inject constructor(private val marks: MarksOfGrace) : Plugi
     private suspend fun ProtectedAccess.perform(move: ObstacleMove, failure: ObstacleFailure?): Boolean {
         when (move) {
             is ObstacleMove.Climb -> {
-                val ticks = move.ticks ?: seqTicks(move.seq, fallback = 2)
+                val ticks = move.ticks ?: seqGlideTicks(move.seq, fallback = 2)
                 climbTo(move.dest, move.seq, ticks)
+            }
+            is ObstacleMove.Drop -> {
+                if (failure != null) {
+                    fallTo(failure.landing, AgilityAnims.JUMP_DOWN, failure.minDamage, failure.maxDamage)
+                    return false
+                }
+                dropTo(move.dest, move.ticks, glideLevel = move.glideLevel ?: coords.level)
             }
             is ObstacleMove.Leap -> {
                 if (failure != null) {

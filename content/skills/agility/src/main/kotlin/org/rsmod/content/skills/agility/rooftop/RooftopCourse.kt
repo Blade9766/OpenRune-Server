@@ -30,12 +30,12 @@ sealed class ObstacleMove {
     abstract val destination: CoordGrid
 
     /**
-     * Play [seq] for [ticks] cycles, then appear on [dest]. Used for walls, trees and crates. When
-     * [ticks] is null the move waits for the whole animation.
+     * Play [seq] for [ticks] cycles, then appear on [dest]. Used for walls, trees and baskets. When
+     * [ticks] is null the move lasts as long as the animation, rounded down to whole ticks.
      */
     data class Climb(
         val dest: CoordGrid,
-        val seq: String = AgilityAnims.WALL_CLIMB,
+        val seq: String = AgilityAnims.CLIMB_LADDER,
         val ticks: Int? = null,
     ) : ObstacleMove() {
         override val destination: CoordGrid get() = dest
@@ -56,6 +56,15 @@ sealed class ObstacleMove {
         val ticks: Int? = null,
         val glideLevel: Int? = null,
     ) : ObstacleMove() {
+        override val destination: CoordGrid get() = dest
+    }
+
+    /**
+     * Jump down, or across a short gap, to [dest] over [ticks] cycles: take off, hold the mid-air
+     * pose and land. [glideLevel] works as for [Leap].
+     */
+    data class Drop(val dest: CoordGrid, val ticks: Int = 1, val glideLevel: Int? = null) :
+        ObstacleMove() {
         override val destination: CoordGrid get() = dest
     }
 

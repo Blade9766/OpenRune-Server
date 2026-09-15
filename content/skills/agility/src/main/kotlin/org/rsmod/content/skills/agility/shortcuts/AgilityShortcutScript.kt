@@ -3,11 +3,14 @@ package org.rsmod.content.skills.agility.shortcuts
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
+import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.BalanceStyle
+import org.rsmod.content.skills.agility.CLIENT_CYCLES_PER_TICK
 import org.rsmod.content.skills.agility.balanceAlong
 import org.rsmod.content.skills.agility.climbTo
+import org.rsmod.content.skills.agility.emFaceTowards
 import org.rsmod.content.skills.agility.leapTo
 import org.rsmod.content.skills.agility.line
 import org.rsmod.content.skills.agility.seqGlideTicks
@@ -28,6 +31,14 @@ class AgilityShortcutScript : PluginScript() {
         }
         for ((loc, shortcuts) in byLoc) {
             onOpLoc1(loc) { use(shortcuts) }
+            val apRange = shortcuts.maxOf { it.apRange }
+            if (apRange > 0) {
+                onApLoc1(loc) {
+                    if (isWithinApRange(it.loc, apRange)) {
+                        use(shortcuts)
+                    }
+                }
+            }
         }
     }
 
@@ -50,9 +61,20 @@ class AgilityShortcutScript : PluginScript() {
 
     private suspend fun ProtectedAccess.cross(move: ShortcutMove, dest: CoordGrid, fromA: Boolean) {
         when (move) {
-            is ShortcutMove.Climb -> {
-                val ticks = move.ticks ?: seqTicks(move.seq, fallback = 2)
-                climbTo(dest, move.seq, ticks)
+            is ShortcutMove.Climb -> climbTo(dest, move.seq, move.ticks)
+            is ShortcutMove.Scramble -> balanceAlong(line(coords, dest), BalanceStyle.Climbing)
+            is ShortcutMove.ClimbOver -> {
+                val start = coords
+                anim(move.seq, delay = CLIENT_CYCLES_PER_TICK)
+                exactMove(
+                    start = start,
+                    end = dest,
+                    delay1 = CLIENT_CYCLES_PER_TICK,
+                    delay2 = CLIMB_OVER_LANDING_CYCLE,
+                    dir = emFaceTowards(start, dest),
+                    teleportType = TeleportType.Exempt,
+                )
+                delay(CLIMB_OVER_TICKS)
             }
             is ShortcutMove.Jump -> {
                 val ticks = move.ticks ?: seqGlideTicks(move.seq, fallback = 2)
@@ -85,9 +107,56 @@ class AgilityShortcutScript : PluginScript() {
             is ShortcutMove.Hop -> {
                 val stones = (if (fromA) move.stones else move.stones.reversed()) + dest
                 for (stone in stones) {
-                    leapTo(stone, AgilityAnims.STEPPING_STONE, ticks = 1)
+                    hopTo(stone)
+                }
+            }
+            is ShortcutMove.Pipe -> {
+                for (exit in line(coords, dest).chunked(PIPE_STRETCH).map { it.last() }) {
+                    squeezeTo(exit)
                 }
             }
         }
+    }
+
+    private suspend fun ProtectedAccess.hopTo(stone: CoordGrid) {
+        val start = coords
+        anim(AgilityAnims.STEPPING_STONE, delay = HOP_ANIM_DELAY)
+        exactMove(
+            start = start,
+            end = stone,
+            delay1 = HOP_TAKEOFF_CYCLE,
+            delay2 = HOP_LANDING_CYCLE,
+            dir = emFaceTowards(start, stone),
+            teleportType = TeleportType.Exempt,
+        )
+        delay(HOP_TICKS)
+    }
+
+    private suspend fun ProtectedAccess.squeezeTo(exit: CoordGrid) {
+        val start = coords
+        anim(AgilityAnims.DOUBLE_PIPE_SQUEEZE, delay = CLIENT_CYCLES_PER_TICK)
+        exactMove(
+            start = start,
+            end = exit,
+            delay1 = CLIENT_CYCLES_PER_TICK,
+            delay2 = PIPE_EXIT_CYCLE,
+            dir = emFaceTowards(start, exit),
+            teleportType = TeleportType.Exempt,
+        )
+        delay(PIPE_TICKS)
+    }
+
+    private companion object {
+        const val CLIMB_OVER_LANDING_CYCLE = 100
+        const val CLIMB_OVER_TICKS = 3
+
+        const val HOP_ANIM_DELAY = 20
+        const val HOP_TAKEOFF_CYCLE = 48
+        const val HOP_LANDING_CYCLE = 60
+        const val HOP_TICKS = 3
+
+        const val PIPE_STRETCH = 3
+        const val PIPE_EXIT_CYCLE = 126
+        const val PIPE_TICKS = 5
     }
 }

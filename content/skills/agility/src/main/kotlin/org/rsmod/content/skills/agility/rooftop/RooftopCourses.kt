@@ -5,6 +5,7 @@ import org.rsmod.content.skills.agility.BalanceStyle
 import org.rsmod.content.skills.agility.line
 import org.rsmod.content.skills.agility.rooftop.ObstacleMove.Balance
 import org.rsmod.content.skills.agility.rooftop.ObstacleMove.Climb
+import org.rsmod.content.skills.agility.rooftop.ObstacleMove.Drop
 import org.rsmod.content.skills.agility.rooftop.ObstacleMove.Leap
 import org.rsmod.content.skills.agility.rooftop.ObstacleMove.Zipline
 import org.rsmod.map.CoordGrid
@@ -79,7 +80,8 @@ object RooftopCourses {
                         start = tile(3089, 3265, 3),
                         move =
                             Balance(
-                                line(tile(3089, 3265, 3), tile(3089, 3262, 3)) + tile(3088, 3261, 3)
+                                line(tile(3089, 3265, 3), tile(3089, 3262, 3)) + tile(3088, 3261, 3),
+                                style = BalanceStyle.Sidestep,
                             ),
                     ),
                     RooftopObstacle(
@@ -94,7 +96,7 @@ object RooftopCourses {
                         name = "Gap",
                         xp = 4.0,
                         start = tile(3094, 3255, 3),
-                        move = Leap(tile(3096, 3256, 3)),
+                        move = Drop(tile(3096, 3256, 3)),
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_draynor_crate"),
@@ -103,8 +105,7 @@ object RooftopCourses {
                         lapBonusXp = 75.0,
                         start = tile(3101, 3261, 3),
                         // Level 1 carries the height of the crate top, so the hop lands on it.
-                        move =
-                            Leap(tile(3103, 3261, 0), seq = AgilityAnims.JUMP_DOWN, glideLevel = 1),
+                        move = Drop(tile(3103, 3261, 0), glideLevel = 1),
                     ),
                 ),
             markTiles =
@@ -182,7 +183,7 @@ object RooftopCourses {
                         xp = 6.0,
                         lapBonusXp = 30.0,
                         start = tile(3300, 3192, 3),
-                        move = Leap(tile(3299, 3194, 0), seq = AgilityAnims.JUMP_DOWN),
+                        move = Drop(tile(3299, 3194, 0)),
                     ),
                 ),
             markTiles =
@@ -257,7 +258,7 @@ object RooftopCourses {
                         name = "Gap",
                         xp = 4.5,
                         start = tile(3232, 3402, 3),
-                        move = Leap(tile(3236, 3403, 3)),
+                        move = Drop(tile(3236, 3403, 3), ticks = 2),
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_varrock_stepuproof"),
@@ -272,7 +273,7 @@ object RooftopCourses {
                         xp = 7.0,
                         lapBonusXp = 136.7,
                         start = tile(3236, 3415, 3),
-                        move = Leap(tile(3236, 3417, 0), seq = AgilityAnims.JUMP_DOWN),
+                        move = Drop(tile(3236, 3417, 0)),
                     ),
                 ),
             markTiles =
@@ -297,7 +298,7 @@ object RooftopCourses {
                         name = "Tall tree",
                         xp = 10.0,
                         start = tile(3506, 3488, 0),
-                        move = Climb(tile(3506, 3492, 2), seq = AgilityAnims.CLIMB),
+                        move = Climb(tile(3506, 3492, 2)),
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_canifis_jump"),
@@ -348,7 +349,7 @@ object RooftopCourses {
                         xp = 10.0,
                         lapBonusXp = 165.0,
                         start = tile(3510, 3482, 2),
-                        move = Leap(tile(3510, 3485, 0), seq = AgilityAnims.JUMP_DOWN),
+                        move = Drop(tile(3510, 3485, 0)),
                     ),
                 ),
             markTiles =
@@ -454,6 +455,7 @@ object RooftopCourses {
                         xp = 13.0,
                         start = tile(3013, 3335, 3),
                         move = Leap(tile(3013, 3333, 3), ticks = 1),
+                        apRange = 1,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_falador_ledge_4"),
@@ -461,6 +463,7 @@ object RooftopCourses {
                         xp = 14.0,
                         start = tile(3017, 3332, 3),
                         move = Leap(tile(3021, 3332, 3)),
+                        apRange = 1,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_falador_edge"),
@@ -469,7 +472,7 @@ object RooftopCourses {
                         lapBonusXp = 230.0,
                         start = tile(3024, 3332, 3),
                         // The roof level ends a tile short of the landing; level 1 is flat there.
-                        move = Leap(tile(3029, 3332, 0), glideLevel = 1),
+                        move = Drop(tile(3029, 3332, 0), ticks = 2, glideLevel = 1),
                     ),
                 ),
             markTiles =
@@ -496,7 +499,7 @@ object RooftopCourses {
                         name = "Wall",
                         xp = 45.0,
                         start = tile(2729, 3489, 0),
-                        move = Climb(tile(2729, 3490, 3)),
+                        move = Climb(tile(2729, 3490, 3), seq = AgilityAnims.CLIMB, ticks = 2),
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_seers_jump"),
@@ -534,7 +537,7 @@ object RooftopCourses {
                         xp = 15.0,
                         lapBonusXp = 420.0,
                         start = tile(2702, 3464, 2),
-                        move = Leap(tile(2704, 3464, 0), seq = AgilityAnims.JUMP_DOWN),
+                        move = Drop(tile(2704, 3464, 0)),
                     ),
                 ),
             markTiles =
@@ -565,6 +568,7 @@ object RooftopCourses {
                         xp = 45.0,
                         start = tile(3349, 2968, 1),
                         move = Leap(tile(3352, 2973, 1), ticks = 3),
+                        apRange = 3,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_pollnivneach_hangingbanner"),
@@ -572,6 +576,7 @@ object RooftopCourses {
                         xp = 65.0,
                         start = tile(3356, 2976, 1),
                         move = Leap(tile(3360, 2978, 1), seq = AgilityAnims.ROPE_SWING),
+                        apRange = 2,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_pollnivneach_gap"),
@@ -579,6 +584,7 @@ object RooftopCourses {
                         xp = 35.0,
                         start = tile(3362, 2977, 1),
                         move = Leap(tile(3366, 2976, 1)),
+                        apRange = 1,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_pollnivneach_tree"),
@@ -586,6 +592,7 @@ object RooftopCourses {
                         xp = 75.0,
                         start = tile(3367, 2976, 1),
                         move = Leap(tile(3367, 2982, 1), ticks = 3),
+                        apRange = 1,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_pollnivneach_wallclimb"),
@@ -611,6 +618,7 @@ object RooftopCourses {
                         xp = 60.0,
                         start = tile(3359, 2995, 2),
                         move = Leap(tile(3359, 3000, 2), ticks = 3),
+                        apRange = 2,
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_pollnivneach_line"),
@@ -619,6 +627,7 @@ object RooftopCourses {
                         lapBonusXp = 520.0,
                         start = tile(3362, 3002, 2),
                         move = Leap(tile(3363, 2998, 0)),
+                        apRange = 1,
                     ),
                 ),
             markTiles =
@@ -697,8 +706,7 @@ object RooftopCourses {
                         lapBonusXp = 455.0,
                         start = tile(2655, 3676, 3),
                         // The ground slopes down over the fish pile; the roof level rises past it.
-                        move =
-                            Leap(tile(2652, 3676, 0), seq = AgilityAnims.JUMP_DOWN, glideLevel = 0),
+                        move = Drop(tile(2652, 3676, 0), glideLevel = 0),
                     ),
                 ),
             markTiles =
@@ -722,7 +730,7 @@ object RooftopCourses {
                         name = "Wooden beams",
                         xp = 43.0,
                         start = tile(2673, 3298, 0),
-                        move = Climb(tile(2671, 3299, 3)),
+                        move = Climb(tile(2671, 3299, 3), seq = AgilityAnims.CLIMB, ticks = 2),
                     ),
                     RooftopObstacle(
                         locs = listOf("loc.rooftops_ardy_jump"),
@@ -762,7 +770,8 @@ object RooftopCourses {
                         move =
                             Balance(
                                 listOf(tile(2654, 3300, 3)) +
-                                    line(tile(2654, 3300, 3), tile(2657, 3297, 3))
+                                    line(tile(2654, 3300, 3), tile(2657, 3297, 3)),
+                                style = BalanceStyle.Sidestep,
                             ),
                     ),
                     RooftopObstacle(

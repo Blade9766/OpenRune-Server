@@ -18,8 +18,9 @@ object AgilityShortcuts {
 
     private val crawl = Squeeze()
     private val tunnel = ShortcutMove.Tunnel()
-    private val pipe = ShortcutMove.PIPE
-    private val climbOver = Jump(AgilityAnims.WALL_CLIMB_OVER)
+    private val pipe = ShortcutMove.Pipe
+    private val climbOver = ShortcutMove.ClimbOver()
+    private val scramble = ShortcutMove.Scramble
 
     val all: List<AgilityShortcut> =
         listOf(
@@ -64,8 +65,8 @@ object AgilityShortcuts {
                 level = 18,
                 xp = 3.0,
                 locs = listOf("loc.slayertower_window_shortcut_through"),
-                sideA = tile(3444, 3533),
-                sideB = tile(3442, 3531),
+                sideA = tile(3443, 3533),
+                sideB = tile(3443, 3531),
                 move = climbOver,
             ),
             AgilityShortcut(
@@ -102,7 +103,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.mount_karuulm_shortcut_rocks_low"),
                 sideA = tile(1324, 3777),
                 sideB = tile(1324, 3785),
-                move = Climb(),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Stepping stones",
@@ -121,6 +122,7 @@ object AgilityShortcuts {
                 sideA = tile(3149, 3363),
                 sideB = tile(3154, 3363),
                 move = Hop(listOf(tile(3151, 3363))),
+                apRange = 3,
             ),
             AgilityShortcut(
                 name = "Log balance",
@@ -147,7 +149,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.gnome_stronghold_sc_rock_top", "loc.gnome_stronghold_sc_rock_bottom"),
                 sideA = tile(2486, 3515),
                 sideB = tile(2489, 3521),
-                move = Climb(),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Rocks",
@@ -156,7 +158,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.alkharid_mine_sc_top", "loc.alkharid_mine_sc_bottom"),
                 sideA = tile(3306, 3315),
                 sideB = tile(3302, 3315),
-                move = Climb(),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Narrow crevice",
@@ -223,7 +225,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.slayertower_sc_chainbottom", "loc.slayertower_sc_chaintop"),
                 sideA = tile(3421, 3550, 0),
                 sideB = tile(3421, 3550, 1),
-                move = Climb(AgilityAnims.CLIMB_LADDER),
+                move = Climb(),
             ),
             AgilityShortcut(
                 name = "Narrow crevice",
@@ -241,7 +243,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.mount_karuulm_shortcut_rocks"),
                 sideA = tile(1324, 3787),
                 sideB = tile(1324, 3795),
-                move = Climb(),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Loose railing",
@@ -250,7 +252,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.deepdungeonlooserailing"),
                 sideA = tile(2935, 9810),
                 sideB = tile(2936, 9810),
-                move = crawl,
+                move = Jump(AgilityAnims.RAILING_SQUEEZE),
             ),
             AgilityShortcut(
                 name = "Rocks",
@@ -259,7 +261,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.ice_mountain_shortcut_top", "loc.ice_mountain_shortcut_bottom"),
                 sideA = tile(2997, 3483),
                 sideB = tile(3002, 3483),
-                move = Climb(),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Obstacle pipe",
@@ -277,7 +279,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.slayertower_sc_chainbottom", "loc.slayertower_sc_chaintop"),
                 sideA = tile(3446, 3576, 1),
                 sideB = tile(3446, 3576, 2),
-                move = Climb(AgilityAnims.CLIMB_LADDER),
+                move = Climb(),
             ),
             AgilityShortcut(
                 name = "Tunnel",
@@ -385,7 +387,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.crandor_shortcut_top", "loc.crandor_shortcut_bottom"),
                 sideA = tile(2832, 3252),
                 sideB = tile(2832, 3247),
-                move = Climb(),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Rocks",
@@ -398,7 +400,8 @@ object AgilityShortcuts {
                     ),
                 sideA = tile(2547, 3749),
                 sideB = tile(2547, 3744),
-                move = Climb(),
+                move = scramble,
+                apRange = 1,
             ),
             AgilityShortcut(
                 name = "Mysterious pipe",
@@ -407,7 +410,7 @@ object AgilityShortcuts {
                 locs = listOf("loc.karuulm_dungeon_shortcut_pipe_active"),
                 sideA = tile(1316, 10213),
                 sideB = tile(1346, 10232),
-                move = pipe,
+                move = ShortcutMove.PIPE,
             ),
             AgilityShortcut(
                 name = "Crevice",

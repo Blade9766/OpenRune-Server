@@ -14,20 +14,28 @@ import org.rsmod.map.CoordGrid
 
 /** Sequence gamevals shared by the rooftop courses and the agility shortcuts. */
 object AgilityAnims {
-    /** Climbing loop used for trees and rock faces. */
+    /** Climbing loop for tall walls, and the walk of a rock-face scramble. */
     const val CLIMB = "seq.human_climbing"
+    const val CLIMB_READY = "seq.human_climbing_ready"
 
-    /** Climb up a building wall; used for the rooftop course rough walls and beams. */
-    const val WALL_CLIMB = "seq.human_climbing"
+    /** Reach up and pull over; Jagex's climb for nets, tree branches and rough walls. */
     const val CLIMB_LADDER = "seq.human_reachforladder"
     const val JUMP_UP = "seq.agility_shortcut_wall_jump2"
 
-    /** Forward leap across a gap between roofs. */
+    /** Forward leap across a wide gap between roofs. */
     const val JUMP = "seq.human_longjump"
 
-    /** Drop down from a roof to the ground. */
-    const val JUMP_DOWN = "seq.agility_shortcut_wall_jumpdown2"
-    const val WALL_CLIMB_OVER = "seq.human_walk_style"
+    /** Take-off, mid-air hold and landing of a jump down or across a short gap. */
+    const val JUMP_DOWN = "seq.agility_shortcut_wall_jumpdown"
+    const val JUMP_DOWN_HOLD = "seq.agility_shortcut_wall_jumpdown_static"
+    const val JUMP_DOWN_LAND = "seq.agility_shortcut_wall_jumpdown2"
+    const val CRUMBLED_WALL = "seq.human_walk_crumbledwall"
+    const val SIDESTEP_ON = "seq.human_into_sidestepl"
+    const val SIDESTEP_READY = "seq.human_ready_sidestepl"
+    const val SIDESTEP_WALK = "seq.human_walk_sidestepl"
+    const val SIDESTEP_OFF = "seq.human_outof_sidestepl"
+    const val DOUBLE_PIPE_SQUEEZE = "seq.human_doublepipesqueeze"
+    const val RAILING_SQUEEZE = "seq.railing_squeeze"
     const val ROPE_SWING = "seq.human_ropeswing_long"
     const val ZIPLINE_GRAB = "seq.zipline_bite"
     const val ZIPLINE_SLIDE = "seq.zipline_slide"
@@ -71,6 +79,13 @@ enum class BalanceStyle(
         AgilityAnims.MONKEYBARS_OFF,
     ),
     Handholds(AgilityAnims.HANDHOLDS, AgilityAnims.HANDHOLDS),
+    Sidestep(
+        AgilityAnims.SIDESTEP_READY,
+        AgilityAnims.SIDESTEP_WALK,
+        AgilityAnims.SIDESTEP_ON,
+        AgilityAnims.SIDESTEP_OFF,
+    ),
+    Climbing(AgilityAnims.CLIMB_READY, AgilityAnims.CLIMB),
 }
 
 /** Client cycles (20ms) in one server tick; `exactmove` delays are expressed in client cycles. */
@@ -177,12 +192,17 @@ internal suspend fun ProtectedAccess.climbTo(dest: CoordGrid, seq: String, ticks
  * [glideLevel], which defaults to the starting level; the level change is then applied on landing.
  * Obstacles whose flight path was authored into the destination level's tile heights pass
  * `glideLevel = dest.level` so the player is moved there first and the glide follows that terrain.
+ *
+ * When [hold] is given it replaces [seq] after the first tick of a longer glide, and [land] is
+ * played once the player touches down.
  */
 internal suspend fun ProtectedAccess.leapTo(
     dest: CoordGrid,
     seq: String,
     ticks: Int,
     glideLevel: Int = coords.level,
+    hold: String? = null,
+    land: String? = null,
 ) {
     val start = coords
     val glideStart = CoordGrid(start.x, start.z, glideLevel)
@@ -197,7 +217,13 @@ internal suspend fun ProtectedAccess.leapTo(
         teleportType = TeleportType.Exempt,
     )
     try {
-        delay(ticks)
+        if (hold != null && ticks > 1) {
+            delay(1)
+            anim(hold)
+            delay(ticks - 1)
+        } else {
+            delay(ticks)
+        }
     } finally {
         // A glide on another level than the destination parks the player on a tile of that level
         // until it lands; if the script is torn down mid-flight (logout, interruption) they must
@@ -206,6 +232,19 @@ internal suspend fun ProtectedAccess.leapTo(
             telejump(dest, TeleportType.Exempt)
         }
     }
+    land?.let { anim(it) }
+}
+
+/** Jumps down (or across a short gap) to [dest] with the take-off, mid-air and landing sequences. */
+internal suspend fun ProtectedAccess.dropTo(dest: CoordGrid, ticks: Int, glideLevel: Int = coords.level) {
+    leapTo(
+        dest = dest,
+        seq = AgilityAnims.JUMP_DOWN,
+        ticks = ticks,
+        glideLevel = glideLevel,
+        hold = AgilityAnims.JUMP_DOWN_HOLD,
+        land = AgilityAnims.JUMP_DOWN_LAND,
+    )
 }
 
 /**

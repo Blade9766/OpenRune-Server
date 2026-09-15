@@ -5,11 +5,17 @@ import org.rsmod.map.CoordGrid
 
 /** How a player crosses a shortcut. Paths are given from side A to side B and reversed as needed. */
 sealed class ShortcutMove {
+    /** Play [seq] for [ticks] cycles and appear on the far side. Chains between levels. */
+    data class Climb(val seq: String = AgilityAnims.CLIMB_LADDER, val ticks: Int = 2) : ShortcutMove()
+
+    /** Climb across a rock face one tile per tick with the climbing walk. Rocks. */
+    data object Scramble : ShortcutMove()
+
     /**
-     * Play [seq] for [ticks] cycles (the whole animation when null) and appear on the far side.
-     * Rocks, chains, ladders.
+     * Climb over a low obstacle with a glide that starts once [seq] has lifted the player off the
+     * ground. Crumbling walls, broken windows.
      */
-    data class Climb(val seq: String = AgilityAnims.CLIMB, val ticks: Int? = null) : ShortcutMove()
+    data class ClimbOver(val seq: String = AgilityAnims.CRUMBLED_WALL) : ShortcutMove()
 
     /**
      * Glide to the far side over [ticks] cycles (the length of the animation when null) while
@@ -17,7 +23,7 @@ sealed class ShortcutMove {
      */
     data class Jump(val seq: String = AgilityAnims.JUMP_UP, val ticks: Int? = null) : ShortcutMove()
 
-    /** Play [enter], pass through after [ticks] cycles and play [leave]. Tunnels, pipes, cracks. */
+    /** Play [enter], pass through after [ticks] cycles and play [leave]. Cracks and long pipes. */
     data class Squeeze(
         val enter: String = AgilityAnims.CRACK_ENTER,
         val leave: String = AgilityAnims.CRACK_LEAVE,
@@ -40,6 +46,9 @@ sealed class ShortcutMove {
     /** Hop from stone to stone across [stones] (the tiles between the two sides). */
     data class Hop(val stones: List<CoordGrid>) : ShortcutMove()
 
+    /** Squeeze through an obstacle pipe three tiles at a time. */
+    data object Pipe : ShortcutMove()
+
     companion object {
         val PIPE: Squeeze = Squeeze(AgilityAnims.PIPE_SQUEEZE, AgilityAnims.PIPE_UNSQUEEZE, ticks = 3)
     }
@@ -49,6 +58,10 @@ sealed class ShortcutMove {
  * A two-way agility shortcut between [sideA] and [sideB]. The player is taken to whichever side is
  * further from them. A loc may be shared by several shortcuts (the same crack model is reused
  * around the world), in which case the shortcut nearest the player is used.
+ *
+ * When [apRange] is greater than zero the shortcut also starts from up to that many tiles away with
+ * a line of sight to the loc, for locs the route finder can never reach (a stepping stone in a
+ * river, a rock face behind blocked scree).
  */
 data class AgilityShortcut(
     val name: String,
@@ -58,6 +71,7 @@ data class AgilityShortcut(
     val sideA: CoordGrid,
     val sideB: CoordGrid,
     val move: ShortcutMove,
+    val apRange: Int = 0,
 ) {
     init {
         require(sideA != sideB) { "Shortcut '$name' needs two distinct sides." }
