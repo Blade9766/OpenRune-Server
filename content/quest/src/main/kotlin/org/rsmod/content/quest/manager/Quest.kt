@@ -257,7 +257,8 @@ data class Quest(
 
         access.ifOpenMain("interface.questscroll")
         access.ifSetText("component.questscroll:quest_title", "You have completed ${displayName}!")
-        access.ifSetText("component.questscroll:quest_reward1", "$questPoints Quest Point")
+        val pointsLabel = if (questPoints == 1) "Quest Point" else "Quest Points"
+        access.ifSetText("component.questscroll:quest_reward1", "$questPoints $pointsLabel")
 
         access.ifSetObj("component.questscroll:quest_model", obj = itemDisplay.item, zoom = itemDisplay.zoom)
 
@@ -268,7 +269,8 @@ data class Quest(
                 ?: error("No stat found for $skill")
 
             access.statAdvance(skill, amount)
-            rewardLines.add("${amount.toInt()} ${stat.displayName} XP")
+            val statName = stat.displayName.replaceFirstChar { it.uppercase() }
+            rewardLines.add("${"%,d".format(amount.toInt())} $statName XP")
         }
 
         rewards.items.forEach { (item, amount) ->
