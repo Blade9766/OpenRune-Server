@@ -84,6 +84,9 @@ zombiemonkey_into_human = 1690
 monkey_caught = 631
 monkey_escape = 633
 
+# Vampyre Slayer (dbrow.synth_vampire)
+vampire_arrives = 2991
+
 # Waterfall Quest
 splash_and_river = 1308
 cf_swim = 1436

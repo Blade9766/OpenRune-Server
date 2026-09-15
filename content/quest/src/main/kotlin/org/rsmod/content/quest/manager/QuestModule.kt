@@ -7,6 +7,9 @@ import org.rsmod.api.player.hook.PlayerTeleportValidateHook
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.draynor.vampyreslayer.CountDraynor
+import org.rsmod.content.quest.area.draynor.vampyreslayer.GarlicAttackHook
+import org.rsmod.content.quest.area.draynor.vampyreslayer.VampyreSlayerQuest
 import org.rsmod.content.quest.area.gnomestronghold.gliders.GnomeGliders
 import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.ApeAtollAggression
 import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.ChapterCards
@@ -92,6 +95,8 @@ public class QuestModule : PluginModule() {
         bindInstance<JungleDemonFight>()
         bindInstance<ApeAtollAggression>()
         bindInstance<GnomeGliders>()
+        bindInstance<VampyreSlayerQuest>()
+        bindInstance<CountDraynor>()
         bindInstance<PriestInPerilQuest>()
         bindInstance<PaterdomusDoors>()
         bindInstance<NatureSpiritQuest>()
@@ -110,6 +115,7 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(GreegreeAttackHook::class.java)
         addSetBinding<PlayerRestrictionHook>(GreegreeWearHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MonkeyBackpackTeleportHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(GarlicAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(TempleGuardianAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(PriestInPerilKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GhastAttackHook::class.java)
