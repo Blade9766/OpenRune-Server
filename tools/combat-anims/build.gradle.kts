@@ -6,6 +6,7 @@ dependencies {
     implementation(projects.orCache)
     implementation(projects.api.config)
     implementation(libs.or2.all.cache)
+    implementation(libs.fastutil)
     implementation("com.michael-bull.kotlin-inline-logger:kotlin-inline-logger:1.0.6")
 }
 

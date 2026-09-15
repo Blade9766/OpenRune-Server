@@ -1335,7 +1335,7 @@ npc = "npc.grandtree_anita"
 coords = "1_37_54_22_58"
 
 [[spawn]]
-npc = "npc.grandtree_charlie"
+npc = "npc.grandtree_charlie_multi"
 coords = "3_38_54_32_39"
 
 [[spawn]]

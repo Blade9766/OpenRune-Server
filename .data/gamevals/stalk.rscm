@@ -21,3 +21,5 @@ queue11_trigger=19
 bigmonster_melee=20
 bigmonster_ranged=21
 duck_hunt=22
+mm_monkey_melee=23
+mm_monkey_ranged=24

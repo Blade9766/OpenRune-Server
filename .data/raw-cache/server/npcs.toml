@@ -4905,3 +4905,65 @@ id = "npc.kinglathas"
 inherit = "npc.kinglathas"
 moveRestrict = "NoMove"
 wanderRange = 0
+
+# Monkey Madness I: the Marim jail guards pace the guard room north of the cells, and the
+# Monkey's Aunt circles the banana plantation.
+[[npc]]
+id = "npc.mm_trefaji"
+inherit = "npc.mm_trefaji"
+defaultMode = "Patrol"
+maxRange = 20
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2796, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2796, level = 0 }
+pause_delay = 4
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2802, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2802, level = 0 }
+pause_delay = 4
+
+[[npc]]
+id = "npc.mm_aberab"
+inherit = "npc.mm_aberab"
+defaultMode = "Patrol"
+maxRange = 20
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2802, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2796, level = 0 }
+pause_delay = 6
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2796, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2802, level = 0 }
+pause_delay = 6
+
+[[npc]]
+id = "npc.mm_monkeys_aunt"
+inherit = "npc.mm_monkeys_aunt"
+defaultMode = "Patrol"
+maxRange = 20
+
+[[npc.waypoints]]
+destination = { x = 2745, z = 2790, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2739, z = 2790, level = 0 }
+pause_delay = 3
+
+[[npc.waypoints]]
+destination = { x = 2739, z = 2798, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2747, z = 2798, level = 0 }
+pause_delay = 3

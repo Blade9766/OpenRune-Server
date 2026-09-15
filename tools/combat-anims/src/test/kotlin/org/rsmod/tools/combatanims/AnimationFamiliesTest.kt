@@ -128,6 +128,17 @@ class AnimationFamiliesTest {
     }
 
     @Test
+    fun `ape atoll monkeys take the monkey voice rather than a shorter prefix`() {
+        val monkeys = sequences + setOf("m_monkey_ready", "m_monkey_death", "monkey_ready")
+        val large = AnimationFamilies.resolve("m_monkey_ready", monkeys)
+        assertEquals("m_monkey_death", large.death)
+        assertEquals(630, large.attackSound)
+        assertEquals(634, large.defendSound)
+        assertEquals(632, large.deathSound)
+        assertEquals(630, AnimationFamilies.resolve("monkey_ready", monkeys).attackSound)
+    }
+
+    @Test
     fun `long ready markers are stripped whole`() {
         val family = AnimationFamilies.resolve("cow_just_ready_update", sequences)
         assertEquals("cow_attack", family.attack)

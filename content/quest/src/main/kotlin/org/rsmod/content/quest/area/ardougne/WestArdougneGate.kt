@@ -101,6 +101,7 @@ constructor(
         const val GATE_MAX_Z = 3300
 
         const val OPEN_SOUND = "synth.big_wooden_door_open"
+
         /** Long enough to stroll through; the doors come back on their own afterwards. */
         const val OPEN_TICKS = 15
     }

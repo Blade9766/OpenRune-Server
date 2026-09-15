@@ -54,7 +54,35 @@ hammer_and_build = 1767
 # Tree Gnome Village
 chest_close = 51
 chest_open = 52
+scream = 661
+treevillage_catabow_hit = 3487
+treevillage_catabow_launch = 3488
+# The Grand Tree
+trapdoor_open = 91
+trapdoor_close = 90
+twigs_snapping = 3916
+demon_approach = 1584
 grandtree_machinery = 1586
+
+# Monkey Madness I (dbrow.synth_monkeymadness / synth_monkey / synth_agility)
+fire_loop = 1669
+gorilla_bigpunch = 1673
+gorilla_into_human = 1674
+heromonkey = 1675
+human_into_gorilla = 1676
+human_into_monkey = 1677
+human_into_smallmonkey = 1671
+human_into_zombiemonkey = 1680
+monkeycalls = 1682
+monkey_into_human = 1681
+ooks = 1679
+rumbling = 1678
+rumbling_fade = 1685
+smallmonkey_into_human = 1683
+snore = 1688
+zombiemonkey_into_human = 1690
+monkey_caught = 631
+monkey_escape = 633
 
 # Waterfall Quest
 splash_and_river = 1308
@@ -107,8 +135,15 @@ ghost_attack = 436
 [gamevals.clientscript]
 quest_available_set = 45550
 
+[gamevals.varp]
+# Server-only: 1 while a greegree has the player in monkey form, read by the Ape Atoll hunt modes.
+mm_greegree_form = 65400
+
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
 mortmyre_swamp_decay = 124
 # Shilo Village: balance checks while crossing the bridge to Cairn Isle.
 shilo_cairn_bridge = 125
+# Soft timers: the Marim jail guards watching the player, and the Ape Atoll tunnel's falling rocks.
+mm_jail = 122
+mm_rockfall = 123

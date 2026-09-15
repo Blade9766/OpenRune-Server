@@ -1,7 +1,6 @@
 package dev.openrune.types
 
 import dev.openrune.ParamMap
-import dev.openrune.ServerCacheManager
 import dev.openrune.TypedParamType
 import dev.openrune.definition.Definition
 import dev.openrune.definition.EntityOpsDefinition
@@ -39,7 +38,7 @@ data class ItemServerType(
     var wearpos2: Int = -1,
     var wearpos3: Int = -1,
     var examine: String = "",
-    @param:TomlField(["params"],serializer = ParamSerializer::class)
+    @param:TomlField(["params"], serializer = ParamSerializer::class)
     var paramsRaw: MutableMap<Int, Any>? = null,
     var objvar: List<Int> = emptyList(),
     var playerCost: Int = 0,
@@ -111,8 +110,9 @@ data class ItemServerType(
         get() = cost * 40 / 100
 
     /**
-     * Whether the second inventory op equips this obj. The cache labels it `Wield`, `Wear` or, for
-     * ammo-slot items such as Rada's blessings and the god blessings, `Equip`.
+     * Whether the second inventory op equips this obj. The cache labels it `Wield`, `Wear`, `Equip`
+     * for ammo-slot items such as Rada's blessings and the god blessings, or `Hold` for talismans
+     * such as the greegrees and the gnomeball.
      */
     public val isEquipable: Boolean
         get() = wearpos1 != -1 && interfaceOptions[1] in EQUIP_OPS
@@ -179,6 +179,6 @@ data class ItemServerType(
 
     public companion object {
         /** Inventory op labels the cache uses for the equip op (op 2). */
-        public val EQUIP_OPS: Set<String> = setOf("Wield", "Wear", "Equip")
+        public val EQUIP_OPS: Set<String> = setOf("Wield", "Wear", "Equip", "Hold")
     }
 }

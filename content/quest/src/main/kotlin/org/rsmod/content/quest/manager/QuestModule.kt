@@ -7,6 +7,18 @@ import org.rsmod.api.player.hook.PlayerTeleportValidateHook
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.gnomestronghold.gliders.GnomeGliders
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.ApeAtollAggression
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.ChapterCards
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.Greegree
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.GreegreeAttackHook
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.GreegreeWearHook
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.Hangar
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.JungleDemonFight
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.Marim
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.MonkeyBackpackTeleportHook
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.MonkeyMadnessQuest
+import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.npcs.NarnodeMonkeyMadness
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest
 import org.rsmod.content.quest.area.karamja.shilovillage.Nazastarool
 import org.rsmod.content.quest.area.karamja.shilovillage.NazastaroolAttackHook
@@ -71,6 +83,15 @@ public class QuestModule : PluginModule() {
         bindInstance<QuestInstances>()
         bindInstance<DoorPassage>()
         bindInstance<Voyage>()
+        bindInstance<MonkeyMadnessQuest>()
+        bindInstance<NarnodeMonkeyMadness>()
+        bindInstance<ChapterCards>()
+        bindInstance<Greegree>()
+        bindInstance<Hangar>()
+        bindInstance<Marim>()
+        bindInstance<JungleDemonFight>()
+        bindInstance<ApeAtollAggression>()
+        bindInstance<GnomeGliders>()
         bindInstance<PriestInPerilQuest>()
         bindInstance<PaterdomusDoors>()
         bindInstance<NatureSpiritQuest>()
@@ -86,6 +107,9 @@ public class QuestModule : PluginModule() {
         addSetBinding<PlayerRestrictionHook>(DragonSlayerWearHook::class.java)
         addSetBinding<NpcDeathKillHook>(GodFollowerKillHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MageArenaTeleBlockHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(GreegreeAttackHook::class.java)
+        addSetBinding<PlayerRestrictionHook>(GreegreeWearHook::class.java)
+        addSetBinding<PlayerTeleportValidateHook>(MonkeyBackpackTeleportHook::class.java)
         addSetBinding<NpcAttackValidateHook>(TempleGuardianAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(PriestInPerilKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GhastAttackHook::class.java)

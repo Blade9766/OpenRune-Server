@@ -41,6 +41,10 @@ object AnimationFamilies {
             "ghost_update_normal" to Sounds(attack = 436, defend = 439, death = 438),
             "spider_update" to Sounds(attack = 537, defend = 539, death = 538),
             "small_spider_update" to Sounds(attack = 3604, defend = 3609, death = 3608),
+            "monkey" to Sounds(attack = 630, defend = 634, death = 632),
+            "m_monkey" to Sounds(attack = 630, defend = 634, death = 632),
+            "m_gorilla" to Sounds(attack = 478, defend = 481, death = 480),
+            "skeleton_update_gorilla" to Sounds(attack = 3350, defend = 3352, death = 3351),
         )
 
     /**

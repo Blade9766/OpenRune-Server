@@ -35,6 +35,29 @@ npc = [
     { id = "npc.dragonslayer_ghost_3", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
     { id = "npc.dragonslayer_ghost_4", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
     { id = "npc.dragonslayer_ghost_5", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
+    # The Khazard warlord the map spawns is the varbit-multi base type; the generator only voiced
+    # the Attack form it transforms into.
+    { id = "npc.khazard_warlord", attack_anim = "seq.human_blunt_pound", attack_type = "category.attacktype_crush", attack_sound = 2567, defend_anim = "seq.human_blunt_block" },
+    # Ape Atoll's large monkeys share one ready animation, so the generator cannot tell their
+    # weapons apart; the held model does (4833 scimitar, 4832 two scimitars, 4831 bow).
+    { id = "npc.mm_monkey_guard", attack_anim = "seq.m_monkey_attack_scimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_scimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_padulah", attack_anim = "seq.m_monkey_attack_scimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_scimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_duke", attack_anim = "seq.m_monkey_attack_doublescimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_doublescimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_oipuis", attack_anim = "seq.m_monkey_attack_doublescimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_doublescimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_ouhai", attack_anim = "seq.m_monkey_attack_doublescimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_doublescimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_uodai", attack_anim = "seq.m_monkey_attack_doublescimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_doublescimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_uyoro", attack_anim = "seq.m_monkey_attack_doublescimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_doublescimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm2_kruk_combat", attack_anim = "seq.m_monkey_attack_doublescimitar", attack_type = "category.attacktype_slash", defend_anim = "seq.m_monkey_block_doublescimitar", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632 },
+    { id = "npc.mm_monkey_archer", attack_anim = "seq.m_monkey_attack_bow", attack_type = "category.attacktype_standard", defend_anim = "seq.m_monkey_block_bow", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632, proj_travel = "spotanim.iron_arrow_travel", proj_type = "projanim.arrow", attack_range = 7 },
+    { id = "npc.mm_ravine_archer", attack_anim = "seq.m_monkey_attack_bow", attack_type = "category.attacktype_standard", defend_anim = "seq.m_monkey_block_bow", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632, proj_travel = "spotanim.iron_arrow_travel", proj_type = "projanim.arrow", attack_range = 7 },
+    { id = "npc.mm_posted_archer", attack_anim = "seq.m_monkey_attack_bow", attack_type = "category.attacktype_standard", defend_anim = "seq.m_monkey_block_bow", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632, proj_travel = "spotanim.iron_arrow_travel", proj_type = "projanim.arrow", attack_range = 7 },
+    { id = "npc.mm2_monkey_archer_maze", attack_anim = "seq.m_monkey_attack_bow", attack_type = "category.attacktype_standard", defend_anim = "seq.m_monkey_block_bow", attack_sound = 630, defend_sound = 634, death_anim = "seq.m_monkey_death", death_sound = 632, proj_travel = "spotanim.iron_arrow_travel", proj_type = "projanim.arrow", attack_range = 7 },
+    { id = "npc.mm_zombie_monkey_large", attack_anim = "seq.m_zombie_attack", attack_type = "category.attacktype_crush", attack_sound = 629, defend_sound = 636, death_anim = "seq.m_monkey_death", death_sound = 635 },
+    { id = "npc.mm_zombie_monkey_large_guard", attack_anim = "seq.m_zombie_attack", attack_type = "category.attacktype_crush", attack_sound = 629, defend_sound = 636, death_anim = "seq.m_monkey_death", death_sound = 635 },
+    { id = "npc.mm_zombie_monkey_small", attack_anim = "seq.m_zombie_attack", attack_type = "category.attacktype_crush", attack_sound = 629, defend_sound = 636, death_anim = "seq.m_monkey_death", death_sound = 635 },
+    # Count Draynor punches (crush) with the plain human set; his voice is the vampire synth row
+    # (vampire_attack/hit/death on the OSRS wiki sound id list).
+    { id = "npc.count_draynor", attack_anim = "seq.human_unarmedpunch", attack_type = "category.attacktype_crush", attack_sound = 879, defend_anim = "seq.human_unarmedblock", defend_sound = 884, death_anim = "seq.human_death", death_sound = 882 },
     # Horror from the Deep's dagannoth and the mother's six colours: the generator gave them the
     # dagannoth animations but no voice (dbrow.synth_horrorfromthedeep).
     { id = "npc.horror_dagannoth_jr4", attack_anim = "seq.horror_dagannoth_attack", attack_type = "category.attacktype_stab", attack_sound = 1615, defend_anim = "seq.horror_dagannoth_defend", defend_sound = 1622, death_anim = "seq.horror_dagannoth_death", death_sound = 1621 },

@@ -5,8 +5,8 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.interact.HeldUInteractions
 import org.rsmod.api.player.output.UpdateInventory.resendSlot
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.player.ui.IfOverlayButtonT
+import org.rsmod.api.player.ui.ifClose
 import org.rsmod.api.script.onIfOverlayButtonT
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
@@ -36,13 +36,14 @@ constructor(
         targetObj: ItemServerType,
         targetSlot: Int,
     ) {
-        clearPendingAction(eventBus)
-        resetFaceEntity()
+        ifClose(eventBus)
         if (isAccessProtected) {
             resendSlot(inv, 0)
             return
         }
         protectedAccess.launch(this) {
+            clearPendingAction()
+            player.resetFaceEntity()
             interactions.interact(
                 access = this,
                 inventory = inv,

@@ -1,6 +1,8 @@
 package org.rsmod.api.game.process.player
 
 import jakarta.inject.Inject
+import kotlin.math.abs
+import kotlin.math.sign
 import org.rsmod.api.config.Constants
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.clearInteractionRoute
@@ -23,6 +25,7 @@ import org.rsmod.api.registry.obj.ObjRegistry
 import org.rsmod.api.route.BoundValidator
 import org.rsmod.api.route.RayCastValidator
 import org.rsmod.events.EventBus
+import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.Interaction
 import org.rsmod.game.interact.InteractionLoc
@@ -42,6 +45,7 @@ import org.rsmod.interact.InteractionStep
 import org.rsmod.interact.InteractionTarget
 import org.rsmod.interact.Interactions
 import org.rsmod.map.CoordGrid
+import org.rsmod.routefinder.collision.CollisionFlagMap
 import org.rsmod.routefinder.flag.CollisionFlag
 
 public class PlayerInteractionProcessor
@@ -62,6 +66,7 @@ constructor(
     private val playerTInteractions: PlayerTInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
     private val movement: PlayerMovementProcessor,
+    private val collision: CollisionFlagMap,
 ) {
     public fun process(player: Player) {
         // Store the current interaction at this stage to ensure that if an interaction triggers a
@@ -143,8 +148,12 @@ constructor(
             processInteractionStep(this, step)
 
             if (!interaction.interacted && routeDestination.isEmpty() && !hasMovedThisCycle) {
-                clearInteractionRoute()
-                mes(Constants.dm_reach, ChatType.Engine)
+                if (interaction is InteractionNpc && isWithinObstacleReach(interaction)) {
+                    processInteractionStep(interaction, InteractionStep.TriggerScriptOp)
+                } else {
+                    clearInteractionRoute()
+                    mes(Constants.dm_reach, ChatType.Engine)
+                }
             }
         }
 
@@ -324,6 +333,63 @@ constructor(
         return isWithinApRange
     }
 
+    /**
+     * Npcs that stand behind a counter or inside a jail cell can never be reached for an op. When
+     * the route has settled and the npc's op has no ap script handling this itself, the op still
+     * fires if the npc is within [OBSTACLE_REACH] tiles and either visible (bars and most counters
+     * do not block projectiles) or separated only by a single solid floor loc such as a counter.
+     */
+    private fun Player.isWithinObstacleReach(interaction: InteractionNpc): Boolean {
+        if (!interaction.hasOpTrigger || interaction.hasApTrigger) {
+            return false
+        }
+        val npc = interaction.target
+        if (npc.level != level || boundValidator.collides(avatar, npc.avatar)) {
+            return false
+        }
+        if (!isWithinDistance(npc, OBSTACLE_REACH)) {
+            return false
+        }
+        val hasLos =
+            rayCastValidator.hasLineOfSight(
+                source = coords,
+                destination = npc.coords,
+                destWidth = npc.size,
+                destLength = npc.size,
+            )
+        return hasLos || isFloorLocBetween(npc)
+    }
+
+    private fun Player.isFloorLocBetween(npc: Npc): Boolean {
+        val targetX = x.coerceIn(npc.x, npc.x + npc.size - 1)
+        val targetZ = z.coerceIn(npc.z, npc.z + npc.size - 1)
+        val dx = targetX - x
+        val dz = targetZ - z
+        val straightGap = (abs(dx) == 2 && dz == 0) || (abs(dz) == 2 && dx == 0)
+        if (!straightGap) {
+            return false
+        }
+        val stepX = dx.sign
+        val stepZ = dz.sign
+        val middleX = x + stepX
+        val middleZ = z + stepZ
+        if (collision[middleX, middleZ, level] and CollisionFlag.LOC == 0) {
+            return false
+        }
+        val (exitWall, entryWall) =
+            when {
+                stepX > 0 -> CollisionFlag.WALL_EAST to CollisionFlag.WALL_WEST
+                stepX < 0 -> CollisionFlag.WALL_WEST to CollisionFlag.WALL_EAST
+                stepZ > 0 -> CollisionFlag.WALL_NORTH to CollisionFlag.WALL_SOUTH
+                else -> CollisionFlag.WALL_SOUTH to CollisionFlag.WALL_NORTH
+            }
+        val walled =
+            collision[x, z, level] and exitWall != 0 ||
+                collision[middleX, middleZ, level] and (entryWall or exitWall) != 0 ||
+                collision[targetX, targetZ, level] and entryWall != 0
+        return !walled
+    }
+
     private fun Player.routeTo(interaction: InteractionNpc) {
         if (isWithinOpRange(interaction)) {
             return
@@ -484,11 +550,13 @@ constructor(
 
     private fun Player.shouldCancelInteraction(interaction: Interaction): Boolean =
         when (interaction) {
-            is InteractionLoc -> !interaction.isValid()
-            is InteractionNpc -> !interaction.isValid()
-            is InteractionObj -> !interaction.isValid(this)
-            is InteractionObjT -> !interaction.isValid(this)
-            is InteractionPlayer -> !interaction.isValid()
+            is InteractionLoc -> level != interaction.target.coords.level || !interaction.isValid()
+            is InteractionNpc -> level != interaction.target.level || !interaction.isValid()
+            is InteractionObj ->
+                level != interaction.target.coords.level || !interaction.isValid(this)
+            is InteractionObjT ->
+                level != interaction.target.coords.level || !interaction.isValid(this)
+            is InteractionPlayer -> level != interaction.target.level || !interaction.isValid()
         }
 
     private fun InteractionLoc.isValid(): Boolean {
@@ -662,3 +730,5 @@ constructor(
 }
 
 private const val FOLLOW_OPTION = "Follow"
+
+private const val OBSTACLE_REACH = 2

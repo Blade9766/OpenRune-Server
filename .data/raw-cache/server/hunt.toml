@@ -78,3 +78,26 @@ checkVis = "LineOfSight"
 checkNotCombat = 65522
 checkNotCombatSelf = 1
 findNewMode = "ApPlayer2"
+
+# Ape Atoll monkeys: aggressive to humans, indifferent to anyone a greegree has made a monkey.
+[[hunt]]
+id = "stalk.mm_monkey_melee"
+type = "Player"
+checkVis = "LineOfSight"
+checkNotTooStrong = "OutsideWilderness"
+checkNotCombat = 65522
+checkNotCombatSelf = 1
+checkVar1 = { varp = 65400, operator = "Equals", required = 0 }
+findKeepHunting = true
+findNewMode = "OpPlayer2"
+
+[[hunt]]
+id = "stalk.mm_monkey_ranged"
+type = "Player"
+checkVis = "LineOfSight"
+checkNotTooStrong = "OutsideWilderness"
+checkNotCombat = 65522
+checkNotCombatSelf = 1
+checkVar1 = { varp = 65400, operator = "Equals", required = 0 }
+findKeepHunting = true
+findNewMode = "ApPlayer2"
