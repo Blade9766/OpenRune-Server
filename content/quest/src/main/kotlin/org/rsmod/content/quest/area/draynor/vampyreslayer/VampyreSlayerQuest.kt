@@ -68,11 +68,11 @@ class VampyreSlayerQuest : QuestScript(
                 custom(
                     !access.hasStakeAnywhere(),
                     "I have lost the stake. Dr Harlow may have a spare.",
-                )
+                ).preserveObjective(strikeObjective = false)
                 custom(
                     access.player.morganExtraDialogue,
                     "Morgan keeps garlic in the cupboard upstairs in his house.",
-                )
+                ).preserveObjective(strikeObjective = false)
             }
         }
 
