@@ -42,3 +42,8 @@ endBit = 14
 id = "varobj.wild_cave_bow_ether"
 startBit = 0
 endBit = 14
+
+[[varobj]]
+id = "varobj.venator_bow_charges"
+startBit = 0
+endBit = 15

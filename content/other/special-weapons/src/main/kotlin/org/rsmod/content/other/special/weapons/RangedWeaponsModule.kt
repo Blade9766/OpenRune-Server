@@ -4,6 +4,7 @@ import org.rsmod.api.weapons.WeaponMap
 import org.rsmod.content.other.special.weapons.ranged.CrystalBowWeapons
 import org.rsmod.content.other.special.weapons.ranged.DarkBowWeapons
 import org.rsmod.content.other.special.weapons.ranged.RevenantBowWeapons
+import org.rsmod.content.other.special.weapons.ranged.VenatorBowWeapons
 import org.rsmod.plugin.module.PluginModule
 
 class RangedWeaponsModule : PluginModule() {
@@ -11,5 +12,6 @@ class RangedWeaponsModule : PluginModule() {
         addSetBinding<WeaponMap>(DarkBowWeapons::class.java)
         addSetBinding<WeaponMap>(CrystalBowWeapons::class.java)
         addSetBinding<WeaponMap>(RevenantBowWeapons::class.java)
+        addSetBinding<WeaponMap>(VenatorBowWeapons::class.java)
     }
 }
