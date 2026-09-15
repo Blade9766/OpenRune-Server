@@ -10,7 +10,6 @@ import org.rsmod.content.quest.area.lumbridge.rmTalisman
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.ownsAntiDragonShield
 import org.rsmod.game.entity.Npc
-import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -20,9 +19,6 @@ constructor(
     private val runeMysteries: RuneMysteriesQuest,
     private val dragonSlayer: DragonSlayerQuest,
 ) : PluginScript() {
-
-    private val quest
-        get() = runeMysteries.quest
 
     override fun ScriptContext.startup() {
         onOpNpc1("npc.duke_of_lumbridge") { startDukeDialogue(it.npc) }
@@ -37,7 +33,7 @@ constructor(
 
         val hasShield = player.ownsAntiDragonShield()
         val showShieldOption = !hasShield && dragonSlayer.stage(player) >= DragonSlayerQuest.STAGE_STARTED
-        val stage = quest.getQuestStage(player)
+        val stage = runeMysteries.stage(player)
         val questOption =
             when {
                 stage == RuneMysteriesQuest.STAGE_TALISMAN -> "What did you want me to do again?"
@@ -78,10 +74,10 @@ constructor(
     }
 
     private suspend fun Dialogue.dukeQuestBranch(npc: Npc) {
-        val stage = quest.getQuestStage(player)
+        val stage = runeMysteries.stage(player)
         when {
             stage == 0 -> dukeStartQuest(npc)
-            stage == RuneMysteriesQuest.STAGE_TALISMAN && !hasAirTalisman(player) ->
+            stage == RuneMysteriesQuest.STAGE_TALISMAN && !ownsAirTalisman() ->
                 dukeReplaceTalisman(npc)
             stage == RuneMysteriesQuest.STAGE_TALISMAN -> {
                 chatPlayer(quiz, "What did you want me to do again?")
@@ -123,15 +119,7 @@ constructor(
         )
         chatNpc(quiz, "Would you be willing to take it to them for me?")
 
-        when (
-            choice2(
-                "Sure, no problem.",
-                1,
-                "Not right now.",
-                2,
-                title = "Start the Rune Mysteries quest?",
-            )
-        ) {
+        when (choice2("Yes.", 1, "No.", 2, title = "Start the Rune Mysteries quest?")) {
             1 -> {
                 chatPlayer(happy, "Sure, no problem.")
                 if (access.invAdd(access.inv, RuneMysteriesQuest.AIR_TALISMAN).failure) {
@@ -142,7 +130,7 @@ constructor(
                     return
                 }
                 player.rmTalisman = true
-                quest.advanceQuestStage(access)
+                runeMysteries.advanceTo(access, RuneMysteriesQuest.STAGE_TALISMAN)
                 chatNpc(
                     happy,
                     "Thank you very much. You'll find the Wizards' Tower south west of here, " +
@@ -194,7 +182,7 @@ constructor(
             1 -> {
                 chatPlayer(happy, "Elvarg, the dragon of Crandor island!")
                 chatNpc(shocked, "Elvarg? Are you sure?")
-                when (choice2("Yes.", 1, "I'd better leave that dragon alone.", 2, title = "Well, are you sure?")) {
+                when (choice2("Yes.", 1, "No.", 2, title = "Well, are you sure?")) {
                     1 -> {
                         chatPlayer(happy, "Yes.")
                         val gender =
@@ -230,7 +218,7 @@ constructor(
                             2 -> leaveDragonAlone()
                         }
                     }
-                    2 -> leaveDragonAlone()
+                    2 -> chatNpc(neutral, "Very wise. There are some monsters that are best left alone.")
                 }
             }
             2 -> {
@@ -283,8 +271,9 @@ constructor(
         }
     }
 
-    private fun hasAirTalisman(player: Player): Boolean =
-        player.inv.contains(RuneMysteriesQuest.AIR_TALISMAN)
+    private fun Dialogue.ownsAirTalisman(): Boolean =
+        RuneMysteriesQuest.AIR_TALISMAN in player.inv ||
+            RuneMysteriesQuest.AIR_TALISMAN in access.bank
 
     private companion object {
         const val ANTI_DRAGON_SHIELD = DragonSlayerQuest.ANTI_DRAGON_SHIELD
