@@ -281,6 +281,18 @@ class ConstructionDataTest {
     }
 
     @Test
+    fun `every style names its own wall and window`() {
+        val walls = HouseStyle.entries.map { it.wall }
+        val windows = HouseStyle.entries.map { it.window }
+        assertEquals(walls.size, walls.toSet().size)
+        assertEquals(windows.size, windows.toSet().size)
+        for (style in HouseStyle.entries) {
+            assertTrue(style.window.startsWith("loc."), style.label)
+            assertTrue(style.window != style.wall, style.label)
+        }
+    }
+
+    @Test
     fun `plank prices rise with the log`() {
         val costs = PlankType.entries.map { it.cost }
         assertEquals(costs.sorted(), costs)

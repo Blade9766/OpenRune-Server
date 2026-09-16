@@ -104,11 +104,15 @@ garden the exit portal stands in.
 - Door hotspots sit at `(0,3)/(0,4)` west, `(3,0)/(4,0)` south, `(7,3)/(7,4)` east and `(3,7)/(4,7)`
   north, as a `doorl`/`doorr` pair. A doorway is a two-tile gap in the wall, so `HouseRegistry`
   either deletes the hotspots (the rooms on both sides have a door there) or replaces them with the
-  style's plain wall. In build mode unconnected hotspots are left alone, because that is what the
-  player clicks to add a room.
+  style's plain wall. A garden is the exception: it is open to the sky and its template has no
+  wall anywhere, so a doorway leading nowhere is left open rather than filled with a slab.
+  In build mode every hotspot is left alone - see the note on removing rooms above.
 - Furniture hotspots are numbered per room - `loc.poh_parlour_1` ("Chair space"), `loc.poh_kitchen_5`
   ("Larder space") - and carry **Build** on op5; what they turn into carries **Remove** on op5.
-- Windows are `loc.poh_dynamic_window`, left as authored.
+- Windows are all `loc.poh_dynamic_window`, a placeholder with no style of its own, swapped for
+  the style's window - which the cache names as the wall's sibling, usually the very next id
+  (`loc.village_wall` 13098, `loc.village_wall_window` 13099). Tropical wood is the exception:
+  there is no `poh_timberwall` window, so it borrows `loc.timberwall_with_window_2`.
 
 **Angles matter.** The region registry translates a copied loc's coordinates but leaves its angle as
 authored, so a loc read back out of a rotated zone still carries the *template* angle. Deleting one

@@ -140,6 +140,7 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
             for (loc in locRepo.findAll(zone).toList()) {
                 val name = locName(loc.id) ?: continue
                 when {
+                    name == DYNAMIC_WINDOW -> replace(loc, room, house.state.style.window)
                     name == house.state.style.doorLeft || name == house.state.style.doorRight ->
                         dressDoor(house, loc, room, floor, gx, gz)
                     else -> {
@@ -181,7 +182,9 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
             return
         }
         val side = turned(loc, room)
-        if (house.state.connected(floor, gx, gz, side)) {
+        // A garden is open to the sky and its template has no wall to speak of, so a doorway
+        // leading nowhere is simply left open rather than filled with a slab of the house's wall.
+        if (house.state.connected(floor, gx, gz, side) || room.type.outdoors) {
             locRepo.del(loc, PERMANENT)
         } else {
             replace(loc, room, house.state.style.wall)
@@ -280,6 +283,8 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         const val GRID_ORIGIN = 1
 
         const val PERMANENT = Int.MAX_VALUE
+
+        const val DYNAMIC_WINDOW = "loc.poh_dynamic_window"
 
         const val BUILD_OP_INDEX = 4
         const val BUILD_OP = "Build"
