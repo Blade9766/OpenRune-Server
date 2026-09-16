@@ -6,6 +6,7 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.constructionLvl
+import org.rsmod.api.script.onOpLoc4
 import org.rsmod.api.script.onOpLoc5
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.skills.construction.Construction
@@ -51,10 +52,17 @@ constructor(
         for (loc in builtLocs()) {
             onOpLoc5(loc) { removeFurniture(it.loc, loc) }
         }
+        for (loc in stairLocs()) {
+            onOpLoc4(loc) { removeStairRoom(it.loc) }
+        }
     }
 
     private fun hotspotLocs(): Set<String> =
         RoomType.entries.flatMapTo(LinkedHashSet()) { room -> room.hotspots.flatMap { it.locs } }
+
+    /** Both halves of every staircase pair; the spiral ones are their own top and bottom. */
+    private fun stairLocs(): Set<String> =
+        Furniture.STAIRS_DOWN.keys + Furniture.STAIRS_DOWN.values
 
     private fun builtLocs(): Set<String> {
         val hotspots = hotspotLocs()
@@ -80,8 +88,9 @@ constructor(
             mes("You cannot build any further out in that direction.")
             return
         }
-        if (house.state[floor, targetX, targetZ] != null) {
-            mes("There is already a room there.")
+        val existing = house.state[floor, targetX, targetZ]
+        if (existing != null) {
+            removeRoom(house, floor, targetX, targetZ, existing)
             return
         }
 
@@ -126,6 +135,56 @@ constructor(
         store.update(player) { it[floor, targetX, targetZ] = Room(room, rotation) }
         mes("You build a ${room.label.lowercase()}.")
         access.rebuild(this)
+    }
+
+    /**
+     * Takes a room back out. Old School offers this on the door leading into it, and on a
+     * staircase, which always means the room at the top of that staircase - the one above when you
+     * are standing at its foot, and the one you are standing in when you are at its head.
+     */
+    private suspend fun ProtectedAccess.removeRoom(
+        house: ActiveHouse,
+        floor: Floor,
+        gx: Int,
+        gz: Int,
+        room: Room,
+    ) {
+        if (house.state.isEntrance(room)) {
+            mes("You cannot remove the garden your exit portal stands in.")
+            return
+        }
+        if (house.state.supportsRoomAbove(floor, gx, gz)) {
+            mes("You must remove the room above before you can take this one out.")
+            return
+        }
+
+        val label = room.type.label.lowercase()
+        val confirm = choice2("Yes, remove the $label.", true, "No.", false)
+        if (!confirm) {
+            return
+        }
+
+        anim(Construction.BUILD_ANIM)
+        soundSynth(Construction.BUILD_WOOD_SOUND)
+        delay(Construction.BUILD_CYCLE)
+        resetAnim()
+
+        store.update(player) { it[floor, gx, gz] = null }
+        mes("You remove the $label.")
+        access.rebuild(this)
+    }
+
+    private suspend fun ProtectedAccess.removeStairRoom(loc: BoundLocInfo) {
+        val house = registry.active(player) ?: return
+        if (!house.buildMode) {
+            mes("You can only remove rooms while your house is in building mode.")
+            return
+        }
+        val (floor, gx, gz) = registry.cellOf(house, loc.coords) ?: return
+        val above = Floor.entries.getOrNull(floor.ordinal + 1)
+        val target = if (above != null && house.state[above, gx, gz] != null) above else floor
+        val room = house.state[target, gx, gz] ?: return
+        removeRoom(house, target, gx, gz, room)
     }
 
     // --------------------------------------------------------------------- furniture

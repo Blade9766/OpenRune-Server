@@ -67,11 +67,11 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         val entry = open(player, current.state, buildMode) ?: return null
         val rebuilt = active(player) ?: return entry
         val restored = rebuilt.region.southWest.translate(offset.first, offset.second, 0)
-        return if (rebuilt.region.holds(restored)) {
-            CoordGrid(restored.x, restored.z, player.coords.level)
-        } else {
-            entry
+        if (!rebuilt.region.holds(restored)) {
+            return entry
         }
+        val coords = CoordGrid(restored.x, restored.z, player.coords.level)
+        return if (roomAt(rebuilt, coords) != null) coords else entry
     }
 
     /**
@@ -166,10 +166,17 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         gx: Int,
         gz: Int,
     ) {
+        // Every doorway keeps its hotspot in building mode, joined or not: an unjoined one is
+        // what you click to add a room, and a joined one is what you click to take the room on
+        // the far side back out again.
+        if (house.buildMode) {
+            return
+        }
         val side = turned(loc, room)
-        when {
-            house.state.connected(floor, gx, gz, side) -> locRepo.del(loc, PERMANENT)
-            !house.buildMode -> replace(loc, room, house.state.style.wall)
+        if (house.state.connected(floor, gx, gz, side)) {
+            locRepo.del(loc, PERMANENT)
+        } else {
+            replace(loc, room, house.state.style.wall)
         }
     }
 
@@ -229,10 +236,16 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         )
     }
 
+    /** The room standing on [coords], or `null` when that cell is empty. */
+    fun roomAt(house: ActiveHouse, coords: CoordGrid): Room? {
+        val (floor, gx, gz) = cellOf(house, coords) ?: return null
+        return house.state[floor, gx, gz]
+    }
+
     private fun entrance(house: ActiveHouse): CoordGrid {
         val portal =
             house.state.rooms.entries.firstOrNull { (_, room) ->
-                room.type == RoomType.GARDEN && room.furniture["centrepiece"] == 0
+                house.state.isEntrance(room)
             } ?: house.state.rooms.entries.firstOrNull() ?: return house.region.southWest
         val floor = floorOf(portal.key)
         val zone = zoneOf(house, floor, gxOf(portal.key), gzOf(portal.key))

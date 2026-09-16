@@ -86,6 +86,15 @@ on, before rotation. Rooms marked **shipped** are offered in the build menu.
 
 Local coordinates within the 8x8 zone are identical for every room:
 
+Rooms come back out the way Old School takes them out: in building mode **every** doorway keeps its
+hotspot, joined or not, and clicking one that already has a room behind it asks whether to remove
+that room. Door hotspots do not block movement, so leaving them in place costs nothing. A staircase
+also carries `Remove-room` on op four - the only op the cache gives room removal - and that always
+means the room at the top of it: the one above when you are at its foot, the one you are standing in
+when you are at its head. Without it the first upper-floor room could never be removed, having no
+neighbour to click a door from. A room holding another one up cannot go first, and neither can the
+garden the exit portal stands in.
+
 - Door hotspots sit at `(0,3)/(0,4)` west, `(3,0)/(4,0)` south, `(7,3)/(7,4)` east and `(3,7)/(4,7)`
   north, as a `doorl`/`doorr` pair. A doorway is a two-tile gap in the wall, so `HouseRegistry`
   either deletes the hotspots (the rooms on both sides have a door there) or replaces them with the
@@ -159,7 +168,6 @@ Prifddinas 70 / 50,000.
   chapel statues, the workshop tool stores, the garden tip jar. They are deliberately absent rather
   than guessed at. A hotspot with no table is taken out of a finished house, but it is still there
   in building mode and clicking it does nothing.
-- Removing a room. The staircase's `Remove-room` op is cache-authored and unhandled.
 - Directing a built portal frame at a destination, and the portal nexus.
 - Servants, the house options interface, guests and the house advertisement board.
 - Chapel altars always use the Saradomin models; live Old School picks the god from the icon built

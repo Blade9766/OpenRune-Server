@@ -78,13 +78,23 @@ class HouseState(
         return other.type.hasDoor(Side.opposite(side), other.rotation)
     }
 
+    /** True when a room sits directly on top of this cell, holding it up. */
+    fun supportsRoomAbove(floor: Floor, gx: Int, gz: Int): Boolean {
+        val above = Floor.entries.getOrNull(floor.ordinal + 1) ?: return false
+        return get(above, gx, gz) != null
+    }
+
+    /** The garden the exit portal stands in, which is the only way out on foot. */
+    fun isEntrance(room: Room): Boolean =
+        room.type == RoomType.GARDEN && room.furniture[CENTREPIECE] == EXIT_PORTAL
+
     /** Lays down the single garden every new house starts with, portal already standing. */
     fun createStarterHouse() {
         rooms.clear()
         val garden = Room(RoomType.GARDEN, rotation = 0)
-        val centrepiece = RoomType.GARDEN.hotspot("centrepiece")
+        val centrepiece = RoomType.GARDEN.hotspot(CENTREPIECE)
         if (centrepiece != null) {
-            garden.furniture["centrepiece"] = 0
+            garden.furniture[CENTREPIECE] = EXIT_PORTAL
         }
         this[Floor.GROUND, Construction.STARTER_CELL, Construction.STARTER_CELL] = garden
         owned = true
@@ -100,6 +110,11 @@ class HouseState(
     }
 
     companion object {
+        const val CENTREPIECE = "centrepiece"
+
+        /** Index of the exit portal in the garden centrepiece's option list. */
+        const val EXIT_PORTAL = 0
+
         private const val AXIS_BITS = 5
         private const val AXIS_MASK = (1 shl AXIS_BITS) - 1
 

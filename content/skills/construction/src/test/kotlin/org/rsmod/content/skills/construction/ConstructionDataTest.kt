@@ -2,11 +2,13 @@ package org.rsmod.content.skills.construction
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.rsmod.api.repo.region.RegionRepository
 import org.rsmod.content.skills.construction.data.Floor
+import org.rsmod.content.skills.construction.data.Furniture
 import org.rsmod.content.skills.construction.data.HouseLocation
 import org.rsmod.content.skills.construction.data.HouseStyle
 import org.rsmod.content.skills.construction.data.PlankType
@@ -217,6 +219,40 @@ class ConstructionDataTest {
             Construction.GRID + 2 <= RegionRepository.SMALL_REGION_ZONE_LENGTH,
             "grid of ${Construction.GRID} does not fit in ${RegionRepository.SMALL_REGION_ZONE_LENGTH}",
         )
+    }
+
+    @Test
+    fun `the starter garden is the entrance and cannot be removed`() {
+        val state = HouseState()
+        state.createStarterHouse()
+        val garden = state[Floor.GROUND, Construction.STARTER_CELL, Construction.STARTER_CELL]
+        assertNotNull(garden)
+        assertTrue(state.isEntrance(garden!!))
+        assertFalse(state.isEntrance(Room(RoomType.PARLOUR, 0)))
+    }
+
+    @Test
+    fun `a room is only held up while something sits on top of it`() {
+        val state = HouseState()
+        state.createStarterHouse()
+        val cell = Construction.STARTER_CELL
+        assertFalse(state.supportsRoomAbove(Floor.GROUND, cell, cell))
+        state[Floor.UPPER, cell, cell] = Room(RoomType.SKILL_HALL, 0)
+        assertTrue(state.supportsRoomAbove(Floor.GROUND, cell, cell))
+        assertFalse(state.supportsRoomAbove(Floor.UPPER, cell, cell))
+        state[Floor.UPPER, cell, cell] = null
+        assertFalse(state.supportsRoomAbove(Floor.GROUND, cell, cell))
+    }
+
+    /** Removal hangs off op four of both halves of a staircase, so the pair must not collide. */
+    @Test
+    fun `staircase tops and bottoms register one loc each`() {
+        val locs = Furniture.STAIRS_DOWN.keys + Furniture.STAIRS_DOWN.values
+        assertTrue(locs.containsAll(Furniture.STAIRS_DOWN.keys))
+        assertTrue(locs.containsAll(Furniture.STAIRS_DOWN.values))
+        for (loc in locs) {
+            assertEquals(1, locs.count { it == loc }, loc)
+        }
     }
 
     @Test
