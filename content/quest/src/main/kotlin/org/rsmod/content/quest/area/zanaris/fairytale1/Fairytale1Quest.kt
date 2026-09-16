@@ -53,6 +53,7 @@ class Fairytale1Quest : QuestScript(
     val tanglefootSlain = quest.attribute(name = "TANGLEFOOT_SLAIN", default = false)
 
     override fun ScriptContext.init() {
+        quest.onVarSync(::syncVars)
         onPlayerLogin { syncVars(player) }
     }
 

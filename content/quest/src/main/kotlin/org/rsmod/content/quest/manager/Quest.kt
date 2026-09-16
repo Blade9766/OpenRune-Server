@@ -47,6 +47,9 @@ data class Quest(
 
     private val attributeRegistry = mutableMapOf<String, QuestAttribute<*>>()
 
+    /** See [onVarSync]. */
+    private var varSync: ((Player) -> Unit)? = null
+
     /**
      * Miniquests award no quest points; they do not count towards the completed-quest tally and
      * finish with a chat message rather than the reward scroll.
@@ -144,6 +147,17 @@ data class Quest(
         if (clientState(player) != stage) {
             setClientState(player, stage)
         }
+        varSync?.invoke(player)
+    }
+
+    /**
+     * Registers the quest's own var mirror, for quests that keep sub-state in attributes because
+     * their varbits share the quest varp. It runs after every stage change, including the jumps
+     * and resets the testing commands make, so the world matches the stage straight away instead
+     * of only after a relog.
+     */
+    fun onVarSync(block: (Player) -> Unit) {
+        varSync = block
     }
 
     fun questState(player: Player): QuestProgressState =
@@ -205,6 +219,7 @@ data class Quest(
             player.questPoints = (player.questPoints - questPoints).coerceAtLeast(0)
             player.questsCompleted = (player.questsCompleted - 1).coerceAtLeast(0)
         }
+        varSync?.invoke(player)
     }
 
     /**
@@ -216,6 +231,7 @@ data class Quest(
         val stages = player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
         stages[key] = clamped
         setClientState(player, clamped)
+        varSync?.invoke(player)
     }
 
     fun <T> attribute(
