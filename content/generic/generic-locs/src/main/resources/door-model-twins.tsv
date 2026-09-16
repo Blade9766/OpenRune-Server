@@ -95,8 +95,6 @@ loc.slayertower_door_open	loc.slayertower_door
 loc.slayertower_door_open_mirror	loc.slayertower_door_mirror
 loc.barbariangatel	loc.metalgateopenl
 loc.barbariangater	loc.metalgateopenr
-loc.cauldrondoor	loc.akd_xamphur_prisongateopen
-loc.cauldrondoor_l	loc.mourning_prisondooropen
 loc.lockedguildgatel	loc.metalgateopenl
 loc.lockedguildgater	loc.metalgateopenr
 loc.khazard_stronghold_door	loc.witchdoor
