@@ -52,6 +52,7 @@ import org.rsmod.game.cheat.Cheat
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
+import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocInfo
@@ -431,32 +432,44 @@ constructor(
 
     private fun anim(cheat: Cheat) =
         with(cheat) {
-            val typeId = RSCM.getRSCM("seq.${args.asTypeName()}")
-            if (typeId == -1) {
+            val typeId = resolveTypeId("seq", args.asTypeName())
+            if (typeId == null) {
                 player.mes("There is no seq mapped to: '${args.asTypeName()}'")
                 return
             }
             val type = ServerCacheManager.getAnim(typeId)
             if (type == null) {
-                player.mes("That seq does not exist: $typeId")
+                player.mes("That seq does not exist: ${args.asTypeName()}")
                 return
             }
-            player.anim("seq.${args.asTypeName()}")
-            player.mes("Anim: '${args.asTypeName()}' (priority=${type.priority})")
+            // `anim` takes a name, so an id argument is mapped back to one first.
+            val name = args.asTypeName()
+            val seqName =
+                if (name.toIntOrNull() != null) {
+                    runCatching { RSCM.getReverseMapping(RSCMType.SEQ, typeId) }.getOrNull()
+                } else {
+                    "seq.$name"
+                }
+            if (seqName == null) {
+                player.mes("That seq has no name to play it by: $typeId")
+                return
+            }
+            player.anim(seqName)
+            player.mes("Anim: '$name' (priority=${type.priority})")
             logger.debug { "Anim: $type" }
         }
 
     private fun spotanim(cheat: Cheat) =
         with(cheat) {
             val (typeName, heightArg) = args.asTypeNameAndNumber(defaultNumber = 0)
-            val typeId = "spotanim.${typeName}".asRSCM()
-            if (typeId == -1) {
+            val typeId = resolveTypeId("spotanim", typeName)
+            if (typeId == null) {
                 player.mes("There is no spotanim mapped to: '${typeName}'")
                 return
             }
 
             val height = min(heightArg.toInt(), Short.MAX_VALUE.toInt())
-            player.spotanim("spotanim.${typeName}", delay = 0, height = height, slot = 0)
+            PathingEntityCommon.spotanim(player, typeId, delay = 0, height = height, slot = 0)
             player.mes("Spotanim: '${typeName}' (height=$height)")
             logger.debug { "Spotanim: $typeName" }
         }
@@ -475,8 +488,8 @@ constructor(
                 return
             }
             val typeName = arg.removePrefix("synth.")
-            val typeId = "synth.$typeName".asRSCM()
-            if (typeId == -1) {
+            val typeId = resolveTypeId("synth", typeName)
+            if (typeId == null) {
                 player.mes("There is no synth mapped to: '$typeName'")
                 return
             }
@@ -486,11 +499,11 @@ constructor(
 
     private fun locAdd(cheat: Cheat) =
         with(cheat) {
-            val typeId = "loc.${args[1]}".asRSCM()
+            val typeId = resolveTypeId("loc", args[1])
 
-            val type = ServerCacheManager.getObject(typeId)!!
+            val type = typeId?.let(ServerCacheManager::getObject)
             if (type == null) {
-                player.mes("That loc does not exist: $typeId")
+                player.mes("That loc does not exist: ${args[1]}")
                 return
             }
             val duration = args[0].toInt()
@@ -526,11 +539,11 @@ constructor(
 
     private fun npcAdd(cheat: Cheat) =
         with(cheat) {
-            val typeId = "npc.${args[1]}".asRSCM()
+            val typeId = resolveTypeId("npc", args[1])
 
-            val type = ServerCacheManager.getNpc(typeId)
+            val type = typeId?.let(ServerCacheManager::getNpc)
             if (type == null) {
-                player.mes("That npc does not exist: $typeId")
+                player.mes("That npc does not exist: ${args[1]}")
                 return
             }
             val duration = args[0].toInt()
@@ -548,8 +561,8 @@ constructor(
                 )
                 return
             }
-            val typeId = "npc.${args[0]}".asRSCM()
-            val type = ServerCacheManager.getNpc(typeId)
+            val typeId = resolveTypeId("npc", args[0])
+            val type = typeId?.let(ServerCacheManager::getNpc)
             if (type == null) {
                 player.mes("That npc does not exist: npc.${args[0]}")
                 return
@@ -589,11 +602,11 @@ constructor(
 
     private fun setVarp(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varp.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varp", args[0])
 
-            val type = ServerCacheManager.getVarp(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarp)
             if (type == null) {
-                player.mes("That varp does not exist: $typeId")
+                player.mes("That varp does not exist: ${args[0]}")
                 return
             }
             val value = args[1].toInt()
@@ -604,11 +617,11 @@ constructor(
 
     private fun setVarBit(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varbit.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varbit", args[0])
 
-            val type = ServerCacheManager.getVarbit(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarbit)
             if (type == null) {
-                player.mes("That varbit does not exist: $typeId")
+                player.mes("That varbit does not exist: ${args[0]}")
                 return
             }
             val value = args[1].toInt()
@@ -618,11 +631,11 @@ constructor(
 
     private fun getVarp(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varp.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varp", args[0])
 
-            val type = ServerCacheManager.getVarp(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarp)
             if (type == null) {
-                player.mes("That varp does not exist: $typeId")
+                player.mes("That varp does not exist: ${args[0]}")
                 return
             }
             player.mes("Varp '${args[0]}' (id=$typeId) = ${player.vars[type]}")
@@ -630,11 +643,11 @@ constructor(
 
     private fun getVarBit(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varbit.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varbit", args[0])
 
-            val type = ServerCacheManager.getVarbit(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarbit)
             if (type == null) {
-                player.mes("That varbit does not exist: $typeId")
+                player.mes("That varbit does not exist: ${args[0]}")
                 return
             }
             player.mes("Varbit '${args[0]}' (id=$typeId) = ${player.vars[type]}")
@@ -798,14 +811,26 @@ constructor(
                 } else {
                     "interface.${args.asTypeName()}"
                 }
-            val typeId = interfName.asRSCM()
-            if (typeId == -1 || ServerCacheManager.getInterface(typeId) == null) {
+            val typeId = resolveTypeId("interface", interfName)
+            if (typeId == null || ServerCacheManager.getInterface(typeId) == null) {
                 player.mes("That interface does not exist: '$interfName'")
                 return
             }
             protectedAccess.launch(player) { ifOpenMain(interfName) }
             player.mes("Opened interface: '$interfName' (id=$typeId)")
         }
+
+    /**
+     * The id [input] refers to, or null when nothing matches.
+     *
+     * A plain number is taken as the id itself, which is what every `debugNameOrId` argument
+     * promises but none of these commands used to honour. A name goes to the gameval table through
+     * a `runCatching`, because a missing key raises there rather than reporting a miss - without it
+     * a typo reaches the player as "Uncaught exception" instead of a readable message.
+     */
+    private fun resolveTypeId(prefix: String, input: String): Int? =
+        input.toIntOrNull()
+            ?: runCatching { "$prefix.${input.removePrefix("$prefix.")}".asRSCM() }.getOrNull()
 
     private fun resolveArgTypeId(arg: String, names: Map<String, Int>): Int? {
         val argAsInt = arg.toIntOrNull()
@@ -835,7 +860,8 @@ constructor(
         if (id != null) {
             return ServerCacheManager.getItem(id)
         }
-        return ServerCacheManager.getItem("obj.$input".asRSCM(RSCMType.OBJ))
+        val typeId = resolveTypeId("obj", input) ?: return null
+        return ServerCacheManager.getItem(typeId)
     }
 
     private fun List<String>.asTypeName(): String = joinToString("_")
