@@ -16,6 +16,7 @@ import org.rsmod.content.skills.construction.data.RoomType
 import org.rsmod.game.entity.Player
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocInfo
+import org.rsmod.game.loc.LocShape
 import org.rsmod.game.region.Region
 import org.rsmod.game.region.zone.RegionZoneCopy
 import org.rsmod.map.CoordGrid
@@ -129,7 +130,9 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
             val gz = gzOf(key)
             val zone = zoneOf(house, floor, gx, gz)
             val base = zone.toCoords()
-            for (loc in locRepo.findAll(zone).toList()) {
+            val locs = locRepo.findAll(zone).toList()
+            val covered = standingTiles(house, room, floor, gx, gz, locs)
+            for (loc in locs) {
                 val name = locName(loc.id) ?: continue
                 when {
                     name == house.state.style.doorLeft || name == house.state.style.doorRight ->
@@ -145,7 +148,7 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
                             }
                             continue
                         }
-                        val placed = dressHotspot(house, room, group, name, loc)
+                        val placed = dressHotspot(house, room, group, name, loc, covered)
                         if (placed != null && placed in Furniture.STAIRS_DOWN) {
                             stairs += PlacedStairs(floor, gx, gz, loc, base, placed)
                         }
@@ -187,6 +190,7 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         group: HotspotGroup,
         name: String,
         loc: LocInfo,
+        covered: Set<CoordGrid>,
     ): String? {
         val option = room.furniture[group.key]
         if (option == null) {
@@ -197,6 +201,10 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         }
         val buildable = group.options.getOrNull(option) ?: return null
         val built = buildable.built[group.locs.indexOf(name)]
+        if (loc.shape == LocShape.GroundDecor && loc.coords in covered) {
+            locRepo.del(loc, PERMANENT)
+            return null
+        }
         replace(loc, room, built)
         return built
     }
@@ -251,6 +259,63 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         val zone = zoneOf(house, floor, gxOf(portal.key), gzOf(portal.key))
         return zone.toCoords().translate(ENTRANCE_OFFSET_X, ENTRANCE_OFFSET_Z, 0)
     }
+
+    /**
+     * The tiles this room's larger furniture will stand on.
+     *
+     * A rug is authored across the whole floor, staircase included, and it is a ground decoration:
+     * the client draws it flat on the tile, which swallows the steps of the staircase standing
+     * there - and completely covers the hole a downward one leaves in the floor. Those tiles are
+     * left bare instead. The staircase reaching up from the room below counts too, because that is
+     * placed after the fact by [placeStairsAbove] rather than built on a hotspot of this room.
+     */
+    private fun standingTiles(
+        house: ActiveHouse,
+        room: Room,
+        floor: Floor,
+        gx: Int,
+        gz: Int,
+        locs: List<LocInfo>,
+    ): Set<CoordGrid> {
+        val stairsBelow = hasStairs(belowOf(house, floor, gx, gz))
+        val covered = HashSet<CoordGrid>()
+        for (loc in locs) {
+            val name = locName(loc.id) ?: continue
+            val group = room.type.hotspots.firstOrNull { name in it.locs } ?: continue
+            val standing = room.furniture.containsKey(group.key) || (stairsBelow && group.isStairs)
+            if (!standing) {
+                continue
+            }
+            val type = ServerCacheManager.getObject(loc.id) ?: continue
+            if (type.width <= 1 && type.length <= 1) {
+                continue
+            }
+            val turned = turned(loc, room)
+            val width = if (turned and 1 == 1) type.length else type.width
+            val length = if (turned and 1 == 1) type.width else type.length
+            for (dx in 0 until width) {
+                for (dz in 0 until length) {
+                    covered += loc.coords.translate(dx, dz, 0)
+                }
+            }
+        }
+        return covered
+    }
+
+    private fun belowOf(house: ActiveHouse, floor: Floor, gx: Int, gz: Int): Room? {
+        val below = Floor.entries.getOrNull(floor.ordinal - 1) ?: return null
+        return house.state[below, gx, gz]
+    }
+
+    private fun hasStairs(room: Room?): Boolean {
+        if (room == null) {
+            return false
+        }
+        return room.type.hotspots.any { it.isStairs && room.furniture.containsKey(it.key) }
+    }
+
+    private val HotspotGroup.isStairs: Boolean
+        get() = options.any { option -> option.built.any { it in Furniture.STAIRS_DOWN } }
 
     private fun isHotspot(id: Int): Boolean =
         ServerCacheManager.getObject(id)?.actions?.getOpOrNull(BUILD_OP_INDEX) == BUILD_OP
