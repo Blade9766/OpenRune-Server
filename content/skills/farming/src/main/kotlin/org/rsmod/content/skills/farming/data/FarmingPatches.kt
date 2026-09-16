@@ -61,16 +61,16 @@ object FarmingPatches {
             patch("loc.farming_flower_patch_6", PatchKind.FLOWER, F, 1260, 3725, "Farming Guild"),
             patch("loc.farming_herb_patch_7", PatchKind.HERB, E, 1238, 3726, "Farming Guild"),
 
-            // Civitas illa Fortis
-            patch("loc.farming_veg_patch_14", PatchKind.ALLOTMENT, A, 3290, 6102, "Civitas illa Fortis"),
-            patch("loc.farming_veg_patch_15", PatchKind.ALLOTMENT, B, 3290, 6096, "Civitas illa Fortis"),
-            patch("loc.farming_flower_patch_7", PatchKind.FLOWER, C, 3292, 6099, "Civitas illa Fortis"),
+            // Prifddinas
+            patch("loc.farming_veg_patch_14", PatchKind.ALLOTMENT, A, 3290, 6102, "Prifddinas"),
+            patch("loc.farming_veg_patch_15", PatchKind.ALLOTMENT, B, 3290, 6096, "Prifddinas"),
+            patch("loc.farming_flower_patch_7", PatchKind.FLOWER, C, 3292, 6099, "Prifddinas"),
 
-            // Aldarin
-            patch("loc.farming_veg_patch_16", PatchKind.ALLOTMENT, A, 1583, 3100, "Aldarin"),
-            patch("loc.farming_veg_patch_17", PatchKind.ALLOTMENT, B, 1587, 3096, "Aldarin"),
-            patch("loc.farming_flower_patch_8", PatchKind.FLOWER, C, 1585, 3098, "Aldarin"),
-            patch("loc.farming_herb_patch_8", PatchKind.HERB, D, 1581, 3094, "Aldarin"),
+            // Ortus Farm, Civitas illa Fortis
+            patch("loc.farming_veg_patch_16", PatchKind.ALLOTMENT, A, 1583, 3100, "Civitas illa Fortis"),
+            patch("loc.farming_veg_patch_17", PatchKind.ALLOTMENT, B, 1587, 3096, "Civitas illa Fortis"),
+            patch("loc.farming_flower_patch_8", PatchKind.FLOWER, C, 1585, 3098, "Civitas illa Fortis"),
+            patch("loc.farming_herb_patch_8", PatchKind.HERB, D, 1581, 3094, "Civitas illa Fortis"),
 
             // Sunset Coast
             patch("loc.farming_flower_patch_9", PatchKind.FLOWER, C, 1352, 3022, "Sunset Coast"),

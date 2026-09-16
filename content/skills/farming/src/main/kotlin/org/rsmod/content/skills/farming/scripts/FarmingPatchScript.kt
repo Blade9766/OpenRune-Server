@@ -1,19 +1,25 @@
 package org.rsmod.content.skills.farming.scripts
 
 import dev.openrune.ServerCacheManager
+import dev.openrune.definition.type.widget.IfEvent
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
+import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.farmingLvl
+import org.rsmod.api.player.ui.ifOpenOverlay
+import org.rsmod.api.player.ui.ifSetEvents
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
+import org.rsmod.api.script.onOpLoc4
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.api.table.StatComponentsRow
 import org.rsmod.api.utils.time.epochMinute
 import org.rsmod.content.skills.farming.Farming
 import org.rsmod.content.skills.farming.data.Crop
@@ -24,6 +30,7 @@ import org.rsmod.content.skills.farming.data.PatchKind
 import org.rsmod.content.skills.farming.state.Compost
 import org.rsmod.content.skills.farming.state.FarmingStore
 import org.rsmod.content.skills.farming.state.PatchState
+import org.rsmod.events.EventBus
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -43,16 +50,46 @@ constructor(
     private val store: FarmingStore,
     private val xpMods: XpModifiers,
     private val invisibleLvls: InvisibleLevels,
+    private val eventBus: EventBus,
 ) : PluginScript() {
     private val patchesByLocId: Map<Int, FarmingPatch> =
         FarmingPatches.ALL.associateBy { it.loc.asRSCM(RSCMType.LOC) }
+
+    /** Which page of the skill guide the patches' "Guide" op opens. */
+    private val farmingGuideBit: Int? by lazy {
+        val stat = Farming.STAT.asRSCM(RSCMType.STAT)
+        StatComponentsRow.all().firstOrNull { it.stat.id == stat }?.bit
+    }
 
     override fun ScriptContext.startup() {
         for (locId in childLocIds()) {
             val type = ServerCacheManager.getObject(locId) ?: continue
             onOpLoc1(type) { primary(it.loc) }
             onOpLoc2(type) { inspect(it.loc) }
+            onOpLoc4(type) { openFarmingGuide() }
             onOpLocU(type) { useOn(it.loc, it.objType) }
+        }
+    }
+
+    /**
+     * The patches' "Guide" op opens the Farming skill guide, the same interface the skills tab
+     * opens it with, so the layout and the player's chosen guide version are whatever they already
+     * use elsewhere.
+     */
+    private fun ProtectedAccess.openFarmingGuide() {
+        val guideBit = farmingGuideBit
+        if (guideBit == null) {
+            mes("You can't seem to find a guide for this patch.")
+            return
+        }
+        if (player.vars["varbit.option_skill_guide"] != 0) {
+            player.ifOpenOverlay("interface.skill_guide_v2", eventBus)
+            player.ifSetEvents("component.skill_guide_v2:tabs", 0..200, IfEvent.Op1)
+            player.runClientScript(1902, guideBit, 0)
+        } else {
+            player.ifOpenOverlay("interface.skill_guide", eventBus)
+            player.ifSetEvents("component.skill_guide:icons", 0..99)
+            player.runClientScript(9340, guideBit, 0, 0, 0)
         }
     }
 
@@ -117,6 +154,7 @@ constructor(
             mes("You need a rake to clear this patch.")
             return
         }
+        var warnedNoSpace = false
         while (true) {
             val state = store.state(player, patch)
             if (!state.isEmpty || state.weeds >= PatchKind.WEEDED) {
@@ -140,6 +178,9 @@ constructor(
             statAdvance(Farming.STAT, Farming.WEED_XP * xpMods.get(player, Farming.STAT))
             if (inv.hasFreeSpace()) {
                 invAdd(inv, Farming.WEEDS)
+            } else if (!warnedNoSpace) {
+                warnedNoSpace = true
+                mes("Your inventory is too full to hold the weeds you pull up.")
             }
             transmit(patch, store.state(player, patch))
         }
@@ -153,6 +194,7 @@ constructor(
         when {
             compost != null -> applyCompost(patch, compost)
             obj in Farming.WATERING_CANS -> water(patch, obj)
+            obj == Farming.EMPTY_WATERING_CAN -> mes("Your watering can is empty.")
             obj == Farming.PLANT_CURE -> cure(patch, store.state(player, patch))
             obj == Farming.SPADE -> clear(patch, store.state(player, patch))
             obj == Farming.RAKE -> primary(loc)
@@ -161,7 +203,11 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.plant(patch: FarmingPatch, seed: String) {
-        val crop = Crops.forSeed(seed) ?: return
+        val crop = Crops.forSeed(seed)
+        if (crop == null) {
+            mes("Nothing interesting happens.")
+            return
+        }
         val state = store.state(player, patch)
         if (crop.kind != patch.kind) {
             mes("You cannot plant ${crop.displayName} in ${article(patch.kind.label)}.")
@@ -208,8 +254,15 @@ constructor(
         }
         statAdvance(Farming.STAT, crop.plantXp * xpMods.get(player, Farming.STAT))
         transmit(patch, store.state(player, patch))
-        mes("You plant ${crop.displayName} in the ${patch.kind.label}.")
+        mes("You plant ${sownSeeds(crop)} in the ${patch.kind.label}.")
     }
+
+    private fun sownSeeds(crop: Crop): String =
+        if (crop.seedsPerPlant == 1) {
+            "a ${crop.displayName} seed"
+        } else {
+            "${crop.seedsPerPlant} ${crop.displayName} seeds"
+        }
 
     private suspend fun ProtectedAccess.applyCompost(patch: FarmingPatch, compost: Compost) {
         val state = store.state(player, patch)

@@ -7,7 +7,6 @@ object Farming {
     const val RAKE = "obj.rake"
     const val DIBBER = "obj.dibber"
     const val SPADE = "obj.spade"
-    const val SECATEURS = "obj.secateurs"
     const val MAGIC_SECATEURS = "obj.fairy_enchanted_secateurs"
     const val PLANT_CURE = "obj.plant_cure"
     const val WEEDS = "obj.weeds"
