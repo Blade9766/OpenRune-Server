@@ -130,6 +130,10 @@ public class CombatNpcAttributeCollector {
             attributes += CombatNpcAttributes.CorporealBeast
         }
 
+        if (TANGLEFOOT_TYPES.any(type::isType)) {
+            attributes += CombatNpcAttributes.Tanglefoot
+        }
+
         if (type.param(params.xerician) != 0) {
             attributes += CombatNpcAttributes.Xerician
         }
@@ -139,5 +143,17 @@ public class CombatNpcAttributeCollector {
         }
 
         return attributes
+    }
+
+    private companion object {
+        /** Magic secateurs draw on Farming against any of these; see `MeleeMaxHitOperations`. */
+        val TANGLEFOOT_TYPES =
+            listOf(
+                "npc.fairy_tanglefoot",
+                "npc.fairy_tanglefoot_sml1",
+                "npc.fairy_tanglefoot_sml2",
+                "npc.nzone_fairy_tanglefoot_normal",
+                "npc.nzone_fairy_tanglefoot_hard",
+            )
     }
 }

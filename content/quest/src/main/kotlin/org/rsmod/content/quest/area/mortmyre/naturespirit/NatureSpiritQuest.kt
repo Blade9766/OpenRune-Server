@@ -257,6 +257,9 @@ internal object MortMyreCoords {
     val ALTAR_ENTRY = CoordGrid(3442, 9734, 1)
     val SPIRIT_IN_GROTTO = CoordGrid(3441, 9738, 0)
 
+    /** The same spot in the level-1 Altar of Nature the grotto becomes. */
+    val SPIRIT_AT_ALTAR = CoordGrid(3441, 9738, 1)
+
     /** The broken bridge south of the island: the gap sits at z 3330 between these two rows. */
     const val BRIDGE_NORTH_Z = 3331
     const val BRIDGE_SOUTH_Z = 3329

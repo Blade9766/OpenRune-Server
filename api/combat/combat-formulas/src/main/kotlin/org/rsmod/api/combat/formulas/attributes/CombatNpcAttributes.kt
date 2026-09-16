@@ -10,6 +10,7 @@ public enum class CombatNpcAttributes {
     Kalphite,
     Golem,
     Leafy,
+    Tanglefoot,
     Rat,
     DemonbaneResistance,
     Size2,

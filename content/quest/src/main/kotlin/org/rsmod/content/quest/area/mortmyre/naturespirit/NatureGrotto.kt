@@ -22,6 +22,8 @@ import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Comp
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_PUZZLE_SOLVED
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_SICKLE_BLESSED
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_TRANSFORMED
+import org.rsmod.content.quest.area.zanaris.fairytale1.Fairytale1Quest.Companion.SECATEURS
+import org.rsmod.content.quest.area.zanaris.fairytale1.SecateursEnchantment
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.map.Direction
@@ -41,6 +43,7 @@ constructor(
     private val natureSpirit: NatureSpiritQuest,
     private val spirits: SpiritSpawns,
     private val objRepo: ObjRepository,
+    private val secateurs: SecateursEnchantment,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -52,7 +55,7 @@ constructor(
         onOpLoc1(DOOR_GREEN) { exitGrotto() }
         onOpNpc1(NATURE_SPIRIT) { startDialogue(it.npc) { natureSpirit(it.npc) } }
         onOpNpcU(NATURE_SPIRIT) {
-            if (it.objType.internalName == SILVER_SICKLE) {
+            if (it.objType.internalName == SILVER_SICKLE || it.objType.internalName == SECATEURS) {
                 startDialogue(it.npc) { natureSpirit(it.npc) }
             } else {
                 mes("Nothing interesting happens.")
@@ -123,6 +126,7 @@ constructor(
             stage < STAGE_POUCH_GIVEN -> givePouch()
             stage < STAGE_ALL_GHASTS -> ghastQuestions()
             stage == STAGE_ALL_GHASTS -> complete()
+            secateurs.hasBusiness(player) -> secateurs.talk(this, spirit)
             else -> access.mes("This spirit seems to be busy.")
         }
     }

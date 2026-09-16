@@ -4,6 +4,7 @@ import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
+import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
@@ -61,11 +62,17 @@ import org.rsmod.content.quest.area.wilderness.magearena.KolodionFights
 import org.rsmod.content.quest.area.wilderness.magearena.MageArena2Quest
 import org.rsmod.content.quest.area.wilderness.magearena.MageArenaQuest
 import org.rsmod.content.quest.area.wilderness.magearena.MageArenaTeleBlockHook
+import org.rsmod.content.quest.area.zanaris.fairytale1.Fairytale1Quest
+import org.rsmod.content.quest.area.zanaris.fairytale1.SecateursEnchantment
+import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootAttackHook
+import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootKillHook
+import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootLair
 import org.rsmod.plugin.module.PluginModule
 
 public class QuestModule : PluginModule() {
     override fun bind() {
         bindInstance<QuestRequirementResolver>()
+        bindInstance<SpadeDigging>()
         bindInstance<RuneMysteriesQuest>()
         bindInstance<DemonSlayerQuest>()
         bindInstance<GertrudesCatQuest>()
@@ -108,6 +115,9 @@ public class QuestModule : PluginModule() {
         bindInstance<DruidicRitualQuest>()
         bindInstance<ShiloUndead>()
         bindInstance<Nazastarool>()
+        bindInstance<Fairytale1Quest>()
+        bindInstance<SecateursEnchantment>()
+        bindInstance<TanglefootLair>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
@@ -124,5 +134,7 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(GhastKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(NazastaroolAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(ShiloVillageKillHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(TanglefootAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(TanglefootKillHook::class.java)
     }
 }
