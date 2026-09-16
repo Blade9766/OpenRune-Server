@@ -17,7 +17,7 @@ internal fun ProtectedAccess.ownsSwordPommel(): Boolean =
 
 /** Shows [text] on the parchment scroll used by quest journals. */
 internal fun ProtectedAccess.readScroll(title: String, text: String) {
-    val lines = text.lines().flatMap { it.toRs(inheritPreviousTags = true, wrapAt = SCROLL_WRAP).split("<br>") }
+    val lines = text.lines().flatMap { it.toRs(wrapAt = SCROLL_WRAP).split("<br>") }
     ifOpenMain("interface.questjournal")
     player.runClientScript(SCROLL_INIT_SCRIPT)
     ifSetText("component.questjournal:title", "<col=7f0000>$title</col>")

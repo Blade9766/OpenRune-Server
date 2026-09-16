@@ -24,177 +24,185 @@ public enum class RsStyle(public val tag: String, public val rsBase: String) {
     SHADOW("shad", "shad");
 
     public companion object {
-        public fun fromTag(tag: String): RsStyle? = entries.firstOrNull { it.tag.equals(tag, ignoreCase = true) }
+        public fun fromTag(tag: String): RsStyle? =
+            entries.firstOrNull { it.tag.equals(tag, ignoreCase = true) || it.rsBase.equals(tag, ignoreCase = true) }
     }
 }
 
 private data class ActiveTag(val type: String, val value: String?)
 
-public fun String.toRs(inheritPreviousTags: Boolean = true, wrapAt: Int? = null): String {
-    val out = StringBuilder()
+/** The colour and styles in force at one point in the text. */
+private data class RsFormat(val colour: ActiveTag?, val styles: List<ActiveTag>) {
+    fun open(): String = buildString {
+        colour?.let { append(it.render()) }
+        for (style in styles) append(style.render())
+    }
+
+    fun close(): String = buildString {
+        for (style in styles.asReversed()) append("</${style.type}>")
+        if (colour != null) append("</col>")
+    }
+
+    companion object {
+        val NONE = RsFormat(null, emptyList())
+    }
+}
+
+private fun ActiveTag.render(): String = if (value != null) "<$type=$value>" else "<$type>"
+
+private sealed interface RsPiece {
+    val format: RsFormat
+}
+
+private data class RsChar(val char: Char, override val format: RsFormat) : RsPiece
+
+/** A tag this parser does not understand, passed through untouched and not counted when wrapping. */
+private data class RsRaw(val text: String, override val format: RsFormat) : RsPiece
+
+/** An explicit `<br>` in the source, which ends the line it appears on. */
+private data class RsBreak(override val format: RsFormat) : RsPiece
+
+/**
+ * Converts the friendly markup used by quest journals and scrolls (`<red>`, `<strike>`,
+ * `<shad=ffffff>`, `<0000ff>`) into the client's own tags, optionally wrapping at [wrapAt] visible
+ * characters with `<br>`.
+ *
+ * The result is a series of lines joined by `<br>`, and each line opens and closes every tag it
+ * uses: tags are emitted flat rather than nested. The client resolves `</col>` against the text it
+ * is drawing rather than a tag stack, so a colour left open at a line break leaks over the whole
+ * of the next line.
+ */
+public fun String.toRs(wrapAt: Int? = null): String {
+    val pieces = parsePieces()
+    return pieces.splitLines(wrapAt).joinToString("<br>") { it.render() }
+}
+
+private fun String.parsePieces(): List<RsPiece> {
+    val pieces = mutableListOf<RsPiece>()
     val stack = ArrayDeque<ActiveTag>()
-    var pendingRestore: ActiveTag? = null
     var i = 0
+
+    fun format(): RsFormat =
+        RsFormat(stack.lastOrNull { it.type == "col" }, stack.filter { it.type != "col" })
 
     while (i < length) {
         val ch = this[i]
-
-        // Restore previous tag if inheritance enabled
-        if (pendingRestore != null && inheritPreviousTags) {
-            if (ch != '<' && !ch.isWhitespace()) {
-                appendTag(out, pendingRestore!!)
-                pendingRestore = null
-            }
-        }
-
-        if (ch == '<') {
-            val closeIndex = indexOf('>', i)
-            if (closeIndex == -1) {
-                out.append(substring(i))
-                break
-            }
-
-            val rawTag = substring(i + 1, closeIndex)
-            val tagContent = rawTag.lowercase().trim()
-            i = closeIndex + 1
-
-            when {
-                // Closing tag
-                tagContent.startsWith("/") -> {
-                    val popped = stack.removeLastOrNull()
-                    if (popped != null) out.append(closeTag(popped))
-                    pendingRestore = if (inheritPreviousTags) stack.lastOrNull() else null
-                }
-
-                // Style with color <strike=red>
-                Regex("^(strike|underline|shad)=([a-z0-9]+)$").matchEntire(tagContent) != null -> {
-                    val match = Regex("^(strike|underline|shad)=([a-z0-9]+)$").matchEntire(tagContent)!!
-                    val style = RsStyle.fromTag(match.groupValues[1])!!
-                    val color = RsColor.lookup(match.groupValues[2]) ?: match.groupValues[2].lowercase()
-                    out.append("<${style.rsBase}=$color>")
-                    stack.addLast(ActiveTag(style.rsBase, color))
-                }
-
-                // Plain style <strike>
-                RsStyle.fromTag(tagContent) != null -> {
-                    val style = RsStyle.fromTag(tagContent)!!
-                    out.append("<${style.rsBase}>")
-                    stack.addLast(ActiveTag(style.rsBase, null))
-                }
-
-                // Color tag <red> or <ff00ff>
-                RsColor.lookup(tagContent) != null -> {
-                    val hex = RsColor.lookup(tagContent)!!
-                    out.append("<col=$hex>")
-                    stack.addLast(ActiveTag("col", hex))
-                }
-
-                // Unknown tag → literal
-                else -> out.append("<$rawTag>")
-            }
+        if (ch != '<') {
+            pieces += RsChar(ch, format())
+            i++
             continue
         }
 
-        out.append(ch)
-        i++
+        val closeIndex = indexOf('>', i)
+        if (closeIndex == -1) {
+            substring(i).forEach { pieces += RsChar(it, format()) }
+            break
+        }
+
+        val rawTag = substring(i + 1, closeIndex)
+        val tagContent = rawTag.lowercase().trim()
+        i = closeIndex + 1
+
+        val styleWithColour = STYLE_WITH_COLOUR.matchEntire(tagContent)
+        val explicitColour = EXPLICIT_COLOUR.matchEntire(tagContent)
+        when {
+            tagContent.startsWith("/") -> stack.popClosed(tagContent.removePrefix("/"))
+
+            styleWithColour != null -> {
+                val style = RsStyle.fromTag(styleWithColour.groupValues[1])!!
+                val colour = RsColor.lookup(styleWithColour.groupValues[2]) ?: styleWithColour.groupValues[2]
+                stack.addLast(ActiveTag(style.rsBase, colour))
+            }
+
+            RsStyle.fromTag(tagContent) != null ->
+                stack.addLast(ActiveTag(RsStyle.fromTag(tagContent)!!.rsBase, null))
+
+            explicitColour != null -> stack.addLast(ActiveTag("col", explicitColour.groupValues[1]))
+
+            RsColor.lookup(tagContent) != null ->
+                stack.addLast(ActiveTag("col", RsColor.lookup(tagContent)!!))
+
+            tagContent == "br" || tagContent == "br/" -> pieces += RsBreak(format())
+
+            else -> pieces += RsRaw("<$rawTag>", format())
+        }
     }
-
-    // Final pending restore
-    if (pendingRestore != null && inheritPreviousTags) appendTag(out, pendingRestore)
-
-    // Close remaining tags
-    while (stack.isNotEmpty()) out.append(closeTag(stack.removeLast()))
-
-    // Apply wrapping if wrapAt is defined
-    return if (wrapAt != null) out.toString().wrapLines(wrapAt) else out.toString()
+    return pieces
 }
 
-private fun appendTag(sb: StringBuilder, tag: ActiveTag) {
-    val valuePart = tag.value?.let { "=$it" } ?: ""
-    sb.append("<${tag.type}$valuePart>")
+/** Removes the innermost tag [name] closes, falling back to the innermost tag of any kind. */
+private fun ArrayDeque<ActiveTag>.popClosed(name: String) {
+    val type =
+        when {
+            name == "col" || RsColor.lookup(name) != null -> "col"
+            else -> RsStyle.fromTag(name)?.rsBase
+        }
+    val index = indexOfLast { type == null || it.type == type }
+    if (index != -1) removeAt(index) else removeLastOrNull()
 }
 
-private fun closeTag(tag: ActiveTag) = when (tag.type) {
-    "col"  -> "</col>"
-    "str"  -> "</str>"
-    "u"    -> "</u>"
-    "shad" -> "</shad>"
-    else   -> ""
+/**
+ * Splits [this] at every explicit break and, when [maxLength] is set, wherever a line would run
+ * past that many visible characters, breaking at the last space before the limit. Unknown tags
+ * take up no room, matching how the client measures text.
+ */
+private fun List<RsPiece>.splitLines(maxLength: Int?): List<List<RsPiece>> {
+    val lines = mutableListOf<List<RsPiece>>()
+    var current = mutableListOf<RsPiece>()
+    var visible = 0
+    var lastSpace = -1
+    var lastSpaceVisible = 0
+
+    for (piece in this) {
+        if (piece is RsBreak) {
+            lines += current
+            current = mutableListOf()
+            visible = 0
+            lastSpace = -1
+            lastSpaceVisible = 0
+            continue
+        }
+        current += piece
+        if (piece !is RsChar || maxLength == null) {
+            continue
+        }
+        visible++
+        if (piece.char.isWhitespace()) {
+            lastSpace = current.size - 1
+            lastSpaceVisible = visible
+        }
+        if (visible < maxLength) {
+            continue
+        }
+        val cut = if (lastSpace != -1) lastSpace + 1 else current.size
+        lines += current.subList(0, cut).toList()
+        current = current.subList(cut, current.size).toMutableList()
+        visible = if (lastSpace != -1) visible - lastSpaceVisible else 0
+        lastSpace = -1
+        lastSpaceVisible = 0
+    }
+    lines += current
+    return lines
 }
 
-// -----------------------
-// Word-wrapping ignoring tags
-// -----------------------
-private fun String.wrapLines(maxLength: Int = 60): String {
+private fun List<RsPiece>.render(): String {
     val out = StringBuilder()
-    val activeTags = ArrayDeque<String>() // stack of currently open tags
-    var visibleCount = 0
-    var lastSpaceIndex = -1
-    var lastSpaceVisibleCount = 0
-    var i = 0
-
-    while (i < length) {
-        val ch = this[i]
-
-        if (ch == '<') {
-            val closeIndex = indexOf('>', i)
-            if (closeIndex == -1) {
-                out.append(substring(i))
-                break
-            }
-
-            val tag = substring(i, closeIndex + 1)
-            out.append(tag)
-
-            if (!tag.startsWith("</")) {
-                activeTags.addLast(tag)
-            } else {
-                val closeType = tag.drop(2).takeWhile { it != '=' && it != '>' }
-                val idx = activeTags.indexOfLast { it.drop(1).takeWhile { c -> c != '=' && c != '>' } == closeType }
-                if (idx != -1) activeTags.removeAt(idx)
-            }
-
-            i = closeIndex + 1
-            continue
+    var open = RsFormat.NONE
+    for (piece in this) {
+        if (piece.format != open) {
+            out.append(open.close())
+            out.append(piece.format.open())
+            open = piece.format
         }
-
-        out.append(ch)
-        visibleCount++
-
-        if (ch.isWhitespace()) {
-            lastSpaceIndex = out.length - 1
-            lastSpaceVisibleCount = visibleCount
-        }
-
-        if (visibleCount >= maxLength) {
-            val wrapPos = if (lastSpaceIndex != -1) lastSpaceIndex + 1 else out.length
-
-            // Close tags
-            val tagsToClose = activeTags.toList().reversed()
-            val closeTagsStr = tagsToClose.joinToString("") { tag ->
-                val type = tag.drop(1).takeWhile { it != '=' && it != '>' }
-                "</$type>"
-            }
-            out.insert(wrapPos, "$closeTagsStr<br>")
-
-            // Reopen tags safely, avoiding duplicates
-            val reopenTagsStr = StringBuilder()
-            for (tag in activeTags) {
-                val checkLen = tag.length
-                val endIndex = (wrapPos + closeTagsStr.length + 4).coerceAtMost(out.length)
-                val alreadyHasTag = out.substring(endIndex - checkLen, endIndex).equals(tag, ignoreCase = true)
-                if (!alreadyHasTag) reopenTagsStr.append(tag)
-            }
-            out.insert(wrapPos + closeTagsStr.length + 4, reopenTagsStr.toString())
-
-            visibleCount = if (lastSpaceIndex != -1) visibleCount - lastSpaceVisibleCount else 0
-            lastSpaceIndex = -1
-            lastSpaceVisibleCount = 0
-            i++
-        } else {
-            i++
+        when (piece) {
+            is RsChar -> out.append(piece.char)
+            is RsRaw -> out.append(piece.text)
+            is RsBreak -> Unit
         }
     }
-
+    out.append(open.close())
     return out.toString()
 }
+
+private val STYLE_WITH_COLOUR = Regex("^(strike|underline|shad|str|u)=([a-z0-9]+)$")
+private val EXPLICIT_COLOUR = Regex("^col=([0-9a-f]{1,8})$")
