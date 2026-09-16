@@ -116,6 +116,10 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
                         room.rotation,
                         null,
                     )
+                if (state.needsRoof(floor, gx, gz)) {
+                    this[GRID_ORIGIN + gx, GRID_ORIGIN + gz, floor.regionLevel + 1] =
+                        RegionZoneCopy(roofZone(state.style), 0, null)
+                }
             }
         }
 
@@ -124,6 +128,9 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
             if (stairsBelow) room.stairsTopZoneOffsetX ?: room.zoneOffsetX else room.zoneOffsetX
         return ZoneKey(style.blockZoneX + offsetX, room.zoneZ, style.templateLevel)
     }
+
+    private fun roofZone(style: HouseStyle): ZoneKey =
+        ZoneKey(style.blockZoneX + ROOF_ZONE_OFFSET_X, ROOF_ZONE_Z, style.templateLevel)
 
     /**
      * Turns the raw template copies into this owner's house: doorways are opened or walled up, and
@@ -285,6 +292,10 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         const val PERMANENT = Int.MAX_VALUE
 
         const val DYNAMIC_WINDOW = "loc.poh_dynamic_window"
+
+        /** The style block's roof template, laid over the top storey of every indoor room. */
+        const val ROOF_ZONE_OFFSET_X = 1
+        const val ROOF_ZONE_Z = 882
 
         const val BUILD_OP_INDEX = 4
         const val BUILD_OP = "Build"

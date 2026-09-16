@@ -293,6 +293,20 @@ class ConstructionDataTest {
     }
 
     @Test
+    fun `only the top storey of an indoor room is roofed`() {
+        val state = HouseState()
+        state.createStarterHouse()
+        val cell = Construction.STARTER_CELL
+        assertFalse(state.needsRoof(Floor.GROUND, cell, cell), "garden")
+        state[Floor.GROUND, cell + 1, cell] = Room(RoomType.SKILL_HALL, 0)
+        assertTrue(state.needsRoof(Floor.GROUND, cell + 1, cell))
+        state[Floor.UPPER, cell + 1, cell] = Room(RoomType.SKILL_HALL, 0)
+        assertFalse(state.needsRoof(Floor.GROUND, cell + 1, cell))
+        assertTrue(state.needsRoof(Floor.UPPER, cell + 1, cell))
+        assertFalse(state.needsRoof(Floor.GROUND, 0, 0), "empty cell")
+    }
+
+    @Test
     fun `plank prices rise with the log`() {
         val costs = PlankType.entries.map { it.cost }
         assertEquals(costs.sorted(), costs)

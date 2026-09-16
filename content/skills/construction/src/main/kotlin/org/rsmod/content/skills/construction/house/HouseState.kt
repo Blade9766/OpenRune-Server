@@ -85,6 +85,20 @@ class HouseState(
         return get(above, gx, gz) != null
     }
 
+    /**
+     * True when this room is the top storey of its cell and wants a roof over it. A garden is
+     * open to the sky, and a dungeon has the house itself overhead.
+     */
+    fun needsRoof(floor: Floor, gx: Int, gz: Int): Boolean {
+        val room = get(floor, gx, gz) ?: return false
+        if (room.type.outdoors || floor == Floor.DUNGEON) {
+            return false
+        }
+        // Nothing can be built above the top floor, so it always wants one.
+        val above = Floor.entries.getOrNull(floor.ordinal + 1) ?: return true
+        return get(above, gx, gz) == null
+    }
+
     /** True when the room under this cell has a staircase built in it. */
     fun hasStairsBelow(floor: Floor, gx: Int, gz: Int): Boolean {
         val below = Floor.entries.getOrNull(floor.ordinal - 1) ?: return false

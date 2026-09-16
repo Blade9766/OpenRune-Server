@@ -44,6 +44,11 @@ from, walls, windows, doors and all.
 | Canifis | 31 | 248-255 | 3 | `loc.canifis_poh_wall_plain` |
 | Deadman / wilderness | 32 | 256-263 | 0 | `loc.deadman_poh_wall` |
 
+Each block also carries a **roof** zone, a whole 8x8 of roof pieces in that style. It is copied onto
+the level above every indoor room with nothing built on top of it, which is what stops you seeing
+into the top storey from the garden; the client lifts it again when you walk in under it. Gardens are
+open to the sky and get none.
+
 A hall is authored twice. The second copy - `stairs top` - is the same room with the floor cut away
 over the stairwell, so you can see down into the room below, and with no rug authored across the
 hole; its stair hotspot is `..._stairs_top` rather than `..._stairs_up`. A hall with a staircase
@@ -60,7 +65,7 @@ on, before rotation. Rooms marked **shipped** are offered in the build menu.
 | (232,885) | Workshop | NS | yes |
 | (232,887) | Parlour | ESW | yes |
 | (233,880) | Plain grass filler | - | no |
-| (233,882) | Roof | - | no |
+| (233,882) | Roof | - | yes, over every top storey |
 | (233,884) | Portal chamber | S | yes |
 | (233,886) | Skill hall (stairs up) | ENSW | yes |
 | (233,888) | Achievement gallery | NS | no |
