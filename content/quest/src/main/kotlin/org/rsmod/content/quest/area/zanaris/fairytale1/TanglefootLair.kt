@@ -14,7 +14,6 @@ import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.repo.npc.NpcRepository
-import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
@@ -170,17 +169,16 @@ class TanglefootAttackHook @Inject constructor(private val lair: TanglefootLair)
     }
 }
 
-/** The Tanglefoot drops the Queen's secateurs it has been hoarding. */
+/**
+ * Marks the Tanglefoot dead so the journal moves on. The Queen's secateurs themselves come from
+ * the npc's own guaranteed drop table, not from here.
+ */
 class TanglefootKillHook
 @Inject
-constructor(
-    private val fairytale: Fairytale1Quest,
-    private val lair: TanglefootLair,
-    private val objRepo: ObjRepository,
-) : NpcDeathKillHook {
+constructor(private val fairytale: Fairytale1Quest, private val lair: TanglefootLair) :
+    NpcDeathKillHook {
     override fun onKill(context: NpcDeathKillContext) {
-        val npc = context.npc
-        if (!lair.isTanglefoot(npc)) {
+        if (!lair.isTanglefoot(context.npc)) {
             return
         }
         val hero = context.hero
@@ -188,14 +186,6 @@ constructor(
             return
         }
         fairytale.tanglefootSlain.set(hero, true)
-        if (hero.inv.contains(QUEENS_SECATEURS) || hero.worn.contains(QUEENS_SECATEURS)) {
-            return
-        }
-        objRepo.add(QUEENS_SECATEURS, npc.coords, DROP_DURATION, receiver = hero)
         hero.mes("The Tanglefoot falls apart, and a pair of secateurs drops out of the wreckage.")
-    }
-
-    private companion object {
-        const val DROP_DURATION = 500
     }
 }

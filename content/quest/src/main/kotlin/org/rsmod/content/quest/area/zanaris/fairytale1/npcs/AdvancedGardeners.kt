@@ -44,15 +44,15 @@ constructor(private val fairytale: Fairytale1Quest) : PluginScript() {
             "Martin in Draynor says nothing will grow for him any more. Have you had the same " +
                 "trouble?",
         )
+        val alreadyAsked = fairytale.gardenersAskedCount(player)
         fairytale.markGardenerAsked(player, index)
-        val asked = fairytale.gardenersAskedCount(player)
-        if (asked >= GARDENERS_NEEDED) {
+        if (alreadyAsked + 1 >= GARDENERS_NEEDED) {
             fairyTheory()
             fairytale.advanceTo(access, STAGE_GARDENERS_ASKED)
             chatPlayer(neutral, "That's the fifth answer I've had, and the strangest. I'll take it back to Martin.")
             return
         }
-        chatNpc(neutral, THEORIES[index % THEORIES.size])
+        chatNpc(neutral, THEORIES[alreadyAsked])
         chatPlayer(neutral, "Thanks. I'll see what the others say.")
     }
 
@@ -82,7 +82,10 @@ constructor(private val fairytale: Fairytale1Quest) : PluginScript() {
     }
 
     private companion object {
-        /** One theory per gardener, in [GARDENERS] order; none of them agree with each other. */
+        /**
+         * Handed out in the order the player asks, not per gardener, so that whichever five they
+         * pick they never hear the same theory twice - which is the whole point of the errand.
+         */
         val THEORIES =
             listOf(
                 "It's the rain, or the lack of it. We've had three dry months and the soil's " +
@@ -90,12 +93,6 @@ constructor(private val fairytale: Fairytale1Quest) : PluginScript() {
                 "Insects. I've never seen so many aphids, and the ladybirds have all gone.",
                 "The seasons are out of step. The frost came late and the seed never woke up.",
                 "Adventurers. Tramping over the beds day and night with their big muddy boots.",
-                "The soil's tired, that's all. Land needs a rest same as a man does.",
-                "Bad seed. Whoever the seed merchants are buying from, they're being cheated.",
-                "Too much compost, if you ask me. Folk think you can't overfeed a plant. You can.",
-                "It's the moon. Nothing planted on a waning moon ever came to much.",
-                "Something in the water. I've tasted it; it's gone flat, like old ale.",
-                "Magic, I shouldn't wonder. There's far too much of it about these days.",
             )
     }
 }

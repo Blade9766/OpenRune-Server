@@ -169,7 +169,7 @@ class FairyGodfather @Inject constructor(private val fairytale: Fairytale1Quest)
     private suspend fun Dialogue.fatRocco() {
         chatPlayer(neutral, "Hello.")
         if (fairytale.stage(player) < STAGE_SEEN_GODFATHER) {
-            chatNpc(neutral, "The Godfather is busy.")
+            chatNpc(neutral, "Do I know you? No? Then keep walking.")
             return
         }
         chatPlayer(quiz, "Does the Godfather always answer for the Queen?")

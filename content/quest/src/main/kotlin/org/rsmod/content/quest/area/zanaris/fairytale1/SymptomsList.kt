@@ -14,16 +14,15 @@ class SymptomsList @Inject constructor() : PluginScript() {
         onOpHeld1(SYMPTOMS_LIST) { read() }
     }
 
+    /** The message box paginates every four rendered lines, so each page is written to fit one. */
     private suspend fun ProtectedAccess.read() {
         mesbox(
-            "<col=800000>Symptoms, in the order I have seen them:</col><br><br>She sleeps, and " +
-                "will not be woken.<br>She is cold to the touch, which no fairy has ever been." +
-                "<br>The colour has gone out of her wings.",
+            "<col=800000>Symptoms, in the order I saw them:</col><br>She sleeps, and will not be " +
+                "woken.<br>She is cold to the touch.<br>The colour has gone from her wings.",
         )
         mesbox(
-            "Nothing she is given stays down. Nothing I brew has any effect at all.<br><br>She " +
-                "has not held her secateurs since the day before she took ill.<br><br>" +
-                "<col=800000>- Fairy Nuff</col>",
+            "Nothing she is given stays down.<br>Nothing I brew has any effect.<br>She has not " +
+                "held her secateurs since she took ill.<br><col=800000>- Fairy Nuff</col>",
         )
     }
 }
