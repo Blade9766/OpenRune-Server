@@ -501,8 +501,20 @@ object SlayerTaskManager {
         )
     }
 
-    private fun findMaster(npcId: String): SlayerMastersRow? =
-        tasks.keys.firstOrNull { master -> master.npcIds.any { it.id == npcId.asRSCM(RSCMType.NPC) } }
+    /**
+     * A multinpc's ops always arrive under its base type (Spria's `npc.slayer_master_9`), and
+     * `Npc.visType` does not resolve the varbit transform, so a master reached that way has to be
+     * matched through the forms its base type can take.
+     */
+    private fun findMaster(npcId: String): SlayerMastersRow? {
+        val id = npcId.asRSCM(RSCMType.NPC)
+        val direct = tasks.keys.firstOrNull { master -> master.npcIds.any { it.id == id } }
+        if (direct != null) {
+            return direct
+        }
+        val forms = ServerCacheManager.getNpc(id)?.transforms ?: return null
+        return tasks.keys.firstOrNull { master -> master.npcIds.any { it.id in forms } }
+    }
 
     private fun meetsMasterRequirements(access: ProtectedAccess, master: SlayerMastersRow): Boolean {
         val slayerLevel = access.statBase("stat.slayer")

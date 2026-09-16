@@ -135,6 +135,13 @@ grate_close = 68
 grate_open = 69
 ghost_attack = 436
 
+# A Porcine of Interest (dbrow.synth_aporcineofinterest)
+sourhog_hit = 2312
+sourhog_attack_ranged = 2313
+sourhog_attack_melee = 2314
+sourhog_death_cry = 2315
+sourhog_death_collapse = 2317
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -150,3 +157,7 @@ shilo_cairn_bridge = 125
 # Soft timers: the Marim jail guards watching the player, and the Ape Atoll tunnel's falling rocks.
 mm_jail = 122
 mm_rockfall = 123
+
+[gamevals.queue]
+# A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
+porcine_sourhog_blind = 65421

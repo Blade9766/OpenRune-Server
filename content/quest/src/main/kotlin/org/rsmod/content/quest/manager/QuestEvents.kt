@@ -3,6 +3,7 @@ package org.rsmod.content.quest.manager
 import dev.openrune.definition.type.widget.IfEvent
 import org.rsmod.api.player.ui.ifSetEvents
 import org.rsmod.api.player.vars.intVarBit
+import org.rsmod.api.script.onIfOpen
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.api.table.QuestRow
 import org.rsmod.game.entity.Player
@@ -15,12 +16,19 @@ class QuestEvents : PluginScript() {
     private var Player.questPointMax by intVarBit("varbit.qp_max")
 
     private var questCount: Int = 0
+    private var highestQuestId: Int = 0
     private var questPointCap: Int = 0
 
     override fun ScriptContext.startup() {
         val rows = QuestRow.all()
         questCount = rows.size
         questPointCap = rows.sumOf { it.questpoints }
+        highestQuestId = rows.maxOfOrNull { it.id } ?: 0
+
+        // The quest list is an overlay that is opened and closed every time the player switches
+        // journal tabs, and a re-opened interface comes back without its op flags, so they are
+        // set again on every open rather than only at login.
+        onIfOpen("interface.questlist") { player.enableQuestListOps() }
 
         onPlayerLogin {
             player.questTotalCount = questCount
@@ -35,14 +43,19 @@ class QuestEvents : PluginScript() {
                 IfEvent.Op4,
             )
 
-            player.ifSetEvents(
-                "component.questlist:list",
-                0..questCount,
-                IfEvent.Op1,
-                IfEvent.Op2,
-                IfEvent.Op3,
-                IfEvent.Op4,
-            )
+            player.enableQuestListOps()
         }
+    }
+
+    /** The list is indexed by quest id, not by row position, so the range spans the ids. */
+    private fun Player.enableQuestListOps() {
+        ifSetEvents(
+            "component.questlist:list",
+            0..highestQuestId,
+            IfEvent.Op1,
+            IfEvent.Op2,
+            IfEvent.Op3,
+            IfEvent.Op4,
+        )
     }
 }

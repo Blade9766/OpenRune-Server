@@ -8,6 +8,16 @@ import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.draynor.porcineofinterest.NoticeBoard
+import org.rsmod.content.quest.area.draynor.porcineofinterest.PorcineOfInterestQuest
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCave
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCombat
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogKillHook
+import org.rsmod.content.quest.area.draynor.porcineofinterest.StrangeHole
+import org.rsmod.content.quest.area.draynor.porcineofinterest.TrackingTrail
+import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Rosie
+import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Sarah
+import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Spria
 import org.rsmod.content.quest.area.draynor.vampyreslayer.CountDraynor
 import org.rsmod.content.quest.area.draynor.vampyreslayer.GarlicAttackHook
 import org.rsmod.content.quest.area.draynor.vampyreslayer.VampyreSlayerQuest
@@ -118,6 +128,15 @@ public class QuestModule : PluginModule() {
         bindInstance<Fairytale1Quest>()
         bindInstance<SecateursEnchantment>()
         bindInstance<TanglefootLair>()
+        bindInstance<PorcineOfInterestQuest>()
+        bindInstance<NoticeBoard>()
+        bindInstance<TrackingTrail>()
+        bindInstance<StrangeHole>()
+        bindInstance<SourhogCave>()
+        bindInstance<SourhogCombat>()
+        bindInstance<Sarah>()
+        bindInstance<Rosie>()
+        bindInstance<Spria>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
@@ -136,5 +155,6 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(ShiloVillageKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(TanglefootAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(TanglefootKillHook::class.java)
+        addSetBinding<NpcDeathKillHook>(SourhogKillHook::class.java)
     }
 }
