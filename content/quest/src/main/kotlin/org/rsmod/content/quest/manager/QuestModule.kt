@@ -43,6 +43,7 @@ import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHo
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
 import org.rsmod.content.quest.area.paterdomus.priestinperil.TempleGuardianAttackHook
 import org.rsmod.content.quest.area.rimmington.witchspotion.WitchsPotionQuest
+import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
@@ -104,6 +105,7 @@ public class QuestModule : PluginModule() {
         bindInstance<SpiritSpawns>()
         bindInstance<Ghasts>()
         bindInstance<ShiloVillageQuest>()
+        bindInstance<DruidicRitualQuest>()
         bindInstance<ShiloUndead>()
         bindInstance<Nazastarool>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
