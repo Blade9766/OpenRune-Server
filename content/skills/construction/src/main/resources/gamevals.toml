@@ -1,0 +1,8 @@
+# Construction sound effects. The ids come from the OSRS wiki's list of sound IDs; the cache ships
+# them but the stock gameval tables only name a couple of hundred synths, so the plugin names its
+# own.
+[gamevals.synth]
+poh_build_metal = 930
+poh_build_stone = 937
+poh_build_wood = 938
+poh_teleport = 984
