@@ -255,6 +255,31 @@ class ConstructionDataTest {
         }
     }
 
+    /** A hall reached by a staircase has to copy the template with the stairwell cut out. */
+    @Test
+    fun `only the rooms with a staircase have a second template`() {
+        for (room in RoomType.entries) {
+            val stairs = room.hotspots.any { group ->
+                group.options.any { option -> option.built.any { it in Furniture.STAIRS_DOWN } }
+            }
+            assertEquals(stairs, room.stairsTopZoneOffsetX != null, room.label)
+        }
+    }
+
+    @Test
+    fun `a room only reads as stair-topped when the one below has stairs`() {
+        val state = HouseState()
+        state.createStarterHouse()
+        val cell = Construction.STARTER_CELL
+        val hall = Room(RoomType.SKILL_HALL, 0)
+        state[Floor.GROUND, cell + 1, cell] = hall
+        state[Floor.UPPER, cell + 1, cell] = Room(RoomType.SKILL_HALL, 0)
+        assertFalse(state.hasStairsBelow(Floor.UPPER, cell + 1, cell))
+        hall.furniture["stairs"] = 0
+        assertTrue(state.hasStairsBelow(Floor.UPPER, cell + 1, cell))
+        assertFalse(state.hasStairsBelow(Floor.GROUND, cell + 1, cell))
+    }
+
     @Test
     fun `plank prices rise with the log`() {
         val costs = PlankType.entries.map { it.cost }

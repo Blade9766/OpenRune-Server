@@ -2,6 +2,7 @@ package org.rsmod.content.skills.construction.house
 
 import org.rsmod.content.skills.construction.Construction
 import org.rsmod.content.skills.construction.data.Floor
+import org.rsmod.content.skills.construction.data.Furniture
 import org.rsmod.content.skills.construction.data.HouseLocation
 import org.rsmod.content.skills.construction.data.HouseStyle
 import org.rsmod.content.skills.construction.data.RoomType
@@ -82,6 +83,16 @@ class HouseState(
     fun supportsRoomAbove(floor: Floor, gx: Int, gz: Int): Boolean {
         val above = Floor.entries.getOrNull(floor.ordinal + 1) ?: return false
         return get(above, gx, gz) != null
+    }
+
+    /** True when the room under this cell has a staircase built in it. */
+    fun hasStairsBelow(floor: Floor, gx: Int, gz: Int): Boolean {
+        val below = Floor.entries.getOrNull(floor.ordinal - 1) ?: return false
+        val room = get(below, gx, gz) ?: return false
+        return room.type.hotspots.any { group ->
+            room.furniture.containsKey(group.key) &&
+                group.options.any { option -> option.built.any { it in Furniture.STAIRS_DOWN } }
+        }
     }
 
     /** The garden the exit portal stands in, which is the only way out on foot. */

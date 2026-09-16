@@ -50,6 +50,10 @@ object Side {
  * [zoneOffsetX] and [zoneZ] locate the room's 8x8 template relative to a style's block (see
  * [HouseStyle]); [doors] is a bitmask of the edges the template has a door hotspot on, before the
  * room is rotated, with one bit per [Side].
+ *
+ * A hall is authored twice. [stairsTopZoneOffsetX] is the second template, the one used when a
+ * staircase reaches up into the room: it is the same room with the floor cut away over the
+ * stairwell, so you can see down into the room below, and with no rug authored across the hole.
  */
 enum class RoomType(
     val label: String,
@@ -60,6 +64,7 @@ enum class RoomType(
     val doors: Int,
     val outdoors: Boolean,
     val hotspots: List<HotspotGroup>,
+    val stairsTopZoneOffsetX: Int? = null,
 ) {
     GARDEN("Garden", 1, 1_000, 0, 881, 0b1111, true, Furniture.GARDEN),
     PARLOUR("Parlour", 1, 1_000, 0, 887, 0b1101, false, Furniture.PARLOUR),
@@ -67,8 +72,8 @@ enum class RoomType(
     DINING_ROOM("Dining room", 10, 5_000, 4, 887, 0b1101, false, Furniture.DINING_ROOM),
     WORKSHOP("Workshop", 15, 10_000, 0, 885, 0b1010, false, Furniture.WORKSHOP),
     BEDROOM("Bedroom", 20, 10_000, 6, 887, 0b1001, false, Furniture.BEDROOM),
-    SKILL_HALL("Skill hall", 25, 15_000, 1, 886, 0b1111, false, Furniture.SKILL_HALL),
-    QUEST_HALL("Quest hall", 35, 25_000, 5, 886, 0b1111, false, Furniture.QUEST_HALL),
+    SKILL_HALL("Skill hall", 25, 15_000, 1, 886, 0b1111, false, Furniture.SKILL_HALL, 3),
+    QUEST_HALL("Quest hall", 35, 25_000, 5, 886, 0b1111, false, Furniture.QUEST_HALL, 7),
     STUDY("Study", 40, 50_000, 4, 885, 0b1101, false, Furniture.STUDY),
     CHAPEL("Chapel", 45, 50_000, 2, 885, 0b1001, false, Furniture.CHAPEL),
     PORTAL_CHAMBER("Portal chamber", 50, 100_000, 1, 884, 0b1000, false, Furniture.PORTAL_CHAMBER);

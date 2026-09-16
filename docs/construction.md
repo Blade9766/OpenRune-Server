@@ -44,6 +44,12 @@ from, walls, windows, doors and all.
 | Canifis | 31 | 248-255 | 3 | `loc.canifis_poh_wall_plain` |
 | Deadman / wilderness | 32 | 256-263 | 0 | `loc.deadman_poh_wall` |
 
+A hall is authored twice. The second copy - `stairs top` - is the same room with the floor cut away
+over the stairwell, so you can see down into the room below, and with no rug authored across the
+hole; its stair hotspot is `..._stairs_top` rather than `..._stairs_up`. A hall with a staircase
+reaching up into it copies that one instead. Everything else about the two is identical, right down
+to the rug hotspot ids, so nothing but the zone changes.
+
 Room offsets are identical in every block. `doors` lists the edges the template has a door hotspot
 on, before rotation. Rooms marked **shipped** are offered in the build menu.
 
@@ -64,7 +70,7 @@ on, before rotation. Rooms marked **shipped** are offered in the build menu.
 | (234,887) | Kitchen | SW | yes |
 | (235,880) | Dungeon corridor | - | no |
 | (235,884) | Combat room | ESW | no |
-| (235,886) | Skill hall (stairs down) | ENSW | no |
+| (235,886) | Skill hall (stairs top) | ENSW | yes, above a staircase |
 | (235,888) | Portal nexus | ENSW | no |
 | (236,883) | Dungeon junction | - | no |
 | (236,885) | Study | ESW | yes |
@@ -80,7 +86,7 @@ on, before rotation. Rooms marked **shipped** are offered in the build menu.
 | (239,880) | Menagerie (outdoors) | ENSW | no |
 | (239,882) | Menagerie (indoors) | ENSW | no |
 | (239,884) | Treasure room | - | no |
-| (239,886) | Quest hall (stairs down) | ENSW | no |
+| (239,886) | Quest hall (stairs top) | ENSW | yes, above a staircase |
 
 ## Inside a room template
 
