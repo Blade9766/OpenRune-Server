@@ -6,3 +6,9 @@ poh_build_metal = 930
 poh_build_stone = 937
 poh_build_wood = 938
 poh_teleport = 984
+
+# Runs the stranded-player check a cycle after login. The login scene is composed from the
+# coordinates the player was saved at, before any login script runs, and the engine skips the
+# first build-area rebuild because of it - so moving them has to wait a cycle to be drawn.
+[gamevals.queue]
+poh_evict = 65422

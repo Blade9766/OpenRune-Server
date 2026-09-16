@@ -110,6 +110,11 @@ its own save attribute rather than in vars.
 Town portals carry `Enter / Home / Build mode / Friend's house`; op1 enters, op3 enters in build
 mode. `loc.poh_exit_portal` is the portal standing in the garden.
 
+A player who was saved inside a house - a crash, rather than a logout, which moves them out
+first - is sent home by `queue.poh_evict` a cycle after login. It has to wait: the login scene is
+composed from the saved coordinates before any script runs, and the engine skips the first
+build-area rebuild, so moving them during the login event itself is never drawn.
+
 | Town | Loc | Coords |
 |---|---|---|
 | Rimmington | `loc.poh_rimmington_portal` | 2951, 3222 |
@@ -152,7 +157,9 @@ Prifddinas 70 / 50,000.
 - The rooms marked "no" above, and the dungeon floor with them.
 - Hotspots whose data could not be sourced from the cache alone: trophy and quest-item spaces, the
   chapel statues, the workshop tool stores, the garden tip jar. They are deliberately absent rather
-  than guessed at, and the build script hides any hotspot it has no table for.
+  than guessed at. A hotspot with no table is taken out of a finished house, but it is still there
+  in building mode and clicking it does nothing.
+- Removing a room. The staircase's `Remove-room` op is cache-authored and unhandled.
 - Directing a built portal frame at a destination, and the portal nexus.
 - Servants, the house options interface, guests and the house advertisement board.
 - Chapel altars always use the Saradomin models; live Old School picks the god from the icon built

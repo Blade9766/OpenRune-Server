@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.construction.house
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
@@ -134,7 +135,16 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
                     name == house.state.style.doorLeft || name == house.state.style.doorRight ->
                         dressDoor(house, loc, room, floor, gx, gz)
                     else -> {
-                        val group = room.type.hotspots.firstOrNull { name in it.locs } ?: continue
+                        val group = room.type.hotspots.firstOrNull { name in it.locs }
+                        if (group == null) {
+                            // A hotspot the plugin has no table for still carries its ghost model,
+                            // so a finished house has to have it taken out even though nothing can
+                            // ever be built on it.
+                            if (!house.buildMode && isHotspot(loc.id)) {
+                                locRepo.del(loc, PERMANENT)
+                            }
+                            continue
+                        }
                         val placed = dressHotspot(house, room, group, name, loc)
                         if (placed != null && placed in Furniture.STAIRS_DOWN) {
                             stairs += PlacedStairs(floor, gx, gz, loc, base, placed)
@@ -229,6 +239,9 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         return zone.toCoords().translate(ENTRANCE_OFFSET_X, ENTRANCE_OFFSET_Z, 0)
     }
 
+    private fun isHotspot(id: Int): Boolean =
+        ServerCacheManager.getObject(id)?.actions?.getOpOrNull(BUILD_OP_INDEX) == BUILD_OP
+
     private fun locName(id: Int): String? =
         runCatching { RSCM.getReverseMapping(RSCMType.LOC, id) }.getOrNull()
 
@@ -246,6 +259,9 @@ constructor(private val regionRepo: RegionRepository, private val locRepo: LocRe
         const val GRID_ORIGIN = 1
 
         const val PERMANENT = Int.MAX_VALUE
+
+        const val BUILD_OP_INDEX = 4
+        const val BUILD_OP = "Build"
 
         /** Beside the garden centrepiece, which occupies the middle of its zone. */
         const val ENTRANCE_OFFSET_X = 2

@@ -1,5 +1,8 @@
 package org.rsmod.content.skills.construction.scripts
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.constructionLvl
@@ -99,6 +102,9 @@ constructor(
                 choices = candidates.map { "${it.label} - ${it.cost} coins (level ${it.level})" },
             )
         val room = candidates.getOrNull(choice) ?: return
+        // The list modal stays open server-side after a choice, and a `delay` that captured it
+        // would lose protected access the moment the client's close reaches us.
+        ifClose()
         if (player.constructionLvl < room.level) {
             mes("You need a Construction level of ${room.level} to build a ${room.label.lowercase()}.")
             return
@@ -147,6 +153,7 @@ constructor(
                 choices = affordable.map { "${it.label} (level ${it.level})" },
             )
         val option = affordable.getOrNull(choice) ?: return
+        ifClose()
         if (!hasMaterials(option)) {
             mes("You do not have the materials to build that.")
             mes(option.materials.joinToString(", ") { "${it.count} x ${objName(it.obj)}" })
@@ -170,7 +177,7 @@ constructor(
             }
         }
         statAdvance(Construction.STAT, option.xp * xpMods.get(player, Construction.STAT))
-        mes("You build a ${option.label.lowercase()}.")
+        mes("You build the ${option.label.lowercase()}.")
         access.rebuild(this)
     }
 
@@ -200,7 +207,7 @@ constructor(
         resetAnim()
 
         store.update(player) { room.furniture.remove(group.key) }
-        mes("You remove the ${group.label.lowercase()}.")
+        mes("You remove the ${group.label.removeSuffix(" space").lowercase()}.")
         access.rebuild(this)
     }
 
@@ -252,5 +259,6 @@ constructor(
     }
 
     private fun objName(obj: String): String =
-        obj.removePrefix("obj.").replace('_', ' ')
+        ServerCacheManager.getItem(obj.asRSCM(RSCMType.OBJ))?.name
+            ?: obj.removePrefix("obj.").replace('_', ' ')
 }

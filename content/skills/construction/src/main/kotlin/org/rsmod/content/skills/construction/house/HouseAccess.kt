@@ -4,6 +4,7 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
+import org.rsmod.api.registry.region.RegionRegistry
 import org.rsmod.content.skills.construction.Construction
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
@@ -55,10 +56,19 @@ constructor(private val registry: HouseRegistry, private val store: HouseStore) 
         access.moveInto(destination)
     }
 
-    /** Sends a player who logged out - or was otherwise stranded - inside a dead region home. */
+    /**
+     * Sends a player who logged out - or was otherwise stranded - inside a dead region home.
+     *
+     * Clearing the build area matters on login: the scene has already been decided by the time this
+     * runs, so moving the player alone leaves the client drawing the region that no longer exists.
+     */
     fun evict(player: Player) {
         registry.close(player)
         VarPlayerIntMapSetter.set(player, BUILD_MODE_VARBIT, 0)
+        if (RegionRegistry.inWorkingArea(player.coords)) {
+            player.coords = store.state(player).location.arrive
+            player.buildArea = CoordGrid.NULL
+        }
     }
 
     fun exitCoords(player: Player): CoordGrid = store.state(player).location.arrive
