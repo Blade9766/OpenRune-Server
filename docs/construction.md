@@ -112,7 +112,8 @@ garden the exit portal stands in.
 - Windows are all `loc.poh_dynamic_window`, a placeholder with no style of its own, swapped for
   the style's window - which the cache names as the wall's sibling, usually the very next id
   (`loc.village_wall` 13098, `loc.village_wall_window` 13099). Tropical wood is the exception:
-  there is no `poh_timberwall` window, so it borrows `loc.timberwall_with_window_2`.
+  there is no `poh_timberwall` window, so it borrows `loc.timberwall_with_window_2`, checked in
+  game to match the timber wall's plaster and framing.
 
 **Angles matter.** The region registry translates a copied loc's coordinates but leaves its angle as
 authored, so a loc read back out of a rotated zone still carries the *template* angle. Deleting one
