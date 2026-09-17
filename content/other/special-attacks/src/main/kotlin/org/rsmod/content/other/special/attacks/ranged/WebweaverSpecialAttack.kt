@@ -12,6 +12,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.RangedSpecialAttack
 import org.rsmod.content.other.poison.NpcPoison
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -60,7 +61,7 @@ class WebweaverSpecialAttack @Inject constructor(private val charges: CombatChar
                 return false
             }
 
-            anim("seq.human_special01_webweaver")
+            specialAnim("seq.human_special01_webweaver")
             soundSynth(ATTACK_SOUND)
             spotanim(LAUNCH, height = 96, slot = constants.spotanim_slot_combat)
 

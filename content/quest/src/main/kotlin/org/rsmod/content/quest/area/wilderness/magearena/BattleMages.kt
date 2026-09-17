@@ -9,7 +9,6 @@ import org.rsmod.api.bosses.runtime.BossCombat
 import org.rsmod.api.bosses.runtime.BossDeps
 import org.rsmod.api.combat.commons.player.finishNpcHit
 import org.rsmod.api.npc.access.StandardNpcAccess
-import org.rsmod.api.player.stat.statSub
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.hit.HitType
@@ -51,11 +50,7 @@ class BattleMages @Inject constructor(private val deps: BossDeps) : PluginScript
         target.spotanim(god.impact, delay = IMPACT_CLIENT_DELAY, height = 0)
         target.finishNpcHit(npc, HIT_DELAY, HitType.Magic, damage, deps.playerHitModifier)
         if (damage > 0) {
-            when (god) {
-                God.SARADOMIN -> target.statSub("stat.prayer", constant = 1, percent = 0)
-                God.GUTHIX -> target.statSub("stat.defence", constant = 0, percent = DRAIN_PERCENT)
-                God.ZAMORAK -> target.statSub("stat.magic", constant = 0, percent = DRAIN_PERCENT)
-            }
+            applyGodSpellEffect(target, god)
         }
     }
 
@@ -65,7 +60,6 @@ class BattleMages @Inject constructor(private val deps: BossDeps) : PluginScript
         const val ATTACK_RATE = 4
         const val AGGRESSION_RADIUS = 8
         const val MAX_HIT = 20
-        const val DRAIN_PERCENT = 5
         const val SOUND_RADIUS = 8
         const val IMPACT_CLIENT_DELAY = 30
         const val HIT_DELAY = 2

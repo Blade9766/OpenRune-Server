@@ -17,6 +17,10 @@ class CleaningHerbsEvents : PluginScript() {
     }
 
     private suspend fun ProtectedAccess.startCleanHerb(row: HerbloreCleaningRow) {
+        if (!knowsHerblore()) {
+            return
+        }
+
         if (!meetsStatReqs(row.statReq)) {
             return
         }
@@ -70,5 +74,4 @@ class CleaningHerbsEvents : PluginScript() {
     }
 
     private data class CleanHerbTask(val row: HerbloreCleaningRow)
-
 }

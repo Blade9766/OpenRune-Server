@@ -2,6 +2,10 @@ package org.rsmod.content.other.special.attacks
 
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.content.other.special.attacks.boost.StatBoostSpecialAttacks
+import org.rsmod.content.other.special.attacks.magic.DawnbringerSpecialAttack
+import org.rsmod.content.other.special.attacks.magic.NightmareStaffSpecialAttacks
+import org.rsmod.content.other.special.attacks.magic.PowerOfDeathSpecialAttack
+import org.rsmod.content.other.special.attacks.magic.PoweredStaffSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.AbyssalSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.DragonLongswordSpecialAttack
 import org.rsmod.content.other.special.attacks.melee.DragonWeaponSpecialAttacks
@@ -11,6 +15,7 @@ import org.rsmod.content.other.special.attacks.melee.MiscMeleeSpecialAttacks
 import org.rsmod.content.other.special.attacks.ranged.DarkBowSpecialAttack
 import org.rsmod.content.other.special.attacks.ranged.RangedSpecialAttacks
 import org.rsmod.content.other.special.attacks.ranged.WebweaverSpecialAttack
+import org.rsmod.content.other.special.attacks.shield.ShieldSpecialAttacks
 import org.rsmod.plugin.module.PluginModule
 
 class SpecialAttackModule : PluginModule() {
@@ -25,5 +30,10 @@ class SpecialAttackModule : PluginModule() {
         addSetBinding<SpecialAttackMap>(MiscMeleeSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(RangedSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(WebweaverSpecialAttack::class.java)
+        addSetBinding<SpecialAttackMap>(PowerOfDeathSpecialAttack::class.java)
+        addSetBinding<SpecialAttackMap>(PoweredStaffSpecialAttacks::class.java)
+        addSetBinding<SpecialAttackMap>(NightmareStaffSpecialAttacks::class.java)
+        addSetBinding<SpecialAttackMap>(ShieldSpecialAttacks::class.java)
+        addSetBinding<SpecialAttackMap>(DawnbringerSpecialAttack::class.java)
     }
 }

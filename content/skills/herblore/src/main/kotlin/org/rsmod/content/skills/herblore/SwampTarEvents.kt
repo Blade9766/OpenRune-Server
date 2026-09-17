@@ -22,6 +22,10 @@ class SwampTarEvents : PluginScript() {
     }
 
     private suspend fun ProtectedAccess.createSwampTar(recipe: HerbloreSwampTarRow) {
+        if (!knowsHerblore()) {
+            return
+        }
+
         if (!meetsStatReqs(recipe.statReq)) {
             return
         }

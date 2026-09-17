@@ -231,6 +231,36 @@ constructor(
     }
 
     /**
+     * Plays the attack sound for [attack] without its animation.
+     *
+     * Special attacks never reach [playWeaponFx] because they supply their own animation, so
+     * without this they are silent. Weapons whose special has a sound of its own play that
+     * instead.
+     */
+    public fun playWeaponSound(player: Player, attack: CombatAttack.Melee) {
+        val weapon = getOrNull(attack.weapon)
+        val fx = MeleeAnimationAndSound.from(attack.stance)
+        val attackSound =
+            weapon?.paramOrNull(fx.soundParam)
+                ?: SynthType(fx.defaultSound.asRSCM(RSCMType.SYNTH))
+        playAttackSound(player, attackSound)
+    }
+
+    /** @see [playWeaponSound] */
+    public fun playWeaponSound(player: Player, attack: CombatAttack.Staff) {
+        val weapon = getInvObj(attack.weapon)
+        val attackSound = weapon.paramOrNull(params.attack_sound_stance1) ?: return
+        playAttackSound(player, attackSound)
+    }
+
+    /** @see [playWeaponSound] */
+    public fun playWeaponSound(player: Player, attack: CombatAttack.Ranged) {
+        val weapon = getInvObj(attack.weapon)
+        val attackSound = weapon.paramOrNull(params.attack_sound_stance1) ?: return
+        playAttackSound(player, attackSound)
+    }
+
+    /**
      * Plays a weapon attack sound as an area sound around [player], so that nearby players hear
      * the attack as well as the attacker - the official behaviour for combat sounds.
      */

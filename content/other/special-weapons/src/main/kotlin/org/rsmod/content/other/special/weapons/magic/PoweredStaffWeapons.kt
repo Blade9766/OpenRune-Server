@@ -23,8 +23,8 @@ import org.rsmod.game.entity.Player
 /**
  * Built-in spells of every powered staff other than Tumeken's shadow (see
  * [TumekensShadowWeapons]): the tridents, the Sanguinesti staff, the revenant sceptres, the warped
- * sceptre, the bone staff, the Eye of Ayak, the deadman starter staff and the corrupted Tumeken's
- * shadow.
+ * sceptre, the bone staff, the Eye of Ayak, the Dawnbringer, the deadman starter staff and the
+ * corrupted Tumeken's shadow.
  *
  * All of them share one charge counter, `varobj.powered_staff_charges`, and the charging itself
  * (runes, ether, check/uncharge options) lives in `PoweredStaffCharging`.
@@ -192,6 +192,20 @@ constructor(
                     "or death and chaos runes.",
         )
 
+        // Dawnbringer: no charges, and its blast always lands.
+        register(
+            "obj.verzik_special_weapon",
+            staff(
+                PoweredStaffSpec(
+                    name = "Dawnbringer",
+                    fx = DAWNBRINGER_FX,
+                    maxHit = { magic -> magic / 3 - 22 },
+                    usesCharges = false,
+                    alwaysHits = true,
+                )
+            ),
+        )
+
         // Deadman starter staff: a free Fire Strike (max hit 8) with no charges to track.
         val starter =
             staff(
@@ -254,6 +268,8 @@ constructor(
         val healSpotanim: String? = null,
         /** The bone staff only works against rats. */
         val ratsOnly: Boolean = false,
+        /** The Dawnbringer ignores the accuracy roll: its blast never splashes. */
+        val alwaysHits: Boolean = false,
         val outOfCharges: String = "Your $name has run out of charges.",
     ) {
         companion object {
@@ -323,7 +339,9 @@ constructor(
                 spec.wildernessBoost && target is Npc && target.coords.isInWilderness(areaChecker)
             val multiplier = if (boosted) WILDERNESS_MULTIPLIER else 1.0
 
-            val accurate = attackManager.rollStaffAccuracy(player, target, attack.style, multiplier)
+            val accurate =
+                spec.alwaysHits ||
+                    attackManager.rollStaffAccuracy(player, target, attack.style, multiplier)
             if (!accurate) {
                 manager.playSplashFx(this, target, clientDelay, fx.castSound, soundRadius = 10)
                 manager.queueSplashHit(this, target, clientDelay, serverDelay)
@@ -565,6 +583,16 @@ constructor(
                 castSpotanim = "spotanim.vfx_ayak_player_normal_spotanim",
                 travelSpotanim = "spotanim.vfx_ayak_normal_projectile",
                 impactSpotanim = "spotanim.vfx_ayak_normal_impact",
+                castSound = CAST_SOUND,
+                hitSound = null,
+            )
+
+        private val DAWNBRINGER_FX =
+            StaffFx(
+                castAnim = CAST_STAFF,
+                castSpotanim = "spotanim.dawnbringer_casting",
+                travelSpotanim = "spotanim.dawnbringer_projectile",
+                impactSpotanim = "spotanim.dawnbringer_impact",
                 castSound = CAST_SOUND,
                 hitSound = null,
             )

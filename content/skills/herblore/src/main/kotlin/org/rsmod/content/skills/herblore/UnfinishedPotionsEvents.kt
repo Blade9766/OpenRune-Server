@@ -36,6 +36,10 @@ class UnfinishedPotionsEvents : PluginScript() {
             it.herbItem.internalName == herbName
         } ?: return
 
+        if (!knowsHerblore()) {
+            return
+        }
+
         if (!meetsStatReqs(potionForHerb.statReq)) {
             return
         }
@@ -166,5 +170,4 @@ class UnfinishedPotionsEvents : PluginScript() {
         val amount: Int,
         val created: Int,
     )
-
 }

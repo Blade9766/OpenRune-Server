@@ -188,3 +188,21 @@ contentGroup = "content.closed_left_picketgate"
 [object.params]
 "param.next_loc_stage" = "loc.rustic_openfencegate_l"
 "param.opensound" = "synth.picketgate_open"
+
+# Taverley Dungeon's Cauldron of Thunder has no open form in the cache, so the panels swing their
+# own models; only the sounds are configured here.
+[[object]]
+id = "loc.cauldrondoor"
+inherit = "loc.cauldrondoor"
+
+[object.params]
+"param.opensound" = "synth.grate_open"
+"param.closesound" = "synth.grate_close"
+
+[[object]]
+id = "loc.cauldrondoor_l"
+inherit = "loc.cauldrondoor_l"
+
+[object.params]
+"param.opensound" = "synth.grate_open"
+"param.closesound" = "synth.grate_close"

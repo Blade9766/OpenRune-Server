@@ -13,6 +13,7 @@ import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.RangedSpecialAttack
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -95,7 +96,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             val launchSpot =
                 quiverType.paramOrNull(params.proj_launch_double)
                     ?: quiverType.paramOrNull(params.proj_launch)
-            anim("seq.human_bow")
+            specialAnim("seq.human_bow")
             soundSynth("synth.darkbow_doublefire")
             soundSynth("synth.darkbow_shadow_attack")
             spotanim(
@@ -160,7 +161,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             val launchSpot =
                 quiverType.paramOrNull(params.proj_launch_double)
                     ?: quiverType.paramOrNull(params.proj_launch)
-            anim("seq.human_bow")
+            specialAnim("seq.human_bow")
             soundSynth("synth.darkbow_doublefire")
             soundSynth("synth.darkbow_dragon_attack")
             spotanim(

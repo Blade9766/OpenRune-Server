@@ -7,6 +7,7 @@ import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
+import org.rsmod.content.other.special.attacks.specialAnim
 
 class StatBoostSpecialAttacks @Inject constructor(private val worldRepo: WorldRepository) :
     SpecialAttackMap {
@@ -48,7 +49,7 @@ class StatBoostSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
     private fun ProtectedAccess.lumberUp(spot: String): Boolean {
         statBoost("stat.woodcutting", constant = 3, percent = 0)
         say("Chop chop!")
-        anim("seq.dragon_smallaxe_anim")
+        specialAnim("seq.dragon_smallaxe_anim")
         spotanim(spot, height = 96, slot = constants.spotanim_slot_combat)
         soundArea(worldRepo, coords, "synth.clobber", radius = 1)
         return true
@@ -93,7 +94,7 @@ class StatBoostSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
     private fun ProtectedAccess.fishstabber(seq: String, spot: String): Boolean {
         statBoost("stat.fishing", constant = 3, percent = 0)
         say("Here fishy fishies!")
-        anim(seq)
+        specialAnim(seq)
         spotanim(spot)
         soundArea(worldRepo, coords, "synth.rampage", radius = 1)
         return true
@@ -135,7 +136,7 @@ class StatBoostSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
     private fun ProtectedAccess.rockKnocker(seq: String): Boolean {
         statBoost("stat.mining", constant = 3, percent = 0)
         say("Smashing!")
-        anim(seq)
+        specialAnim(seq)
         soundArea(worldRepo, coords, "synth.found_gem", radius = 1)
         return true
     }

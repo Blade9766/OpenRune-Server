@@ -23,7 +23,6 @@ import org.rsmod.api.npc.opPlayer2
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.player.stat.statSub
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.script.onNpcQueue
 import org.rsmod.content.quest.area.wilderness.magearena.MageArenaQuest.Companion.STAGE_DUEL
@@ -33,6 +32,7 @@ import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.npc.NpcUid
 import org.rsmod.game.entity.player.PlayerUid
 import org.rsmod.game.hit.HitType
+import org.rsmod.game.queue.WorldQueueList
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -93,6 +93,7 @@ constructor(
     private val death: NpcDeath,
     private val collision: CollisionFlagMap,
     private val search: NpcSearch,
+    private val worldQueues: WorldQueueList,
 ) : PluginScript() {
 
     private val quest
@@ -179,14 +180,6 @@ constructor(
         }
     }
 
-    private fun applyGodSpellEffect(target: Player, god: God) {
-        when (god) {
-            God.SARADOMIN -> target.statSub("stat.prayer", constant = 1, percent = 0)
-            God.GUTHIX -> target.statSub("stat.defence", constant = 0, percent = DRAIN_PERCENT)
-            God.ZAMORAK -> target.statSub("stat.magic", constant = 0, percent = DRAIN_PERCENT)
-        }
-    }
-
     /**
      * A form's death queue. Kolodion drops nothing; the next shape rises where this one fell, or
      * the duel is won.
@@ -213,7 +206,41 @@ constructor(
             quest.advanceQuestStage(this)
         }
         player.mes("Kolodion's final form crumbles. You have proven yourself in the arena.")
-        magicTeleport(MageArenaCoords.CAVE_KOLODION_ARRIVAL)
+        // Kolodion paces the cave, so land beside wherever he is rather than on a fixed tile.
+        val kolodion =
+            search.find(
+                MageArenaCoords.CAVE_KOLODION_ARRIVAL,
+                MageArenaCoords.KOLODION,
+                KOLODION_SEARCH_RADIUS,
+                HuntVis.Off,
+            )
+        val arrival =
+            kolodion
+                ?.let {
+                    collision.tilesAround(it.coords, it.type.size, MageArenaCoords.CAVE_KOLODION_ARRIVAL).firstOrNull()
+                }
+                ?: MageArenaCoords.CAVE_KOLODION_ARRIVAL
+        val uid = player.uid
+        // Auto-retaliate keeps picking a new battle mage out of the arena while the teleport
+        // plays, and every one of them shouts "I can't reach that!" from the cave. Drop whatever
+        // the player has latched onto at the top of each cycle until the talk begins.
+        for (cycle in 1..RETALIATION_CLEAR_CYCLES) {
+            worldQueues.add(cycle) { uid.resolve(playerList)?.clearInteraction() }
+        }
+        magicTeleport(arrival)
+        player.clearInteraction()
+
+        // The combat interaction with the form that just fell outlives this script: the engine
+        // only settles it once the script ends, and settling it cancels whatever the player is
+        // doing. So the winner's talk waits for a cycle and runs as a script of its own.
+        worldQueues.add(CONGRATULATION_DELAY) {
+            val winner = uid.resolve(playerList) ?: return@add
+            winner.clearInteraction()
+            launcher.launch(winner) { congratulate() }
+        }
+    }
+
+    private suspend fun ProtectedAccess.congratulate() {
         val kolodion =
             search.find(player.coords, MageArenaCoords.KOLODION, KOLODION_SEARCH_RADIUS, HuntVis.Off) ?: return
         kolodion.facePlayer(player)
@@ -244,7 +271,6 @@ constructor(
         private const val STANDARD_ATTACK_RATE = 7
         private const val AGGRESSION_RADIUS = 12
         private const val GOD_SPELL_MAX_HIT = 20
-        private const val DRAIN_PERCENT = 5
         private const val SOUND_RADIUS = 8
         private const val IMPACT_CLIENT_DELAY = 30
         private const val HIT_DELAY = 2
@@ -253,6 +279,12 @@ constructor(
         private const val LINGER_TICKS = 500
         private const val KOLODION_SEARCH_RADIUS = 12
         private const val TRANSFORM_SPOTANIM = "spotanim.smokepuff"
+
+        /** Long enough for the engine to let go of the duel before Kolodion speaks. */
+        private const val CONGRATULATION_DELAY = 2
+
+        /** The teleport cast plus the wait, so nothing is left targeted on the way out. */
+        private const val RETALIATION_CLEAR_CYCLES = 4
     }
 }
 

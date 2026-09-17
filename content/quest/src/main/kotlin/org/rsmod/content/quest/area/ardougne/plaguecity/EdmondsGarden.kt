@@ -2,9 +2,9 @@ package org.rsmod.content.quest.area.ardougne.plaguecity
 
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
+import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companion.BUCKETS_NEEDED
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companion.MUD_FILLED
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companion.MUD_HOLE
@@ -21,7 +21,10 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Biohazard. The patch is a varbit multiloc (`loc.plaguemudpatch2`: mud, hole, filled in) with two
  * plain "Mud patch" tiles either side of it that share the same handling.
  */
-class EdmondsGarden @Inject constructor(private val plagueCity: PlagueCityQuest) : PluginScript() {
+class EdmondsGarden
+@Inject
+constructor(private val plagueCity: PlagueCityQuest, private val spadeDigging: SpadeDigging) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
         for (patch in MUD_PATCHES) {
@@ -31,7 +34,7 @@ class EdmondsGarden @Inject constructor(private val plagueCity: PlagueCityQuest)
             onOpLocU(patch, SPADE) { dig() }
         }
         onOpLoc1(DUG_HOLE) { climbDown() }
-        onOpHeld1(SPADE) { digWithSpade() }
+        spadeDigging.register(MUD_PATCH_TILE) { dig() }
     }
 
     private suspend fun ProtectedAccess.pourWater(container: String) {
@@ -54,18 +57,6 @@ class EdmondsGarden @Inject constructor(private val plagueCity: PlagueCityQuest)
         } else {
             mesbox("You pour water onto the soil. The soil softens slightly.")
         }
-    }
-
-    /** The spade's own Dig option, when it is used standing on the patch. */
-    private suspend fun ProtectedAccess.digWithSpade() {
-        if (player.coords.chebyshevDistance(MUD_PATCH_TILE) > 1) {
-            anim(DIG_SEQ)
-            soundSynth(DIG_SOUND)
-            delay(1)
-            mes("You dig, but find nothing of interest.")
-            return
-        }
-        dig()
     }
 
     private suspend fun ProtectedAccess.dig() {

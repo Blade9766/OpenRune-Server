@@ -181,6 +181,12 @@ constructor(
         ) {
             1 -> {
                 chatPlayer(happy, "Elvarg, the dragon of Crandor island!")
+                if (dragonSlayer.quest.isQuestCompleted(player)) {
+                    chatNpc(happy, "Elvarg? But you've already slain her! Word of your victory has spread all over the kingdom.")
+                    chatNpc(happy, "Of course you may have another shield. You've earned the right to call it your own.")
+                    giveAntiDragonShield(finishedDragonSlayer = true)
+                    return
+                }
                 chatNpc(shocked, "Elvarg? Are you sure?")
                 when (choice2("Yes.", 1, "No.", 2, title = "Well, are you sure?")) {
                     1 -> {

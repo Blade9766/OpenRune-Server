@@ -17,6 +17,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
 import org.rsmod.content.other.special.attacks.TargetStats
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -70,7 +71,7 @@ class AbyssalSpecialAttacks @Inject constructor(private val worldRepo: WorldRepo
         }
 
         private fun ProtectedAccess.lash(target: PathingEntity, attack: CombatAttack.Melee): Int {
-            anim("seq.slayer_whip_sp_attack")
+            specialAnim("seq.slayer_whip_sp_attack")
             target.spotanim("spotanim.sp_attack_abyssal_whip", height = 96)
             worldRepo.soundArea(player, WHIP_SOUND, radius = SOUND_RADIUS)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.25, 1.0)
@@ -106,7 +107,7 @@ class AbyssalSpecialAttacks @Inject constructor(private val worldRepo: WorldRepo
         }
 
         private fun ProtectedAccess.lash(target: PathingEntity, attack: CombatAttack.Melee): Int {
-            anim("seq.slayer_whip_sp_attack")
+            specialAnim("seq.slayer_whip_sp_attack")
             target.spotanim("spotanim.sp_attack_abyssal_whip", height = 96)
             worldRepo.soundArea(player, WHIP_SOUND, radius = SOUND_RADIUS)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.25, 1.0)
@@ -129,12 +130,13 @@ class AbyssalSpecialAttacks @Inject constructor(private val worldRepo: WorldRepo
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.abyssal_dagger_special")
+            specialAnim("seq.abyssal_dagger_special")
             spotanim(
                 "spotanim.abyssal_dagger_special_spotanim",
                 height = 96,
                 slot = constants.spotanim_slot_combat,
             )
+            manager.playWeaponSound(this, attack)
             val landed =
                 manager.rollMeleeAccuracy(this, target, attack.type, attack.style, attack.type, 1.25)
             val first =
@@ -158,12 +160,13 @@ class AbyssalSpecialAttacks @Inject constructor(private val worldRepo: WorldRepo
             penance(target, attack)
 
         private fun ProtectedAccess.penance(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.abyssal_bludgeon_special_attack")
+            specialAnim("seq.abyssal_bludgeon_special_attack")
             spotanim(
                 "spotanim.abyssal_miasma_spotanim_bludgeon",
                 height = 96,
                 slot = constants.spotanim_slot_combat,
             )
+            manager.playWeaponSound(this, attack)
             val missing = player.statBase(TargetStats.PRAYER) - player.stat(TargetStats.PRAYER)
             val multiplier = 1.0 + (missing.coerceAtLeast(0) * PENANCE_PER_POINT)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.0, multiplier)

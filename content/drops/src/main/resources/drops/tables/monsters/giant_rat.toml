@@ -1,0 +1,34 @@
+id = "Giant rat Drops"
+npcs = [
+    "npc.giantrat",
+    "npc.giantrat2",
+    "npc.giantrat3",
+    "npc.giantrat_grey",
+    "npc.giantrat_grey2",
+    "npc.giantrat_grey3",
+    "npc.giantrat1",
+    "npc.giantrat1_2",
+    "npc.giantrat1_3",
+    "npc.newbiegiantrat",
+    "npc.newbiegiantrat2",
+    "npc.newbiegiantrat3",
+]
+
+[[guaranteed]]
+obj = "obj.raw_rat_meat"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.rag_giant_rat_bone"
+count = 1
+quest = "quest_ragandboneman1"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 128
+obj = "obj.trail_clue_beginner"
+count = 1
+clue_scroll_box = true

@@ -4,9 +4,20 @@ import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
+import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.draynor.porcineofinterest.NoticeBoard
+import org.rsmod.content.quest.area.draynor.porcineofinterest.PorcineOfInterestQuest
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCave
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCombat
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogKillHook
+import org.rsmod.content.quest.area.draynor.porcineofinterest.StrangeHole
+import org.rsmod.content.quest.area.draynor.porcineofinterest.TrackingTrail
+import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Rosie
+import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Sarah
+import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Spria
 import org.rsmod.content.quest.area.draynor.vampyreslayer.CountDraynor
 import org.rsmod.content.quest.area.draynor.vampyreslayer.GarlicAttackHook
 import org.rsmod.content.quest.area.draynor.vampyreslayer.VampyreSlayerQuest
@@ -43,6 +54,7 @@ import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHo
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
 import org.rsmod.content.quest.area.paterdomus.priestinperil.TempleGuardianAttackHook
 import org.rsmod.content.quest.area.rimmington.witchspotion.WitchsPotionQuest
+import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
@@ -60,11 +72,17 @@ import org.rsmod.content.quest.area.wilderness.magearena.KolodionFights
 import org.rsmod.content.quest.area.wilderness.magearena.MageArena2Quest
 import org.rsmod.content.quest.area.wilderness.magearena.MageArenaQuest
 import org.rsmod.content.quest.area.wilderness.magearena.MageArenaTeleBlockHook
+import org.rsmod.content.quest.area.zanaris.fairytale1.Fairytale1Quest
+import org.rsmod.content.quest.area.zanaris.fairytale1.SecateursEnchantment
+import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootAttackHook
+import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootKillHook
+import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootLair
 import org.rsmod.plugin.module.PluginModule
 
 public class QuestModule : PluginModule() {
     override fun bind() {
         bindInstance<QuestRequirementResolver>()
+        bindInstance<SpadeDigging>()
         bindInstance<RuneMysteriesQuest>()
         bindInstance<DemonSlayerQuest>()
         bindInstance<GertrudesCatQuest>()
@@ -104,8 +122,21 @@ public class QuestModule : PluginModule() {
         bindInstance<SpiritSpawns>()
         bindInstance<Ghasts>()
         bindInstance<ShiloVillageQuest>()
+        bindInstance<DruidicRitualQuest>()
         bindInstance<ShiloUndead>()
         bindInstance<Nazastarool>()
+        bindInstance<Fairytale1Quest>()
+        bindInstance<SecateursEnchantment>()
+        bindInstance<TanglefootLair>()
+        bindInstance<PorcineOfInterestQuest>()
+        bindInstance<NoticeBoard>()
+        bindInstance<TrackingTrail>()
+        bindInstance<StrangeHole>()
+        bindInstance<SourhogCave>()
+        bindInstance<SourhogCombat>()
+        bindInstance<Sarah>()
+        bindInstance<Rosie>()
+        bindInstance<Spria>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
@@ -122,5 +153,8 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(GhastKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(NazastaroolAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(ShiloVillageKillHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(TanglefootAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(TanglefootKillHook::class.java)
+        addSetBinding<NpcDeathKillHook>(SourhogKillHook::class.java)
     }
 }

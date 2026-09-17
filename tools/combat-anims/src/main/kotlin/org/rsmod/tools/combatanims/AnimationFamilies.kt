@@ -45,6 +45,7 @@ object AnimationFamilies {
             "m_monkey" to Sounds(attack = 630, defend = 634, death = 632),
             "m_gorilla" to Sounds(attack = 478, defend = 481, death = 480),
             "skeleton_update_gorilla" to Sounds(attack = 3350, defend = 3352, death = 3351),
+            "sourhog" to Sounds(attack = 2314, defend = 2312, death = 2315),
         )
 
     /**

@@ -21,4 +21,9 @@ dependencies {
     implementation(projects.content.interfaces.bank)
     implementation(projects.content.skills.magic.spellAttacks)
     implementation(libs.rsprot.api)
+    implementation(projects.content.skills.slayer)
+    implementation(projects.api.shops)
+    implementation(projects.api.areaChecker)
+    implementation(projects.api.death)
+    implementation(projects.api.route)
 }

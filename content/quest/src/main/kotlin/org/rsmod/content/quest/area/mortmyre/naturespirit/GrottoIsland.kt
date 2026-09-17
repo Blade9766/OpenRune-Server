@@ -22,6 +22,7 @@ import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Comp
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.FUNGUS
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.JOURNAL
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.MIRROR
+import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.NATURE_SPIRIT
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_BLESSED
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_ENTERED_SWAMP
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest.Companion.STAGE_PUZZLE_SOLVED
@@ -157,6 +158,9 @@ constructor(
             natureSpirit.isComplete(player) -> {
                 delay(1)
                 telejump(MortMyreCoords.ALTAR_ENTRY, TeleportType.Exempt)
+                val spirit =
+                    spirits.summon(NATURE_SPIRIT, MortMyreCoords.SPIRIT_AT_ALTAR, Direction.South)
+                spirit.facePlayer(player)
             }
             stage >= STAGE_PUZZLE_SOLVED -> {
                 delay(1)

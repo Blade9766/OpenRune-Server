@@ -30,7 +30,6 @@ import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.stat.hitpoints
-import org.rsmod.api.player.stat.statSub
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
@@ -47,8 +46,6 @@ private class FollowerProfile(
     val meleeType: MeleeAttackType,
     val magicMaxHit: Int,
     val meleeMaxHit: Int,
-    /** The stat the follower's god spell lowers by 1 + 5% when it lands. */
-    val drainStat: String,
 )
 
 /**
@@ -131,7 +128,7 @@ constructor(
         target.spotanim(profile.god.impact, delay = IMPACT_CLIENT_DELAY, height = 0)
         target.finishNpcHit(npc, HIT_DELAY, HitType.Magic, damage, deps.playerHitModifier)
         if (damage > 0) {
-            target.statSub(profile.drainStat, constant = DRAIN_CONSTANT, percent = DRAIN_PERCENT)
+            applyGodSpellEffect(target, profile.god)
         }
     }
 
@@ -320,7 +317,6 @@ constructor(
                     meleeType = MeleeAttackType.Slash,
                     magicMaxHit = 26,
                     meleeMaxHit = 43,
-                    drainStat = "stat.prayer",
                 ),
                 FollowerProfile(
                     god = God.GUTHIX,
@@ -329,7 +325,6 @@ constructor(
                     meleeType = MeleeAttackType.Crush,
                     magicMaxHit = 43,
                     meleeMaxHit = 16,
-                    drainStat = "stat.defence",
                 ),
                 FollowerProfile(
                     god = God.ZAMORAK,
@@ -338,7 +333,6 @@ constructor(
                     meleeType = MeleeAttackType.Slash,
                     magicMaxHit = 43,
                     meleeMaxHit = 16,
-                    drainStat = "stat.magic",
                 ),
             )
 
@@ -361,8 +355,6 @@ constructor(
         const val SPECIAL_MIN_ATTACKS = 4
         const val SPECIAL_MAX_ATTACKS = 6
 
-        const val DRAIN_CONSTANT = 1
-        const val DRAIN_PERCENT = 5
         const val SOUND_RADIUS = 8
         const val IMPACT_CLIENT_DELAY = 30
         const val HIT_DELAY = 2

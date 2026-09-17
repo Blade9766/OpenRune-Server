@@ -4967,3 +4967,10 @@ destination = { x = 2739, z = 2798, level = 0 }
 [[npc.waypoints]]
 destination = { x = 2747, z = 2798, level = 0 }
 pause_delay = 3
+
+# A Porcine of Interest: Spria stays in her Draynor house rather than wandering the village.
+[[npc]]
+id = "npc.slayer_master_9"
+inherit = "npc.slayer_master_9"
+moveRestrict = "Indoors"
+wanderRange = 0

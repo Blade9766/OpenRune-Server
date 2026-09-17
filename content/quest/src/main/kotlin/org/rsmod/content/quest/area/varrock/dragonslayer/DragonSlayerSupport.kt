@@ -41,7 +41,7 @@ fun BoundLocInfo.tileAcross(from: CoordGrid): CoordGrid {
         0 -> if (from.x >= tile.x) tile.translateX(-1) else tile
         1 -> if (from.z > tile.z) tile else tile.translateZ(1)
         2 -> if (from.x > tile.x) tile else tile.translateX(1)
-        else -> if (from.z >= tile.z) tile else tile.translateZ(-1)
+        else -> if (from.z >= tile.z) tile.translateZ(-1) else tile
     }
 }
 
