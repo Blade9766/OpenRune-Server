@@ -30,7 +30,7 @@ constructor(private val store: FarmingToolStore) : PluginScript() {
     override fun ScriptContext.startup() {
         for (leprechaun in LEPRECHAUNS) {
             onOpNpc3(leprechaun) { openStore() }
-            onOpNpc4(leprechaun) { openStore() }
+            onOpNpc4(leprechaun) { depositInventory() }
         }
 
         for (slot in ToolSlot.entries) {
