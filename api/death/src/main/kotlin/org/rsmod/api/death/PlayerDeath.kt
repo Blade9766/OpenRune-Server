@@ -3,7 +3,6 @@ package org.rsmod.api.death
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
-import dev.or2.central.account.Rights
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.area.checker.AreaChecker
@@ -16,6 +15,7 @@ import org.rsmod.api.player.disablePrayers
 import org.rsmod.api.player.hasProtectItemPrayer
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.midiJingle
+import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.player.vars.intVarp
@@ -85,9 +85,10 @@ constructor(
     }
 
     private fun handleDeathDrops(player: Player, deathCoords: CoordGrid) {
-        val bypassAdmin = player.deathDropsBypassAdmin()
-        player.attr.remove(DEATH_DROPS_BYPASS_ADMIN_ATTR)
-        if (player.modLevel.isAtLeast(Rights.ADMINISTRATOR) && !bypassAdmin) return
+        if (player.hasAdminDeathProtection()) {
+            player.mes("Your items were protected by admin death protection.")
+            return
+        }
 
         val killer = when (val cause = player.attr[DEATH_CAUSE_ATTR]) {
             is DeathCause.ByPlayer -> cause.killer

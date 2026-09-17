@@ -9,8 +9,6 @@ public val DEATH_KILLER_ATTR: AttributeKey<Player> = AttributeKey()
 
 public val LAST_PVP_HIT_TICK_ATTR: AttributeKey<Int> = AttributeKey()
 
-public val DEATH_DROPS_BYPASS_ADMIN_ATTR: AttributeKey<Boolean> = AttributeKey()
-
 public data class PlayerDeathContext(
     val player: Player,
     val coords: CoordGrid,

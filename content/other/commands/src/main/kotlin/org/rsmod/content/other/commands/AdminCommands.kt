@@ -14,8 +14,9 @@ import org.rsmod.annotations.InternalApi
 import org.rsmod.api.area.checker.AreaChecker
 import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
-import org.rsmod.api.death.prepareAdminDieTest
+import org.rsmod.api.death.adminDeathProtectionEnabled
 import org.rsmod.api.death.preparePvpDeath
+import org.rsmod.api.death.setAdminDeathProtection
 import org.rsmod.api.instances.BossInstanceRegistry
 import org.rsmod.api.instances.InstanceArea
 import org.rsmod.api.invtx.invAdd
@@ -181,6 +182,12 @@ constructor(
             invalidArgs =
                 "Usage: ::die pvm|pvp [true|false]  (second arg = in Wilderness, default false)"
         }
+        onCommand(
+            "adminprotect",
+            "Toggle keeping your items on death: ::adminprotect [on|off]",
+            ::adminProtect,
+            aliases = listOf("keepitems"),
+        )
         onCommand("god", "Toggle god mode (invincibility)", ::god)
         onCommand("componentdebug", "Toggle interface component click debug output", ::componentDebug)
         onCommand("maxhit", "Toggle always max hit", ::maxhit)
@@ -703,6 +710,27 @@ constructor(
             }
         }
 
+    private fun adminProtect(cheat: Cheat) =
+        with(cheat) {
+            val enabled =
+                when (args.getOrNull(0)?.lowercase()) {
+                    null -> !player.adminDeathProtectionEnabled()
+                    "on", "true", "1" -> true
+                    "off", "false", "0" -> false
+                    else -> null
+                }
+            if (enabled == null) {
+                player.mes("Usage: ::adminprotect [on|off] (no argument toggles)")
+            } else {
+                player.setAdminDeathProtection(enabled)
+                if (enabled) {
+                    player.mes("Admin death protection ON: you keep everything when you die.")
+                } else {
+                    player.mes("Admin death protection OFF: you drop items like a normal player.")
+                }
+            }
+        }
+
     private fun dieTest(cheat: Cheat) =
         with(cheat) {
             val mode = args.getOrNull(0)?.lowercase()
@@ -711,7 +739,6 @@ constructor(
                 "pvm" -> {
                     if (inWildy) player.insideWilderness = true
                     player.mes("Simulating PvM death${if (inWildy) " in Wilderness" else ""}.")
-                    player.prepareAdminDieTest()
                     player.queueDeath()
                 }
                 "pvp" -> {
@@ -720,7 +747,6 @@ constructor(
                     player.mes(
                         "Simulating PvP death${if (inWildy) " in Wilderness" else ""}. (self as killer)"
                     )
-                    player.prepareAdminDieTest()
                     player.queueDeath()
                 }
                 else -> player.mes("Usage: ::die pvm|pvp [true|false]  (true = in Wilderness)")
