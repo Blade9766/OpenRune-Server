@@ -82,6 +82,12 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.sotd_spec_expiration"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
 id = "varp.com_maxhit"
 transmit = "Never"
 

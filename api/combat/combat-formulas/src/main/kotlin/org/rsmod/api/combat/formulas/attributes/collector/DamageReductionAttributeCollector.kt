@@ -46,6 +46,39 @@ constructor(private val attackStyles: AttackStyles) {
         return attributes
     }
 
+    /**
+     * As [collectNvP], plus the reductions that only apply to incoming melee damage.
+     */
+    public fun collectNvPMelee(
+        player: Player,
+        random: GameRandom,
+    ): EnumSet<DamageReductionAttributes> {
+        val attributes = collectNvP(player, random)
+        if (player.powerOfDeathActive()) {
+            attributes += DamageReductionAttributes.PowerOfDeath
+        }
+        return attributes
+    }
+
+    /**
+     * As [collectPvP], plus the reductions that only apply to incoming melee damage.
+     */
+    public fun collectPvPMelee(
+        player: Player,
+        random: GameRandom,
+    ): EnumSet<DamageReductionAttributes> {
+        val attributes = collectPvP(player, random)
+        if (player.powerOfDeathActive()) {
+            attributes += DamageReductionAttributes.PowerOfDeath
+        }
+        return attributes
+    }
+
+    // The staff special sets the expiration; unequipping the staff clears it, so the clock is
+    // the only thing left to check here.
+    private fun Player.powerOfDeathActive(): Boolean =
+        currentMapClock < vars["varp.sotd_spec_expiration"]
+
     // `random` is an explicit parameter to indicate that this function relies on randomness
     // for certain effects, such as the Elysian spirit shield proc.
     public fun collectPvP(player: Player, random: GameRandom): EnumSet<DamageReductionAttributes> {

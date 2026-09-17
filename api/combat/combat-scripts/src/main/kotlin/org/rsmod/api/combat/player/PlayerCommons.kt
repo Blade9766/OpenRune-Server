@@ -221,11 +221,59 @@ internal suspend fun ProtectedAccess.activateMagicSpecial(
     return true
 }
 
+/**
+ * Activates a [SpecialAttack.Spell] belonging to [weapon].
+ *
+ * Called from both the spell-cast and melee paths: a staff with a spell special casts it whether
+ * or not the player has a spell autocast, so whichever path the attack arrives on gets a chance
+ * to fire it.
+ */
+internal suspend fun ProtectedAccess.activateSpellSpecial(
+    target: PathingEntity,
+    weapon: InvObj?,
+    specials: SpecialAttackRegistry,
+    energy: SpecialAttackEnergy,
+): Boolean {
+    val staff = weapon ?: return false
+    val special = specials[staff] ?: return false
+    if (special !is SpecialAttack.Spell) {
+        return false
+    }
+
+    val specializedEnergyReq = energy.isSpecializedRequirement(special.energyInHundreds)
+    if (!specializedEnergyReq) {
+        val hasRequiredEnergy = energy.hasSpecialEnergy(player, special.energyInHundreds)
+        if (!hasRequiredEnergy) {
+            mes("You don't have enough power left.")
+            return false
+        }
+    }
+
+    val reduceEnergy = special.attack(this, target, staff)
+    if (reduceEnergy && !specializedEnergyReq) {
+        energy.takeSpecialEnergy(player, special.energyInHundreds)
+    }
+    return true
+}
+
+/**
+ * Activates a [SpecialAttack.Shield] belonging to [shield].
+ *
+ * Shield specials cost no special attack energy, so unlike every other path this neither checks
+ * nor deducts any - the shield's own cooldown is what limits it.
+ */
 internal suspend fun ProtectedAccess.activateShieldSpecial(
     target: PathingEntity,
     shield: InvObj?,
     specials: SpecialAttackRegistry,
-): Boolean = TODO()
+): Boolean {
+    val offhand = shield ?: return false
+    val special = specials[offhand] ?: return false
+    if (special !is SpecialAttack.Shield) {
+        return false
+    }
+    return special.attack(this, target, offhand)
+}
 
 internal fun ProtectedAccess.setPkVars(target: Player) {
     pkPrey2 = pkPrey1

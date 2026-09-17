@@ -16,6 +16,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
 import org.rsmod.content.other.special.attacks.TargetStats
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -76,7 +77,7 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.puncture")
+            specialAnim("seq.puncture")
             spotanim("spotanim.sp_attack_puncture_spotanim", height = 96, slot = COMBAT_SLOT)
             worldRepo.soundArea(player, PUNCTURE_SOUND, radius = SOUND_RADIUS)
 
@@ -102,8 +103,9 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.shatter")
+            specialAnim("seq.shatter")
             spotanim("spotanim.sp_attack_shatter_spotanim", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             singleHit(manager, target, attack, accuracy = 1.25, damage = 1.5)
             return true
         }
@@ -125,7 +127,7 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             sever(target, attack)
 
         private fun ProtectedAccess.sever(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.sp_attack_dragon_scimitar")
+            specialAnim("seq.sp_attack_dragon_scimitar")
             spotanim(
                 "spotanim.sp_attack_dragon_scimitar_trail_spotanim",
                 height = 96,
@@ -152,8 +154,9 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.human_dragon_sword_spec")
+            specialAnim("seq.human_dragon_sword_spec")
             spotanim("spotanim.dragon_sword_spec_spotanim", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             singleHit(
                 manager,
                 target,
@@ -184,8 +187,9 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.dragon_two_handed_sword")
+            specialAnim("seq.dragon_two_handed_sword")
             spotanim("spotanim.dragon_two_handed_sword_blast", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
 
             val damage = manager.rollMeleeDamage(this, target, attack, 1.0, 1.0)
             manager.giveCombatXp(this, target, attack, damage)
@@ -223,8 +227,9 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             sweep(target, attack)
 
         private fun ProtectedAccess.sweep(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.dragon_halberd_special_attack")
+            specialAnim("seq.dragon_halberd_special_attack")
             spotanim(sweepSpot(target), height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
 
             val first = manager.rollMeleeDamage(this, target, attack, 1.0, 1.1)
             var total = first
@@ -260,24 +265,25 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
     private class Shove(private val manager: SpecialAttackManager, private val seq: String) :
         MeleeSpecialAttack {
         override suspend fun ProtectedAccess.attack(target: Npc, attack: CombatAttack.Melee): Boolean {
-            shove(target)
+            shove(target, attack)
             target.actionDelay = max(target.actionDelay, mapClock + STUN_TICKS)
             manager.continueCombat(this, target)
             return true
         }
 
         override suspend fun ProtectedAccess.attack(target: Player, attack: CombatAttack.Melee): Boolean {
-            shove(target)
-            target.anim("seq.stunned_shove")
+            shove(target, attack)
+            target.specialAnim("seq.stunned_shove")
             // A stun, not a freeze: it ignores freeze immunity and grants none afterwards.
             CombatEffects.stun(target, STUN_TICKS)
             manager.continueCombat(this, target)
             return true
         }
 
-        private fun ProtectedAccess.shove(target: PathingEntity) {
-            anim(seq)
+        private fun ProtectedAccess.shove(target: PathingEntity, attack: CombatAttack.Melee) {
+            specialAnim(seq)
             spotanim("spotanim.sp_attack_shove_spotanim", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             target.spotanim("spotanim.stunned_shove", height = 124)
         }
     }
@@ -297,8 +303,9 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.human_dragon_claws_spec")
+            specialAnim("seq.human_dragon_claws_spec")
             spotanim("spotanim.dragon_claws_spot", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
 
             val maxHit = manager.calculateMeleeMaxHit(this, target, attack.type, attack.style, 1.0)
             val hits = rollClaws(target, attack, maxHit)
@@ -364,7 +371,7 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
             val boost = RAMPAGE_BASE_BOOST + drained / 4
             statBoost(TargetStats.STRENGTH, constant = boost, percent = 0)
             say("Raarrrrrgggggghhhhhhh!")
-            anim("seq.rampage")
+            specialAnim("seq.rampage")
             spotanim("spotanim.sp_attackglow_red", height = 96, slot = COMBAT_SLOT)
             soundArea(worldRepo, coords, "synth.rampage", radius = SOUND_RADIUS)
             return true

@@ -391,8 +391,12 @@ public class ProtectedAccess(
         return false
     }
 
-    public fun anim(seq: String, delay: Int = 0) {
-        player.anim(seq, delay)
+    public fun anim(seq: String, delay: Int = 0, priority: Int? = null) {
+        if (priority == null) {
+            player.anim(seq, delay)
+        } else {
+            player.anim(seq, delay, priority)
+        }
     }
 
     public fun resetAnim() {

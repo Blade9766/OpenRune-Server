@@ -3,9 +3,6 @@ package org.rsmod.api.specials
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.ProjAnimType
-import dev.openrune.types.aconverted.SpotanimType
-import dev.openrune.types.aconverted.SynthType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.commons.styles.MagicAttackStyle
@@ -348,6 +345,10 @@ constructor(
             hitDelay = hitDelay,
         )
 
+    /** @see [PlayerAttackManager.playWeaponSound] */
+    public fun playWeaponSound(source: ProtectedAccess, attack: CombatAttack.Staff): Unit =
+        manager.playWeaponSound(source.player, attack)
+
     /** @see [PlayerAttackManager.spawnProjectile] */
     public fun spawnProjectile(
         source: ProtectedAccess,
@@ -355,6 +356,21 @@ constructor(
         spotanim: String,
         projanim: String,
     ): ProjAnim = manager.spawnProjectile(source.player, target, spotanim, projanim)
+
+    /**
+     * Plays the wielded weapon's attack sound.
+     *
+     * Special attacks bypass the normal weapon fx, so a special with no sound of its own is
+     * silent unless it calls this.
+     *
+     * @see [PlayerAttackManager.playWeaponSound]
+     */
+    public fun playWeaponSound(source: ProtectedAccess, attack: CombatAttack.Melee): Unit =
+        manager.playWeaponSound(source.player, attack)
+
+    /** @see [PlayerAttackManager.playWeaponSound] */
+    public fun playWeaponSound(source: ProtectedAccess, attack: CombatAttack.Ranged): Unit =
+        manager.playWeaponSound(source.player, attack)
 
     /** @see [PlayerAttackManager.soundArea] */
     public fun soundArea(

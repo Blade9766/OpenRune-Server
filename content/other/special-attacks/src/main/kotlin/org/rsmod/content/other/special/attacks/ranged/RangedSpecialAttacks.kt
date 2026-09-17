@@ -18,6 +18,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.RangedSpecialAttack
 import org.rsmod.content.other.special.attacks.TargetStats
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -97,6 +98,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
                 mes("You are unable to fire your ammunition.")
                 return false
             }
+            manager.playWeaponSound(this, attack)
             shoot(target, attack, weaponType, quiverType, travel)
             manager.continueCombat(this, target)
             return true
@@ -158,7 +160,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.snapshot")
+            specialAnim("seq.snapshot")
             spotanim("spotanim.sp_attack_snapshot_spotanim", height = 96, slot = COMBAT_SLOT)
             val first = manager.rollRangedDamage(this, target, attack)
             val second = manager.rollRangedDamage(this, target, attack)
@@ -180,7 +182,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.human_bow")
+            specialAnim("seq.human_bow")
             spotanim("spotanim.sp_attack_glow_arrow_launch", height = 96, slot = COMBAT_SLOT)
             val damage = guaranteedDamage(target, attack)
             manager.giveCombatXp(this, target, attack, damage)
@@ -201,7 +203,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.human_bow")
+            specialAnim("seq.human_bow")
             spotanim("spotanim.sp_attack_glow_arrow_launch_white", height = 96, slot = COMBAT_SLOT)
             val damage = guaranteedDamage(target, attack)
             manager.giveCombatXp(this, target, attack, damage)
@@ -226,7 +228,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.xbows_human_fire_and_reload")
+            specialAnim("seq.xbows_human_fire_and_reload")
             val unaware = target is Npc && target.vars["varn.attacking_player"] != player.uid.packed
             val damage =
                 if (unaware) guaranteedDamage(target, attack)
@@ -255,7 +257,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.xbows_human_fire_and_reload")
+            specialAnim("seq.xbows_human_fire_and_reload")
             val damage = manager.rollRangedDamage(this, target, attack, maxHitMultiplier = 1.2)
             manager.giveCombatXp(this, target, attack, damage)
             launch(target, quiver, travel, "projanim.bolt", damage)
@@ -289,7 +291,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.xbows_human_fire_and_reload")
+            specialAnim("seq.xbows_human_fire_and_reload")
             spotanim("spotanim.acb_specialattack", height = 96, slot = COMBAT_SLOT)
             val damage = manager.rollRangedDamage(this, target, attack, accuracyMultiplier = 2.0)
             manager.giveCombatXp(this, target, attack, damage)
@@ -307,7 +309,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             quiver: ItemServerType,
             travel: String,
         ) {
-            anim("seq.ballista_special_attack")
+            specialAnim("seq.ballista_special_attack")
             spotanim("spotanim.ballista_special", height = 96, slot = COMBAT_SLOT)
             val projanim =
                 weapon.paramOrNull(params.proj_type)?.let {
@@ -339,6 +341,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
                 mes("You need at least $required of them to use this special attack.")
                 return false
             }
+            manager.playWeaponSound(this, attack)
             throwAt(target, attack, weaponType)
             if (player.righthand == null) {
                 mes("That was your last one!")
@@ -382,7 +385,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             attack: CombatAttack.Ranged,
             weapon: ItemServerType,
         ) {
-            anim("seq.human_dragon_tknives_spec")
+            specialAnim("seq.human_dragon_tknives_spec")
             spotanim("spotanim.dragon_tknife_launch", height = 96, slot = COMBAT_SLOT)
             val first = manager.rollRangedDamage(this, target, attack)
             val second = manager.rollRangedDamage(this, target, attack)
@@ -400,7 +403,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             attack: CombatAttack.Ranged,
             weapon: ItemServerType,
         ) {
-            anim("seq.human_dragon_taxe_spec")
+            specialAnim("seq.human_dragon_taxe_spec")
             spotanim("spotanim.dragon_taxe_launch_spec", height = 96, slot = COMBAT_SLOT)
             val damage = manager.rollRangedDamage(this, target, attack, accuracyMultiplier = 1.25)
             manager.giveCombatXp(this, target, attack, damage)

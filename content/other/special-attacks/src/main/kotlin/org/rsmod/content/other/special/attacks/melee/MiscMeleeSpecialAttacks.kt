@@ -11,6 +11,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
 import org.rsmod.content.other.special.attacks.TargetStats
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -64,8 +65,9 @@ class MiscMeleeSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
             attack: CombatAttack.Melee,
             percent: Int,
         ): Boolean {
-            anim("seq.dark_spec_player")
+            specialAnim("seq.dark_spec_player")
             spotanim("spotanim.dark_spec_spot", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.0, 1.0)
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
@@ -99,8 +101,9 @@ class MiscMeleeSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
             attack: CombatAttack.Melee,
             unaware: Boolean,
         ): Boolean {
-            anim("seq.dttd_player_stab_bone_dagger")
+            specialAnim("seq.dttd_player_stab_bone_dagger")
             spotanim("spotanim.dttd_dagger_sp_attack_spotanim", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage =
                 if (unaware) {
                     manager.rollMeleeMaxHit(this, target, attack.type, attack.style, 1.0)
@@ -129,8 +132,9 @@ class MiscMeleeSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
             liquify(target, attack)
 
         private fun ProtectedAccess.liquify(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.olaf2_brine_sabre_special")
+            specialAnim("seq.olaf2_brine_sabre_special")
             spotanim("spotanim.olaf2_brine_sabre_special_spot", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 2.0, 1.0)
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
@@ -158,8 +162,9 @@ class MiscMeleeSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
             disrupt(target, attack)
 
         private fun ProtectedAccess.disrupt(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.human_special02_voidwaker")
+            specialAnim("seq.human_special02_voidwaker")
             spotanim("spotanim.fx_voidwaker02_special", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val maxHit = manager.calculateMeleeMaxHit(this, target, attack.type, attack.style, 1.0)
             val damage = random.of(maxHit / 2..(maxHit * 3) / 2)
             target.spotanim("spotanim.fx_voidwaker_impact", height = 96)
@@ -185,7 +190,13 @@ class MiscMeleeSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.human_osmumtens_fang")
+            specialAnim("seq.weapon_sword_osmumten03_special")
+            spotanim(
+                "spotanim.spotanim_weapon_sword_osmumten_special",
+                height = 96,
+                slot = COMBAT_SLOT,
+            )
+            manager.playWeaponSound(this, attack)
             val landed =
                 manager.rollMeleeAccuracy(this, target, attack.type, attack.style, attack.type, 1.5)
             val damage =
@@ -215,7 +226,7 @@ class MiscMeleeSpecialAttacks @Inject constructor(private val worldRepo: WorldRe
         private fun ProtectedAccess.sanctuary(worldRepo: WorldRepository): Boolean {
             statBoost(TargetStats.DEFENCE, constant = SANCTUARY_DEFENCE_BOOST, percent = 0)
             say("For Camelot!")
-            anim("seq.sanctuary")
+            specialAnim("seq.sanctuary")
             spotanim("spotanim.sp_attackglow_blue", height = 96, slot = COMBAT_SLOT)
             soundArea(worldRepo, coords, "synth.rampage", radius = SOUND_RADIUS)
             return true

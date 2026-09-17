@@ -1,11 +1,12 @@
 package org.rsmod.api.specials
 
-import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.specials.combat.MagicSpecialAttack
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
 import org.rsmod.api.specials.combat.RangedSpecialAttack
+import org.rsmod.api.specials.combat.ShieldSpecialAttack
+import org.rsmod.api.specials.combat.SpellSpecialAttack
 import org.rsmod.api.specials.instant.InstantSpecialAttack
 import org.rsmod.api.specials.weapon.SpecialAttackWeapons
 
@@ -152,6 +153,35 @@ constructor(private val registry: SpecialAttackRegistry) {
         assertValidResult(specWeapon, result)
     }
 
+    /**
+     * Registers the [specWeapon] special attack ([special]) as a [SpellSpecialAttack], for a staff
+     * that casts a spell of its own.
+     *
+     * Unlike [registerMagic] this fires from both the spell-cast path and the melee path, because
+     * a staff with no spell autocast attacks in melee - the special is the same either way.
+     *
+     * @throws IllegalStateException if [specWeapon] is already registered with any special attack.
+     */
+    public fun registerSpell(specWeapon: String, special: SpellSpecialAttack) {
+        val result = registry.add(specWeapon, special)
+        assertValidResult(specWeapon, result)
+    }
+
+    /**
+     * Registers the [specShield] special attack ([special]) as a [ShieldSpecialAttack], which
+     * activates on the player's next attack in combat, whatever style that attack uses.
+     *
+     * These cost no special attack energy, so [specShield] must be mapped to an energy requirement
+     * of `0`. The shield is responsible for its own cooldown.
+     *
+     * @throws IllegalStateException if [specShield] is already registered with any special attack,
+     *   or if its energy requirement is not `0`.
+     */
+    public fun registerShield(specShield: String, special: ShieldSpecialAttack) {
+        val result = registry.add(specShield, special)
+        assertValidResult(specShield, result)
+    }
+
     private fun assertValidResult(
         specWeapon: String,
         result: SpecialAttackRegistry.Result.Add,
@@ -166,6 +196,12 @@ constructor(private val registry: SpecialAttackRegistry) {
                         "Use [${SpecialAttackWeapons::class}] " +
                         "and AttackEnergyEnums " +
                         "as reference for which enums are required."
+                )
+            }
+            SpecialAttackRegistry.Result.Add.NotEnergyFree -> {
+                error(
+                    "Shield special attacks must cost no energy, but `$specWeapon` is mapped to " +
+                        "a non-zero requirement in the sa_energy_requirements enum."
                 )
             }
             SpecialAttackRegistry.Result.Add.Success -> {

@@ -11,6 +11,7 @@ import org.rsmod.api.combat.player.activateMagicSpecial
 import org.rsmod.api.combat.player.activateMeleeSpecial
 import org.rsmod.api.combat.player.activateRangedSpecial
 import org.rsmod.api.combat.player.activateShieldSpecial
+import org.rsmod.api.combat.player.activateSpellSpecial
 import org.rsmod.api.combat.player.setPkVars
 import org.rsmod.api.combat.player.specialAttackType
 import org.rsmod.api.combat.weapon.WeaponSpeeds
@@ -116,7 +117,9 @@ constructor(
         // attack.
         if (specialAttackType == SpecialAttackType.Weapon) {
             specialAttackType = SpecialAttackType.None
-            val activatedSpec = activateMeleeSpecial(target, attack, specialsReg, specialEnergy)
+            val activatedSpec =
+                activateMeleeSpecial(target, attack, specialsReg, specialEnergy) ||
+                    activateSpellSpecial(target, attack.weapon, specialsReg, specialEnergy)
             if (activatedSpec) {
                 applySpecialAttackHooks(target)
                 applyPkVars(target)
@@ -315,6 +318,22 @@ constructor(
 
         val attackRate = MAGIC_SPELL_ATTACK_RATE
         manager.setNextAttackDelay(player, attackRate)
+
+        if (specialAttackType == SpecialAttackType.Weapon) {
+            specialAttackType = SpecialAttackType.None
+            val activatedSpec =
+                activateSpellSpecial(target, attack.weapon, specialsReg, specialEnergy)
+            if (activatedSpec) {
+                return
+            }
+        }
+        if (specialAttackType == SpecialAttackType.Shield) {
+            specialAttackType = SpecialAttackType.None
+            val activatedSpec = activateShieldSpecial(target, player.lefthand, specialsReg)
+            if (activatedSpec) {
+                return
+            }
+        }
 
         val spell = spellsReg[RSCM.getReverseMapping(RSCMType.OBJ, attack.spell.obj.id)]
         if (spell != null) {

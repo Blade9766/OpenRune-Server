@@ -13,6 +13,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
 import org.rsmod.content.other.special.attacks.TargetStats
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -76,7 +77,7 @@ class GodswordSpecialAttacks @Inject constructor(private val worldRepo: WorldRep
             strike(target, attack)
 
         private fun ProtectedAccess.strike(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim(seq)
+            specialAnim(seq)
             spotanim(effect.spot, height = 96, slot = constants.spotanim_slot_combat)
             worldRepo.soundArea(player, GODSWORD_SOUND, radius = SOUND_RADIUS)
 
@@ -116,8 +117,9 @@ class GodswordSpecialAttacks @Inject constructor(private val worldRepo: WorldRep
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim(seq)
+            specialAnim(seq)
             target.spotanim("spotanim.godwars_saradomin_sword_attack_spot", height = 96)
+            manager.playWeaponSound(this, attack)
 
             val melee = manager.rollMeleeDamage(this, target, attack, 1.0, 1.1)
             val magic = random.of(LIGHTNING_MIN..LIGHTNING_MAX)

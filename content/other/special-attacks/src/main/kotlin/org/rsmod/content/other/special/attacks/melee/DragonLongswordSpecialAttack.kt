@@ -8,6 +8,7 @@ import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -35,12 +36,13 @@ class DragonLongswordSpecialAttack : SpecialAttackMap {
         }
 
         private fun ProtectedAccess.cleave(target: PathingEntity, attack: CombatAttack.Melee) {
-            anim("seq.cleave")
+            specialAnim("seq.cleave")
             spotanim(
                 spot = "spotanim.sp_attack_cleave_spotanim",
                 slot = constants.spotanim_slot_combat,
                 height = 96,
             )
+            manager.soundArea(player, "synth.cleave", radius = SOUND_RADIUS)
 
             val damage =
                 manager.rollMeleeDamage(
@@ -55,5 +57,9 @@ class DragonLongswordSpecialAttack : SpecialAttackMap {
             manager.queueMeleeHit(this, target, damage)
             manager.continueCombat(this, target)
         }
+    }
+
+    private companion object {
+        private const val SOUND_RADIUS = 10
     }
 }

@@ -11,6 +11,7 @@ import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
 import org.rsmod.content.other.special.attacks.TargetStats
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -55,8 +56,9 @@ class HammerSpecialAttacks @Inject constructor(private val worldRepo: WorldRepos
             smash(target, attack)
 
         private fun ProtectedAccess.smash(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.dragon_warhammer_sa_player")
+            specialAnim("seq.dragon_warhammer_sa_player")
             spotanim("spotanim.dragon_warhammer_sa_spotanim", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.0, 1.5)
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
@@ -80,8 +82,9 @@ class HammerSpecialAttacks @Inject constructor(private val worldRepo: WorldRepos
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.human_elder_maul_spec")
+            specialAnim("seq.human_elder_maul_spec")
             spotanim("spotanim.spotanim_elder_maul_special", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.25, 1.0)
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
@@ -116,7 +119,7 @@ class HammerSpecialAttacks @Inject constructor(private val worldRepo: WorldRepos
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.slayer_granite_maul_special_attack")
+            specialAnim("seq.slayer_granite_maul_special_attack")
             spotanim("spotanim.sp_attack_maul_spotanim", height = 96, slot = COMBAT_SLOT)
             worldRepo.soundArea(player, QUICK_SMASH_SOUND, radius = SOUND_RADIUS)
             val first = manager.rollMeleeDamage(this, target, attack, 1.0, 1.0)
@@ -141,8 +144,9 @@ class HammerSpecialAttacks @Inject constructor(private val worldRepo: WorldRepos
             target: PathingEntity,
             attack: CombatAttack.Melee,
         ): Boolean {
-            anim("seq.dragon_warhammer_sa_player")
+            specialAnim("seq.dragon_warhammer_sa_player")
             spotanim("spotanim.granite_hammer_sa_spotanim", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.5, 1.0) + HAMMER_BLOW_BONUS
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
@@ -163,8 +167,9 @@ class HammerSpecialAttacks @Inject constructor(private val worldRepo: WorldRepos
             sunder(target, attack)
 
         private fun ProtectedAccess.sunder(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.brain_player_anchor_special_attack")
+            specialAnim("seq.brain_player_anchor_special_attack")
             spotanim("spotanim.brain_anchor_special_attack_spot", height = 96, slot = COMBAT_SLOT)
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 2.0, 1.1)
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
@@ -190,12 +195,13 @@ class HammerSpecialAttacks @Inject constructor(private val worldRepo: WorldRepos
             favour(target, attack)
 
         private fun ProtectedAccess.favour(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            anim("seq.slice_player_mace_special_attack")
+            specialAnim("seq.slice_player_mace_special_attack")
             spotanim(
                 "spotanim.slice_player_mace_special_attack_spotanim",
                 height = 96,
                 slot = COMBAT_SLOT,
             )
+            manager.playWeaponSound(this, attack)
             val damage = manager.rollMeleeDamage(this, target, attack, 1.0, 1.0)
             manager.giveCombatXp(this, target, attack, damage)
             manager.queueMeleeHit(this, target, damage)
