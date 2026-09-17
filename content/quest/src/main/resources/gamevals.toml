@@ -1,2 +1,10 @@
+# Sound effects used by the quest plugins. The vanilla gamevals dump carries no synth names, so
+# the raw cache ids are declared here (ids taken from the OSRS wiki "List of sound IDs").
+[gamevals.synth]
+# Mage Arena
+godspell_charge = 1651
+godspell_charge_gone = 1650
+magearena_pool_plop = 1658
+
 [gamevals.clientscript]
 quest_available_set = 45550
