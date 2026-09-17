@@ -149,6 +149,9 @@ constructor(
             }
             return stepFactory.unvalidated(current, target)
         }
+        if (forcedRoute) {
+            return stepFactory.unvalidated(current, target)
+        }
         return stepFactory.validated(
             source = current,
             dest = target,
