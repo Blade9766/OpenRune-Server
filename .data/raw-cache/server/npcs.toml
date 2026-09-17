@@ -4974,3 +4974,9 @@ id = "npc.slayer_master_9"
 inherit = "npc.slayer_master_9"
 moveRestrict = "Indoors"
 wanderRange = 0
+
+[[npc]]
+id = "npc.motherlode_mother"
+inherit = "npc.motherlode_mother"
+moveRestrict = "NoMove"
+wanderRange = 0

@@ -3,9 +3,7 @@ package org.rsmod.content.areas.guilds
 import dev.openrune.types.ObjectServerType
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.stat.miningLvl
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.content.areas.guilds.GuildEntrances.refuseMining
 import org.rsmod.content.generic.locs.passages.GenericPassageScript
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
@@ -24,7 +22,6 @@ class GuildEntranceScript @Inject constructor(private val passages: GenericPassa
                 onOpLoc1(loc) { enter(entrance, loc, it.vis, it.type) }
             }
         }
-        onOpLoc1(MINING_GUILD_LADDER) { climbToMiningGuild(it.loc, it.type) }
         onOpLoc1(BRASS_KEY_DOOR) { brassKeyDoor(it.vis, it.type) }
     }
 
@@ -47,16 +44,6 @@ class GuildEntranceScript @Inject constructor(private val passages: GenericPassa
         with(passages) { walkThrough(door, type) }
     }
 
-    private suspend fun ProtectedAccess.climbToMiningGuild(ladder: BoundLocInfo, type: ObjectServerType) {
-        val climbingDown = ladder.coords.z < UNDERGROUND_Z
-        if (climbingDown && player.miningLvl < 60) {
-            arriveDelay()
-            refuseMining()
-            return
-        }
-        with(passages) { passage(ladder, type, 0) }
-    }
-
     /** The shed west of the Cooks' Guild, over the way down into Edgeville Dungeon. */
     private suspend fun ProtectedAccess.brassKeyDoor(door: BoundLocInfo, type: ObjectServerType) {
         if (coords.z < door.coords.z && BRASS_KEY !in inv) {
@@ -68,8 +55,6 @@ class GuildEntranceScript @Inject constructor(private val passages: GenericPassa
     }
 
     private companion object {
-        const val MINING_GUILD_LADDER = "loc.mguild_ladder"
-        const val UNDERGROUND_Z = 6400
         const val BRASS_KEY_DOOR = "loc.brasskeydoor"
         const val BRASS_KEY = "obj.edgevilledungeonkey"
     }

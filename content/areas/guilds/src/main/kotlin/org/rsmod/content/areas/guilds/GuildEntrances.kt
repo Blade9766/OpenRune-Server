@@ -6,7 +6,6 @@ import org.rsmod.api.player.stat.baseStrengthLvl
 import org.rsmod.api.player.stat.farmingLvl
 import org.rsmod.api.player.stat.fishingLvl
 import org.rsmod.api.player.stat.magicLvl
-import org.rsmod.api.player.stat.miningLvl
 import org.rsmod.api.player.stat.rangedLvl
 import org.rsmod.api.player.stat.woodcuttingLvl
 import org.rsmod.content.quest.manager.QuestRequirements
@@ -78,15 +77,6 @@ object GuildEntrances {
                     chatNpcSpecific("Wizard Distentor", "npc.guild_wizard", neutral, text)
                 }
             },
-        )
-
-    val mining =
-        GuildEntrance(
-            name = "Mining Guild",
-            locs = listOf("loc.mguild_door"),
-            inside = { it.z <= 9756 },
-            canEnter = { it.miningLvl >= 60 },
-            refuse = { refuseMining() },
         )
 
     val woodcutting =
@@ -196,12 +186,5 @@ object GuildEntrances {
         )
 
     val all: List<GuildEntrance> =
-        listOf(fishing, ranging, wizards, mining, woodcutting, farming, heroes, legendsGrounds, legendsHall, warriors)
-
-    suspend fun ProtectedAccess.refuseMining() {
-        startDialogue {
-            chatNpcSpecific("Dwarf", "npc.mguild_dwarf1", neutral, "Sorry, but you're not experienced enough to go in there.")
-            mesbox("You need a Mining level of 60 to access the Mining Guild.")
-        }
-    }
+        listOf(fishing, ranging, wizards, woodcutting, farming, heroes, legendsGrounds, legendsHall, warriors)
 }

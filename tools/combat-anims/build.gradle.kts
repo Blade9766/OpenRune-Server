@@ -21,3 +21,4 @@ tasks.register<JavaExec>("dumpNpcCombatAnims") {
     // ServerCacheManager and GameValProvider resolve `.data/` against the working directory.
     workingDir = rootProject.projectDir
 }
+
