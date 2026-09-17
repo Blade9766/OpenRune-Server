@@ -16,25 +16,46 @@ package org.rsmod.content.skills.farming.data
  */
 enum class ToolSlot(
     val obj: String,
+    val plural: String,
     val capacity: Int,
     private val component: String,
     val varbits: List<StoreVarbit>,
 ) {
-    RAKE("obj.rake", 100, "rake", split("rake", 1, "extrarakes", 6)),
-    DIBBER("obj.dibber", 100, "dibber", split("dibber", 1, "extradibbers", 6)),
-    SPADE("obj.spade", 100, "spade", split("spade", 1, "extraspades", 6)),
-    SECATEURS("obj.secateurs", 100, "secateurs", split("secateurs", 1, "extrasecateurs", 6)),
-    WATERING_CAN("obj.watering_can_0", 1, "wateringcan", single("wateringcan", 4)),
-    TROWEL("obj.gardening_trowel", 100, "trowel", split("trowel", 1, "extratrowels", 6)),
-    PLANT_CURE("obj.plant_cure", 1000, "plantcure", single("plantcure", 10)),
+    RAKE("obj.rake", "rakes", 100, "rake", split("rake", 1, "extrarakes", 6)),
+    DIBBER("obj.dibber", "seed dibbers", 100, "dibber", split("dibber", 1, "extradibbers", 6)),
+    SPADE("obj.spade", "spades", 100, "spade", split("spade", 1, "extraspades", 6)),
+    SECATEURS(
+        "obj.secateurs",
+        "secateurs",
+        100,
+        "secateurs",
+        split("secateurs", 1, "extrasecateurs", 6),
+    ),
+    WATERING_CAN(
+        "obj.watering_can_0",
+        "watering cans",
+        1,
+        "wateringcan",
+        single("wateringcan", 4),
+    ),
+    TROWEL(
+        "obj.gardening_trowel",
+        "gardening trowels",
+        100,
+        "trowel",
+        split("trowel", 1, "extratrowels", 6),
+    ),
+    PLANT_CURE("obj.plant_cure", "plant cures", 1000, "plantcure", single("plantcure", 10)),
     BOTTOMLESS_BUCKET(
         "obj.bottomless_compost_bucket",
+        "bottomless compost buckets",
         1,
         "bottomless_bucket",
         single("bottomless_bucket_type", 3),
     ),
     BUCKET(
         "obj.bucket_empty",
+        "buckets",
         1000,
         "bucket",
         listOf(
@@ -43,14 +64,27 @@ enum class ToolSlot(
             StoreVarbit("varbit.farming_tools_extra2buckets", 2),
         ),
     ),
-    COMPOST("obj.bucket_compost", 1000, "compost", split("compost", 8, "extracompost", 2)),
+    COMPOST(
+        "obj.bucket_compost",
+        "compost",
+        1000,
+        "compost",
+        split("compost", 8, "extracompost", 2),
+    ),
     SUPERCOMPOST(
         "obj.bucket_supercompost",
+        "supercompost",
         1000,
         "supercompost",
         split("supercompost", 8, "extrasupercompost", 2),
     ),
-    ULTRACOMPOST("obj.bucket_ultracompost", 1000, "ultracompost", single("ultracompost", 10));
+    ULTRACOMPOST(
+        "obj.bucket_ultracompost",
+        "ultracompost",
+        1000,
+        "ultracompost",
+        single("ultracompost", 10),
+    );
 
     val mainComponent: String = "component.farming_tools:$component"
     val sideComponent: String = "component.farming_tools_side:$component"

@@ -66,7 +66,7 @@ constructor(private val store: FarmingToolStore) : PluginScript() {
         }
         val carried = carriedFor(slot)
         if (carried.isEmpty()) {
-            mes("You aren't carrying any ${slotName(slot)}.")
+            mes("You aren't carrying any ${slot.plural}.")
             return
         }
         val available = carried.sumOf { invTotal(inv, it.obj) }
@@ -86,7 +86,7 @@ constructor(private val store: FarmingToolStore) : PluginScript() {
     ) {
         var remaining = minOf(amount, store.freeSpace(player, slot))
         if (remaining <= 0) {
-            mes("The leprechaun can't hold any more ${slotName(slot)}.")
+            mes("The leprechaun can't hold any more ${slot.plural}.")
             return
         }
         var moved = 0
@@ -131,7 +131,7 @@ constructor(private val store: FarmingToolStore) : PluginScript() {
         }
         val held = store.storedObj(player, slot)
         if (held == null) {
-            mes("The leprechaun isn't holding any ${slotName(slot)} for you.")
+            mes("The leprechaun isn't holding any ${slot.plural} for you.")
             return
         }
         if (op == BANKNOTE_OP) {
@@ -239,8 +239,6 @@ constructor(private val store: FarmingToolStore) : PluginScript() {
 
     private fun objName(obj: String): String =
         ServerCacheManager.getItem(obj.asRSCM(RSCMType.OBJ))?.name ?: obj
-
-    private fun slotName(slot: ToolSlot): String = objName(slot.obj).lowercase()
 
     /**
      * How many the player meant by the option they clicked. The client reorders "-1", "-5", "-X"
