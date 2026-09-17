@@ -1,0 +1,19 @@
+# The Dig Site: arcenia root in the blocked copy of the Digsite Dungeon (map square 52,153).
+# The cleared copy one square south already carries these four spawns in unassigned.toml, but the
+# root is needed before the bricks come down, which is the only time the blocked copy is visited.
+
+[[spawn]]
+obj = "obj.arcenia_root"
+coords = "0_52_153_19_26"
+
+[[spawn]]
+obj = "obj.arcenia_root"
+coords = "0_52_153_22_31"
+
+[[spawn]]
+obj = "obj.arcenia_root"
+coords = "0_52_153_36_36"
+
+[[spawn]]
+obj = "obj.arcenia_root"
+coords = "0_52_153_40_42"

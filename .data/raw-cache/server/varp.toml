@@ -857,3 +857,9 @@ isServerOnly = true
 id = "varp.mm_greegree_form"
 scope = "Temp"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.digsite_state"
+scope = "Perm"
+transmit = "Never"

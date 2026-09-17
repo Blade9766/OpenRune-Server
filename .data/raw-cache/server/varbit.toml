@@ -578,3 +578,38 @@ id = "varbit.sos_sceptre_charges"
 varp = "varp.sos_sceptre"
 startBit = 0
 endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.digsite_answers"
+varp = "varp.digsite_state"
+startBit = 0
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.digsite_asked"
+varp = "varp.digsite_state"
+startBit = 9
+endBit = 11
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.digsite_opal_requested"
+varp = "varp.digsite_state"
+startBit = 12
+endBit = 12
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.digsite_bricks_primed"
+varp = "varp.digsite_state"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.digsite_bricks_blown"
+varp = "varp.digsite_state"
+startBit = 14
+endBit = 14

@@ -532,6 +532,14 @@ object PickpocketNpcs {
             PickpocketNpc("npc.tzhaar_hur_city5", 3),
             PickpocketNpc("npc.tzhaar_hur_city6", 3),
         )
+
+    val DIGSITE_WORKMAN: List<PickpocketNpc> =
+        listOf(
+            PickpocketNpc("npc.digworkman1", 3),
+            PickpocketNpc("npc.digworkman2", 3),
+            PickpocketNpc("npc.qip_digsite_digworkman_03", 3),
+            PickpocketNpc("npc.qip_digsite_digworkman_04", 3),
+        )
 }
 
 data class PickpocketNpc(val npc: String, val op: Int)

@@ -206,3 +206,21 @@ inherit = "loc.cauldrondoor_l"
 [object.params]
 "param.opensound" = "synth.grate_open"
 "param.closesound" = "synth.grate_close"
+
+[[object]]
+id = "loc.qip_digsite_poshdoor"
+inherit = "loc.qip_digsite_poshdoor"
+contentGroup = "content.closed_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.qip_digsite_poshdoor_open"
+"param.opensound" = "synth.nicedoor_open"
+
+[[object]]
+id = "loc.qip_digsite_poshdoor_open"
+inherit = "loc.qip_digsite_poshdoor_open"
+contentGroup = "content.opened_single_door"
+
+[object.params]
+"param.closesound" = "synth.nicedoor_close"
+"param.next_loc_stage" = "loc.qip_digsite_poshdoor"

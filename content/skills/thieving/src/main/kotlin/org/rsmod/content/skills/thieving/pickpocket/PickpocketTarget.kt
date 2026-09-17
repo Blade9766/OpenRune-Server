@@ -2,6 +2,7 @@ package org.rsmod.content.skills.thieving.pickpocket
 
 import org.rsmod.content.skills.thieving.LootTable
 import org.rsmod.content.skills.thieving.loot
+import org.rsmod.game.entity.Player
 
 /**
  * A pickpocket target as listed on the OSRS wiki Thieving page: the level and experience, the
@@ -26,6 +27,11 @@ enum class PickpocketTarget(
     val coins: IntRange,
     val loot: LootTable,
     val npcs: List<PickpocketNpc>,
+    /** Cycles one attempt takes. The digsite workmen take twice as long as everyone else. */
+    val attemptCycles: Int = 2,
+    /** Loot handed out instead of [loot] while [altLootWhen] holds. */
+    val altLoot: LootTable? = null,
+    val altLootWhen: ((Player) -> Boolean)? = null,
 ) {
     MAN_WOMAN(
         level = 1,
@@ -122,6 +128,41 @@ enum class PickpocketTarget(
         coins = 18..18,
         loot = loot { always("obj.pickpocket_coin_pouch_warrior") },
         npcs = PickpocketNpcs.WARRIOR,
+    ),
+    DIGSITE_WORKMAN(
+        level = 25,
+        xp = 10.4,
+        stunDamage = 2..2,
+        shout = "Oi! What do you think you're doing?",
+        lowChance = 150,
+        perfectLevel = 93,
+        petBase = 257_211,
+        pouch = null,
+        coins = 10..10,
+        loot =
+            loot {
+                item(1, "obj.coins", 10..10)
+                item(3, "obj.specimen_brush")
+                item(1, "obj.rope")
+                item(1, "obj.bucket_empty")
+                item(1, "obj.leather_gloves")
+                item(1, "obj.spade")
+                item(3, "obj.rock_sample1")
+            },
+        npcs = PickpocketNpcs.DIGSITE_WORKMAN,
+        attemptCycles = 4,
+        // The animal skull is only ever in their pockets while a student is missing one; after
+        // The Dig Site that slot pays coins instead.
+        altLoot =
+            loot {
+                item(4, "obj.coins", 10..10)
+                item(3, "obj.specimen_brush")
+                item(1, "obj.rope")
+                item(1, "obj.bucket_empty")
+                item(1, "obj.leather_gloves")
+                item(1, "obj.spade")
+            },
+        altLootWhen = { it.vars[DIG_SITE_VARP] >= DIG_SITE_COMPLETE },
     ),
     VILLAGER(
         level = 30,
@@ -530,6 +571,12 @@ enum class PickpocketTarget(
         npcs = PickpocketNpcs.TZHAAR_HUR,
     );
 
+    /** The table this target hands out for [player] right now. */
+    fun lootFor(player: Player): LootTable {
+        val alt = altLoot ?: return loot
+        return if (altLootWhen?.invoke(player) == true) alt else loot
+    }
+
     /** Success chance out of 256 for a player at [thievingLevel]. */
     fun successChance(thievingLevel: Int): Int {
         if (thievingLevel >= perfectLevel) {
@@ -542,6 +589,10 @@ enum class PickpocketTarget(
     }
 
     companion object {
+        /** The Dig Site's quest varp and its end state, read without depending on the quest plugin. */
+        private const val DIG_SITE_VARP = "varp.itexamlevel"
+        private const val DIG_SITE_COMPLETE = 9
+
         /** Coin pouch obj -> the target whose coins it holds. */
         val byPouch: Map<String, PickpocketTarget> =
             entries.filter { it.pouch != null }.associateBy { it.pouch!! }

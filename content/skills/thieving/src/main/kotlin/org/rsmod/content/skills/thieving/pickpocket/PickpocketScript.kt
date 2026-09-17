@@ -77,7 +77,7 @@ constructor(
         faceEntitySquare(npc)
         anim(Thieving.STEAL_ANIM)
         spam("You attempt to pick the $name's pocket.")
-        delay(2)
+        delay(target.attemptCycles)
 
         if (!npc.isSlotAssigned) {
             return
@@ -100,7 +100,7 @@ constructor(
         }
 
         val multiplier = if (equipment.rollRogueDoubleLoot(player, random)) 2 else 1
-        giveLoot(objRepo, target.loot.roll(random), multiplier)
+        giveLoot(objRepo, target.lootFor(player).roll(random), multiplier)
         giveThievingXp(xpMods, target.xp)
         soundSynth(Thieving.STEAL_SYNTH)
         spam("You pick the $name's pocket.")
@@ -134,7 +134,7 @@ constructor(
             return true
         }
         val pouch = target.pouch ?: return false
-        return target.loot.guaranteed.size == 1 && invTotal(inv, pouch) > 0
+        return target.lootFor(player).guaranteed.size == 1 && invTotal(inv, pouch) > 0
     }
 
     /** `Open-all` on a coin pouch: every pouch of that kind is emptied into a single coin stack. */
