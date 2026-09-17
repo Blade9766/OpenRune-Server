@@ -32,6 +32,7 @@ potion_nzone_overload_damage=32
 potion_moonlight=33
 food_delayed_heal=34
 heart_cooldown=35
+combat_stun=37
 boss_hp_bar_check=114
 npc_poison=36
 combat_stun=37
