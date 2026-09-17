@@ -35,8 +35,10 @@ constructor(
             cheat {
                 val key = args.firstOrNull()?.trim()?.lowercase()
                 if (key.isNullOrEmpty()) {
-                    val names = Quest.all().joinToString(", ") { it.key.removePrefix("quest_") }
-                    player.mes("Registered quests: $names")
+                    val names = Quest.all().map { it.key.removePrefix("quest_") }.sorted()
+                    for (line in packLines("Registered quests: ", names)) {
+                        player.mes(line)
+                    }
                     return@cheat
                 }
                 val quest = Quest.get(key) ?: Quest.get("quest_$key")
@@ -86,7 +88,29 @@ constructor(
         }
     }
 
+    /**
+     * MESSAGE_GAME caps a line at 255 bytes and the server drops anything longer without telling
+     * the player, so the quest list is split across as many lines as it needs.
+     */
+    private fun packLines(prefix: String, names: List<String>): List<String> {
+        val lines = mutableListOf<String>()
+        var current = StringBuilder(prefix)
+        for (name in names) {
+            val separator = if (current.length == prefix.length) "" else ", "
+            if (current.length + separator.length + name.length > MAX_MESSAGE_LENGTH) {
+                lines += current.toString()
+                current = StringBuilder(prefix)
+            } else {
+                current.append(separator)
+            }
+            current.append(name)
+        }
+        lines += current.toString()
+        return lines
+    }
+
     private companion object {
         const val TEST_LOC_TICKS = 25
+        const val MAX_MESSAGE_LENGTH = 250
     }
 }
