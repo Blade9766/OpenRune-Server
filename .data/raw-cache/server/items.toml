@@ -7636,6 +7636,7 @@ tradeable = false
 "param.attack_sound_stance4"=2555
 "param.defend_anim"="seq.human_blunt_block"
 "param.attackrate"=5
+"param.additional_spell_autocast1"=3311
 
 
 [[item]]
@@ -7653,6 +7654,7 @@ tradeable = false
 "param.attack_sound_stance4"=2555
 "param.defend_anim"="seq.human_blunt_block"
 "param.attackrate"=5
+"param.additional_spell_autocast1"=3309
 
 
 [[item]]
@@ -7670,6 +7672,7 @@ tradeable = false
 "param.attack_sound_stance4"=2555
 "param.defend_anim"="seq.human_blunt_block"
 "param.attackrate"=5
+"param.additional_spell_autocast1"=3310
 
 
 [[item]]

@@ -3,7 +3,7 @@ package org.rsmod.content.quest.area.wilderness.magearena
 import org.rsmod.api.player.back
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.righthand
+import org.rsmod.content.skills.magic.spell.attacks.SpellEffects
 import org.rsmod.game.entity.Player
 import org.rsmod.game.map.collision.isWalkBlocked
 import org.rsmod.game.map.collision.isZoneValid
@@ -103,14 +103,28 @@ fun CollisionFlagMap.tilesAround(southWest: CoordGrid, size: Int, near: CoordGri
 
 fun CollisionFlagMap.walkable(coords: CoordGrid): Boolean = isZoneValid(coords) && !isWalkBlocked(coords)
 
+/**
+ * The side effect a god spell has when it lands, the same one the player's own cast applies: a
+ * flat prayer point for Saradomin Strike, and 1 + 5% of the stat for the other two, which does not
+ * stack until the target is back at their base level.
+ */
+fun applyGodSpellEffect(target: Player, god: God) {
+    when (god) {
+        God.SARADOMIN -> SpellEffects.drainFlat(target, SpellEffects.PRAYER, PRAYER_DRAIN)
+        God.GUTHIX -> SpellEffects.drainPercent(target, SpellEffects.DEFENCE, DRAIN_PERCENT, DRAIN_CONSTANT)
+        God.ZAMORAK -> SpellEffects.drainPercent(target, SpellEffects.MAGIC, DRAIN_PERCENT, DRAIN_CONSTANT)
+    }
+}
+
+private const val PRAYER_DRAIN = 1
+private const val DRAIN_PERCENT = 5
+private const val DRAIN_CONSTANT = 1
+
 /** The god whose cape the player is wearing, if any. */
 fun Player.wornCapeGod(): God? = back?.let { God.byCape(it.id) }
 
 /** The god whose cape the player is wearing or carrying, if any. */
 fun Player.carriedCapeGod(): God? = wornCapeGod() ?: God.entries.firstOrNull { inv.contains(it.cape) }
-
-/** The god whose staff (or an equivalent weapon) the player is wielding, if any. */
-fun Player.wieldedStaffGod(): God? = righthand?.let { God.byStaff(it.id) }
 
 fun Player.isProtectingFromMagic(): Boolean = vars["varbit.prayer_protectfrommagic"] > 0
 

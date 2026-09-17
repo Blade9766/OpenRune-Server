@@ -13,8 +13,6 @@ enum class God(
     val cape: String,
     val imbuedCape: String,
     val staff: String,
-    /** Other weapons that count as the god's staff for the arena spells (and the Charge bonus). */
-    val alternativeStaffs: List<String>,
     val spell: String,
     val spellName: String,
     /** How Kolodion refers to the spell when he reports training progress. */
@@ -38,7 +36,6 @@ enum class God(
         cape = "obj.saradomin_cape",
         imbuedCape = "obj.ma2_saradomin_cape",
         staff = "obj.saradomin_staff",
-        alternativeStaffs = listOf("obj.staff_of_light"),
         spell = "obj.60_saradomin_strike",
         spellName = "Saradomin Strike",
         spellNickname = "strike",
@@ -59,7 +56,6 @@ enum class God(
         cape = "obj.guthix_cape",
         imbuedCape = "obj.ma2_guthix_cape",
         staff = "obj.guthix_staff",
-        alternativeStaffs = listOf("obj.staff_of_balance", "obj.pest_void_knight_mace"),
         spell = "obj.60_claws_of_guthix",
         spellName = "Claws of Guthix",
         spellNickname = "claw",
@@ -80,7 +76,6 @@ enum class God(
         cape = "obj.zamorak_cape",
         imbuedCape = "obj.ma2_zamorak_cape",
         staff = "obj.zamorak_staff",
-        alternativeStaffs = listOf("obj.sotd", "obj.toxic_sotd_charged", "obj.toxic_sotd"),
         spell = "obj.60_flames_of_zamorak",
         spellName = "Flames of Zamorak",
         spellNickname = "flame",
@@ -103,7 +98,6 @@ enum class God(
     val remainsId: Int by lazy { remains.asRSCM(RSCMType.OBJ) }
     val followerId: Int by lazy { follower.asRSCM(RSCMType.NPC) }
     val followerSpawningId: Int by lazy { followerSpawning.asRSCM(RSCMType.NPC) }
-    val staffIds: Set<Int> by lazy { (listOf(staff) + alternativeStaffs).map { it.asRSCM(RSCMType.OBJ) }.toSet() }
 
     companion object {
         fun byCape(objId: Int): God? = entries.firstOrNull { it.capeId == objId }
@@ -113,7 +107,5 @@ enum class God(
         fun byRemains(objId: Int): God? = entries.firstOrNull { it.remainsId == objId }
 
         fun byFollower(npcId: Int): God? = entries.firstOrNull { it.followerId == npcId }
-
-        fun byStaff(objId: Int): God? = entries.firstOrNull { objId in it.staffIds }
     }
 }

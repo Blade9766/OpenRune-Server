@@ -89,14 +89,24 @@ class StandardCombatSpells @Inject constructor(private val godSpellHooks: GodSpe
             spell = "obj.60_claws_of_guthix",
             attack =
                 godSpell(manager, spellObj("obj.60_claws_of_guthix"), impact = "spotanim.guthix_claw_green", sound = "synth.claws_of_guthix_cast") { target ->
-                    SpellEffects.drainPercent(target, SpellEffects.DEFENCE, GOD_SPELL_DRAIN_PERCENT)
+                    SpellEffects.drainPercent(
+                        target,
+                        SpellEffects.DEFENCE,
+                        GOD_SPELL_DRAIN_PERCENT,
+                        GOD_SPELL_DRAIN_CONSTANT,
+                    )
                 },
         )
         register(
             spell = "obj.60_flames_of_zamorak",
             attack =
                 godSpell(manager, spellObj("obj.60_flames_of_zamorak"), impact = "spotanim.zamorak_flame", sound = "synth.flames_of_zamorak_cast") { target ->
-                    SpellEffects.drainPercent(target, SpellEffects.MAGIC, GOD_SPELL_DRAIN_PERCENT)
+                    SpellEffects.drainPercent(
+                        target,
+                        SpellEffects.MAGIC,
+                        GOD_SPELL_DRAIN_PERCENT,
+                        GOD_SPELL_DRAIN_CONSTANT,
+                    )
                 },
         )
     }
@@ -137,6 +147,7 @@ class StandardCombatSpells @Inject constructor(private val godSpellHooks: GodSpe
         private const val MAGIC_DART_BASE = 10
         private const val GOD_SPELL_MAX_HIT = 20
         private const val GOD_SPELL_DRAIN_PERCENT = 5
+        private const val GOD_SPELL_DRAIN_CONSTANT = 1
         private const val SARADOMIN_PRAYER_DRAIN = 1
     }
 }

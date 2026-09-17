@@ -63,7 +63,7 @@ constructor(
             return
         }
         anim(PRAY_ANIM)
-        mesbox("You kneel and chant to ${god.displayName}...")
+        delay(PRAY_TICKS)
         if (inv.isFull()) {
             mesbox(
                 "You kneel and chant to ${god.displayName}... ... but there is no response. You feel " +
@@ -180,5 +180,8 @@ constructor(
         const val STAFF_SHOP = "inv.magearena_staffshop"
         const val POOL_SOUND = "synth.magearena_pool_plop"
         const val PRAY_ANIM = "seq.human_pray"
+
+        /** Long enough for the kneel to play before the god answers. */
+        const val PRAY_TICKS = 3
     }
 }

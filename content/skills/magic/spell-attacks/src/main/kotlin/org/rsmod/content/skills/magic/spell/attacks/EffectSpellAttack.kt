@@ -152,20 +152,22 @@ object SpellEffects {
     const val PRAYER: String = "stat.prayer"
 
     /**
-     * Lowers [stat] by [percent] of the target's base level, only when the stat is still at (or
-     * above) its base: curses do not stack.
+     * Lowers [stat] by [constant] plus [percent] of the target's base level, only when the stat is
+     * still at (or above) its base: curses and god spells do not stack, and do not reapply until
+     * the target is back at full.
      */
-    fun drainPercent(target: PathingEntity, stat: String, percent: Int) {
+    fun drainPercent(target: PathingEntity, stat: String, percent: Int, constant: Int = 0) {
         when (target) {
             is Player -> {
                 if (target.stat(stat) >= target.statBase(stat)) {
-                    target.statSub(stat, constant = 0, percent = percent)
+                    target.statSub(stat, constant = constant, percent = percent)
                 }
             }
             is Npc -> {
                 val base = npcBase(target, stat)
                 if (npcCurrent(target, stat) >= base) {
-                    setNpcCurrent(target, stat, max(0, npcCurrent(target, stat) - (base * percent) / 100))
+                    val drain = constant + (base * percent) / 100
+                    setNpcCurrent(target, stat, max(0, npcCurrent(target, stat) - drain))
                 }
             }
         }
