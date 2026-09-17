@@ -180,18 +180,22 @@ constructor(private val store: FarmingToolStore) : PluginScript() {
 
     // ------------------------------------------------------------------ deposit
 
+    /**
+     * Hands over everything the leprechaun keeps. [storeItems] reports every slot it touches, the
+     * refusals included, so the closing line is only for a player who was carrying nothing of his
+     * at all - otherwise it would contradict the reasons just given.
+     */
     private suspend fun ProtectedAccess.depositInventory() {
-        var moved = 0
+        var carriedAnything = false
         for (slot in ToolSlot.entries) {
             val carried = carriedFor(slot)
             if (carried.isEmpty()) {
                 continue
             }
-            val before = store.count(player, slot)
+            carriedAnything = true
             storeItems(slot, carried, carried.sumOf { invTotal(inv, it.obj) })
-            moved += store.count(player, slot) - before
         }
-        if (moved == 0) {
+        if (!carriedAnything) {
             mes("You aren't carrying anything the leprechaun will look after.")
         }
     }
