@@ -23,6 +23,7 @@ import org.rsmod.content.quest.area.ikov.ikovFireWarriorSlain
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.player.PlayerUid
+import org.rsmod.game.hit.HitType
 import org.rsmod.game.inv.isType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -51,7 +52,7 @@ constructor(
         onOpNpc1(FIRE_WARRIOR) { startDialogue(it.npc) { challenge() } }
         onModifyNpcHit(warriorType) {
             val source = hit.sourceUid?.let { PlayerUid(it).resolve(playerList) }
-            if (hit.isFromPlayer && source?.holdingIceArrows() != true) {
+            if (hit.isFromPlayer && (hit.type != HitType.Ranged || source?.holdingIceArrows() != true)) {
                 hit.damage = 0
             }
         }
@@ -78,7 +79,10 @@ constructor(
         }
     }
 
-    /** The one thing that hurts him: ice arrows on the string, or in the quiver behind anything. */
+    /**
+     * The one thing that hurts him: a ranged attack made with ice arrows, either fired from the
+     * bow or sitting in the quiver behind a thrown weapon. Melee and magic never land.
+     */
     private fun Player.holdingIceArrows(): Boolean {
         if (quiver?.isType(ICE_ARROWS) == true) {
             return true
