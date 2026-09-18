@@ -869,3 +869,15 @@ isServerOnly = true
 id = "varp.ikov_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.touristtrap_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.shantay_jail"
+scope = "Perm"
+transmit = "Never"

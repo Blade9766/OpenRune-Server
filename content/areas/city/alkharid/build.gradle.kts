@@ -8,4 +8,6 @@ dependencies {
     implementation(projects.api.script)
     implementation(projects.content.generic.genericLocs)
     implementation(projects.content.quest)
+    implementation(projects.content.interfaces.bank)
+    implementation(projects.api.shops)
 }

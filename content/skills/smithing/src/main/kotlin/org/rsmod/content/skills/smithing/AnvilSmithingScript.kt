@@ -12,6 +12,7 @@ import org.rsmod.api.script.onOpLocCategoryU
 import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.table.smithing.SmithingBarsRow
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.smithing.util.SmithingData
 import org.rsmod.content.skills.smithing.util.SmithingProductMeta
 import org.rsmod.content.skills.smithing.util.SmithingUtils
@@ -202,6 +203,11 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
             return false
         }
 
+        if (meta.name.endsWith("dart tip") && !QuestRequirements.hasCompleted(player, TOURIST_TRAP)) {
+            mesbox("You need to complete The Tourist Trap quest to make dart tips.")
+            return false
+        }
+
         if (!SmithingUtils.requireSmithingLevel(
                 this,
                 meta.level,
@@ -235,7 +241,11 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
 
     private companion object {
         private const val ANVIL_INITIAL_DELAY = 1
+
         /** Matches Alter [repeatWhile] delay between smith cycles. */
         private const val ANVIL_CYCLE_DELAY = 5
+
+        /** Al Shabim's advisors teach dart making at the end of the Bedabin part of the quest. */
+        private const val TOURIST_TRAP = "quest_touristtrap"
     }
 }

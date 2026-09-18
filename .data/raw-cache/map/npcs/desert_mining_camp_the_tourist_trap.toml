@@ -1,8 +1,4 @@
 [[spawn]]
-npc = "npc.ana"
-coords = "0_51_147_38_58"
-
-[[spawn]]
 npc = "npc.mining_slave_male"
 coords = "0_51_147_2_51"
 

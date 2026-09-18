@@ -321,14 +321,6 @@ npc = "npc.capt_siad"
 coords = "1_51_47_27_24"
 
 [[spawn]]
-npc = "npc.capt_siad_vis"
-coords = "1_51_47_27_25"
-
-[[spawn]]
-npc = "npc.escaped_slave"
-coords = "0_51_47_39_17"
-
-[[spawn]]
 npc = "npc.mining_cart_driver"
 coords = "0_51_47_23_14"
 

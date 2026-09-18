@@ -1,0 +1,3 @@
+[gamevals.varp]
+# Shantay Pass: 1 while the player sits in Shantay's jail owing the five gold fine.
+shantay_jail = 65443

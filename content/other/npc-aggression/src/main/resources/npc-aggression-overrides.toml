@@ -7,4 +7,10 @@ npc = [
     { id = "npc.zqzombie_unarmed", wiki = "Undead one" },
     { id = "npc.zqzombie_unarmed2", wiki = "Undead one" },
     { id = "npc.zqzombie_unarmed3", wiki = "Undead one" },
+    # The Tourist Trap: the mercenaries outside the Desert Mining Camp only turn on someone the
+    # quest scripts send them after; the wiki's "if wielding a weapon" is not a hunt mode.
+    { id = "npc.tourtrap_qip_desert_mining_merc_1", wiki = "Mercenary", aggressive = false },
+    { id = "npc.tourtrap_qip_desert_mining_merc_2", wiki = "Mercenary", aggressive = false },
+    { id = "npc.tourtrap_qip_desert_mining_merc_3", wiki = "Mercenary", aggressive = false },
+    { id = "npc.tourtrap_qip_desert_mining_merc_4", wiki = "Mercenary", aggressive = false },
 ]

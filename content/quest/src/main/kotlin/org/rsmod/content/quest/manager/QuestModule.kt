@@ -8,6 +8,10 @@ import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.desert.touristtrap.MiningCampSecurity
+import org.rsmod.content.quest.area.desert.touristtrap.TouristTrapQuest
+import org.rsmod.content.quest.area.desert.touristtrap.npcs.MercenaryCaptainAttackHook
+import org.rsmod.content.quest.area.desert.touristtrap.npcs.MercenaryCaptainKillHook
 import org.rsmod.content.quest.area.draynor.porcineofinterest.NoticeBoard
 import org.rsmod.content.quest.area.draynor.porcineofinterest.PorcineOfInterestQuest
 import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCave
@@ -137,6 +141,8 @@ public class QuestModule : PluginModule() {
         bindInstance<Sarah>()
         bindInstance<Rosie>()
         bindInstance<Spria>()
+        bindInstance<TouristTrapQuest>()
+        bindInstance<MiningCampSecurity>()
         addSetBinding<NpcAttackValidateHook>(SilverlightAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
@@ -156,5 +162,7 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(TanglefootAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(TanglefootKillHook::class.java)
         addSetBinding<NpcDeathKillHook>(SourhogKillHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(MercenaryCaptainAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(MercenaryCaptainKillHook::class.java)
     }
 }

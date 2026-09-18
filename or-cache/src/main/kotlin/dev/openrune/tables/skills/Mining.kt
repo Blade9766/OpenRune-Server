@@ -673,5 +673,25 @@ object Mining {
                 column(COL_MINING_CAPE, false)
                 column(COL_CELESTIAL_RING, false)
             }
+
+            // The Tourist Trap: the punishment rocks in the Desert Mining Camp's prison mine.
+            // Their rock is worth nothing and they never roll clue geodes.
+            row("dbrow.mining_punishrocks") {
+                columnRSCM(COL_ROCK_OBJECT, "loc.punishrocks")
+                column(COL_LEVEL, 1)
+                column(COL_XP, 10)
+                columnRSCM(COL_ORE_ITEM, "obj.thpunishrock")
+                column(COL_RESPAWN_CYCLES, 4)
+                column(COL_SUCCESS_RATE_LOW, 128)
+                column(COL_SUCCESS_RATE_HIGH, 400)
+                column(COL_DEPLETE_MECHANIC, 1)
+                columnRSCM(COL_EMPTY_ROCK, "loc.punishrocks_no_ore")
+                column(COL_CLUE_BASE_CHANCE, 0)
+                column(COL_MINING_WALL, false)
+                column(COL_MINING_GLOVES, 0)
+                column(COL_VARROCK_ARMOUR, 0)
+                column(COL_MINING_CAPE, false)
+                column(COL_CELESTIAL_RING, false)
+            }
         }
 }

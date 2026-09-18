@@ -10,6 +10,7 @@ public fun interface NpcAttackValidateHook {
 public sealed class NpcAttackValidateResult {
     public data object Pass : NpcAttackValidateResult()
 
+    /** An empty [message] denies silently, for hooks that answer the attempt themselves. */
     public data class Deny(val message: String) : NpcAttackValidateResult()
 
     /**

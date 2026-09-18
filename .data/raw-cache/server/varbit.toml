@@ -669,3 +669,80 @@ id = "varbit.ikov_sided_with_lucien"
 varp = "varp.ikov_state"
 startBit = 9
 endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_evictions"
+varp = "varp.touristtrap_state"
+startBit = 0
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_bet"
+varp = "varp.touristtrap_state"
+startBit = 2
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_asked_al_zaba"
+varp = "varp.touristtrap_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_al_zaba_debunked"
+varp = "varp.touristtrap_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_seen_sailing_books"
+varp = "varp.touristtrap_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_siad_distracted"
+varp = "varp.touristtrap_state"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_tent_access"
+varp = "varp.touristtrap_state"
+startBit = 9
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_ana_location"
+varp = "varp.touristtrap_state"
+startBit = 10
+endBit = 12
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_cart_ready"
+varp = "varp.touristtrap_state"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_captain_duel"
+varp = "varp.touristtrap_state"
+startBit = 14
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.touristtrap_met_ana"
+varp = "varp.touristtrap_state"
+startBit = 15
+endBit = 15

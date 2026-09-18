@@ -155,6 +155,21 @@ ikov_found_ice_arrows = 1628
 ikov_lava_bridge = 1630
 ikov_lockeddoor = 1631
 
+# The Tourist Trap (dbrow.synth_touristtrapqip), plus the generic sounds its scripts play.
+tt_winching_loop = 3212
+tt_bend_bars = 3213
+tt_cart_loop = 3214
+tt_down_stairs = 3215
+tt_fall_back = 3216
+tt_knocking = 3217
+tt_squeeze_out = 3218
+tt_up_stairs = 3219
+locked = 2402
+pick_lock = 2407
+eat = 2393
+curtain_open = 59
+anvil02 = 3771
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -173,6 +188,11 @@ digsite_state = 65441
 # and which Lucien is standing where in the cache varbit `varbit.ikov_lucien_vis`.
 ikov_state = 65440
 
+# The Tourist Trap: the quest's own flags. The stage lives in the cache varp `varp.desertrescue`
+# and everything the client draws (Irena, Ana, the escaping slave, the bent bars, the barrels and
+# the cart) in the cache varbits on `varp.tourtrap_qip_var`.
+touristtrap_state = 65442
+
 [gamevals.varbit]
 digsite_answers = 65560
 digsite_asked = 65561
@@ -187,12 +207,25 @@ ikov_lever_fitted = 65569
 ikov_gate_unlocked = 65570
 ikov_arrow_chest = 65571
 ikov_sided_with_lucien = 65572
+touristtrap_evictions = 65573
+touristtrap_bet = 65574
+touristtrap_asked_al_zaba = 65575
+touristtrap_al_zaba_debunked = 65576
+touristtrap_seen_sailing_books = 65577
+touristtrap_siad_distracted = 65578
+touristtrap_tent_access = 65579
+touristtrap_ana_location = 65580
+touristtrap_cart_ready = 65581
+touristtrap_captain_duel = 65582
+touristtrap_met_ana = 65583
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
 mortmyre_swamp_decay = 124
 # Shilo Village: balance checks while crossing the bridge to Cairn Isle.
 shilo_cairn_bridge = 125
+# The Tourist Trap: the guards' periodic look at anyone inside the Desert Mining Camp.
+touristtrap_guard_watch = 126
 # Soft timers: the Marim jail guards watching the player, and the Ape Atoll tunnel's falling rocks.
 mm_jail = 122
 mm_rockfall = 123
@@ -200,3 +233,5 @@ mm_rockfall = 123
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
 porcine_sourhog_blind = 65421
+# The Tourist Trap: the Mercenary Captain's warning, run the cycle after an attack on him is refused.
+touristtrap_attack_warning = 65419
