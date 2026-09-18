@@ -5,4 +5,5 @@ plugins {
 dependencies {
     implementation(projects.api.attr)
     implementation(projects.api.pluginCommons)
+    implementation(projects.content.quest)
 }

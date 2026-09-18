@@ -54,6 +54,9 @@ sealed class ShortcutMove {
     }
 }
 
+/** A quest that unlocks a shortcut: its dbrow [key] and the [name] shown to the player. */
+data class ShortcutQuest(val key: String, val name: String)
+
 /**
  * A two-way agility shortcut between [sideA] and [sideB]. The player is taken to whichever side is
  * further from them. A loc may be shared by several shortcuts (the same crack model is reused
@@ -62,6 +65,9 @@ sealed class ShortcutMove {
  * When [apRange] is greater than zero the shortcut also starts from up to that many tiles away with
  * a line of sight to the loc, for locs the route finder can never reach (a stepping stone in a
  * river, a rock face behind blocked scree).
+ *
+ * A [quest] must be completed before the shortcut can be used, and a [oneWay] shortcut only takes
+ * the player from [sideA] to [sideB].
  */
 data class AgilityShortcut(
     val name: String,
@@ -72,6 +78,8 @@ data class AgilityShortcut(
     val sideB: CoordGrid,
     val move: ShortcutMove,
     val apRange: Int = 0,
+    val quest: ShortcutQuest? = null,
+    val oneWay: Boolean = false,
 ) {
     init {
         require(sideA != sideB) { "Shortcut '$name' needs two distinct sides." }

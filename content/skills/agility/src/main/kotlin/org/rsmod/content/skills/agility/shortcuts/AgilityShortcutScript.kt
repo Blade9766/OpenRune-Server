@@ -5,6 +5,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
 import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.BalanceStyle
 import org.rsmod.content.skills.agility.CLIENT_CYCLES_PER_TICK
@@ -49,7 +50,16 @@ class AgilityShortcutScript : PluginScript() {
             mes("You need an Agility level of ${shortcut.level} to use this shortcut.")
             return
         }
+        val quest = shortcut.quest
+        if (quest != null && !QuestRequirements.hasCompleted(player, quest.key)) {
+            mes("You need to complete ${quest.name} to use this shortcut.")
+            return
+        }
         val fromA = shortcut.startsFromA(coords)
+        if (shortcut.oneWay && !fromA) {
+            mes("You can't climb the rocks from this side.")
+            return
+        }
         val from = if (fromA) shortcut.sideA else shortcut.sideB
         val dest = if (fromA) shortcut.sideB else shortcut.sideA
         stepOnto(from)

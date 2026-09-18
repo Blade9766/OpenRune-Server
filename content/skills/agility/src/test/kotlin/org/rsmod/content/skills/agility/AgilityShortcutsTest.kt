@@ -54,4 +54,21 @@ class AgilityShortcutsTest {
         assertTrue(chain.startsFromA(CoordGrid(3421, 3551, 0)))
         assertFalse(chain.startsFromA(CoordGrid(3421, 3551, 1)))
     }
+
+    @Test
+    fun `trollheim wilderness rocks pick the nearest climb and only lead down`() {
+        val climbs = AgilityShortcuts.all.filter { "loc.trollheim_wildy_climb_rocks" in it.locs }
+        assertEquals(3, climbs.size)
+        val wildernessEdge = CoordGrid(2946, 3678, 0)
+        val chosen = climbs.minBy { it.distanceTo(wildernessEdge) }
+        assertTrue(chosen.oneWay)
+        assertTrue(chosen.startsFromA(wildernessEdge))
+        assertEquals(1, climbs.count { it.oneWay })
+    }
+
+    @Test
+    fun `troll stronghold climb needs my arms big adventure`() {
+        val climb = AgilityShortcuts.all.single { it.level == 73 && it.name == "Rocks" }
+        assertEquals("quest_myarmsbigadventure", climb.quest?.key)
+    }
 }

@@ -11,7 +11,7 @@ import org.rsmod.map.CoordGrid
 /**
  * Agility shortcuts, in level order. Sides were read from the game map: each is the tile carrying
  * the shortcut's map icon or the first free tile past the loc on that side. Shortcuts gated behind
- * quests, diaries or grapples are left out until those systems exist.
+ * diaries or grapples are left out until those systems exist.
  */
 object AgilityShortcuts {
     private fun tile(x: Int, z: Int, level: Int = 0): CoordGrid = CoordGrid(x, z, level)
@@ -161,6 +161,15 @@ object AgilityShortcuts {
                 move = scramble,
             ),
             AgilityShortcut(
+                name = "Rocks",
+                level = 41,
+                xp = 0.0,
+                locs = listOf("loc.asc_troll_mountain_climbrock_1"),
+                sideA = tile(2869, 3671),
+                sideB = tile(2872, 3671),
+                move = scramble,
+            ),
+            AgilityShortcut(
                 name = "Underwall tunnel",
                 level = 42,
                 xp = 0.0,
@@ -168,6 +177,51 @@ object AgilityShortcuts {
                 sideA = tile(3066, 3257),
                 sideB = tile(3070, 3257),
                 move = tunnel,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 43,
+                xp = 0.0,
+                locs = listOf("loc.asc_troll_mountain_climbrock_2"),
+                sideA = tile(2878, 3665),
+                sideB = tile(2878, 3668),
+                move = scramble,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 43,
+                xp = 0.0,
+                locs = listOf("loc.troll_mountain_shortcut_climbingrocks1"),
+                sideA = tile(2884, 3683),
+                sideB = tile(2886, 3683),
+                move = scramble,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 43,
+                xp = 0.0,
+                locs = listOf("loc.troll_mountain_shortcut_climbingrocks2"),
+                sideA = tile(2884, 3684),
+                sideB = tile(2886, 3684),
+                move = scramble,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 44,
+                xp = 0.0,
+                locs = listOf("loc.asc_troll_mountain_climbrock_3"),
+                sideA = tile(2907, 3682),
+                sideB = tile(2909, 3684),
+                move = scramble,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 47,
+                xp = 8.0,
+                locs = listOf("loc.asc_troll_mountain_climbrock_4"),
+                sideA = tile(2900, 3680),
+                sideB = tile(2903, 3680),
+                move = scramble,
             ),
             AgilityShortcut(
                 name = "Log balance",
@@ -247,6 +301,34 @@ object AgilityShortcuts {
             ),
             AgilityShortcut(
                 name = "Rocks",
+                level = 64,
+                xp = 0.0,
+                locs = listOf("loc.trollheim_wildy_climb_rocks"),
+                sideA = tile(2915, 3672),
+                sideB = tile(2918, 3672),
+                move = scramble,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 64,
+                xp = 0.0,
+                locs = listOf("loc.trollheim_wildy_climb_rocks"),
+                sideA = tile(2921, 3672),
+                sideB = tile(2924, 3673),
+                move = scramble,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 64,
+                xp = 0.0,
+                locs = listOf("loc.trollheim_wildy_climb_rocks"),
+                sideA = tile(2946, 3678),
+                sideB = tile(2949, 3681),
+                move = scramble,
+                oneWay = true,
+            ),
+            AgilityShortcut(
+                name = "Rocks",
                 level = 68,
                 xp = 0.0,
                 locs = listOf("loc.ice_mountain_shortcut_top", "loc.ice_mountain_shortcut_bottom"),
@@ -298,6 +380,16 @@ object AgilityShortcuts {
                 sideA = tile(3545, 3282),
                 sideB = tile(3546, 3282),
                 move = Jump(),
+            ),
+            AgilityShortcut(
+                name = "Rocks",
+                level = 73,
+                xp = 0.0,
+                locs = listOf("loc.diary_troll_climbingrocks"),
+                sideA = tile(2838, 3693),
+                sideB = tile(2844, 3693),
+                move = scramble,
+                quest = ShortcutQuest("quest_myarmsbigadventure", "My Arm's Big Adventure"),
             ),
             AgilityShortcut(
                 name = "Crevice",
