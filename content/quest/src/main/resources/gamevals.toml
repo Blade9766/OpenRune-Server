@@ -159,7 +159,9 @@ mm_greegree_form = 65478
 
 # The Dig Site: the quest's own flags. The stage itself lives in the cache varp
 # `varp.itexamlevel`, and the multiloc flags on `varp.itdigsitemulti`.
-digsite_state = 65658
+# A varbit's base varp is a u16 in the cache, so any varp that carries varbits must stay below
+# 65536; above it the id wraps round onto a real varp (65658 landed on `varp.squire`).
+digsite_state = 65441
 
 [gamevals.varbit]
 digsite_answers = 65560
