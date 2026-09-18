@@ -1,0 +1,6 @@
+[gamevals.timer]
+# Desert heat: counts down to the next drink (or 1-10 damage) while in the open desert.
+desert_heat = 127
+
+[gamevals.synth]
+hacksword_slash = 2500
