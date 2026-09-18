@@ -37,8 +37,10 @@ constructor(
     }
 
     public fun close() {
-        assertValidConnection()
-        this.connection.close()
+        check(::connection.isInitialized) { "Connection was not initialized." }
+        if (!connection.isClosed) {
+            connection.close()
+        }
     }
 
     override suspend fun <T> withTransaction(block: (DatabaseConnection) -> T): T =

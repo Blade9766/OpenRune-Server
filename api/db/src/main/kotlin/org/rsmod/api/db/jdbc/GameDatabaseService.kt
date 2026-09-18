@@ -17,6 +17,9 @@ constructor(
 
     private var databaseConnected = false
 
+    override val shutdownStage: Int
+        get() = Service.RESOURCE_SHUTDOWN_STAGE
+
     override suspend fun startup() {
         connectDataSource()
     }

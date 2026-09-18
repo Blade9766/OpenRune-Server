@@ -40,4 +40,17 @@ public interface Service {
      * but will not prevent other services from shutting down._
      */
     public suspend fun shutdown()
+
+    /**
+     * Services are shut down in ascending [shutdownStage] order; services sharing a stage shut down
+     * concurrently. Resources other services depend on during their own shutdown (e.g., the game
+     * database connection used to flush account saves) should use a later stage.
+     */
+    public val shutdownStage: Int
+        get() = DEFAULT_SHUTDOWN_STAGE
+
+    public companion object {
+        public const val DEFAULT_SHUTDOWN_STAGE: Int = 0
+        public const val RESOURCE_SHUTDOWN_STAGE: Int = 100
+    }
 }
