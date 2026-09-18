@@ -4980,3 +4980,14 @@ id = "npc.motherlode_mother"
 inherit = "npc.motherlode_mother"
 moveRestrict = "NoMove"
 wanderRange = 0
+
+# Temple of Ikov: the Fire Warrior holds the corridor and comes at anyone who walks into it,
+# throwing fire and nothing else. He keeps close to the door he is guarding.
+[[npc]]
+id = "npc.ikov_firewarrior"
+inherit = "npc.ikov_firewarrior"
+huntMode = 8
+huntRange = 8
+maxRange = 12
+wanderRange = 4
+respawnRate = 50

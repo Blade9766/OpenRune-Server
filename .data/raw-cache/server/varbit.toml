@@ -613,3 +613,59 @@ id = "varbit.digsite_bricks_blown"
 varp = "varp.digsite_state"
 startBit = 14
 endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_trap_disarmed"
+varp = "varp.ikov_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_trap_lever_pulled"
+varp = "varp.ikov_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_firewarrior_slain"
+varp = "varp.ikov_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_winelda_paid"
+varp = "varp.ikov_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_lever_fitted"
+varp = "varp.ikov_state"
+startBit = 4
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_gate_unlocked"
+varp = "varp.ikov_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_arrow_chest"
+varp = "varp.ikov_state"
+startBit = 6
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ikov_sided_with_lucien"
+varp = "varp.ikov_state"
+startBit = 9
+endBit = 9

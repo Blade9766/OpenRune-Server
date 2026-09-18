@@ -149,6 +149,12 @@ digsite_panning = 2377
 explosion = 1487
 fuse = 1488
 
+# Temple of Ikov (dbrow.synth_ikov)
+ikov_fire_teleport = 1629
+ikov_found_ice_arrows = 1628
+ikov_lava_bridge = 1630
+ikov_lockeddoor = 1631
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -163,12 +169,24 @@ mm_greegree_form = 65478
 # 65536; above it the id wraps round onto a real varp (65658 landed on `varp.squire`).
 digsite_state = 65441
 
+# Temple of Ikov: the quest's own flags. The stage itself lives in the cache varp `varp.ikov`,
+# and which Lucien is standing where in the cache varbit `varbit.ikov_lucien_vis`.
+ikov_state = 65440
+
 [gamevals.varbit]
 digsite_answers = 65560
 digsite_asked = 65561
 digsite_opal_requested = 65562
 digsite_bricks_primed = 65563
 digsite_bricks_blown = 65564
+ikov_trap_disarmed = 65565
+ikov_trap_lever_pulled = 65566
+ikov_firewarrior_slain = 65567
+ikov_winelda_paid = 65568
+ikov_lever_fitted = 65569
+ikov_gate_unlocked = 65570
+ikov_arrow_chest = 65571
+ikov_sided_with_lucien = 65572
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.

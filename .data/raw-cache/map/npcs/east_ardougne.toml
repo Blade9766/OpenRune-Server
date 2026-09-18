@@ -1326,3 +1326,7 @@ coords = "0_41_51_29_31"
 
 ## Zenesha's Plate Mail Body Shop End
 
+
+[[spawn]]
+npc = "npc.ikov_lucien1"
+coords = "0_40_51_14_57"

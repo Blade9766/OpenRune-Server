@@ -90,4 +90,10 @@ npc = [
     { id = "npc.zqzombie_armed", attack_anim = "seq.zombie_update_attack_weapon", attack_type = "category.attacktype_crush", attack_sound = 918, defend_anim = "seq.zombie_update_defend_weapon", defend_sound = 923, death_anim = "seq.zombie_update_death_weapon", death_sound = 922 },
     { id = "npc.zqzombie_armed2", attack_anim = "seq.zombie_update_attack_weapon", attack_type = "category.attacktype_crush", attack_sound = 918, defend_anim = "seq.zombie_update_defend_weapon", defend_sound = 923, death_anim = "seq.zombie_update_death_weapon", death_sound = 922 },
     { id = "npc.zqzombie_armed3", attack_anim = "seq.zombie_update_attack_weapon", attack_type = "category.attacktype_crush", attack_sound = 918, defend_anim = "seq.zombie_update_defend_weapon", defend_sound = 923, death_anim = "seq.zombie_update_death_weapon", death_sound = 922 },
+    # Temple of Ikov. The cache leaves all three silent: the Fire Warrior throws fire bolts and
+    # nothing else, the guardians swing swords, and Lucien swings the staff he leans on.
+    { id = "npc.ikov_firewarrior", attack_anim = "seq.human_caststrike", attack_type = "category.attacktype_magic", defend_anim = "seq.human_stafforb_block", death_anim = "seq.human_death", proj_travel = "spotanim.firebolt_travel", proj_type = "projanim.magic_spell", attack_range = 7 },
+    { id = "npc.ikov_guardianmale", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_sword_def", death_anim = "seq.human_death" },
+    { id = "npc.ikov_guardianfemale", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_sword_def", death_anim = "seq.human_death" },
+    { id = "npc.ikov_lucien2", attack_anim = "seq.human_staff_pound", attack_type = "category.attacktype_crush", attack_sound = 2555, defend_anim = "seq.human_staff_block", death_anim = "seq.human_death" },
 ]

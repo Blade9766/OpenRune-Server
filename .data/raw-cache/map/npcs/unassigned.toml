@@ -15842,3 +15842,7 @@ coords = "0_45_148_43_35"
 npc = "npc.zqzombie_unarmed3"
 coords = "0_45_148_34_57"
 
+
+[[spawn]]
+npc = "npc.ikov_firewarrior"
+coords = "0_41_154_5_10"

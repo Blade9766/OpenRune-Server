@@ -26,4 +26,7 @@ dependencies {
     implementation(projects.api.areaChecker)
     implementation(projects.api.death)
     implementation(projects.api.route)
+    implementation(projects.api.combat.combatManager)
+    implementation(projects.api.invWeight)
+    implementation(projects.api.hunt)
 }

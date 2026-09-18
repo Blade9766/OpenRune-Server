@@ -863,3 +863,9 @@ isServerOnly = true
 id = "varp.digsite_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.ikov_state"
+scope = "Perm"
+transmit = "Never"
