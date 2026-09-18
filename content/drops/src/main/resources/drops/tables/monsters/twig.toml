@@ -2,6 +2,12 @@ id = "Twig Drops"
 npcs = ["npc.troll_prison_guard1_awake", "npc.troll_prison_guard1"]
 brimstone_key_roll = true
 
+[[guaranteed]]
+obj = "obj.troll_key_godric"
+count = 1
+quest = "quest_trollstronghold"
+quest_mode = "during"
+
 [main]
 total = 128
 name = "Twig Drops"

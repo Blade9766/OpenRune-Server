@@ -8,6 +8,7 @@ import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.burthorpe.trollstronghold.DadAttackHook
 import org.rsmod.content.quest.area.desert.touristtrap.MiningCampSecurity
 import org.rsmod.content.quest.area.desert.touristtrap.TouristTrapQuest
 import org.rsmod.content.quest.area.desert.touristtrap.npcs.MercenaryCaptainAttackHook
@@ -168,5 +169,6 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(SourhogKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(MercenaryCaptainAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(MercenaryCaptainKillHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(DadAttackHook::class.java)
     }
 }

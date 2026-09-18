@@ -742,7 +742,98 @@ endBit = 14
 
 [[varbit]]
 isServerOnly = true
+id = "varbit.deathplateau_saba_asked"
+varp = "varp.deathplateau_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_dunstan_asked"
+varp = "varp.deathplateau_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_certificate_issued"
+varp = "varp.deathplateau_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_certificate_handed"
+varp = "varp.deathplateau_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_map_drawn"
+varp = "varp.deathplateau_state"
+startBit = 4
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_path_scouted"
+varp = "varp.deathplateau_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_map_handed"
+varp = "varp.deathplateau_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_combination_handed"
+varp = "varp.deathplateau_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_harold_drunk"
+varp = "varp.deathplateau_state"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_harold_purse"
+varp = "varp.deathplateau_state"
+startBit = 9
+endBit = 19
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_dice_stake"
+varp = "varp.deathplateau_dice"
+startBit = 0
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_dice_harold"
+varp = "varp.deathplateau_dice"
+startBit = 10
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
 id = "varbit.touristtrap_met_ana"
 varp = "varp.touristtrap_state"
 startBit = 15
 endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.deathplateau_tenzing_asked"
+varp = "varp.deathplateau_state"
+startBit = 20
+endBit = 20

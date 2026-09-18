@@ -208,6 +208,11 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
             return false
         }
 
+        if (meta.name.endsWith("claws") && !QuestRequirements.hasCompleted(player, DEATH_PLATEAU)) {
+            mesbox("You need to complete Death Plateau to make claws.")
+            return false
+        }
+
         if (!SmithingUtils.requireSmithingLevel(
                 this,
                 meta.level,
@@ -247,5 +252,8 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
 
         /** Al Shabim's advisors teach dart making at the end of the Bedabin part of the quest. */
         private const val TOURIST_TRAP = "quest_touristtrap"
+
+        /** Denulth teaches claw making as the Death Plateau reward. */
+        private const val DEATH_PLATEAU = "quest_deathplateau"
     }
 }

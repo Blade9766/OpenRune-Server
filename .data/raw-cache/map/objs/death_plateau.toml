@@ -13,18 +13,18 @@ obj = "obj.death_cannonball_red"
 coords = "0_45_55_13_41"
 
 [[spawn]]
-obj = "obj.death_cannonball_red"
+obj = "obj.death_cannonball_blue"
 coords = "0_45_55_13_42"
 
 [[spawn]]
-obj = "obj.death_cannonball_red"
+obj = "obj.death_cannonball_purple"
 coords = "0_45_55_13_43"
 
 [[spawn]]
-obj = "obj.death_cannonball_red"
+obj = "obj.death_cannonball_yellow"
 coords = "0_45_55_13_44"
 
 [[spawn]]
-obj = "obj.death_cannonball_red"
+obj = "obj.death_cannonball_green"
 coords = "0_45_55_13_45"
 

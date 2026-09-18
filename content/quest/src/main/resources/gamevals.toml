@@ -170,6 +170,20 @@ eat = 2393
 curtain_open = 59
 anvil02 = 3771
 
+# Death Plateau (dbrow.synth_deathplateau). Its unlock_and_move (1473) is already grill_pulled.
+dice_roll = 1474
+dice_shake = 1475
+
+# Troll Stronghold (dbrow.synth_troll)
+troll_champion_attack = 862
+troll_champion_death = 863
+troll_champion_hit = 864
+troll_champion_swing = 865
+troll_snore = 869
+troll_throw_rock = 870
+trolls_shout = 872
+rock_impact = 851
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -192,6 +206,11 @@ ikov_state = 65440
 # and everything the client draws (Irena, Ana, the escaping slave, the bent bars, the barrels and
 # the cart) in the cache varbits on `varp.tourtrap_qip_var`.
 touristtrap_state = 65442
+
+# Death Plateau: the quest's own flags and Harold's purse. The stage lives in the cache varp
+# `varp.death_equiproom`. The dice varp is Temp: a stake left on the table at logout is lost.
+deathplateau_state = 65455
+deathplateau_dice = 65456
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -218,6 +237,19 @@ touristtrap_ana_location = 65580
 touristtrap_cart_ready = 65581
 touristtrap_captain_duel = 65582
 touristtrap_met_ana = 65583
+deathplateau_saba_asked = 65600
+deathplateau_dunstan_asked = 65601
+deathplateau_certificate_issued = 65602
+deathplateau_certificate_handed = 65603
+deathplateau_map_drawn = 65604
+deathplateau_path_scouted = 65605
+deathplateau_map_handed = 65606
+deathplateau_combination_handed = 65607
+deathplateau_harold_drunk = 65608
+deathplateau_harold_purse = 65609
+deathplateau_dice_stake = 65610
+deathplateau_dice_harold = 65611
+deathplateau_tenzing_asked = 65612
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.

@@ -2,6 +2,12 @@ id = "Berry Drops"
 npcs = ["npc.troll_prison_guard2_awake", "npc.troll_prison_guard2"]
 brimstone_key_roll = true
 
+[[guaranteed]]
+obj = "obj.troll_key_eadgar"
+count = 1
+quest = "quest_trollstronghold"
+quest_mode = "during"
+
 [main]
 total = 128
 name = "Berry Drops"

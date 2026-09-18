@@ -96,4 +96,9 @@ npc = [
     { id = "npc.ikov_guardianmale", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_sword_def", death_anim = "seq.human_death" },
     { id = "npc.ikov_guardianfemale", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_sword_def", death_anim = "seq.human_death" },
     { id = "npc.ikov_lucien2", attack_anim = "seq.human_staff_pound", attack_type = "category.attacktype_crush", attack_sound = 2555, defend_anim = "seq.human_staff_block", death_anim = "seq.human_death" },
+    # Troll Stronghold: Dad swings the tree trunk he carries, with the troll champion voice from
+    # dbrow.synth_troll. The generator gave him the plain troll punch.
+    { id = "npc.troll_champion", attack_anim = "seq.troll_treetrunk_attack", attack_type = "category.attacktype_crush", attack_sound = 862, defend_anim = "seq.troll_block", defend_sound = 864, death_anim = "seq.troll_death", death_sound = 863 },
+    { id = "npc.troll_prison_guard1_awake", attack_sound = 861, defend_sound = 868, death_sound = 866 },
+    { id = "npc.troll_prison_guard2_awake", attack_sound = 861, defend_sound = 868, death_sound = 866 },
 ]
