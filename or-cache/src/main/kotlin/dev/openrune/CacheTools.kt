@@ -50,6 +50,7 @@ import dev.openrune.tables.skills.prayer.PrayerBlessedBone
 import dev.openrune.tables.skills.prayer.PrayerTable
 import dev.openrune.tools.MinifyServerCache
 import dev.openrune.tools.PackServerConfig
+import dev.openrune.tools.VarbitVarpRangeCheck
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -127,6 +128,7 @@ fun buildCache(type: TaskType, force: Boolean = false) {
 
     val packs = PluginPacks.discover(projectRoot)
     packs.validate()
+    VarbitVarpRangeCheck.validate(listOf(File("../.data/raw-cache")) + packs.configDirectories())
     packs.syncCs2(DirectoryConstants.CS2_PATH.toFile())
 
     val packTasks = packs.buildPackTasks(tablesToPack())
