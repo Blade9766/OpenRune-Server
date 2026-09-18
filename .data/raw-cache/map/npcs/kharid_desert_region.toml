@@ -3343,78 +3343,6 @@ npc = "npc.ics_little_plague_frog"
 coords = "0_51_43_9_53"
 
 [[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_10_46"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_10_47"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_10_50"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_10_52"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_11_43"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_11_44"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_11_46"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_13_0"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_13_1"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_13_4"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_13_5"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_14_0"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_14_1"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_14_2"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_14_3"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_8_50"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_9_50"
-
-[[spawn]]
-npc = "npc.ics_little_plague_frog_vis"
-coords = "0_51_43_9_53"
-
-[[spawn]]
 npc = "npc.ics_little_priest"
 coords = "0_51_43_16_12"
 
@@ -3441,10 +3369,6 @@ coords = "0_51_43_57_9"
 [[spawn]]
 npc = "npc.ics_little_spectre"
 coords = "0_51_43_25_31"
-
-[[spawn]]
-npc = "npc.ics_little_spectre_vis"
-coords = "0_51_43_26_33"
 
 [[spawn]]
 npc = "npc.ics_little_sphinx"
@@ -3521,6 +3445,48 @@ coords = "0_51_43_16_17"
 [[spawn]]
 npc = "npc.ics_little_priest"
 coords = "0_51_43_19_18"
+
+## Klenter's Pyramid
+
+[[spawn]]
+npc = "npc.ics_little_mummy_1"
+coords = "0_51_143_42_31"
+
+[[spawn]]
+npc = "npc.ics_little_mummy_2"
+coords = "0_51_143_46_19"
+
+[[spawn]]
+npc = "npc.ics_little_mummy_3"
+coords = "0_51_143_13_34"
+
+[[spawn]]
+npc = "npc.ics_little_mummy_4"
+coords = "0_51_143_15_24"
+
+[[spawn]]
+npc = "npc.ics_little_mummy_5"
+coords = "0_51_143_20_37"
+
+[[spawn]]
+npc = "npc.ics_little_mummy_1"
+coords = "0_51_143_23_25"
+
+[[spawn]]
+npc = "npc.ics_little_hipriest_ceremony"
+coords = "0_51_143_42_44"
+
+[[spawn]]
+npc = "npc.ics_little_priest_ceremony"
+coords = "0_51_143_39_43"
+
+[[spawn]]
+npc = "npc.ics_little_priest_ceremony"
+coords = "0_51_143_44_43"
+
+[[spawn]]
+npc = "npc.ics_little_priest_ceremony"
+coords = "0_51_143_41_41"
 
 ## Sorceress Garden House
 

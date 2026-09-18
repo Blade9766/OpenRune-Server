@@ -103,4 +103,17 @@ npc = [
     { id = "npc.troll_prison_guard2_awake", attack_sound = 861, defend_sound = 868, death_sound = 866 },
     # The Fremennik Trials' Draugen: a human ghost the generator reads as unarmed and silent.
     { id = "npc.viking_draugen", attack_anim = "seq.human_unarmedpunch", attack_type = "category.attacktype_crush", defend_anim = "seq.human_unarmedblock", death_anim = "seq.human_death" },
+    # Icthlarin's Little Helper: the mummies of Klenter's pyramid swing their swords (synth ids from
+    # dbrow.synth_mummy); Crondis' apparition casts like Apmeken's, and Het and Scabaras slash.
+    { id = "npc.ics_little_mummy_1", attack_anim = "seq.mummy_update_sword_attack", attack_type = "category.attacktype_crush", attack_sound = 641, defend_anim = "seq.mummy_update_defend", defend_sound = 643, death_anim = "seq.mummy_update_death", death_sound = 642 },
+    { id = "npc.ics_little_mummy_2", attack_anim = "seq.mummy_update_sword_attack", attack_type = "category.attacktype_crush", attack_sound = 641, defend_anim = "seq.mummy_update_defend", defend_sound = 643, death_anim = "seq.mummy_update_death", death_sound = 642 },
+    { id = "npc.ics_little_mummy_3", attack_anim = "seq.mummy_update_sword_attack", attack_type = "category.attacktype_crush", attack_sound = 641, defend_anim = "seq.mummy_update_defend", defend_sound = 643, death_anim = "seq.mummy_update_death", death_sound = 642 },
+    { id = "npc.ics_little_mummy_4", attack_anim = "seq.mummy_update_sword_attack", attack_type = "category.attacktype_crush", attack_sound = 641, defend_anim = "seq.mummy_update_defend", defend_sound = 643, death_anim = "seq.mummy_update_death", death_sound = 642 },
+    { id = "npc.ics_little_mummy_5", attack_anim = "seq.mummy_update_sword_attack", attack_type = "category.attacktype_crush", attack_sound = 641, defend_anim = "seq.mummy_update_defend", defend_sound = 643, death_anim = "seq.mummy_update_death", death_sound = 642 },
+    { id = "npc.ics_little_crondis", attack_anim = "seq.human_caststrike", attack_type = "category.attacktype_magic", proj_travel = "spotanim.waterstrike_travel", proj_type = "projanim.magic_spell", attack_range = 7 },
+    { id = "npc.ics_little_apmeken", defend_anim = "seq.human_staff_block" },
+    { id = "npc.ics_little_het", attack_type = "category.attacktype_slash" },
+    { id = "npc.ics_little_scabaras", attack_type = "category.attacktype_slash" },
+    # The possessed priest casts his own spells (content/quest ... icthlarin/PyramidFights); his reach is short.
+    { id = "npc.ics_little_possessedpriest", defend_anim = "seq.human_unarmedblock", attack_range = 5 },
 ]

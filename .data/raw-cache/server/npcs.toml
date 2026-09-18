@@ -5038,3 +5038,97 @@ id = "npc.viking_draugen"
 inherit = "npc.viking_draugen"
 maxRange = 20
 wanderRange = 0
+
+[[npc]]
+id = "npc.ics_little_mummy_1"
+inherit = "npc.ics_little_mummy_1"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_2"
+inherit = "npc.ics_little_mummy_2"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_3"
+inherit = "npc.ics_little_mummy_3"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_4"
+inherit = "npc.ics_little_mummy_4"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_5"
+inherit = "npc.ics_little_mummy_5"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_hipriest_ceremony"
+inherit = "npc.ics_little_hipriest_ceremony"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ics_little_priest_ceremony"
+inherit = "npc.ics_little_priest_ceremony"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ics_little_het"
+inherit = "npc.ics_little_het"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.ics_little_apmeken"
+inherit = "npc.ics_little_apmeken"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.ics_little_scabaras"
+inherit = "npc.ics_little_scabaras"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.ics_little_crondis"
+inherit = "npc.ics_little_crondis"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.ics_little_possessedpriest"
+inherit = "npc.ics_little_possessedpriest"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.ics_scarab_swarm"
+inherit = "npc.ics_scarab_swarm"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"

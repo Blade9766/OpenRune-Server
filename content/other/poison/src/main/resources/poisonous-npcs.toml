@@ -43,4 +43,5 @@ npc = [
     { id = "npc.tbwcu_tribesman", damage = 4 },
     { id = "npc.tbwcu_tribesman_instant", damage = 4 },
     { id = "npc.tol_spidine", damage = 2 },
+    { id = "npc.ics_scarab_swarm", damage = 3 },
 ]

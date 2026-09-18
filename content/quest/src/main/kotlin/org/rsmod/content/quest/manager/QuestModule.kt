@@ -13,6 +13,14 @@ import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
 import org.rsmod.content.quest.area.burthorpe.trollstronghold.DadAttackHook
+import org.rsmod.content.quest.area.desert.icthlarin.Ceremony
+import org.rsmod.content.quest.area.desert.icthlarin.FlashbackTeleportHook
+import org.rsmod.content.quest.area.desert.icthlarin.Flashbacks
+import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinCats
+import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinsLittleHelperQuest
+import org.rsmod.content.quest.area.desert.icthlarin.PyramidFightHooks
+import org.rsmod.content.quest.area.desert.icthlarin.PyramidFights
+import org.rsmod.content.quest.area.desert.icthlarin.TilePuzzle
 import org.rsmod.content.quest.area.desert.touristtrap.MiningCampSecurity
 import org.rsmod.content.quest.area.desert.touristtrap.TouristTrapQuest
 import org.rsmod.content.quest.area.desert.touristtrap.npcs.MercenaryCaptainAttackHook
@@ -196,5 +204,14 @@ public class QuestModule : PluginModule() {
         addSetBinding<PlayerDeathCleanupHook>(WarriorsTrialHooks::class.java)
         addSetBinding<PlayerRestrictionHook>(WarriorsTrialHooks::class.java)
         addSetBinding<PlayerObjTakeValidateHook>(LonghallKegTakeHook::class.java)
+        bindInstance<IcthlarinsLittleHelperQuest>()
+        bindInstance<IcthlarinCats>()
+        bindInstance<Flashbacks>()
+        bindInstance<PyramidFights>()
+        bindInstance<TilePuzzle>()
+        bindInstance<Ceremony>()
+        addSetBinding<NpcAttackValidateHook>(PyramidFightHooks::class.java)
+        addSetBinding<PlayerDeathCleanupHook>(PyramidFightHooks::class.java)
+        addSetBinding<PlayerTeleportValidateHook>(FlashbackTeleportHook::class.java)
     }
 }

@@ -188,6 +188,26 @@ rock_impact = 851
 chopping = 2113
 fry = 2577
 
+# Icthlarin's Little Helper
+collect_sap = 1159
+boil_off = 1160
+cat_angry = 1161
+ics_spectre_appear = 1162
+happy_meeoow = 1163
+hypnotise = 1164
+ics_spectre_remove = 1168
+pit_fall = 1171
+pit_jump = 1172
+pit_jump_fall = 1173
+pit_land = 1174
+tile_move = 1178
+tile_reset = 1179
+wall_crushed = 1181
+wall_crusher = 1182
+pitfall = 1477
+scarabs_appear = 1478
+zap = 224
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -323,9 +343,18 @@ mm_rockfall = 123
 fremtrials_firecracker = 128
 fremtrials_koschei = 129
 fremtrials_draugen = 130
+# Icthlarin's Little Helper: the traps of Klenter's pyramid, and Klenter's shade haunting Sophanem.
+ilh_pyramid_traps = 131
+ilh_klenter_haunt = 132
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
 porcine_sourhog_blind = 65421
 # The Tourist Trap: the Mercenary Captain's warning, run the cycle after an attack on him is refused.
 touristtrap_attack_warning = 65419
+# Icthlarin's Little Helper: landing a fall through one of Klenter's pit traps.
+ilh_pit_trap_fall = 65423
+# Icthlarin's Little Helper: putting a player who logged in inside Klenter's pyramid back outside.
+ilh_login_evict = 65424
+# Icthlarin's Little Helper: the fly-out through the secret door a cycle after a pit trap lands.
+ilh_pit_trap_flyout = 65425
