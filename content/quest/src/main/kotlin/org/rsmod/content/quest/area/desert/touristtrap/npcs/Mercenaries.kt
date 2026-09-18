@@ -371,6 +371,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.attackWarning(captain: Npc) {
+        player.clearQueue(ATTACK_WARNING_QUEUE)
         startDialogue(captain) {
             mesbox("This mercenary Captain looks very fierce. Are you sure you want to attack him?")
             val attack =
@@ -805,7 +806,10 @@ class MercenaryCaptainAttackHook : NpcAttackValidateHook {
         if (npc.id != captainId || player.ttCaptainDuel) {
             return NpcAttackValidateResult.Pass
         }
-        player.queue(MercenaryCaptain.ATTACK_WARNING_QUEUE, 1, npc)
+        // Melee clicks validate on both the ap and the op attempt; warn once.
+        if (MercenaryCaptain.ATTACK_WARNING_QUEUE !in player.queueList) {
+            player.queue(MercenaryCaptain.ATTACK_WARNING_QUEUE, 1, npc)
+        }
         return NpcAttackValidateResult.Deny("")
     }
 }

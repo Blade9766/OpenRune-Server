@@ -6,6 +6,7 @@ import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.stat.hitpoints
+import org.rsmod.api.script.onApLoc2
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.script.onOpLocU
@@ -85,6 +86,11 @@ constructor(
         }
         onOpLocU(CELL_DOOR, CELL_DOOR_KEY) { unlockCellDoor(it.loc, it.type) }
         onOpLoc1(CELL_WINDOW) { cellWindow() }
+        onApLoc2(ESCAPE_ROCK) {
+            if (isWithinApRange(it.loc, ROCK_RANGE)) {
+                climbRock()
+            }
+        }
         onOpLoc2(ESCAPE_ROCK) { climbRock() }
         onOpLoc1(CLIFF_UP) { climbCliff() }
         onOpLoc1(CLIFF_DOWN) { dropOffCliff() }
@@ -435,6 +441,7 @@ constructor(
         const val CLIMB_LOW = 150
         const val CLIMB_HIGH = 250
         const val ROCK_DAMAGE = 3
+        const val ROCK_RANGE = 2
         const val CLIFF_DAMAGE = 7
     }
 }
