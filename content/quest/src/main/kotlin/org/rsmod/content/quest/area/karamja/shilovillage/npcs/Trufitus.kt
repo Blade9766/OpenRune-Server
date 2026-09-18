@@ -5,6 +5,9 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
+import org.rsmod.content.quest.area.karamja.junglepotion.JungleHerb
+import org.rsmod.content.quest.area.karamja.junglepotion.JunglePotionQuest
+import org.rsmod.content.quest.area.karamja.junglepotion.TrufitusJunglePotion
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest.Companion.BEADS_OF_THE_DEAD
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest.Companion.BERVIRIUS_NOTES
@@ -32,22 +35,48 @@ import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest.Compa
 import org.rsmod.content.quest.area.karamja.shilovillage.owns
 import org.rsmod.content.quest.area.karamja.shilovillage.ownsSwordPommel
 import org.rsmod.game.entity.Npc
+import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
  * Trufitus, the shaman of Tai Bwo Wannai, who deciphers everything the player brings back from
- * Ah Za Rhoon and the Tomb of Bervirius. His Jungle Potion dialogue is not part of this plugin;
- * until that quest is done he only greets the player.
+ * Ah Za Rhoon and the Tomb of Bervirius. While Jungle Potion owns the conversation it is handed to
+ * [TrufitusJunglePotion].
  */
-class Trufitus @Inject constructor(private val shilo: ShiloVillageQuest) : PluginScript() {
+class Trufitus
+@Inject
+constructor(
+    private val shilo: ShiloVillageQuest,
+    private val junglePotion: JunglePotionQuest,
+    private val junglePotionTalk: TrufitusJunglePotion,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(TRUFITUS) { startDialogue(it.npc) { talk() } }
         onOpNpcU(TRUFITUS) { useOnTrufitus(it.npc, it.objType.internalName) }
     }
 
+    /**
+     * Jungle Potion talks first until its closing blessing has been heard. A player who never did it
+     * on a server that assumes it complete still reaches the Shilo Village story once Mosol Rei has
+     * involved them.
+     */
+    private fun junglePotionOwnsTalk(player: Player): Boolean =
+        when {
+            junglePotion.isInProgress(player) -> true
+            junglePotion.isComplete(player) -> !junglePotion.heardFinalBlessing.get(player)
+            else -> !shilo.completedJunglePotion(player) || !shiloUnderway(player)
+        }
+
+    private fun shiloUnderway(player: Player): Boolean =
+        shilo.stage(player) > 0 || shilo.isComplete(player) || player.inv.contains(WAMPUM_BELT)
+
     private suspend fun Dialogue.talk() {
+        if (junglePotionOwnsTalk(player)) {
+            with(junglePotionTalk) { talk() }
+            return
+        }
         if (!shilo.completedJunglePotion(player)) {
             chatNpc(happy, "Greetings Bwana! I am Trufitus Shakaya of the Tai Bwo Wannai village.")
             chatNpc(happy, "Welcome to our humble village.")
@@ -901,8 +930,21 @@ class Trufitus @Inject constructor(private val shilo: ShiloVillageQuest) : Plugi
     /* Items shown to Trufitus */
 
     private suspend fun ProtectedAccess.useOnTrufitus(trufitus: Npc, obj: String) {
+        if (junglePotion.isInProgress(player)) {
+            startDialogue(trufitus) { with(junglePotionTalk) { useItem(obj) } }
+            return
+        }
         if (!shilo.completedJunglePotion(player)) {
             mes("Nothing interesting happens.")
+            return
+        }
+        val cleanHerb = JungleHerb.byClean(obj)
+        if (cleanHerb != null) {
+            startDialogue(trufitus) { with(junglePotionTalk) { buyHerb(cleanHerb) } }
+            return
+        }
+        if (JungleHerb.byGrimy(obj) != null) {
+            startDialogue(trufitus) { with(junglePotionTalk) { declineGrimy() } }
             return
         }
         if (shilo.isComplete(player) && obj in POST_QUEST_SELLABLE) {

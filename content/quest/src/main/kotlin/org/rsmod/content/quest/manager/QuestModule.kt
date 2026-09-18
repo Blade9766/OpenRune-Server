@@ -38,6 +38,8 @@ import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.MonkeyBackpack
 import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.MonkeyMadnessQuest
 import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.npcs.NarnodeMonkeyMadness
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest
+import org.rsmod.content.quest.area.karamja.junglepotion.JunglePotionQuest
+import org.rsmod.content.quest.area.karamja.junglepotion.TrufitusJunglePotion
 import org.rsmod.content.quest.area.karamja.shilovillage.Nazastarool
 import org.rsmod.content.quest.area.karamja.shilovillage.NazastaroolAttackHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
@@ -125,6 +127,8 @@ public class QuestModule : PluginModule() {
         bindInstance<NatureSpiritDrezel>()
         bindInstance<SpiritSpawns>()
         bindInstance<Ghasts>()
+        bindInstance<JunglePotionQuest>()
+        bindInstance<TrufitusJunglePotion>()
         bindInstance<ShiloVillageQuest>()
         bindInstance<DruidicRitualQuest>()
         bindInstance<ShiloUndead>()
