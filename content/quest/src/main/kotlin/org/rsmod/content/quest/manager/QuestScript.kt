@@ -39,7 +39,9 @@ annotation class QuestJournalDsl
 data class QuestReward(
     val xp: Map<String, Double> = emptyMap(),
     val items: List<Pair<String, Int>> = emptyList(),
-    val extraText: String? = null
+    val extraText: String? = null,
+    /** Replaces the generated reward-scroll lines, for quests whose rewards do not fit in six. */
+    val scrollLines: List<String>? = null,
 )
 
 @QuestJournalDsl
@@ -52,6 +54,7 @@ class QuestRewardBuilder {
     private val _xp = mutableMapOf<String, Double>()
     private val _items = mutableListOf<Pair<String, Int>>()
     private var _extraText: String? = null
+    private var _scrollLines: List<String>? = null
 
     fun xp(skill: String, amount: Double) {
         _xp[skill] = amount
@@ -65,7 +68,11 @@ class QuestRewardBuilder {
         _extraText = text
     }
 
-    fun build(): QuestReward = QuestReward(_xp, _items, _extraText)
+    fun scroll(vararg lines: String) {
+        _scrollLines = lines.toList()
+    }
+
+    fun build(): QuestReward = QuestReward(_xp, _items, _extraText, _scrollLines)
 }
 
 abstract class QuestScript(

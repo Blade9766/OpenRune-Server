@@ -53340,4 +53340,8 @@ tradeable = false
 "param.bas_walk_f"="seq.human_halberdwalk_f"
 "param.bas_walk_b"="seq.human_halberdwalk_b"
 
-
+# The Fremennik Trials: a copy of the longhall keg is always back on the table at once.
+[[item]]
+id = "obj.viking_beerkeg"
+inherit = "obj.viking_beerkeg"
+respawnRate = 1

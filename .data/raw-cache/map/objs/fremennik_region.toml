@@ -128,5 +128,9 @@ coords = "0_41_57_35_28"
 obj = "obj.viking_tankard_full"
 coords = "0_41_57_34_28"
 
+[[spawn]]
+obj = "obj.viking_beerkeg"
+coords = "0_41_57_36_28"
+
 ## Rellekka End
 

@@ -12,6 +12,7 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.content.generic.locs.passages.GenericPassageScript
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.NavigatorsTrial
 import org.rsmod.game.hit.HitType
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
@@ -31,6 +32,7 @@ constructor(
     private val quest: TempleOfIkovQuest,
     private val passages: GenericPassageScript,
     private val locRepo: LocRepository,
+    private val navigatorsTrial: NavigatorsTrial,
 ) : PluginScript() {
 
     private val openTrapdoor: ObjectServerType =
@@ -39,7 +41,14 @@ constructor(
     override fun ScriptContext.startup() {
         onOpLoc1(LEVER) { pullLever(it.loc) }
         onOpLoc2(LEVER) { searchLever() }
-        onOpLoc1(TRAPDOOR) { examineTrapdoor() }
+        onOpLoc1(TRAPDOOR) {
+            // Swensen's house in Rellekka reuses this trapdoor over his maze.
+            if (NavigatorsTrial.isSwensensHouse(it.loc.coords)) {
+                with(navigatorsTrial) { trapdoor() }
+            } else {
+                examineTrapdoor()
+            }
+        }
         onOpLoc1(LEVER_DOOR) { leverDoor(it.loc, it.type) }
         onOpLoc1(FIRE_WARRIOR_DOOR) { fireWarriorDoor(it.loc, it.type) }
     }

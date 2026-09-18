@@ -837,3 +837,332 @@ id = "varbit.deathplateau_tenzing_asked"
 varp = "varp.deathplateau_state"
 startBit = 20
 endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_olaf"
+varp = "varp.fremtrials_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_manni"
+varp = "varp.fremtrials_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_sigli"
+varp = "varp.fremtrials_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_sigmund"
+varp = "varp.fremtrials_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_thorvald"
+varp = "varp.fremtrials_state"
+startBit = 4
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_swensen"
+varp = "varp.fremtrials_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_vote_peer"
+varp = "varp.fremtrials_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_olaf_started"
+varp = "varp.fremtrials_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_lalli_talked"
+varp = "varp.fremtrials_state"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_stew_planned"
+varp = "varp.fremtrials_state"
+startBit = 9
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_stew_onion"
+varp = "varp.fremtrials_state"
+startBit = 10
+endBit = 10
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_stew_cabbage"
+varp = "varp.fremtrials_state"
+startBit = 11
+endBit = 11
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_stew_potato"
+varp = "varp.fremtrials_state"
+startBit = 12
+endBit = 12
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_stew_rock"
+varp = "varp.fremtrials_state"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_stew_tasted"
+varp = "varp.fremtrials_state"
+startBit = 14
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_manni_challenged"
+varp = "varp.fremtrials_state"
+startBit = 15
+endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_manni_lost"
+varp = "varp.fremtrials_state"
+startBit = 16
+endBit = 16
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_pipe_primed"
+varp = "varp.fremtrials_state"
+startBit = 17
+endBit = 17
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_keg_switched"
+varp = "varp.fremtrials_state"
+startBit = 18
+endBit = 18
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_sigli_started"
+varp = "varp.fremtrials_state"
+startBit = 19
+endBit = 19
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_thorvald_started"
+varp = "varp.fremtrials_state"
+startBit = 20
+endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_swensen_started"
+varp = "varp.fremtrials_state"
+startBit = 21
+endBit = 21
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_started"
+varp = "varp.fremtrials_state"
+startBit = 22
+endBit = 22
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_sigmund_step"
+varp = "varp.fremtrials_state"
+startBit = 23
+endBit = 27
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_name_prefix"
+varp = "varp.fremtrials_state"
+startBit = 28
+endBit = 31
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_name_suffix"
+varp = "varp.fremtrials_progress"
+startBit = 0
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_riddle"
+varp = "varp.fremtrials_progress"
+startBit = 4
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_door_solved"
+varp = "varp.fremtrials_progress"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_jug_found"
+varp = "varp.fremtrials_progress"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_bucket_found"
+varp = "varp.fremtrials_progress"
+startBit = 9
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_bull_disk"
+varp = "varp.fremtrials_progress"
+startBit = 10
+endBit = 10
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_unicorn_disk"
+varp = "varp.fremtrials_progress"
+startBit = 11
+endBit = 11
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_herring_found"
+varp = "varp.fremtrials_progress"
+startBit = 12
+endBit = 12
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_magnet_found"
+varp = "varp.fremtrials_progress"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_ship_found"
+varp = "varp.fremtrials_progress"
+startBit = 14
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_pick_found"
+varp = "varp.fremtrials_progress"
+startBit = 15
+endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_thread_found"
+varp = "varp.fremtrials_progress"
+startBit = 16
+endBit = 16
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_vase_found"
+varp = "varp.fremtrials_progress"
+startBit = 17
+endBit = 17
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_mural_old"
+varp = "varp.fremtrials_progress"
+startBit = 18
+endBit = 18
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_peer_mural_new"
+varp = "varp.fremtrials_progress"
+startBit = 19
+endBit = 19
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_draugen_spot"
+varp = "varp.fremtrials_progress"
+startBit = 24
+endBit = 27
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_koschei_form"
+varp = "varp.fremtrials_temp"
+startBit = 0
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_lock_a"
+varp = "varp.fremtrials_temp"
+startBit = 6
+endBit = 10
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_lock_b"
+varp = "varp.fremtrials_temp"
+startBit = 11
+endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_lock_c"
+varp = "varp.fremtrials_temp"
+startBit = 16
+endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_lock_d"
+varp = "varp.fremtrials_temp"
+startBit = 21
+endBit = 25
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fremtrials_salesman_pitched"
+varp = "varp.fremtrials_progress"
+startBit = 20
+endBit = 20

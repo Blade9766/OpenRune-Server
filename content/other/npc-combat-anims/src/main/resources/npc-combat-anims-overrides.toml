@@ -101,4 +101,6 @@ npc = [
     { id = "npc.troll_champion", attack_anim = "seq.troll_treetrunk_attack", attack_type = "category.attacktype_crush", attack_sound = 862, defend_anim = "seq.troll_block", defend_sound = 864, death_anim = "seq.troll_death", death_sound = 863 },
     { id = "npc.troll_prison_guard1_awake", attack_sound = 861, defend_sound = 868, death_sound = 866 },
     { id = "npc.troll_prison_guard2_awake", attack_sound = 861, defend_sound = 868, death_sound = 866 },
+    # The Fremennik Trials' Draugen: a human ghost the generator reads as unarmed and silent.
+    { id = "npc.viking_draugen", attack_anim = "seq.human_unarmedpunch", attack_type = "category.attacktype_crush", defend_anim = "seq.human_unarmedblock", death_anim = "seq.human_death" },
 ]

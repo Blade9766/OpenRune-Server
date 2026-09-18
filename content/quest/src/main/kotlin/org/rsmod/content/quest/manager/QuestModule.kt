@@ -2,6 +2,10 @@ package org.rsmod.content.quest.manager
 
 import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
+import org.rsmod.api.death.PlayerDeathCleanupHook
+import org.rsmod.api.death.PlayerDeathHook
+import org.rsmod.api.death.PlayerRespawnHook
+import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
 import org.rsmod.content.quest.area.SpadeDigging
@@ -60,6 +64,15 @@ import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHook
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
 import org.rsmod.content.quest.area.paterdomus.priestinperil.TempleGuardianAttackHook
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.DraugenAttackHook
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.DraugenHunts
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.FremennikTrialsQuest
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.KoscheiFights
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.LonghallKegTakeHook
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.MerchantTrial
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.NavigatorsTrial
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.WarriorsTrialHooks
+import org.rsmod.content.quest.area.rellekka.fremenniktrials.npcs.RellekkaShops
 import org.rsmod.content.quest.area.rimmington.witchspotion.WitchsPotionQuest
 import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
@@ -170,5 +183,18 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(MercenaryCaptainAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(MercenaryCaptainKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(DadAttackHook::class.java)
+        bindInstance<FremennikTrialsQuest>()
+        bindInstance<MerchantTrial>()
+        bindInstance<RellekkaShops>()
+        bindInstance<DraugenHunts>()
+        addSetBinding<NpcAttackValidateHook>(DraugenAttackHook::class.java)
+        bindInstance<KoscheiFights>()
+        bindInstance<NavigatorsTrial>()
+        addSetBinding<NpcAttackValidateHook>(WarriorsTrialHooks::class.java)
+        addSetBinding<PlayerDeathHook>(WarriorsTrialHooks::class.java)
+        addSetBinding<PlayerRespawnHook>(WarriorsTrialHooks::class.java)
+        addSetBinding<PlayerDeathCleanupHook>(WarriorsTrialHooks::class.java)
+        addSetBinding<PlayerRestrictionHook>(WarriorsTrialHooks::class.java)
+        addSetBinding<PlayerObjTakeValidateHook>(LonghallKegTakeHook::class.java)
     }
 }

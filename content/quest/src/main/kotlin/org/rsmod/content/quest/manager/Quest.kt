@@ -299,7 +299,7 @@ data class Quest(
             rewardLines.add(it)
         }
 
-        val linesToShow = rewardLines.take(6)
+        val linesToShow = (rewards.scrollLines ?: rewardLines).take(6)
 
         for (i in 0 until 6) {
             val componentId = "component.questscroll:quest_reward${i + 2}"

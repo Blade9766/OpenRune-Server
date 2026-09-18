@@ -184,6 +184,10 @@ troll_throw_rock = 870
 trolls_shout = 872
 rock_impact = 851
 
+# The Fremennik Trials
+chopping = 2113
+fry = 2577
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -211,6 +215,13 @@ touristtrap_state = 65442
 # `varp.death_equiproom`. The dice varp is Temp: a stake left on the table at logout is lost.
 deathplateau_state = 65455
 deathplateau_dice = 65456
+
+# The Fremennik Trials: the council's votes and each trial's own progress. The stage itself lives
+# in the cache varp `varp.viking`. The Temp varp holds Koschei's form and the letters dialled into
+# Peer's combination lock.
+fremtrials_state = 65444
+fremtrials_progress = 65445
+fremtrials_temp = 65446
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -250,6 +261,53 @@ deathplateau_harold_purse = 65609
 deathplateau_dice_stake = 65610
 deathplateau_dice_harold = 65611
 deathplateau_tenzing_asked = 65612
+fremtrials_vote_olaf = 65613
+fremtrials_vote_manni = 65614
+fremtrials_vote_sigli = 65615
+fremtrials_vote_sigmund = 65616
+fremtrials_vote_thorvald = 65617
+fremtrials_vote_swensen = 65618
+fremtrials_vote_peer = 65619
+fremtrials_olaf_started = 65620
+fremtrials_lalli_talked = 65621
+fremtrials_stew_planned = 65622
+fremtrials_stew_onion = 65623
+fremtrials_stew_cabbage = 65624
+fremtrials_stew_potato = 65625
+fremtrials_stew_rock = 65626
+fremtrials_stew_tasted = 65627
+fremtrials_manni_challenged = 65628
+fremtrials_manni_lost = 65629
+fremtrials_pipe_primed = 65630
+fremtrials_keg_switched = 65631
+fremtrials_sigli_started = 65632
+fremtrials_thorvald_started = 65633
+fremtrials_swensen_started = 65634
+fremtrials_peer_started = 65635
+fremtrials_sigmund_step = 65636
+fremtrials_name_prefix = 65637
+fremtrials_name_suffix = 65638
+fremtrials_peer_riddle = 65639
+fremtrials_peer_door_solved = 65640
+fremtrials_peer_jug_found = 65641
+fremtrials_peer_bucket_found = 65642
+fremtrials_peer_bull_disk = 65643
+fremtrials_peer_unicorn_disk = 65644
+fremtrials_peer_herring_found = 65645
+fremtrials_peer_magnet_found = 65646
+fremtrials_peer_ship_found = 65647
+fremtrials_peer_pick_found = 65648
+fremtrials_peer_thread_found = 65649
+fremtrials_peer_vase_found = 65650
+fremtrials_peer_mural_old = 65651
+fremtrials_peer_mural_new = 65652
+fremtrials_draugen_spot = 65653
+fremtrials_koschei_form = 65654
+fremtrials_lock_a = 65656
+fremtrials_lock_b = 65657
+fremtrials_lock_c = 65658
+fremtrials_lock_d = 65659
+fremtrials_salesman_pitched = 65660
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
@@ -261,6 +319,10 @@ touristtrap_guard_watch = 126
 # Soft timers: the Marim jail guards watching the player, and the Ape Atoll tunnel's falling rocks.
 mm_jail = 122
 mm_rockfall = 123
+# The Fremennik Trials: the lit strange object's fuse, Koschei's patience and the Draugen's wandering.
+fremtrials_firecracker = 128
+fremtrials_koschei = 129
+fremtrials_draugen = 130
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.

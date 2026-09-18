@@ -5006,3 +5006,35 @@ wanderRange = 0
 id = "npc.troll_prison_guard2"
 inherit = "npc.troll_prison_guard2"
 wanderRange = 0
+
+# The Fremennik Trials: Koschei's forms chase their challenger anywhere in the battleground, and
+# the Draugen follows its hunter away from its haunt.
+[[npc]]
+id = "npc.viking_enemy1"
+inherit = "npc.viking_enemy1"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_enemy2"
+inherit = "npc.viking_enemy2"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_enemy3"
+inherit = "npc.viking_enemy3"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_enemy4"
+inherit = "npc.viking_enemy4"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_draugen"
+inherit = "npc.viking_draugen"
+maxRange = 20
+wanderRange = 0

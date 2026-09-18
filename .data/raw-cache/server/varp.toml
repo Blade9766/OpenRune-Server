@@ -893,3 +893,21 @@ isServerOnly = true
 id = "varp.shantay_jail"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fremtrials_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fremtrials_progress"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fremtrials_temp"
+scope = "Temp"
+transmit = "Never"
