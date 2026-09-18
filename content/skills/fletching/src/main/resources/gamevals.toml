@@ -1,0 +1,14 @@
+[gamevals.queue]
+fletching_make = 61
+
+# Sound ids from the OSRS wiki list of sound IDs; the stock gameval tables do not name them.
+[gamevals.synth]
+fletching_cut = 2605
+fletching_string_bow = 2606
+fletching_attach_limbs = 2922
+fletching_feathers = 2923
+fletching_string_crossbow = 2924
+fletching_attach = 2604
+
+[gamevals.varp]
+fletching_cape_searches = 65408
