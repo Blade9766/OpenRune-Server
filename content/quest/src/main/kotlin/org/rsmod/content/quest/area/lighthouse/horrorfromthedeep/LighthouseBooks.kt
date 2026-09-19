@@ -1,5 +1,6 @@
 package org.rsmod.content.quest.area.lighthouse.horrorfromthedeep
 
+import dev.openrune.definition.type.widget.IfEvent
 import dev.openrune.rscm.RSCM
 import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -58,6 +59,8 @@ class LighthouseBooks : PluginScript() {
             RSCM.getRSCM("component.book:page_right_graphic"),
         )
         ifSetText("component.book:title", title)
+        ifSetEvents(PAGE_LEFT, -1..-1, IfEvent.PauseButton)
+        ifSetEvents(PAGE_RIGHT, -1..-1, IfEvent.PauseButton)
         val (left, right) = spreads[spread]
         for (line in 1..LINES_PER_PAGE) {
             ifSetText("component.book:page_left_text_$line", left.getOrElse(line - 1) { "" })

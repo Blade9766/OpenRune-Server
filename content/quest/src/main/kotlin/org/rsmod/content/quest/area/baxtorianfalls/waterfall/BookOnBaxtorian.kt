@@ -1,5 +1,6 @@
 package org.rsmod.content.quest.area.baxtorianfalls.waterfall
 
+import dev.openrune.definition.type.widget.IfEvent
 import dev.openrune.rscm.RSCM
 import jakarta.inject.Inject
 import org.rsmod.api.player.output.runClientScript
@@ -81,6 +82,8 @@ constructor(private val waterfall: WaterfallQuest, private val objRepo: ObjRepos
             RSCM.getRSCM("component.book:page_right_graphic"),
         )
         ifSetText("component.book:title", TITLE)
+        ifSetEvents(PAGE_LEFT, -1..-1, IfEvent.PauseButton)
+        ifSetEvents(PAGE_RIGHT, -1..-1, IfEvent.PauseButton)
         showSpread(spread)
         soundSynth(PAGE_SOUND)
     }
