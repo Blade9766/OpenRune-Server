@@ -6,6 +6,10 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
+import org.rsmod.content.quest.area.desert.thegolem.CURATOR_STATUETTE_OPTION
+import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest
+import org.rsmod.content.quest.area.desert.thegolem.askCuratorAboutStatuette
+import org.rsmod.content.quest.area.desert.thegolem.canAskCuratorAboutStatuette
 import org.rsmod.content.quest.area.digsite.TheDigSiteQuest
 import org.rsmod.content.quest.area.digsite.TheDigSiteQuest.Companion.CERTIFICATE_1
 import org.rsmod.content.quest.area.digsite.TheDigSiteQuest.Companion.CERTIFICATE_2
@@ -27,9 +31,11 @@ import org.rsmod.plugin.scripts.ScriptContext
 /**
  * Curator Haig Halen in the Varrock Museum. He stamps the examiner's letter of recommendation and
  * afterwards takes the Earth Sciences certificates off the player's hands, paying for the level 3
- * one with something to eat or drink.
+ * one with something to eat or drink. During The Golem he can be asked about the Uzer statuette.
  */
-class CuratorHaigHalen @Inject constructor(private val quest: TheDigSiteQuest) : PluginScript() {
+class CuratorHaigHalen
+@Inject
+constructor(private val quest: TheDigSiteQuest, private val golem: TheGolemQuest) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(CURATOR) { startDialogue(it.npc) { curator() } }
@@ -55,6 +61,13 @@ class CuratorHaigHalen @Inject constructor(private val quest: TheDigSiteQuest) :
 
     private suspend fun Dialogue.curator() {
         chatNpc(neutral, "Welcome to the museum of Varrock.")
+        if (golem.canAskCuratorAboutStatuette(player)) {
+            val statuette = choice2(CURATOR_STATUETTE_OPTION, true, "Something else.", false)
+            if (statuette) {
+                askCuratorAboutStatuette(golem)
+                return
+            }
+        }
         val stage = quest.stage(player)
         when {
             stage == STAGE_LETTER && access.player.inv.contains(PLAIN_LETTER) -> stampLetter()

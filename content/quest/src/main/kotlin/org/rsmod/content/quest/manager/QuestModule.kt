@@ -21,6 +21,7 @@ import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinsLittleHelperQuest
 import org.rsmod.content.quest.area.desert.icthlarin.PyramidFightHooks
 import org.rsmod.content.quest.area.desert.icthlarin.PyramidFights
 import org.rsmod.content.quest.area.desert.icthlarin.TilePuzzle
+import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest
 import org.rsmod.content.quest.area.desert.touristtrap.MiningCampSecurity
 import org.rsmod.content.quest.area.desert.touristtrap.TouristTrapQuest
 import org.rsmod.content.quest.area.desert.touristtrap.npcs.MercenaryCaptainAttackHook
@@ -220,5 +221,6 @@ public class QuestModule : PluginModule() {
         bindInstance<WitchsExperiments>()
         addSetBinding<NpcAttackValidateHook>(WitchsExperimentHooks::class.java)
         addSetBinding<PlayerDeathCleanupHook>(WitchsExperimentHooks::class.java)
+        bindInstance<TheGolemQuest>()
     }
 }

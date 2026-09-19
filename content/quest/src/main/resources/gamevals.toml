@@ -210,6 +210,12 @@ zap = 224
 # Witch's House: the mouse leaving its hole and the basement gate's shock.
 rat_squeak_1 = 3102
 shock = 2542
+# The Golem: the quest sounds from dbrow.synth_thegolem.
+golem_demondoor = 1848
+golem_program = 1849
+golem_repairclay = 1850
+golem_teleport = 1851
+turn_statue = 1852
 
 [gamevals.clientscript]
 quest_available_set = 45550
@@ -363,3 +369,5 @@ ilh_pit_trap_fall = 65423
 ilh_login_evict = 65424
 # Icthlarin's Little Helper: the fly-out through the secret door a cycle after a pit trap lands.
 ilh_pit_trap_flyout = 65425
+# The Golem: the golem's skull closing again if no program is put inside.
+golem_skull_shut = 65426
