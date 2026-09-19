@@ -5132,3 +5132,53 @@ inherit = "npc.ics_scarab_swarm"
 maxRange = 20
 wanderRange = 0
 defaultMode = "None"
+
+# Witch's House: Nora T. Hagg paces the lawn in the middle of her garden. The experiment's
+# forms stay in the shed they are summoned into.
+[[npc]]
+id = "npc.nora_t_hagg"
+inherit = "npc.nora_t_hagg"
+defaultMode = "Patrol"
+maxRange = 50
+
+[[npc.waypoints]]
+destination = { x = 2930, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2921, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2912, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2904, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2912, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2921, z = 3463, level = 0 }
+
+[[npc]]
+id = "npc.shapeshifterglob"
+inherit = "npc.shapeshifterglob"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.shapeshifterspider"
+inherit = "npc.shapeshifterspider"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.shapeshifterbear"
+inherit = "npc.shapeshifterbear"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.shapeshifterwolf"
+inherit = "npc.shapeshifterwolf"
+maxRange = 8
+wanderRange = 0

@@ -207,6 +207,9 @@ wall_crusher = 1182
 pitfall = 1477
 scarabs_appear = 1478
 zap = 224
+# Witch's House: the mouse leaving its hole and the basement gate's shock.
+rat_squeak_1 = 3102
+shock = 2542
 
 [gamevals.clientscript]
 quest_available_set = 45550
@@ -346,6 +349,8 @@ fremtrials_draugen = 130
 # Icthlarin's Little Helper: the traps of Klenter's pyramid, and Klenter's shade haunting Sophanem.
 ilh_pyramid_traps = 131
 ilh_klenter_haunt = 132
+# Witch's House: Nora T. Hagg watching her garden for trespassers.
+witchshouse_garden_watch = 133
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.

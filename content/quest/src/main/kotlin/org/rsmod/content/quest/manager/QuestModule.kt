@@ -83,6 +83,9 @@ import org.rsmod.content.quest.area.rellekka.fremenniktrials.WarriorsTrialHooks
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.npcs.RellekkaShops
 import org.rsmod.content.quest.area.rimmington.witchspotion.WitchsPotionQuest
 import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
+import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperimentHooks
+import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperiments
+import org.rsmod.content.quest.area.taverley.witchshouse.WitchsHouseQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
@@ -213,5 +216,9 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(PyramidFightHooks::class.java)
         addSetBinding<PlayerDeathCleanupHook>(PyramidFightHooks::class.java)
         addSetBinding<PlayerTeleportValidateHook>(FlashbackTeleportHook::class.java)
+        bindInstance<WitchsHouseQuest>()
+        bindInstance<WitchsExperiments>()
+        addSetBinding<NpcAttackValidateHook>(WitchsExperimentHooks::class.java)
+        addSetBinding<PlayerDeathCleanupHook>(WitchsExperimentHooks::class.java)
     }
 }
