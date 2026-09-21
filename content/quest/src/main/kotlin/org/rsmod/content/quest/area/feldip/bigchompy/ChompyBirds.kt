@@ -16,10 +16,13 @@ import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.obj.ObjRepository
+import org.rsmod.api.script.onApNpc5
 import org.rsmod.api.script.onNpcQueue
 import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpNpc4
+import org.rsmod.api.script.onOpNpc5
 import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest.Companion.BONES
+import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest.Companion.CHOMPY
 import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest.Companion.CHOMPY_DEAD
 import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest.Companion.CHOMPY_DISPLAY
 import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest.Companion.CHOMPY_EAT_SEQ
@@ -58,6 +61,9 @@ constructor(
     override fun ScriptContext.startup() {
         onNpcQueue(EAT_TOAD_QUEUE) { approachBait() }
         onNpcQueue(SWALLOW_QUEUE) { swallowBait() }
+        // The chompy carries Attack in its fifth slot, so hand it to the standard attack op.
+        onApNpc5(CHOMPY) { opNpc2(it.npc) }
+        onOpNpc5(CHOMPY) { opNpc2(it.npc) }
         onOpNpc4(CHOMPY_DEAD) { pluck(it.npc) }
         onOpHeld3(OGRE_BOW) { checkKills() }
     }
@@ -136,8 +142,8 @@ constructor(
         objbox(
             CHOMPY_DISPLAY,
             OBJBOX_ZOOM,
-            "You've killed a total of @blu@$kills @bla@chompy birds so far!||" +
-                "@blu@~ You're ${ChompyRanks.withArticle(kills)}! ~",
+            "You've killed a total of <col=0000ff>$kills</col> chompy birds so far! " +
+                "<col=0000ff>~ You're ${ChompyRanks.withArticle(kills)}! ~</col>",
         )
     }
 
@@ -163,8 +169,8 @@ constructor(
                 objbox(
                     CHOMPY_DISPLAY,
                     OBJBOX_ZOOM,
-                    "@blu@**** Congratulations! $EXPERT_KILLS Chompies! ****|" +
-                        "@dre@~ You're an Expert Dragon Archer! ~|This is the highest honour that " +
+                    "<col=0000ff>**** Congratulations! $EXPERT_KILLS Chompies! ****</col> " +
+                        "<col=800000>~ You're an Expert Dragon Archer! ~</col> This is the highest honour that " +
                         "can be bestowed on any chompy bird hunter.",
                 )
             }

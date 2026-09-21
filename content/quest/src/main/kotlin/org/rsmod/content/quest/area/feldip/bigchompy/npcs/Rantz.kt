@@ -305,7 +305,7 @@ constructor(
                 "from da flappers as well!",
         )
         chatPlayer(quiz, "Oh, so I need logs from the achey tree, bones from a canine... and feathers?")
-        chatNpc(happy, "Is just what Rantz sayed!|@blu@~ The hulking ogre nods excitedly. ~")
+        chatNpc(happy, "Is just what Rantz sayed! <col=0000ff>~ The hulking ogre nods excitedly. ~</col>")
     }
 
     private suspend fun Dialogue.handOverArrows() {
@@ -432,8 +432,8 @@ constructor(
         HintArrows.hintCoord(player, BAIT_CLEARING)
         chatNpc(
             neutral,
-            "Over 'dere creature, put da toadies over der!|@blu@~ The ogre points to a clearing " +
-                "to the south. ~",
+            "Over 'dere creature, put da toadies over der! <col=0000ff>~ The ogre points to a clearing " +
+                "to the south. ~</col>",
         )
         Camera.camReset(player)
     }
@@ -455,7 +455,7 @@ constructor(
 
     private suspend fun Dialogue.offerToShoot() {
         chatPlayer(neutral, "Hey there, you keep missing the chompy bird.")
-        chatNpc(angry, "I knows, I keeps missing... because your stabbers are|worserer at flying than a dead dog.")
+        chatNpc(angry, "I knows, I keeps missing... because your stabbers are worserer at flying than a dead dog.")
         val push =
             choice2(
                 "Oh, keep trying then... you might hit one through pure luck.",
@@ -493,7 +493,7 @@ constructor(
         objbox(
             OGRE_BOW,
             OBJBOX_ZOOM,
-            "Rantz hands over an ogre bow. It's huge! You can|barely drawn back the string!",
+            "Rantz hands over an ogre bow. It's huge! You can barely drawn back the string!",
         )
     }
 
@@ -518,7 +518,7 @@ constructor(
             )
             return
         }
-        chatNpc(angry, "Dat's a great chompy, you musta got a lucky shot wiv|da stabbie chucker.")
+        chatNpc(angry, "Dat's a great chompy, you musta got a lucky shot wiv da stabbie chucker.")
         quest.advanceTo(access, STAGE_TOLD_TO_COOK)
         player.rantzFlavour = if (random.randomBoolean()) FLAVOUR_ONION else FLAVOUR_POTATO
         tellSeasonings()
@@ -527,19 +527,19 @@ constructor(
     private suspend fun Dialogue.tellSeasonings() {
         chatNpc(
             angry,
-            "Okay's now you's needs to cook da chompy! Slurp!|You's can cook it's over der!|" +
-                "@blu@~ Rantz points to a nearby spit roast. ~",
+            "Okay's now you's needs to cook da chompy! Slurp! You's can cook it's over der! " +
+                "<col=0000ff>~ Rantz points to a nearby spit roast. ~</col>",
         )
-        val seasoning = if (player.rantzFlavour == FLAVOUR_ONION) "Onion." else "Potato"
+        val seasoning = if (player.rantzFlavour == FLAVOUR_ONION) "onion" else "potato"
         chatNpc(
             angry,
-            "But's we's particular about our chompy yumms. Me's|wants $seasoning wiv mine! Fycie " +
-                "and Bugs want|something wiv der's as well, go and ask 'em wat dey|want.",
+            "But's we's particular about our chompy yumms. Me's wants $seasoning wiv mine! Fycie " +
+                "and Bugs want something wiv der's as well, go and ask 'em wat dey want.",
         )
-        chatPlayer(angry, "What! Now I've got the chompy bird, you expect me to|cook it as well?")
+        chatPlayer(angry, "What! Now I've got the chompy bird, you expect me to cook it as well?")
         chatNpc(
             angry,
-            "Yep, da spit's over der! Last time Rantz did yummies,|got very bad, did bad things " +
+            "Yep, da spit's over der! Last time Rantz did yummies, got very bad, did bad things " +
                 "to food... and belly.",
         )
         chatPlayer(angry, "HUH!")
@@ -548,8 +548,8 @@ constructor(
     private suspend fun Dialogue.handInChompy() {
         chatNpc(
             angry,
-            "Hey creature, did you's get da cooked chompy yet?|I smelled something cooking and it " +
-                "mades me 'ungry.|Hand over da chompy if ya know what's good for ya.",
+            "Hey creature, did you's get da cooked chompy yet? I smelled something cooking and it " +
+                "mades me 'ungry. Hand over da chompy if ya know what's good for ya.",
         )
         if (access.invTotal(access.inv, SEASONED_CHOMPY) < 1) {
             chatPlayer(neutral, "Well, erm, I don't have one at the moment.")
@@ -558,12 +558,12 @@ constructor(
         }
         chatPlayer(angry, "Yes, here you go, here's your cooked chompy bird.")
         objbox(SEASONED_CHOMPY, OBJBOX_ZOOM, "You hand over the cooked chompy bird to Rantz.")
-        chatNpc(happy, "Hey hey! We got da delicious chompy bird - yay!|This looks really tasty as well!")
+        chatNpc(happy, "Hey hey! We got da delicious chompy bird - yay! This looks really tasty as well!")
         chatNpc(
             happy,
-            "Tank's very much for da chompy...|Fycie an Bugs like very much da chompy yumms!|" +
-                "@blu@~ The family of ogres sit down together ~|@blu@~ and enjoy your well cooked " +
-                "chompy bird ~",
+            "Tank's very much for da chompy... Fycie an Bugs like very much da chompy yumms! " +
+                "<col=0000ff>~ The family of ogres sit down together and enjoy your well cooked " +
+                "chompy bird ~</col>",
         )
         chatPlayer(laugh, "It's my pleasure!")
         if (access.invDel(access.inv, SEASONED_CHOMPY, 1).failure) {
@@ -613,7 +613,7 @@ constructor(
             chatNpc(neutral, "Creature already given Rantz stabbers, Dey's worser at flying dan a dead dog.")
             return
         }
-        chatNpc(neutral, "Hey you creature..you made da stabbers|Dat's good creature!")
+        chatNpc(neutral, "Hey you creature..you made da stabbers. Dat's good creature!")
         if (stage != STAGE_STARTED) {
             return
         }
@@ -679,8 +679,8 @@ constructor(
         objbox(
             CHOMPY_DISPLAY,
             OBJBOX_ZOOM,
-            "You've killed a total of @blu@$kills @bla@chompy birds so far!||" +
-                "@blu@~ You're ${ChompyRanks.withArticle(kills)}! ~",
+            "You've killed a total of <col=0000ff>$kills</col> chompy birds so far! " +
+                "<col=0000ff>~ You're ${ChompyRanks.withArticle(kills)}! ~</col>",
         )
         chatNpc(neutral, "Rantz not got no hatsies to spare right now creature. Keep sticking da chompy!")
     }

@@ -13,6 +13,7 @@ import org.rsmod.api.script.onNpcQueueWithArgs
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld4
 import org.rsmod.api.script.onOpHeld5
+import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
@@ -71,6 +72,8 @@ constructor(
     override fun ScriptContext.startup() {
         onOpLocU(SWAMP_BUBBLES) { fillBellows(it.objType.internalName) }
         onOpLocU(SWAMP_BUBBLES_DARK) { fillBellows(it.objType.internalName) }
+        onOpLoc1(SWAMP_BUBBLES) { suckWithCarriedBellows() }
+        onOpLoc1(SWAMP_BUBBLES_DARK) { suckWithCarriedBellows() }
 
         onOpNpc1(SWAMP_TOAD) { inflateWithCarriedBellows(it.npc) }
         onOpNpcU(SWAMP_TOAD) { useOnToad(it.npc, it.objType.internalName) }
@@ -100,6 +103,15 @@ constructor(
         }
         invAdd(inv, BELLOWS_FULL)
         mes("You collect some gas from the swamp.")
+    }
+
+    private suspend fun ProtectedAccess.suckWithCarriedBellows() {
+        val bellows = EMPTYING_BELLOWS.firstOrNull { invTotal(inv, it) > 0 }
+        when {
+            bellows != null -> fillBellows(bellows)
+            invTotal(inv, BELLOWS_FULL) > 0 -> fillBellows(BELLOWS_FULL)
+            else -> mes("You need some ogre bellows to collect the swamp gas.")
+        }
     }
 
     private suspend fun ProtectedAccess.useOnToad(toad: Npc, used: String) {
@@ -325,9 +337,9 @@ constructor(
         const val BURST_DAMAGE_MAX = 2
 
         /** The three Feldip map squares a chompy hunter may bait once the quest is over. */
-        const val HUNTING_GROUND_WEST = 2432
+        const val HUNTING_GROUND_WEST = 2496
         const val HUNTING_GROUND_EAST = 2687
-        const val HUNTING_GROUND_SOUTH = 2880
-        const val HUNTING_GROUND_NORTH = 2943
+        const val HUNTING_GROUND_SOUTH = 2944
+        const val HUNTING_GROUND_NORTH = 3007
     }
 }

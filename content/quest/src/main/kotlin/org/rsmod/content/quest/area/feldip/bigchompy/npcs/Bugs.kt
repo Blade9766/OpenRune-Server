@@ -83,9 +83,9 @@ constructor(
         chatPlayer(neutral, "How many 'bright pretties' do you want?")
         chatNpc(
             neutral,
-            "Bugs wants lots of bright pretties, this many!|@blu@~ Bugs quickly opens and closes " +
-                "his hands in front ~|@blu@~ of you to indicate a number of bright pretties. ~|" +
-                "@blu@~ It looks like he wants $TOOL_PRICE gold coins.~",
+            "Bugs wants lots of bright pretties, this many! <col=0000ff>~ Bugs quickly opens and closes " +
+                "his hands in front of you to indicate a number of bright pretties. ~</col> " +
+                "<col=0000ff>~ It looks like he wants $TOOL_PRICE gold coins.~</col>",
         )
         val buy =
             choice2(
@@ -134,8 +134,8 @@ constructor(
         val seasoning = if (player.bugsFlavour == FLAVOUR_CABBAGE) "cabbage" else "equa leaves"
         chatNpc(
             neutral,
-            "Dad say's you's making da chompy for us! Slurp! Me's|has to have $seasoning wiv mine! " +
-                "Chompy is our|favourite yummms!",
+            "Dad say's you's making da chompy for us! Slurp! Me's has to have $seasoning wiv mine! " +
+                "Chompy is our favourite yummms!",
         )
     }
 }

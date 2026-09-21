@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceLock
+import org.rsmod.api.player.worn.RangedAmmoValidation
+import org.rsmod.api.player.worn.RangedAmmoValidation.Validation
 import org.rsmod.api.table.QuestRow
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.square.MapSquareKey
@@ -115,6 +117,15 @@ class BigChompyCacheTest {
         assertTrue(clearing.x in southWest.x..northEast.x)
         assertTrue(clearing.z in southWest.z..northEast.z)
         assertTrue(RANTZ_COORDS.chebyshevDistance(clearing) <= RANTZ_SIGHT)
+    }
+
+    @Test
+    fun theOgreBowFiresOgreArrowsOnly() {
+        val bow = checkNotNull(ServerCacheManager.getItem("obj.ogre_bow".asRSCM(RSCMType.OBJ)))
+        val ogreArrow = checkNotNull(ServerCacheManager.getItem("obj.ogre_arrow".asRSCM(RSCMType.OBJ)))
+        val bronzeArrow = checkNotNull(ServerCacheManager.getItem("obj.bronze_arrow".asRSCM(RSCMType.OBJ)))
+        assertEquals(Validation.Valid, RangedAmmoValidation.validateArrows(bow, ogreArrow))
+        assertTrue(RangedAmmoValidation.validateArrows(bow, bronzeArrow) is Validation.Invalid)
     }
 
     private fun assertLocAt(loc: String, coords: CoordGrid) {

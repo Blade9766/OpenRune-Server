@@ -106,7 +106,6 @@ public fun ScriptContext.onOpNpcU(
     action: suspend ProtectedAccess.(NpcUDefaultEvents.OpType) -> Unit,
 ): Unit = onProtectedEvent(npcType.asRSCM(RSCMType.NPC), action)
 
-
 public fun ScriptContext.onOpContentNpcU(
     content: String,
     action: suspend ProtectedAccess.(NpcUDefaultEvents.OpContent) -> Unit,
@@ -146,9 +145,9 @@ public fun ScriptContext.onApNpc4(
 ): Unit = onProtectedEvent(type.asRSCM(RSCMType.NPC), action)
 
 public fun ScriptContext.onApNpc5(
-    type: NpcServerType,
+    type: String,
     action: suspend ProtectedAccess.(NpcEvents.Ap5) -> Unit,
-): Unit = onProtectedEvent(type.id, action)
+): Unit = onProtectedEvent(type.asRSCM(RSCMType.NPC), action)
 
 public fun ScriptContext.onApContentNpc1(
     content: String,

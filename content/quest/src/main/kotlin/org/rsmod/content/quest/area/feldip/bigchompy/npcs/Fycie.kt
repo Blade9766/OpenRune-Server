@@ -41,7 +41,7 @@ constructor(
 
     private suspend fun Dialogue.fycie() {
         when (quest.stage(player)) {
-            0 -> chatNpc(neutral, "You's better talk to Dad, We not talk to wierdly|'umans.")
+            0 -> chatNpc(neutral, "You's better talk to Dad, We not talk to wierdly 'umans.")
             STAGE_STARTED -> sellFeathers()
             STAGE_ASKED_ABOUT_TOADS, STAGE_OPENED_CHEST -> aboutToads()
             STAGE_TOLD_TO_COOK -> nameSeasoning()
@@ -63,7 +63,7 @@ constructor(
             )
             return
         }
-        chatNpc(neutral, "Hey you Creature, I know's what you is You's a|'uman!")
+        chatNpc(neutral, "Hey you Creature, I know's what you is You's a 'uman!")
         chatPlayer(happy, "That's right... I'm making some 'stabbers' for Rantz.")
         chatNpc(
             neutral,
@@ -74,9 +74,9 @@ constructor(
         chatPlayer(neutral, "How many 'bright pretties' do you want?")
         chatNpc(
             neutral,
-            "Mee's wants lots of bright pretties, this many!|@blu@~ Fycie quickly opens and closes " +
-                "her hands in front ~|@blu@~ of you to indicate a number of bright pretties. ~|" +
-                "@blu@~ It looks like she wants $FEATHER_PRICE gold coins.~",
+            "Mee's wants lots of bright pretties, this many! <col=0000ff>~ Fycie quickly opens and closes " +
+                "her hands in front of you to indicate a number of bright pretties. ~</col> " +
+                "<col=0000ff>~ It looks like she wants $FEATHER_PRICE gold coins.~</col>",
         )
         val buy =
             choice2(
@@ -124,8 +124,8 @@ constructor(
         val seasoning = if (player.fycieFlavour == FLAVOUR_DOOGLE) "doogle leaves" else "tomato"
         chatNpc(
             neutral,
-            "Dad say's you's roastling da chompy for us! Slurp!|Me's wants $seasoning wiv mine! " +
-                "Yummy, can't wait|to eats it.",
+            "Dad say's you's roastling da chompy for us! Slurp! Me's wants $seasoning wiv mine! " +
+                "Yummy, can't wait to eats it.",
         )
     }
 

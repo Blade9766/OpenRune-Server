@@ -126,7 +126,7 @@ constructor(
         objbox(
             SEASONED_CHOMPY,
             OBJBOX_ZOOM,
-            "You use the ${rantz.label}, ${bugs.label} and the ${fycie.label}|with the chompy " +
+            "You use the ${rantz.label}, ${bugs.label} and the ${fycie.label} with the chompy " +
                 "bird to make a seasoned chompy.",
         )
         clearSpit()
