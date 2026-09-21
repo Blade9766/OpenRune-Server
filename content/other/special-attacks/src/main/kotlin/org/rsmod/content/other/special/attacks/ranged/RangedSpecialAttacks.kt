@@ -329,6 +329,8 @@ constructor(
         ammunition: RangedAmmoManager,
         private val enchantedBolts: EnchantedBolts,
     ) : AmmoSpecial(manager, ammunition) {
+        override fun travelSpot(quiver: ItemServerType): String = "spotanim.zcb_specialattack"
+
         override fun ProtectedAccess.shoot(
             target: PathingEntity,
             attack: CombatAttack.Ranged,
@@ -337,7 +339,6 @@ constructor(
             travel: String,
         ) {
             specialAnim("seq.zcb_attack")
-            spotanim("spotanim.zcb_specialattack", height = 96, slot = COMBAT_SLOT)
             val shot =
                 enchantedBolts.shoot(
                     source = player,
