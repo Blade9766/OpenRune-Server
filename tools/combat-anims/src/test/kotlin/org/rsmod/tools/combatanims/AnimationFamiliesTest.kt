@@ -68,7 +68,21 @@ class AnimationFamiliesTest {
             "mummy_update_sword_attack",
             "mummy_update_defend",
             "mummy_update_death",
+            "demon_update_ready",
+            "demon_update_attack",
+            "demon_update_attack_greater",
+            "demon_update_attack_lesser",
+            "demon_update_defend",
+            "demon_update_death",
         )
+
+    @Test
+    fun `a family whose attack member is a one-frame stub uses its real swing`() {
+        val demon = AnimationFamilies.resolve("demon_update_ready", sequences)
+        assertEquals("demon_update_attack_lesser", demon.attack)
+        assertEquals("demon_update_defend", demon.defend)
+        assertEquals("demon_update_death", demon.death)
+    }
 
     @Test
     fun `a stance word before the ready marker still finds the family`() {

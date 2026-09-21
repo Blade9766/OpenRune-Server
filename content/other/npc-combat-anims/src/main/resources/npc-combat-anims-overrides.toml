@@ -120,4 +120,7 @@ npc = [
     { id = "npc.agrith_naar", attack_anim = "seq.demon_update_swipe", attack_type = "category.attacktype_crush" },
     { id = "npc.nzone_agrith_naar_normal", attack_anim = "seq.demon_update_swipe", attack_type = "category.attacktype_crush" },
     { id = "npc.nzone_agrith_naar_hard", attack_anim = "seq.demon_update_swipe", attack_type = "category.attacktype_crush" },
+    # The Judge has its own attack and death on the demon_update rig.
+    { id = "npc.akd_judge_of_yama_combat", attack_anim = "seq.judgeofyama_attack", death_anim = "seq.judgeofyama_death" },
+    { id = "npc.yama_judge_of_yama", attack_anim = "seq.judgeofyama_attack", death_anim = "seq.judgeofyama_death" },
 ]

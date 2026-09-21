@@ -49,6 +49,15 @@ object AnimationFamilies {
         )
 
     /**
+     * Attacks by family prefix, for the families whose plainly named attack member is a one-frame
+     * stub that plays as an invisible swing. `demon_update_attack` is the first frame of
+     * `demon_update_ready`; Skotizo, the one member with a recorded attack, swings
+     * `demon_update_attack_lesser`.
+     */
+    private val familyAttacks: Map<String, String> =
+        mapOf("demon_update" to "demon_update_attack_lesser")
+
+    /**
      * Suffixes that mark a sequence as an attack when the family does not use `_attack`:
      * `olaf2_undead_sword_lunge`, `barrow_dharok_slash`.
      */
@@ -103,6 +112,9 @@ object AnimationFamilies {
 
     private fun attackFor(split: Pair<String, String>, sequences: Set<String>): String? {
         val (prefix, variant) = split
+        familyAttacks[prefix]?.takeIf { it in sequences }?.let {
+            return it
+        }
         val exact =
             listOf(
                 "${prefix}_attack$variant",
