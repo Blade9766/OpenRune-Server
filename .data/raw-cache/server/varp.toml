@@ -938,18 +938,6 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
-id = "varp.chompy_state"
-scope = "Perm"
-transmit = "Never"
-
-[[varp]]
-isServerOnly = true
-id = "varp.chompy_kills"
-scope = "Perm"
-transmit = "Never"
-
-[[varp]]
-isServerOnly = true
 id = "varp.upass_state"
 scope = "Perm"
 transmit = "Never"
