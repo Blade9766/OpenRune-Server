@@ -25,6 +25,7 @@ import org.rsmod.api.invtx.invClear
 import org.rsmod.api.mechanics.toxins.impl.PlayerDisease
 import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
 import org.rsmod.api.mechanics.toxins.impl.PlayerVenom
+import org.rsmod.api.player.cheat.adminBoltProc
 import org.rsmod.api.player.cheat.adminGodMode
 import org.rsmod.api.player.cheat.adminMaxHit
 import org.rsmod.api.player.debug.componentClickDebug
@@ -229,6 +230,7 @@ constructor(
             ::componentDebug,
         )
         onCommand("maxhit", "Toggle always max hit", ::maxhit)
+        onCommand("boltproc", "Toggle enchanted bolt effects on every shot", ::boltProc)
         onCommand("openbank", "Open the bank from anywhere", ::bank, aliases = listOf("bank"))
         onCommand("transmog", "Transmog player to NPC appearance (no args to reset)", ::transmog) {
             invalidArgs = "Use as ::transmog npcNameOrId (ex: goblin or 126) or ::transmog to reset"
@@ -295,6 +297,13 @@ constructor(
         with(cheat) {
             player.adminMaxHit = !player.adminMaxHit
             player.mes("Max hit ${if (player.adminMaxHit) "enabled" else "disabled"}.")
+        }
+
+    private fun boltProc(cheat: Cheat) =
+        with(cheat) {
+            player.adminBoltProc = !player.adminBoltProc
+            val state = if (player.adminBoltProc) "enabled" else "disabled"
+            player.mes("Bolt effects on every shot $state.")
         }
 
     private fun componentDebug(cheat: Cheat) =

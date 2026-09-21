@@ -11,6 +11,7 @@ import org.rsmod.api.combat.commons.DragonfireProtection
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.mechanics.toxins.impl.NpcPoison
 import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
+import org.rsmod.api.player.cheat.adminBoltProc
 import org.rsmod.api.player.hit.modifier.NoopPlayerHitModifier
 import org.rsmod.api.player.hit.queueHit
 import org.rsmod.api.player.stat.agilityLvl
@@ -73,6 +74,9 @@ constructor(private val random: GameRandom, private val manager: PlayerAttackMan
         val zaryte = getInvObj(attack.weapon).id == zaryteCrossbow
         val eligible = isEligible(source, target, bolt)
         val chance = procChance(source, target, bolt) * procChanceMultiplier
+        if (source.adminBoltProc && eligible) {
+            return shot(source, target, bolt, zaryte, roll)
+        }
 
         if (bolt.bypassesAccuracy) {
             var landed: Boolean? = null
