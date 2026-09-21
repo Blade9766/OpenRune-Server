@@ -5,6 +5,8 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
+import org.rsmod.content.quest.area.desert.shadowofthestorm.DemonThroneRoom
+import org.rsmod.content.quest.area.desert.shadowofthestorm.ShadowOfTheStormQuest
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest.Companion.CHISEL
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest.Companion.DEMON_DOOR_SOUND
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest.Companion.DOOR_ARRIVAL
@@ -41,6 +43,8 @@ constructor(
     private val golem: TheGolemQuest,
     private val objRepo: ObjRepository,
     private val collision: CollisionFlagMap,
+    private val throneRoom: DemonThroneRoom,
+    private val sots: ShadowOfTheStormQuest,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -71,6 +75,10 @@ constructor(
         arriveDelay()
         delay(1)
         telejump(RUINS_ARRIVAL)
+        if (sots.stage(player) in ShadowOfTheStormQuest.STAGE_CHASE..ShadowOfTheStormQuest.STAGE_SECOND_RITUAL) {
+            soundSynth(ShadowOfTheStormQuest.SOUND_SANDSTORM)
+            mes("The sky over Uzer has gone the colour of a bruise, and the sand is moving in it.")
+        }
     }
 
     private suspend fun ProtectedAccess.pickMushroom() {
@@ -125,6 +133,18 @@ constructor(
 
     private suspend fun ProtectedAccess.demonDoor() {
         arriveDelay()
+        // Shadow of the Storm holds its own copy of the room on the far side of this door.
+        if (sots.inProgress(player)) {
+            if (sots.stage(player) < ShadowOfTheStormQuest.STAGE_INFILTRATED) {
+                mes("Evil Dave is standing between you and the portal.")
+                return
+            }
+            mes("You step into the portal.")
+            soundSynth(TELEPORT_SOUND)
+            delay(1)
+            with(throneRoom) { enterThroneRoom() }
+            return
+        }
         if (golem.stage(player) < STAGE_PORTAL_OPEN) {
             mes("The door won't open. There must be some way to unlock it.")
             return
@@ -140,6 +160,10 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.leaveThroneRoom() {
+        if (throneRoom.inside(player)) {
+            with(throneRoom) { leave() }
+            return
+        }
         arriveDelay()
         mes("You step into the portal.")
         soundSynth(TELEPORT_SOUND)

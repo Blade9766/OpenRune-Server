@@ -1,0 +1,13 @@
+# Shadow of the Storm: the temple passage beneath the ruins of Uzer (map square 42_76).
+#
+# Tanya runs this far after the first summoning breaks and no further. Both of these are
+# multi-npcs on `varbit.agrith_quest` and only render on the chase stage, so they are invisible
+# to everyone who is not in the middle of that scene.
+
+[[spawn]]
+npc = "npc.agrith_tanya_falling"
+coords = "0_42_76_33_41"
+
+[[spawn]]
+npc = "npc.agrith_tanya_ghost"
+coords = "0_42_76_34_42"

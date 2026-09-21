@@ -40,6 +40,19 @@ import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinsLittleHelperQuest
 import org.rsmod.content.quest.area.desert.icthlarin.PyramidFightHooks
 import org.rsmod.content.quest.area.desert.icthlarin.PyramidFights
 import org.rsmod.content.quest.area.desert.icthlarin.TilePuzzle
+import org.rsmod.content.quest.area.desert.shadowofthestorm.AgrithNaarFight
+import org.rsmod.content.quest.area.desert.shadowofthestorm.AgrithNaarKillHook
+import org.rsmod.content.quest.area.desert.shadowofthestorm.DemonThroneRoom
+import org.rsmod.content.quest.area.desert.shadowofthestorm.Ritual
+import org.rsmod.content.quest.area.desert.shadowofthestorm.ShadowOfTheStormQuest
+import org.rsmod.content.quest.area.desert.shadowofthestorm.SotsItems
+import org.rsmod.content.quest.area.desert.shadowofthestorm.TheChase
+import org.rsmod.content.quest.area.desert.shadowofthestorm.UzerKilns
+import org.rsmod.content.quest.area.desert.shadowofthestorm.npcs.CultMembers
+import org.rsmod.content.quest.area.desert.shadowofthestorm.npcs.EvilDave
+import org.rsmod.content.quest.area.desert.shadowofthestorm.npcs.FatherBadden
+import org.rsmod.content.quest.area.desert.shadowofthestorm.npcs.FatherReen
+import org.rsmod.content.quest.area.desert.shadowofthestorm.npcs.SotsGolem
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest
 import org.rsmod.content.quest.area.desert.touristtrap.MiningCampSecurity
 import org.rsmod.content.quest.area.desert.touristtrap.TouristTrapQuest
@@ -241,6 +254,19 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(WitchsExperimentHooks::class.java)
         addSetBinding<PlayerDeathCleanupHook>(WitchsExperimentHooks::class.java)
         bindInstance<TheGolemQuest>()
+        bindInstance<ShadowOfTheStormQuest>()
+        bindInstance<DemonThroneRoom>()
+        bindInstance<SotsItems>()
+        bindInstance<UzerKilns>()
+        bindInstance<Ritual>()
+        bindInstance<TheChase>()
+        bindInstance<AgrithNaarFight>()
+        bindInstance<FatherReen>()
+        bindInstance<FatherBadden>()
+        bindInstance<EvilDave>()
+        bindInstance<CultMembers>()
+        bindInstance<SotsGolem>()
+        addSetBinding<NpcDeathKillHook>(AgrithNaarKillHook::class.java)
         bindInstance<UndergroundPassQuest>()
         bindInstance<PassEntrance>()
         bindInstance<PassObstacles>()

@@ -8,6 +8,7 @@ import org.rsmod.api.player.stat.craftingLvl
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
 import org.rsmod.api.script.onPlayerSoftQueue
+import org.rsmod.content.quest.area.desert.shadowofthestorm.npcs.SotsGolem
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest.Companion.CLAY_NEEDED
 import org.rsmod.content.quest.area.desert.thegolem.TheGolemQuest.Companion.CRAFTING_REQ
@@ -33,7 +34,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * `varbit.golem_clay`: broken, then damaged, then whole as the player packs soft clay into it.
  * Its skull opens with the strange implement and shuts again by itself unless a program goes in.
  */
-class ClayGolem @Inject constructor(private val golem: TheGolemQuest) : PluginScript() {
+class ClayGolem
+@Inject
+constructor(private val golem: TheGolemQuest, private val stormGolem: SotsGolem) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(GOLEM) { startDialogue(it.npc) { talk() } }
@@ -49,6 +52,7 @@ class ClayGolem @Inject constructor(private val golem: TheGolemQuest) : PluginSc
     private suspend fun Dialogue.talk() {
         val stage = golem.stage(player)
         when {
+            stormGolem.hasBusiness(player) -> with(stormGolem) { talk() }
             golem.isComplete(player) -> afterQuest()
             stage == 0 -> notStarted()
             stage == STAGE_STARTED -> chatNpc(sad, "Damage... severe...")
@@ -217,11 +221,14 @@ class ClayGolem @Inject constructor(private val golem: TheGolemQuest) : PluginSc
     }
 
     private suspend fun ProtectedAccess.openSkull(npc: Npc) {
+        faceEntitySquare(npc)
+        if (with(stormGolem) { removeRestriction() }) {
+            return
+        }
         if (golem.stage(player) < STAGE_REPAIRED) {
             mes("The golem is too badly damaged for that.")
             return
         }
-        faceEntitySquare(npc)
         anim(REPAIR_SEQ)
         mes("You insert the key and the golem's skull hinges open.")
         player.golemHeadOpen = true

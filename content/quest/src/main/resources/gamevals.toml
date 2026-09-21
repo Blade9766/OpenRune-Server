@@ -210,6 +210,14 @@ zap = 224
 # Witch's House: the mouse leaving its hole and the basement gate's shock.
 rat_squeak_1 = 3102
 shock = 2542
+# Shadow of the Storm: the quest sounds from dbrow.synth_unsummoning, plus Agrith-Naar's swing
+# from dbrow.synth_demon.
+demon_attack = 400
+agrith_portalclose = 1311
+agrith_appear = 1312
+agrith_circle = 1313
+agrith_sandstorm = 1314
+agrith_summon = 1315
 # The Golem: the quest sounds from dbrow.synth_thegolem.
 golem_demondoor = 1848
 golem_program = 1849
