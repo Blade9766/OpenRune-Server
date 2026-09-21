@@ -5,6 +5,10 @@ package org.rsmod.content.skills.fletching
  * (Bucket "recipe", uses_skill = Fletching). Coloured feather variants are handled through
  * [FEATHERS] instead of separate rows.
  */
+/** Ogre fletching stays a mystery until Rantz explains it in Big Chompy Bird Hunting. */
+private const val CHOMPY_UNLOCK = "varbit.chompy_quest_started"
+private const val CHOMPY_LOCKED = "You're not sure what you would make with these."
+
 internal val FLETCHING_RECIPES: List<FletchingRecipe> = listOf(
     FletchingRecipe(
         output = "obj.arrow_shaft",
@@ -77,6 +81,8 @@ internal val FLETCHING_RECIPES: List<FletchingRecipe> = listOf(
         anim = "seq.human_ogre_fletching",
         sound = "synth.fletching_feathers",
         message = "You attach feathers to {count} ogre arrow shafts.",
+        unlockVarbit = CHOMPY_UNLOCK,
+        lockedMessage = CHOMPY_LOCKED,
     ),
     FletchingRecipe(
         output = "obj.ogre_arrow",
@@ -89,6 +95,9 @@ internal val FLETCHING_RECIPES: List<FletchingRecipe> = listOf(
         anim = "seq.human_ogre_fletching",
         sound = "synth.fletching_attach",
         message = "You make {count} {plural}.",
+        unlockVarbit = CHOMPY_UNLOCK,
+        lockedMessage = CHOMPY_LOCKED,
+        completionVarbit = "varbit.chompy_made_arrows",
     ),
     FletchingRecipe(
         output = "obj.ogre_arrow_shaft",
@@ -101,6 +110,8 @@ internal val FLETCHING_RECIPES: List<FletchingRecipe> = listOf(
         anim = "seq.human_ogre_fletching",
         sound = "synth.fletching_cut",
         message = "You carefully cut the wood into {an}.",
+        unlockVarbit = CHOMPY_UNLOCK,
+        lockedMessage = "You're not sure what you would make with these logs.",
     ),
     FletchingRecipe(
         output = "obj.shortbow",
@@ -134,6 +145,8 @@ internal val FLETCHING_RECIPES: List<FletchingRecipe> = listOf(
         anim = "seq.human_fletching_huntingbolts_chisel",
         sound = "synth.chisel",
         message = "You use your chisel to fletch {count} {plural}.",
+        unlockVarbit = CHOMPY_UNLOCK,
+        lockedMessage = CHOMPY_LOCKED,
     ),
     FletchingRecipe(
         output = "obj.zogre_brutal_bronze",

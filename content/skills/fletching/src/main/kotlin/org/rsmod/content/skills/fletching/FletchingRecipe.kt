@@ -42,6 +42,10 @@ internal fun input(obj: String, count: Int = 1): FletchingInput = FletchingInput
  *
  * [ticks] is the time per action; 0 makes the recipe instant, one action per click. [message]
  * interpolates `{count}` (objs made), `{an}` (the product with its article or count) and `{plural}`.
+ *
+ * [unlockVarbit] hides the recipe until that varbit is set, with [lockedMessage] explaining why,
+ * and [completionVarbit] is set the first time the player finishes it, for content that has to
+ * tell the player's own work from someone else's.
  */
 internal data class FletchingRecipe(
     val output: String,
@@ -56,6 +60,8 @@ internal data class FletchingRecipe(
     val sound: String? = null,
     val message: String,
     val unlockVarbit: String? = null,
+    val lockedMessage: String = BROAD_AMMO_LOCKED,
+    val completionVarbit: String? = null,
 ) {
     val primary: String
         get() = inputs.first().obj
@@ -63,5 +69,10 @@ internal data class FletchingRecipe(
     val displayName: String by lazy {
         val name = ServerCacheManager.getItem(output.asRSCM(RSCMType.OBJ))?.name ?: output
         name.removeSuffix(" (u)").removeSuffix("(unf)").trim().lowercase()
+    }
+
+    internal companion object {
+        const val BROAD_AMMO_LOCKED =
+            "You need to learn how to fletch broad ammunition from a Slayer master first."
     }
 }

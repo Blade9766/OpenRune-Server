@@ -5182,3 +5182,44 @@ id = "npc.shapeshifterwolf"
 inherit = "npc.shapeshifterwolf"
 maxRange = 8
 wanderRange = 0
+
+[[npc]]
+id = "npc.rantz"
+inherit = "npc.rantz"
+timer = 1
+wanderRange = 2
+
+[[npc]]
+id = "npc.fycie"
+inherit = "npc.fycie"
+wanderRange = 3
+
+[[npc]]
+id = "npc.bugs"
+inherit = "npc.bugs"
+wanderRange = 3
+
+[[npc]]
+id = "npc.bloated_toad"
+inherit = "npc.bloated_toad"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.chompybird_dead"
+inherit = "npc.chompybird_dead"
+moveRestrict = "NoMove"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.chompybird"
+inherit = "npc.chompybird"
+wanderRange = 3
+[npc.params]
+"param.attack_anim"="seq.chompy_update_attack"
+"param.defend_anim"="seq.chompy_update_defend"
+"param.death_anim"="seq.chompy_update_death"
+"param.attack_sound"="synth.chompy_bird_attack"
+"param.defend_sound"="synth.chompy_bird_hit"
+"param.death_sound"="synth.chompy_bird_death"

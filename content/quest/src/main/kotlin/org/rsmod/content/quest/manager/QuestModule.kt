@@ -76,6 +76,11 @@ import org.rsmod.content.quest.area.feldip.bigchompy.ChompyAttackHook
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyBirds
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyHunt
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyKillHook
+import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest
+import org.rsmod.content.quest.area.feldip.bigchompy.ChompyAttackHook
+import org.rsmod.content.quest.area.feldip.bigchompy.ChompyBirds
+import org.rsmod.content.quest.area.feldip.bigchompy.ChompyHunt
+import org.rsmod.content.quest.area.feldip.bigchompy.ChompyKillHook
 import org.rsmod.content.quest.area.gnomestronghold.gliders.GnomeGliders
 import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.ApeAtollAggression
 import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.ChapterCards
@@ -309,6 +314,11 @@ public class QuestModule : PluginModule() {
         bindInstance<PerfectGold>()
         bindInstance<Chronozon>()
         addSetBinding<NpcDeathKillHook>(ChronozonKillHook::class.java)
+        bindInstance<BigChompyBirdHuntingQuest>()
+        bindInstance<ChompyHunt>()
+        bindInstance<ChompyBirds>()
+        addSetBinding<NpcAttackValidateHook>(ChompyAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(ChompyKillHook::class.java)
         bindInstance<BigChompyBirdHuntingQuest>()
         bindInstance<ChompyHunt>()
         bindInstance<ChompyBirds>()

@@ -1,6 +1,10 @@
 id = "Wolf Drops"
 npcs = ["npc.wolf", "npc.pack_wolf_whiter", "npc.sos_war_wolf", "npc.sos_war_wolf2", "npc.viking_wolf"]
 
+[[guaranteed]]
+obj = "obj.wolf_bones"
+count = 1
+
 [[tertiary]]
 numerator = 1
 denominator = 4

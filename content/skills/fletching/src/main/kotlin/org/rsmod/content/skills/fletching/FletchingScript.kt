@@ -45,7 +45,7 @@ class FletchingScript : PluginScript() {
     private suspend fun ProtectedAccess.select(recipes: List<FletchingRecipe>) {
         val unlocked = recipes.filter { isUnlocked(it) }
         if (unlocked.isEmpty()) {
-            mes("You need to learn how to fletch broad ammunition from a Slayer master first.")
+            mes(recipes.first().lockedMessage)
             return
         }
         val single = unlocked.singleOrNull()
@@ -174,6 +174,7 @@ class FletchingScript : PluginScript() {
             mes("You don't have enough inventory space to do that.", ChatType.Spam)
             return false
         }
+        recipe.completionVarbit?.let { vars[it] = 1 }
         val xp = if (recipe.batch) recipe.xp * units / recipe.outputCount else recipe.xp
         statAdvance(STAT, xp)
         mes(message(recipe, produced), ChatType.Spam)

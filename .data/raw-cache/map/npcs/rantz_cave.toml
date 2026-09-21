@@ -1,0 +1,10 @@
+# Rantz's cave, below the Feldip Hills (map square 41_146). Rantz's children sit by the ogre
+# benches at the back of the cave, beside the rock-locked chest that holds the ogre bellows.
+
+[[spawn]]
+npc = "npc.fycie"
+coords = "0_41_146_20_50"
+
+[[spawn]]
+npc = "npc.bugs"
+coords = "0_41_146_24_50"
