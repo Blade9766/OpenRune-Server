@@ -5,6 +5,7 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.commons.hook.PvPAttackRestrictionHook
+import org.rsmod.api.combat.manager.EnchantedBolts
 import org.rsmod.api.combat.manager.PlayerAttackManager
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.combat.player.activateMagicSpecial
@@ -43,6 +44,7 @@ constructor(
     private val weaponsReg: WeaponRegistry,
     private val manager: PlayerAttackManager,
     private val ammunition: RangedAmmoManager,
+    private val enchantedBolts: EnchantedBolts,
     private val spellsReg: SpellAttackRegistry,
     private val skullHooks: Set<PvPSkullHook>,
     private val specialAttackHooks: Set<PvPSpecialAttackHook>,
@@ -286,11 +288,11 @@ constructor(
             ammunition.useQuiverAmmo(player, quiverType, target.coords, dropDelay = serverDelay)
         }
 
-        val damage = manager.rollRangedDamage(player, target, attack)
-        manager.giveCombatXp(player, target, attack, damage)
-
         val hitAmmoObj = if (usingThrown) null else quiverType
-        manager.queueRangedHit(player, target, hitAmmoObj, damage, clientDelay, serverDelay)
+        val shot = enchantedBolts.shoot(player, target, attack, hitAmmoObj)
+        manager.giveCombatXp(player, target, attack, shot.damage)
+        manager.queueRangedHit(player, target, hitAmmoObj, shot.damage, clientDelay, serverDelay)
+        enchantedBolts.applyEffect(player, target, shot, clientDelay, serverDelay)
 
         if (usingThrown && player.righthand == null) {
             mes("That was your last one!")

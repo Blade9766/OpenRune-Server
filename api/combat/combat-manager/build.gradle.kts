@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.api.config)
     implementation(projects.api.death)
     implementation(projects.api.invtx)
+    implementation(projects.api.mechanics.toxins)
     implementation(projects.api.npc)
     implementation(projects.api.objCharges)
     implementation(projects.api.player)

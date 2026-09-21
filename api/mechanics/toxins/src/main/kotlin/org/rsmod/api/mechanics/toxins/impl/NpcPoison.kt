@@ -1,8 +1,7 @@
-package org.rsmod.content.other.poison
+package org.rsmod.api.mechanics.toxins.impl
 
 import kotlin.math.min
 import org.rsmod.api.config.refs.done.hitmark_groups
-import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.queueHit
 import org.rsmod.game.entity.Npc
@@ -13,22 +12,22 @@ import org.rsmod.game.hit.HitType
  * by one every [TICK_INTERVAL] cycles, dealing [PlayerPoison.damageForSeverity] each time until it
  * runs out. The severity lives in `varn.npc_poison_severity`; the ticking is `timer.npc_poison`.
  */
-object NpcPoison {
-    const val TIMER: String = "timer.npc_poison"
-    const val TICK_INTERVAL: Int = PlayerPoison.TICK_INTERVAL
+public object NpcPoison {
+    public const val TIMER: String = "timer.npc_poison"
+    public const val TICK_INTERVAL: Int = PlayerPoison.TICK_INTERVAL
 
     private const val SEVERITY_VARN = "varn.npc_poison_severity"
 
     /** Poison hits carry no attacker and must not be modified by combat hooks. */
     private val noModifier = NpcHitModifier {}
 
-    fun isPoisoned(npc: Npc): Boolean = npc.vars[SEVERITY_VARN] > 0
+    public fun isPoisoned(npc: Npc): Boolean = npc.vars[SEVERITY_VARN] > 0
 
     /**
      * Poisons [npc] with a poison whose first hit deals [initialDamage]. A stronger poison already
      * running is left alone, as it is for players; a weaker one is replaced.
      */
-    fun tryPoison(npc: Npc, initialDamage: Int): Boolean {
+    public fun tryPoison(npc: Npc, initialDamage: Int): Boolean {
         if (initialDamage <= 0 || npc.hitpoints <= 0) {
             return false
         }
@@ -42,7 +41,7 @@ object NpcPoison {
         return true
     }
 
-    fun onTimerTick(npc: Npc) {
+    public fun onTimerTick(npc: Npc) {
         var severity = npc.vars[SEVERITY_VARN]
         if (severity <= 0 || npc.hitpoints <= 0) {
             clear(npc)
@@ -58,7 +57,7 @@ object NpcPoison {
         npc.timer(TIMER, TICK_INTERVAL)
     }
 
-    fun clear(npc: Npc) {
+    public fun clear(npc: Npc) {
         npc.vars[SEVERITY_VARN] = 0
         npc.clearTimer(TIMER)
     }

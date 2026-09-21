@@ -6,6 +6,7 @@ import dev.openrune.types.ItemServerType
 import dev.openrune.types.hunt.HuntVis
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
+import org.rsmod.api.combat.manager.EnchantedBolts
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
@@ -22,6 +23,7 @@ import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
+import org.rsmod.game.proj.ProjAnim
 import org.rsmod.game.type.getInvObj
 import org.rsmod.game.type.getOrNull
 
@@ -33,8 +35,11 @@ import org.rsmod.game.type.getOrNull
  */
 class RangedSpecialAttacks
 @Inject
-constructor(private val ammunition: RangedAmmoManager, private val npcSearch: NpcSearch) :
-    SpecialAttackMap {
+constructor(
+    private val ammunition: RangedAmmoManager,
+    private val npcSearch: NpcSearch,
+    private val enchantedBolts: EnchantedBolts,
+) : SpecialAttackMap {
     override fun SpecialAttackRepository.register(manager: SpecialAttackManager) {
         val snapshot = Snapshot(manager, ammunition)
         registerRanged("obj.magic_shortbow", snapshot)
@@ -46,9 +51,12 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
 
         registerRanged("obj.daganoth_cave_magic_shortbow", Soulshot(manager, ammunition))
         registerRanged("obj.dttd_bone_crossbow", Snipe(manager, ammunition))
-        registerRanged("obj.xbows_crossbow_dragon", Annihilate(manager, ammunition, npcSearch))
-        registerRanged("obj.acb", ArmadylEye(manager, ammunition))
-        registerRanged("obj.zaryte_xbow", Evoke(manager, ammunition))
+        registerRanged(
+            "obj.xbows_crossbow_dragon",
+            Annihilate(manager, ammunition, npcSearch, enchantedBolts),
+        )
+        registerRanged("obj.acb", ArmadylEye(manager, ammunition, enchantedBolts))
+        registerRanged("obj.zaryte_xbow", Evoke(manager, ammunition, enchantedBolts))
 
         val concentratedShot = ConcentratedShot(manager, ammunition)
         registerRanged("obj.light_ballista", concentratedShot)
@@ -130,7 +138,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             projanim: String,
             damage: Int,
             firstHit: Boolean = true,
-        ) {
+        ): ProjAnim {
             val proj = manager.spawnProjectile(this, target, travel, projanim)
             ammunition.useQuiverAmmo(player, quiver, target.coords, dropDelay = proj.serverCycles)
             if (firstHit) {
@@ -138,6 +146,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             } else {
                 manager.queueRangedDamage(this, target, quiver, damage, proj.serverCycles)
             }
+            return proj
         }
 
         protected fun ProtectedAccess.guaranteedDamage(
@@ -250,6 +259,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
         manager: SpecialAttackManager,
         ammunition: RangedAmmoManager,
         private val npcSearch: NpcSearch,
+        private val enchantedBolts: EnchantedBolts,
     ) : AmmoSpecial(manager, ammunition) {
         override fun ProtectedAccess.shoot(
             target: PathingEntity,
@@ -259,9 +269,10 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
             travel: String,
         ) {
             specialAnim("seq.xbows_human_fire_and_reload")
-            val damage = manager.rollRangedDamage(this, target, attack, maxHitMultiplier = 1.2)
-            manager.giveCombatXp(this, target, attack, damage)
-            launch(target, quiver, travel, "projanim.bolt", damage)
+            val shot = enchantedBolts.shoot(player, target, attack, quiver, maxHitMultiplier = 1.2)
+            manager.giveCombatXp(this, target, attack, shot.damage)
+            val proj = launch(target, quiver, travel, "projanim.bolt", shot.damage)
+            enchantedBolts.applyEffect(player, target, shot, proj.clientCycles, proj.serverCycles)
             if (!mapMultiway()) {
                 return
             }
@@ -279,12 +290,12 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
         }
     }
 
-    /**
-     * Armadyl crossbow: a bolt at double accuracy. Officially it also doubles the chance of an
-     * enchanted bolt effect; bolt effects are not implemented, so only the accuracy applies.
-     */
-    private class ArmadylEye(manager: SpecialAttackManager, ammunition: RangedAmmoManager) :
-        AmmoSpecial(manager, ammunition) {
+    /** Armadyl crossbow: a bolt at double accuracy and double the enchanted bolt effect chance. */
+    private class ArmadylEye(
+        manager: SpecialAttackManager,
+        ammunition: RangedAmmoManager,
+        private val enchantedBolts: EnchantedBolts,
+    ) : AmmoSpecial(manager, ammunition) {
         override fun ProtectedAccess.shoot(
             target: PathingEntity,
             attack: CombatAttack.Ranged,
@@ -294,15 +305,30 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
         ) {
             specialAnim("seq.xbows_human_fire_and_reload")
             spotanim("spotanim.acb_specialattack", height = 96, slot = COMBAT_SLOT)
-            val damage = manager.rollRangedDamage(this, target, attack, accuracyMultiplier = 2.0)
-            manager.giveCombatXp(this, target, attack, damage)
-            launch(target, quiver, travel, "projanim.bolt", damage)
+            val shot =
+                enchantedBolts.shoot(
+                    source = player,
+                    target = target,
+                    attack = attack,
+                    ammo = quiver,
+                    accuracyMultiplier = 2.0,
+                    procChanceMultiplier = 2,
+                )
+            manager.giveCombatXp(this, target, attack, shot.damage)
+            val proj = launch(target, quiver, travel, "projanim.bolt", shot.damage)
+            enchantedBolts.applyEffect(player, target, shot, proj.clientCycles, proj.serverCycles)
         }
     }
 
-    /** Zaryte crossbow, Evoke: a bolt at double accuracy. */
-    private class Evoke(manager: SpecialAttackManager, ammunition: RangedAmmoManager) :
-        AmmoSpecial(manager, ammunition) {
+    /**
+     * Zaryte crossbow, Evoke: a bolt at double accuracy whose enchanted bolt effect is guaranteed
+     * when it hits.
+     */
+    private class Evoke(
+        manager: SpecialAttackManager,
+        ammunition: RangedAmmoManager,
+        private val enchantedBolts: EnchantedBolts,
+    ) : AmmoSpecial(manager, ammunition) {
         override fun ProtectedAccess.shoot(
             target: PathingEntity,
             attack: CombatAttack.Ranged,
@@ -312,9 +338,18 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
         ) {
             specialAnim("seq.zcb_attack")
             spotanim("spotanim.zcb_specialattack", height = 96, slot = COMBAT_SLOT)
-            val damage = manager.rollRangedDamage(this, target, attack, accuracyMultiplier = 2.0)
-            manager.giveCombatXp(this, target, attack, damage)
-            launch(target, quiver, travel, "projanim.bolt", damage)
+            val shot =
+                enchantedBolts.shoot(
+                    source = player,
+                    target = target,
+                    attack = attack,
+                    ammo = quiver,
+                    accuracyMultiplier = 2.0,
+                    guaranteedOnHit = true,
+                )
+            manager.giveCombatXp(this, target, attack, shot.damage)
+            val proj = launch(target, quiver, travel, "projanim.bolt", shot.damage)
+            enchantedBolts.applyEffect(player, target, shot, proj.clientCycles, proj.serverCycles)
         }
     }
 
