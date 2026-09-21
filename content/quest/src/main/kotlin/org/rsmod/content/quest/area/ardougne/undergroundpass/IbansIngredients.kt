@@ -57,7 +57,7 @@ constructor(private val doll: DollOfIban, private val random: GameRandom) : Plug
             mes("The chest is empty and the lid will not shut again.")
             return
         }
-        val held = AMULETS.count { invContains(inv, it) }
+        val held = AMULETS.count { inv.contains(it) }
         if (held < AMULETS.size) {
             mesbox(
                 "There is no lock on the chest, but it will not lift. Three iron rings are set " +
@@ -86,7 +86,7 @@ constructor(private val doll: DollOfIban, private val random: GameRandom) : Plug
      */
     private suspend fun ProtectedAccess.searchCage(real: Boolean) {
         arriveDelay()
-        if (!player.worn.contains(GAUNTLETS) && !invContains(inv, GAUNTLETS)) {
+        if (!player.worn.contains(GAUNTLETS) && !inv.contains(GAUNTLETS)) {
             mes("The bars are crusted with something that burns. I am not reaching in bare-handed.")
             return
         }

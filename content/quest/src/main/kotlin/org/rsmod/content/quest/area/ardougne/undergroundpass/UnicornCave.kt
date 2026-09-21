@@ -107,7 +107,7 @@ constructor(
             mes("The cage is sound, and the unicorn inside it is very much alive.")
             return
         }
-        if (invContains(inv, UNICORN_HORN) || player.hornInWell) {
+        if (inv.contains(UNICORN_HORN) || player.hornInWell) {
             mes("There is nothing else in the wreckage worth having.")
             return
         }

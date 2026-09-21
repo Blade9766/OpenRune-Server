@@ -67,7 +67,7 @@ constructor(private val quest: UndergroundPassQuest, private val random: GameRan
         arriveDelay()
         anim(SEQ_SEARCH)
         delay(1)
-        if (player.railingTaken && !invContains(inv, RAILING)) {
+        if (player.railingTaken && !inv.contains(RAILING)) {
             mes("The rest of the bars are set fast in the stone.")
             return
         }

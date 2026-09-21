@@ -110,7 +110,7 @@ constructor(
         arriveDelay()
         anim(SEQ_SEARCH)
         delay(1)
-        if (invContains(inv, OILY_CLOTH)) {
+        if (inv.contains(OILY_CLOTH)) {
             mes("You already have an oily cloth.")
             return
         }
@@ -189,7 +189,7 @@ constructor(
     private suspend fun ProtectedAccess.fireAtRope() {
         arriveDelay()
         val lit = UndergroundPassQuest.ARROW_PAIRS.map { it.second.second }
-            .firstOrNull { invContains(inv, it) }
+            .firstOrNull { inv.contains(it) }
         if (lit == null) {
             mesbox(
                 "The rope is too far to reach and far too thick to cut. If it could be set " +

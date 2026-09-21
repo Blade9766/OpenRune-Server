@@ -102,7 +102,7 @@ constructor(
 
     private suspend fun ProtectedAccess.burnOrbs() {
         arriveDelay()
-        val held = ORBS.filter { invContains(inv, it) }
+        val held = ORBS.filter { inv.contains(it) }
         if (held.isEmpty()) {
             mes("The furnace is roaring, but there is nothing of mine to put in it.")
             return

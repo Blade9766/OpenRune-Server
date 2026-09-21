@@ -88,7 +88,7 @@ constructor(
     }
 
     private suspend fun Dialogue.klank() {
-        if (player.gauntletsGiven && !access.invContains(access.inv, GAUNTLETS) &&
+        if (player.gauntletsGiven && !access.inv.contains(GAUNTLETS) &&
             !access.player.worn.contains(GAUNTLETS)
         ) {
             chatNpc(neutral, "Lost them, did you? Here, take another pair. I've time on my hands.")
@@ -159,7 +159,7 @@ constructor(
         arriveDelay()
         anim(SEQ_SEARCH)
         delay(1)
-        if (invContains(inv, BUCKET)) {
+        if (inv.contains(BUCKET)) {
             fillBucket()
             return
         }
@@ -228,7 +228,7 @@ constructor(
             mes("Old bones will not take a flame on their own.")
             return
         }
-        if (!invContains(inv, DOLL)) {
+        if (!inv.contains(DOLL)) {
             mes("There is no point burning them without something to catch the ashes in.")
             return
         }

@@ -109,7 +109,7 @@ constructor(
             mes("You need a Thieving level of $requiredLevel to pick a lock this good.")
             return
         }
-        if (!invContains(inv, LOCKPICK)) {
+        if (!inv.contains(LOCKPICK)) {
             mes("The gate is locked, and the lock is far too good to force by hand.")
             return
         }

@@ -98,5 +98,5 @@ constructor(private val quest: UndergroundPassQuest) : PluginScript() {
     }
 
     /** True when the player is carrying the doll, which every ingredient needs. */
-    fun ProtectedAccess.holdingDoll(): Boolean = invContains(inv, DOLL)
+    fun ProtectedAccess.holdingDoll(): Boolean = inv.contains(DOLL)
 }
