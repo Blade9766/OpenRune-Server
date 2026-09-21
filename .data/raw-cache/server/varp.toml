@@ -959,3 +959,9 @@ isServerOnly = true
 id = "varp.upass_grid"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.merlin_state"
+scope = "Perm"
+transmit = "Never"

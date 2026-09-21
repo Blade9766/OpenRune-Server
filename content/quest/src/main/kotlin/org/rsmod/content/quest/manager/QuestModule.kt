@@ -32,6 +32,7 @@ import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQues
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UnicornCave
 import org.rsmod.content.quest.area.ardougne.undergroundpass.WellOfDoors
 import org.rsmod.content.quest.area.burthorpe.trollstronghold.DadAttackHook
+import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest
 import org.rsmod.content.quest.area.desert.icthlarin.Ceremony
 import org.rsmod.content.quest.area.desert.icthlarin.FlashbackTeleportHook
 import org.rsmod.content.quest.area.desert.icthlarin.Flashbacks
@@ -333,5 +334,6 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(PaladinKillHook::class.java)
         addSetBinding<NpcDeathKillHook>(KalragKillHook::class.java)
         addSetBinding<NpcDeathKillHook>(DemonKillHook::class.java)
+        bindInstance<MerlinsCrystalQuest>()
     }
 }

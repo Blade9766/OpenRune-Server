@@ -276,6 +276,12 @@ mine_rumbling = 3828
 anger_unicorn_death = 877
 demon_death = 403
 
+# Merlin's Crystal: the bees in Morgan Le Faye's hives, the candle maker's wick and the
+# crystal coming apart under Excalibur.
+bees_1 = 3046
+light_candle = 2305
+glass_break = 2127
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -330,6 +336,10 @@ famcrest_temp = 65450
 # nothing else may share it; the cache's thirty other flags are varbits on `varp.ibanmulti`.
 upass_state = 65451
 upass_grid = 65452
+
+# Merlin's Crystal: everything the quest remembers besides its stage. The stage itself is the
+# whole of the cache varp `varp.arthur`, which carries no varbits of its own.
+merlin_state = 65453
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -467,6 +477,13 @@ upass_doors_open = 65705
 upass_temple_entered = 65706
 upass_badges_given = 65707
 
+merlin_knows_words = 65708
+merlin_candle_promised = 65709
+merlin_excalibur_test = 65710
+merlin_beehive_free = 65711
+merlin_crate_dest = 65712
+merlin_in_crate = 65713
+
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
 mortmyre_swamp_decay = 124
@@ -513,3 +530,7 @@ chompy_eat_toad = 65428
 chompy_toad_eaten = 65429
 rantz_loose_arrow = 65430
 rantz_arrow_lands = 65431
+
+# Merlin's Crystal: putting a player who logged out inside Arhein's shipping crate back on
+# the dock it was bound for.
+merlin_crate_evict = 65432
