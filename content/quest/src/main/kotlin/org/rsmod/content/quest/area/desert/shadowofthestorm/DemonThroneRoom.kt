@@ -99,12 +99,13 @@ constructor(
     /**
      * Agrith-Naar, awake and looking for the player. Scene npcs are spawned inert, so his own
      * mode has to be put back; he is rooted to the marked floor, as he is on live - the circle
-     * is what is holding him here.
+     * is what is holding him here - so his reach has to cover the room instead.
      */
     fun spawnDemon(player: Player): Npc? {
         val demon = spawn(player, AGRITH_NAAR, ThroneRoom.DEMON_TILE) ?: return null
         demon.mode = demon.type.defaultMode
         demon.moveRestrict = MoveRestrict.NoMove
+        demon.apRangeOverride = DEMON_REACH
         demon.opPlayer2(player, aiInteractions)
         return demon
     }
@@ -258,6 +259,9 @@ constructor(
 
         /** How long the failing portal stays in place before the ordinary one comes back. */
         const val PORTAL_FAIL_CYCLES = 500
+
+        /** Rooted to the circle, he still reaches every corner of the room with fire or a pull. */
+        const val DEMON_REACH = 16
 
         private val logger = InlineLogger()
     }

@@ -142,10 +142,11 @@ constructor(
     private fun StandardNpcAccess.claw(target: Player) {
         anim(MELEE_SEQ)
         worldRepo.soundArea(npc, MELEE_SOUND, radius = SOUND_RADIUS)
-        val landed = accuracy.rollMeleeAccuracy(npc, target, MeleeAttackType.Slash, random)
+        val landed = accuracy.rollMeleeAccuracy(npc, target, MeleeAttackType.Crush, random)
         val damage =
             if (landed) {
-                random.of(0..maxHits.getMeleeMaxHit(npc, target, MeleeAttackType.Slash))
+                val maxHit = maxHits.getMeleeMaxHit(npc, target, MeleeAttackType.Crush)
+                random.of(0..maxHit.coerceAtMost(MAX_HIT))
             } else {
                 0
             }
@@ -172,7 +173,7 @@ constructor(
             target.finishNpcHit(npc, flight.serverCycles, HitType.Magic, 0, hitModifier, flight.clientCycles)
             return
         }
-        val maxHit = maxHits.getMagicMaxHit(npc, target).coerceIn(1, FIRE_BLAST_MAX_HIT)
+        val maxHit = maxHits.getMagicMaxHit(npc, target).coerceIn(1, MAX_HIT)
         target.spotanim(IMPACT_SPOTANIM, delay = flight.clientCycles, height = IMPACT_HEIGHT)
         worldRepo.soundArea(target, HIT_SOUND, delay = flight.clientCycles, radius = SOUND_RADIUS)
         target.finishNpcHit(
@@ -202,6 +203,7 @@ constructor(
         target.queueCombatRetaliate(npc, delay = flight.serverCycles)
         val landing = adjacentTile(target)
         launcher.launch(target) {
+            delay(flight.serverCycles)
             mes("Agrith-Naar drags you back within reach.")
             telejump(landing, TeleportType.Exempt)
         }
@@ -242,7 +244,7 @@ constructor(
     private companion object {
         const val DEATH_QUEUE = "queue.death"
 
-        const val MELEE_SEQ = "seq.demon_update_attack"
+        const val MELEE_SEQ = "seq.demon_update_swipe"
         const val CAST_SEQ = "seq.demon_update_fireball_cast"
         const val REGENERATE_SPOTANIM = "spotanim.weaken_impact"
 
@@ -270,7 +272,7 @@ constructor(
         const val MELEE_RANGE = 2
 
         const val MELEE_HIT_DELAY = 1
-        const val FIRE_BLAST_MAX_HIT = 16
+        const val MAX_HIT = 10
         const val PULL_RADIUS = 2
 
         private var Npc.lastAttack: Int by intVarn("varn.lastattack")

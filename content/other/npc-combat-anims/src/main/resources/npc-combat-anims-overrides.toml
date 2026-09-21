@@ -116,4 +116,8 @@ npc = [
     { id = "npc.ics_little_scabaras", attack_type = "category.attacktype_slash" },
     # The possessed priest casts his own spells (content/quest ... icthlarin/PyramidFights); his reach is short.
     { id = "npc.ics_little_possessedpriest", defend_anim = "seq.human_unarmedblock", attack_range = 5 },
+    # demon_update_attack is a one-frame stub; Agrith-Naar's real swing sits beside his fireball cast.
+    { id = "npc.agrith_naar", attack_anim = "seq.demon_update_swipe", attack_type = "category.attacktype_crush" },
+    { id = "npc.nzone_agrith_naar_normal", attack_anim = "seq.demon_update_swipe", attack_type = "category.attacktype_crush" },
+    { id = "npc.nzone_agrith_naar_hard", attack_anim = "seq.demon_update_swipe", attack_type = "category.attacktype_crush" },
 ]
