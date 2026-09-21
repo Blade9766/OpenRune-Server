@@ -1169,6 +1169,160 @@ endBit = 20
 
 [[varbit]]
 isServerOnly = true
+id = "varbit.chompy_made_arrows"
+varp = "varp.chompy_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.chompy_rantz_flavour"
+varp = "varp.chompy_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.chompy_bugs_flavour"
+varp = "varp.chompy_state"
+startBit = 2
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.chompy_fycie_flavour"
+varp = "varp.chompy_state"
+startBit = 4
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.chompy_bought_feathers"
+varp = "varp.chompy_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.chompy_bought_tools"
+varp = "varp.chompy_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.chompy_quest_started"
+varp = "varp.chompy_state"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_caleb_asked"
+varp = "varp.famcrest_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_caleb_done"
+varp = "varp.famcrest_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_knows_brothers"
+varp = "varp.famcrest_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_avan_found"
+varp = "varp.famcrest_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_avan_asked"
+varp = "varp.famcrest_state"
+startBit = 4
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_boot_told"
+varp = "varp.famcrest_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_avan_done"
+varp = "varp.famcrest_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_john_cured"
+varp = "varp.famcrest_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_john_asked"
+varp = "varp.famcrest_state"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_john_done"
+varp = "varp.famcrest_state"
+startBit = 9
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_gold_mined"
+varp = "varp.famcrest_state"
+startBit = 10
+endBit = 11
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_puzzle_solved"
+varp = "varp.famcrest_state"
+startBit = 12
+endBit = 12
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_gauntlets_free"
+varp = "varp.famcrest_state"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_gauntlets_kind"
+varp = "varp.famcrest_state"
+startBit = 14
+endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.famcrest_chronozon_weaken"
+varp = "varp.famcrest_temp"
+startBit = 0
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
 id = "varbit.upass_cloth_taken"
 varp = "varp.upass_state"
 startBit = 0

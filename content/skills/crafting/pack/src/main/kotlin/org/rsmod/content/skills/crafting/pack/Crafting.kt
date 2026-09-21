@@ -2343,6 +2343,32 @@ object Crafting {
                 column(COL_INTERFACE_SLOT, 20)
             }
 
+            // Family Crest: the 'perfect' gold bar shares the ruby slots, and is preferred over
+            // an ordinary gold bar while the player is carrying one.
+            row("dbrow.crafting_perfect_ring") {
+                production {
+                    input("obj.perfect_gold_bar")
+                    input("obj.ruby")
+                    statReq("stat.crafting", 40)
+                    xp(700)
+                    output("obj.perfect_ruby_ring")
+                }
+                columnRSCM(COL_TOOL, "obj.ring_mould")
+                column(COL_INTERFACE_COMPONENT, "component.crafting_gold:ruby_ring")
+                column(COL_INTERFACE_SLOT, 4)
+            }
+            row("dbrow.crafting_perfect_necklace") {
+                production {
+                    input("obj.perfect_gold_bar")
+                    input("obj.ruby")
+                    statReq("stat.crafting", 40)
+                    xp(750)
+                    output("obj.perfect_ruby_necklace")
+                }
+                columnRSCM(COL_TOOL, "obj.necklace_mould")
+                column(COL_INTERFACE_COMPONENT, "component.crafting_gold:ruby_necklace")
+                column(COL_INTERFACE_SLOT, 13)
+            }
             row("dbrow.crafting_ruby_ring") {
                 production {
                     input("obj.gold_bar")

@@ -225,6 +225,35 @@ golem_repairclay = 1850
 golem_teleport = 1851
 turn_statue = 1852
 
+# Lunar Diplomacy (dbrow.synth_moonclan, plus the Lunar spellbook swap from dbrow.synth_lunarspells)
+moon_kick_letters = 1691
+moon_babahouse = 1692
+moon_dice_roll = 1693
+moon_ejector = 1694
+moon_fall_land = 1695
+moon_hurdle = 1696
+moon_jump = 1697
+moon_press_number = 1698
+moon_rubdown = 1699
+moon_slip = 1700
+moon_watering = 1701
+moon_woodchop = 1702
+lunar_change_spellbook = 3613
+
+# Big Chompy Bird Hunting (dbrow.synth_chompybird)
+chompy_bird_screech = 1448
+chompy_bird_attack = 1449
+chompy_bird_death = 1450
+chompy_bird_hit = 1451
+ogre_bow = 1452
+chompy_bird_squak = 1453
+ogre_bellows_suck = 1454
+ogre_bellows = 1455
+spit_roast = 1456
+toad_burst = 1457
+toad_croak = 1458
+toad_hiss = 1459
+
 # Underground Pass (dbrow.synth_undergroundpass and dbrow.synth_upass4), plus the generic
 # scenery sounds its obstacles play.
 upass_iban_lightning = 1341
@@ -281,6 +310,20 @@ deathplateau_dice = 65456
 fremtrials_state = 65444
 fremtrials_progress = 65445
 fremtrials_temp = 65446
+
+# Big Chompy Bird Hunting: the seasonings the ogre family asked for and the flags the quest keeps
+# outside its stage. The stage lives in the cache varp `varp.chompybird`, which the Rantz multinpc
+# indexes directly, so nothing else may share it. The kill tally is its own varp and carries no
+# varbits.
+chompy_state = 65447
+chompy_kills = 65448
+
+# Family Crest: the brothers' errands and the Witchaven dungeon. The stage itself lives in the
+# cache varp `varp.crestquest`, which the three sons' multinpcs index directly, so nothing else
+# may share it. The temp varp holds the elements Chronozon has been weakened by, which is lost
+# on logout along with the levers' positions.
+famcrest_state = 65449
+famcrest_temp = 65450
 
 # Underground Pass: the quest's own flags and the seed its grid path is generated from. The stage
 # lives in the cache varp `varp.upass`, which the unicorn and Iban's multinpcs index directly, so
@@ -374,6 +417,30 @@ fremtrials_lock_c = 65658
 fremtrials_lock_d = 65659
 fremtrials_salesman_pitched = 65660
 
+chompy_made_arrows = 65661
+chompy_rantz_flavour = 65662
+chompy_bugs_flavour = 65663
+chompy_fycie_flavour = 65664
+chompy_bought_feathers = 65665
+chompy_bought_tools = 65666
+chompy_quest_started = 65667
+
+famcrest_caleb_asked = 65668
+famcrest_caleb_done = 65669
+famcrest_knows_brothers = 65670
+famcrest_avan_found = 65671
+famcrest_avan_asked = 65672
+famcrest_boot_told = 65673
+famcrest_avan_done = 65674
+famcrest_john_cured = 65675
+famcrest_john_asked = 65676
+famcrest_john_done = 65677
+famcrest_gold_mined = 65678
+famcrest_puzzle_solved = 65679
+famcrest_gauntlets_free = 65680
+famcrest_gauntlets_kind = 65681
+famcrest_chronozon_weaken = 65682
+
 upass_cloth_taken = 65683
 upass_plank_taken = 65684
 upass_railing_taken = 65685
@@ -419,7 +486,9 @@ ilh_pyramid_traps = 131
 ilh_klenter_haunt = 132
 # Witch's House: Nora T. Hagg watching her garden for trespassers.
 witchshouse_garden_watch = 133
-
+# Lunar Diplomacy: the Dream World rivals (the woodcutter and the racer), and the fight with Me.
+lunar_dream_rival = 134
+lunar_me_fight = 135
 # Underground Pass: Iban reaching across his own temple for whoever walks into it.
 upass_temple = 136
 
@@ -436,3 +505,11 @@ ilh_login_evict = 65424
 ilh_pit_trap_flyout = 65425
 # The Golem: the golem's skull closing again if no program is put inside.
 golem_skull_shut = 65426
+
+# Big Chompy Bird Hunting: a placed bloated toad rolling for a chompy bird, the chompy coming
+# down on it, the toad vanishing under its beak, and Rantz loosing an arrow at one he has spotted.
+chompy_bait_roll = 65427
+chompy_eat_toad = 65428
+chompy_toad_eaten = 65429
+rantz_loose_arrow = 65430
+rantz_arrow_lands = 65431

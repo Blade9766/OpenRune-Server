@@ -60,7 +60,6 @@ object Smithing {
                 output("obj.rune_cannonball")
             }
         }
-
     }
 
     fun dragonForge() = productionTable("dbtable.smithing_dragon_forge", serverOnly = true, defaultCategory = "Forge") {
@@ -119,7 +118,6 @@ object Smithing {
                 output("obj.sailing_boat_large_keel_part_dragon", 1)
             }
         }
-
     }
 
     fun bars() = productionTable(
@@ -206,6 +204,17 @@ object Smithing {
             column(COL_SMELT_XP_ALTERNATE, 56)
             column(COL_PREFIX, "gold")
         }
+        // Family Crest: only the seam under Witchaven still yields it, and only during the quest.
+        row("dbrow.perfect_gold") {
+            production {
+                input("obj.perfect_gold_ore", 1)
+                statReq("stat.smithing", 40)
+                xp(22)
+                output("obj.perfect_gold_bar")
+            }
+            column(COL_SMITH_XP, 0)
+            column(COL_PREFIX, "perfect gold")
+        }
         row("dbrow.lovakite") {
             production {
                 input("obj.lovakite_ore", 1)
@@ -261,7 +270,6 @@ object Smithing {
             column(COL_SMITH_XP, 75)
             column(COL_PREFIX, "rune")
         }
-
     }
 
     fun crystalSinging() = productionTable(
@@ -448,5 +456,4 @@ object Smithing {
             column(COL_SHORT_NAME, "saeldor")
         }
     }
-
 }

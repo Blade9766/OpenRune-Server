@@ -1,14 +1,17 @@
 package org.rsmod.content.areas.misc.dwarvenmine.npcs
 
+import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.varrock.familycrest.FamilyCrestQuest
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class DwarvenMineNpcsScript : PluginScript() {
+class DwarvenMineNpcsScript @Inject constructor(private val familyCrest: FamilyCrestQuest) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.boot_the_dwarf") { startDialogue(it.npc) { boot() } }
         onOpNpc1("npc.favour_hammerspike_stoutbeard") { startDialogue(it.npc) { hammerspike() } }
@@ -129,19 +132,67 @@ class DwarvenMineNpcsScript : PluginScript() {
     private suspend fun Dialogue.boot() {
         chatNpc(neutral, "Hello tall person.")
         while (true) {
-            if (choice2("Hello short person.", true, "Why are you called boot?", false)) {
-                chatPlayer(neutral, "Hello short person.")
-                chatNpc(neutral, "Hello tall person.")
-                continue
+            val askAboutGold = familyCrest.needsPerfectGold(player)
+            val choice =
+                if (askAboutGold) {
+                    choice3(
+                        "Hello short person.",
+                        1,
+                        "Why are you called Boot?",
+                        2,
+                        "Where can I find 'perfect' gold?",
+                        3,
+                    )
+                } else {
+                    choice2("Hello short person.", 1, "Why are you called Boot?", 2)
+                }
+            when (choice) {
+                1 -> {
+                    chatPlayer(neutral, "Hello short person.")
+                    chatNpc(neutral, "Hello tall person.")
+                }
+                2 -> {
+                    chatPlayer(quiz, "Why are you called Boot?")
+                    chatNpc(
+                        neutral,
+                        "I'm called Boot, because when I was very young, I used to sleep, in a large boot.",
+                    )
+                    chatPlayer(bored, "Yeah, great, I didn't want your life story.")
+                    return
+                }
+                else -> {
+                    perfectGold()
+                    return
+                }
             }
-            chatPlayer(quiz, "Why are you called Boot?")
-            chatNpc(
-                neutral,
-                "I'm called Boot, because when I was very young, I used to sleep, in a large boot.",
-            )
-            chatPlayer(bored, "Yeah, great, I didn't want your life story.")
-            return
         }
+    }
+
+    /** Boot is the only dwarf left who remembers where the last seam of 'perfect' gold lies. */
+    private suspend fun Dialogue.perfectGold() {
+        chatPlayer(quiz, "Where can I find 'perfect' gold?")
+        chatNpc(
+            neutral,
+            "'Perfect' gold! Now there's a word I've not heard since my grandfather's day. " +
+                "Not a fleck of tarnish in it, and it takes a gem like nothing else.",
+        )
+        chatNpc(
+            sad,
+            "We mined the last of it out of these tunnels lifetimes ago. There's one seam left " +
+                "that I know of, and no dwarf will go near it.",
+        )
+        chatPlayer(quiz, "Where?")
+        chatNpc(
+            worried,
+            "Under the ruins by Witchaven, out east past Ardougne. Ogres in the halls, " +
+                "hellhounds on the gold itself, and a set of levers between you and both.",
+        )
+        chatNpc(
+            neutral,
+            "The doors there only open on the right run of levers, and they don't stay open. " +
+                "Work them in the right order or you'll be walking in circles all day.",
+        )
+        familyCrest.learnedGoldSource(access)
     }
 
     private suspend fun Dialogue.hammerspike() {
