@@ -102,8 +102,11 @@ class KeepLeFaye @Inject constructor(private val passages: GenericPassageScript)
         }
     }
 
-    /** The keep is east of its front doors, so anyone west of them is still on the shore. */
-    private fun ProtectedAccess.isOutside(door: BoundLocInfo): Boolean = coords.x < door.coords.x
+    /**
+     * The doors hang on the east edge of their own tile, so the shore side includes the door tile
+     * itself and the keep starts one tile further east.
+     */
+    private fun ProtectedAccess.isOutside(door: BoundLocInfo): Boolean = coords.x <= door.coords.x
 
     private fun locType(name: String): ObjectServerType =
         ServerCacheManager.getObject(name.asRSCM(RSCMType.LOC)) ?: error("Missing loc: $name")

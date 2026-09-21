@@ -31,11 +31,7 @@ class MerlinsCrystalQuest : QuestScript(
     "varp.arthur",
     rewards {
         extra("Excalibur")
-        scroll(
-            "6 Quest Points",
-            "Excalibur",
-            "Honorary Knight of the Round Table",
-        )
+        scroll("Excalibur", "Honorary Knight of the Round Table")
     },
     ItemRewardDisplay(EXCALIBUR, zoom = 155),
     completionJingle = Quest.QUEST_COMPLETE_3_JINGLE,

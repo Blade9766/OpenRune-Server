@@ -115,7 +115,7 @@ constructor(
      */
     private fun beg(mordred: Npc, hero: Player) {
         mordred.clearQueue(DEATH_QUEUE)
-        mordred.heal(mordred.baseHitpointsLvl - mordred.hitpoints)
+        mordred.heal(mordred.baseHitpointsLvl - mordred.hitpoints, showHitsplat = true)
         mordred.clearInteraction()
         mordred.resetMode()
         mordred.facePlayer(hero)
