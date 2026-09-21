@@ -105,12 +105,6 @@ import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.lostcity.LostCityQuest
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
-import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
-import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarHooks
-import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarTravel
-import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.dream.DreamChallenges
-import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.dream.DreamWorld
-import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.dream.MeFight
 import org.rsmod.content.quest.area.mortmyre.naturespirit.GhastAttackHook
 import org.rsmod.content.quest.area.mortmyre.naturespirit.GhastKillHook
 import org.rsmod.content.quest.area.mortmyre.naturespirit.Ghasts
@@ -294,15 +288,6 @@ public class QuestModule : PluginModule() {
         bindInstance<CultMembers>()
         bindInstance<SotsGolem>()
         addSetBinding<NpcDeathKillHook>(AgrithNaarKillHook::class.java)
-        bindInstance<LunarDiplomacyQuest>()
-        bindInstance<LunarTravel>()
-        bindInstance<DreamWorld>()
-        bindInstance<DreamChallenges>()
-        bindInstance<MeFight>()
-        addSetBinding<PlayerRestrictionHook>(LunarHooks::class.java)
-        addSetBinding<PlayerTeleportValidateHook>(LunarHooks::class.java)
-        addSetBinding<NpcAttackValidateHook>(LunarHooks::class.java)
-        addSetBinding<PlayerDeathCleanupHook>(LunarHooks::class.java)
         bindInstance<FamilyCrestQuest>()
         bindInstance<Dimintheis>()
         bindInstance<Caleb>()
