@@ -29,4 +29,5 @@ dependencies {
     implementation(projects.api.combat.combatManager)
     implementation(projects.api.invWeight)
     implementation(projects.api.hunt)
+    implementation(projects.content.interfaces.emotes)
 }

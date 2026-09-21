@@ -3,6 +3,10 @@ package org.rsmod.content.quest.area.rellekka.fremenniktrials.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
+import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest.Companion.SEAL_OF_PASSAGE
+import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest.Companion.STAGE_GOT_SEAL
+import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest.Companion.STAGE_STARTED
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.FremennikTrialsQuest
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.FremennikTrialsQuest.Companion.BRUNDT
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.FremennikTrialsQuest.Companion.STAGE_ALL_VOTES
@@ -11,25 +15,28 @@ import org.rsmod.content.quest.area.rellekka.fremenniktrials.MerchantTrial
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/** Brundt the Chieftain, who starts the trials in the longhall and welcomes the player at the end. */
+/**
+ * Brundt the Chieftain, who starts the trials in the longhall and welcomes the player at the end.
+ * Once Lunar Diplomacy is under way he also hands out Seals of Passage.
+ */
 class Brundt
 @Inject
-constructor(private val quest: FremennikTrialsQuest, private val merchant: MerchantTrial) :
-    PluginScript() {
+constructor(
+    private val quest: FremennikTrialsQuest,
+    private val merchant: MerchantTrial,
+    private val lunar: LunarDiplomacyQuest,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1(BRUNDT) { startDialogue(it.npc) { talk() } }
     }
 
     private suspend fun Dialogue.talk() {
         when {
-            quest.isComplete(player) -> {
-                chatNpc(
-                    happy,
-                    "From this day onward, you are outerlander no more! In honour of your " +
-                        "acceptance into the Fremennik, you gain a new name to be known as. You will " +
-                        "now be called ${quest.fremennikName(player)}.",
-                )
+            quest.isComplete(player) && lunar.isStarted(player) -> {
+                val seal = choice2("Ask about a Seal of Passage.", true, "Ask about anything else.", false)
+                if (seal) sealOfPassage() else welcomed()
             }
+            quest.isComplete(player) -> welcomed()
             quest.isStarted(player) -> {
                 chatNpc(
                     happy,
@@ -40,6 +47,76 @@ constructor(private val quest: FremennikTrialsQuest, private val merchant: Merch
             }
             else -> introduction()
         }
+    }
+
+    private suspend fun Dialogue.welcomed() {
+        chatNpc(
+            happy,
+            "From this day onward, you are outerlander no more! In honour of your " +
+                "acceptance into the Fremennik, you gain a new name to be known as. You will " +
+                "now be called ${quest.fremennikName(player)}.",
+        )
+    }
+
+    private suspend fun Dialogue.sealOfPassage() {
+        val name = quest.fremennikName(player)
+        val stage = lunar.stage(player)
+        val holding = player.inv.contains(SEAL_OF_PASSAGE) || SEAL_OF_PASSAGE in player.worn
+        when {
+            stage == STAGE_STARTED -> {
+                chatPlayer(quiz, "Brundt, could you help me out with a Seal of Passage?")
+                chatNpc(confused, "A Seal of Passage? Whatever for?")
+                chatPlayer(
+                    neutral,
+                    "I've heard of the troubles between your people and the Moon Clan. I'd like to " +
+                        "help, and the seal would show that I come in peace.",
+                )
+                chatNpc(
+                    sad,
+                    "Ah, $name, many have tried. The Moon Clan do everything by magic, and guard " +
+                        "their secrets jealously. If only they would share, we wouldn't have to " +
+                        "keep fighting them!",
+                )
+                chatPlayer(neutral, "I'll see what I can do. Can I have that seal, then?")
+                if (player.inv.freeSpace() == 0) {
+                    chatNpc(neutral, "Yes, but you've no room to carry it. You should have thought of that first, $name!")
+                    return
+                }
+                access.invAdd(access.inv, SEAL_OF_PASSAGE)
+                lunar.advanceTo(access, STAGE_GOT_SEAL)
+                chatNpc(neutral, "If you are to bring peace to our two clans, then perhaps it is best that you do...")
+                objbox(SEAL_OF_PASSAGE, "Brundt hands you a Seal of Passage.")
+            }
+            lunar.isComplete(player) -> {
+                chatNpc(happy, "Well, if it isn't $name! I've heard of your exploits on Lunar Isle!")
+                chatPlayer(shocked, "Already? News really does travel fast!")
+                chatNpc(happy, "Thank you. I think we can finally make some progress with them now.")
+                if (!holding) {
+                    chatPlayer(quiz, "Could you spare me another Seal of Passage?")
+                    giveReplacement()
+                }
+            }
+            holding -> {
+                chatNpc(neutral, "Ah, $name. How go the peace talks with the accursed Moon Clan?")
+                chatPlayer(shifty, "Oh, you know. Ongoing negotiations.")
+                chatNpc(bored, "I see. Well, I don't hold out much hope!")
+                chatPlayer(sad, "I'm glad you're so confident in me.")
+            }
+            else -> {
+                chatPlayer(sad, "I've lost my Seal of Passage!")
+                giveReplacement()
+            }
+        }
+    }
+
+    private suspend fun Dialogue.giveReplacement() {
+        if (player.inv.freeSpace() == 0) {
+            chatNpc(neutral, "I would give you another, but you've no room to carry it.")
+            return
+        }
+        access.invAdd(access.inv, SEAL_OF_PASSAGE)
+        chatNpc(neutral, "Then take this one, and be less careless in future.")
+        objbox(SEAL_OF_PASSAGE, "Brundt hands you a Seal of Passage.")
     }
 
     private suspend fun Dialogue.progress() {

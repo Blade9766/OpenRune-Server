@@ -8,10 +8,10 @@ import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.table.ComboruneRecipeRow
 import org.rsmod.api.table.runecrafting.RunecraftingRunesRow
 import org.rsmod.content.skills.runecrafting.essencepouch.EssencePouch
-import org.rsmod.content.skills.runecrafting.items.BloodEssence
-import org.rsmod.content.skills.runecrafting.items.BloodEssence.applyBloodRuneBonus
 import org.rsmod.content.skills.runecrafting.items.BindingNecklace.consumeChargeAfterCombo
 import org.rsmod.content.skills.runecrafting.items.BindingNecklace.isWearing
+import org.rsmod.content.skills.runecrafting.items.BloodEssence
+import org.rsmod.content.skills.runecrafting.items.BloodEssence.applyBloodRuneBonus
 import org.rsmod.content.skills.runecrafting.items.RaimentsOfTheEye.applyBonus
 import org.rsmod.content.skills.runecrafting.magic.MagicImbue.isActive
 
@@ -27,6 +27,9 @@ object RunecraftAction {
     private const val OURANIA_XP_MULTIPLIER = 1.7
     private const val CORE_RUNE_MULTIPLIER = 11
     private const val CORE_XP_MULTIPLIER = 10
+    private const val ASTRAL_RUNE = "obj.astralrune"
+    private const val LUNAR_DIPLOMACY_STAGE = "varbit.lunar_quest_main"
+    private const val LUNAR_DIPLOMACY_COMPLETE = 190
 
     private val runecraftingExtract = mapOf(
         "obj.scar_extract_warped" to 250,
@@ -195,6 +198,10 @@ object RunecraftAction {
     }
 
     private suspend fun ProtectedAccess.canCraftRune(rune: RunecraftingRunesRow): Boolean {
+        if (rune.output.internalName == ASTRAL_RUNE && vars[LUNAR_DIPLOMACY_STAGE] < LUNAR_DIPLOMACY_COMPLETE) {
+            mesbox("You don't have permission yet to use this altar.")
+            return false
+        }
         val level = player.baseRunecraftingLvl
         if (level < rune.statReq.first().t1) {
             mesbox(

@@ -254,20 +254,6 @@ toad_burst = 1457
 toad_croak = 1458
 toad_hiss = 1459
 
-# Big Chompy Bird Hunting (dbrow.synth_chompybird)
-chompy_bird_screech = 1448
-chompy_bird_attack = 1449
-chompy_bird_death = 1450
-chompy_bird_hit = 1451
-ogre_bow = 1452
-chompy_bird_squak = 1453
-ogre_bellows_suck = 1454
-ogre_bellows = 1455
-spit_roast = 1456
-toad_burst = 1457
-toad_croak = 1458
-toad_hiss = 1459
-
 # Underground Pass (dbrow.synth_undergroundpass and dbrow.synth_upass4), plus the generic
 # scenery sounds its obstacles play.
 upass_iban_lightning = 1341
@@ -324,13 +310,6 @@ deathplateau_dice = 65456
 fremtrials_state = 65444
 fremtrials_progress = 65445
 fremtrials_temp = 65446
-
-# Big Chompy Bird Hunting: the seasonings the ogre family asked for and the flags the quest keeps
-# outside its stage. The stage lives in the cache varp `varp.chompybird`, which the Rantz multinpc
-# indexes directly, so nothing else may share it. The kill tally is its own varp and carries no
-# varbits.
-chompy_state = 65447
-chompy_kills = 65448
 
 # Big Chompy Bird Hunting: the seasonings the ogre family asked for and the flags the quest keeps
 # outside its stage. The stage lives in the cache varp `varp.chompybird`, which the Rantz multinpc
@@ -446,14 +425,6 @@ chompy_bought_feathers = 65665
 chompy_bought_tools = 65666
 chompy_quest_started = 65667
 
-chompy_made_arrows = 65661
-chompy_rantz_flavour = 65662
-chompy_bugs_flavour = 65663
-chompy_fycie_flavour = 65664
-chompy_bought_feathers = 65665
-chompy_bought_tools = 65666
-chompy_quest_started = 65667
-
 famcrest_caleb_asked = 65668
 famcrest_caleb_done = 65669
 famcrest_knows_brothers = 65670
@@ -534,14 +505,6 @@ ilh_login_evict = 65424
 ilh_pit_trap_flyout = 65425
 # The Golem: the golem's skull closing again if no program is put inside.
 golem_skull_shut = 65426
-
-# Big Chompy Bird Hunting: a placed bloated toad rolling for a chompy bird, the chompy coming
-# down on it, the toad vanishing under its beak, and Rantz loosing an arrow at one he has spotted.
-chompy_bait_roll = 65427
-chompy_eat_toad = 65428
-chompy_toad_eaten = 65429
-rantz_loose_arrow = 65430
-rantz_arrow_lands = 65431
 
 # Big Chompy Bird Hunting: a placed bloated toad rolling for a chompy bird, the chompy coming
 # down on it, the toad vanishing under its beak, and Rantz loosing an arrow at one he has spotted.
