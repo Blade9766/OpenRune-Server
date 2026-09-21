@@ -150,7 +150,8 @@ class AncientSpells @Inject constructor(private val npcSearch: NpcSearch) : Spel
         ) {
             val spell = attack.spell.obj
             val castSound = if (primary) element.castSound() else null
-            val splash = manager.rollSplash(this, target, attack, castResult)
+            val confliction = primary && !(element == Element.Ice && target is Player)
+            val splash = manager.rollSplash(this, target, attack, castResult, confliction)
             if (splash) {
                 manager.playSplashFx(this, target, clientDelay, castSound, soundRadius = 8)
                 manager.queueSplashHit(this, target, spell, clientDelay, serverDelay)

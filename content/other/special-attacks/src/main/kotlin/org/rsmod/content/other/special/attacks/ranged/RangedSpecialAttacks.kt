@@ -28,8 +28,8 @@ import org.rsmod.game.type.getOrNull
 /**
  * The bow, crossbow and thrown-weapon specials: Snapshot (magic shortbow), Powershot (magic
  * longbow and comp bow), Soulshot (Seercull), Snipe (Dorgeshuun crossbow), Annihilate (dragon
- * crossbow), Armadyl Eye (Armadyl crossbow), Concentrated Shot (ballistas), Duality (dragon
- * knife) and Momentum Throw (dragon thrownaxe).
+ * crossbow), Armadyl Eye (Armadyl crossbow), Evoke (Zaryte crossbow), Concentrated Shot
+ * (ballistas), Duality (dragon knife) and Momentum Throw (dragon thrownaxe).
  */
 class RangedSpecialAttacks
 @Inject
@@ -48,6 +48,7 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
         registerRanged("obj.dttd_bone_crossbow", Snipe(manager, ammunition))
         registerRanged("obj.xbows_crossbow_dragon", Annihilate(manager, ammunition, npcSearch))
         registerRanged("obj.acb", ArmadylEye(manager, ammunition))
+        registerRanged("obj.zaryte_xbow", Evoke(manager, ammunition))
 
         val concentratedShot = ConcentratedShot(manager, ammunition)
         registerRanged("obj.light_ballista", concentratedShot)
@@ -293,6 +294,24 @@ constructor(private val ammunition: RangedAmmoManager, private val npcSearch: Np
         ) {
             specialAnim("seq.xbows_human_fire_and_reload")
             spotanim("spotanim.acb_specialattack", height = 96, slot = COMBAT_SLOT)
+            val damage = manager.rollRangedDamage(this, target, attack, accuracyMultiplier = 2.0)
+            manager.giveCombatXp(this, target, attack, damage)
+            launch(target, quiver, travel, "projanim.bolt", damage)
+        }
+    }
+
+    /** Zaryte crossbow, Evoke: a bolt at double accuracy. */
+    private class Evoke(manager: SpecialAttackManager, ammunition: RangedAmmoManager) :
+        AmmoSpecial(manager, ammunition) {
+        override fun ProtectedAccess.shoot(
+            target: PathingEntity,
+            attack: CombatAttack.Ranged,
+            weapon: ItemServerType,
+            quiver: ItemServerType,
+            travel: String,
+        ) {
+            specialAnim("seq.zcb_attack")
+            spotanim("spotanim.zcb_specialattack", height = 96, slot = COMBAT_SLOT)
             val damage = manager.rollRangedDamage(this, target, attack, accuracyMultiplier = 2.0)
             manager.giveCombatXp(this, target, attack, damage)
             launch(target, quiver, travel, "projanim.bolt", damage)

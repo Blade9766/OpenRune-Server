@@ -6,6 +6,7 @@ import org.rsmod.content.other.special.attacks.magic.DawnbringerSpecialAttack
 import org.rsmod.content.other.special.attacks.magic.NightmareStaffSpecialAttacks
 import org.rsmod.content.other.special.attacks.magic.PowerOfDeathSpecialAttack
 import org.rsmod.content.other.special.attacks.magic.PoweredStaffSpecialAttacks
+import org.rsmod.content.other.special.attacks.magic.PurgingStaffSpecialAttack
 import org.rsmod.content.other.special.attacks.melee.AbyssalSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.DragonLongswordSpecialAttack
 import org.rsmod.content.other.special.attacks.melee.DragonWeaponSpecialAttacks
@@ -33,6 +34,7 @@ class SpecialAttackModule : PluginModule() {
         addSetBinding<SpecialAttackMap>(PowerOfDeathSpecialAttack::class.java)
         addSetBinding<SpecialAttackMap>(PoweredStaffSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(NightmareStaffSpecialAttacks::class.java)
+        addSetBinding<SpecialAttackMap>(PurgingStaffSpecialAttack::class.java)
         addSetBinding<SpecialAttackMap>(ShieldSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(DawnbringerSpecialAttack::class.java)
     }

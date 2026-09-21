@@ -42,6 +42,7 @@ import org.rsmod.api.player.interact.PlayerInteractions
 import org.rsmod.api.player.interact.PlayerTInteractions
 import org.rsmod.api.player.ironman.shouldBlockNpcCombatXp
 import org.rsmod.api.player.protect.clearPendingAction
+import org.rsmod.api.player.righthand
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.random.GameRandom
@@ -1193,6 +1194,8 @@ constructor(
      * @param spellbook The [Spellbook] the spell belongs to (e.g., Standard or Ancients), usually
      *   derived from the player's current spellbook.
      * @param sunfireRune Set to `true` if the spell was cast using a Sunfire rune.
+     * @param conflictionEligible Set to `false` when the confliction gauntlets passive must not
+     *   apply, e.g. secondary targets of a multi-target spell.
      * @return `true` if the accuracy roll succeeds (the spell will "land"), `false` otherwise.
      */
     public fun rollSpellAccuracy(
@@ -1201,13 +1204,16 @@ constructor(
         spell: ItemServerType,
         spellbook: Spellbook?,
         sunfireRune: Boolean,
+        conflictionEligible: Boolean = true,
     ): Boolean {
         if (source.adminMaxHit) {
             return true
         }
-        return when (target) {
-            is Npc -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
-            is Player -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+        return ConflictionGauntlets.roll(source, target, spell.id, conflictionEligible) {
+            when (target) {
+                is Npc -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+                is Player -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+            }
         }
     }
 
@@ -1393,9 +1399,12 @@ constructor(
         attackStyle: MagicAttackStyle?,
         multiplier: Double,
     ): Boolean {
-        return when (target) {
-            is Npc -> rollStaffAccuracy(source, target, attackStyle, multiplier)
-            is Player -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+        val weapon = source.righthand?.id ?: -1
+        return ConflictionGauntlets.roll(source, target, weapon, eligible = true) {
+            when (target) {
+                is Npc -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+                is Player -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+            }
         }
     }
 
