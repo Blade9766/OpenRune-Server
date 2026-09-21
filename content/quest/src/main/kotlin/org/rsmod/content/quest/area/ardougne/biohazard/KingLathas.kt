@@ -4,6 +4,12 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.STAGE_TOLD_ELENA
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.RANGED_REQ
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_COMPLETE
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_IBAN_DEAD
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_STARTED
+import org.rsmod.content.quest.area.ardougne.undergroundpass.lathasMet
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -11,7 +17,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  * King Lathas in the throne room of East Ardougne castle, who admits the plague is a hoax and
  * explains the wall is there to keep his corrupted brother Tyras out.
  */
-class KingLathas @Inject constructor(private val biohazard: BiohazardQuest) : PluginScript() {
+class KingLathas
+@Inject
+constructor(
+    private val biohazard: BiohazardQuest,
+    private val undergroundPass: UndergroundPassQuest,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(KING) { startDialogue(it.npc) { king() } }
@@ -19,6 +30,8 @@ class KingLathas @Inject constructor(private val biohazard: BiohazardQuest) : Pl
 
     private suspend fun Dialogue.king() {
         when {
+            undergroundPass.stage(player) >= STAGE_IBAN_DEAD -> ibanIsDead()
+            undergroundPass.isStarted(player) -> passInProgress()
             biohazard.quest.isQuestCompleted(player) -> afterQuest()
             biohazard.stage(player) == STAGE_TOLD_ELENA -> confrontation()
             else -> chatNpc(angry, "Leave me citizen. I'm far too busy to talk.")
@@ -91,10 +104,56 @@ class KingLathas @Inject constructor(private val biohazard: BiohazardQuest) : Pl
         }
     }
 
-    /** Where the Underground Pass quest would pick the story up. */
+    /**
+     * The start of Underground Pass. Lathas will not send anyone down there who cannot shoot, so
+     * the Ranged requirement is checked here rather than by the quest journal alone.
+     */
     private suspend fun Dialogue.undergroundPass() {
         chatNpc(neutral, "As we've previously discussed, my brother is currently gathering strength in the lands west of here. The only known way into those lands is through the Underground Pass.")
-        chatNpc(neutral, "Nobody who has gone down there has come back to tell of it. Prepare yourself well, and return to me when you are ready to brave it.")
+        chatNpc(neutral, "Nobody who has gone down there has come back to tell of it. It runs under the mountains from a cave west of the city wall, and something has made a home of it.")
+        chatNpc(quiz, "I need that road opened. Will you do it?")
+        when (
+            choice2(
+                "I'll do it.", 1,
+                "Not today.", 2,
+            )
+        ) {
+            1 -> {
+                chatPlayer(neutral, "I'll do it.")
+                if (access.statBase("stat.ranged") < RANGED_REQ) {
+                    chatNpc(worried, "Then you had better learn to use a bow first. There is work down there that wants shooting at from a distance, and you would not last the first hour.")
+                    chatNpc(neutral, "Come back to me with a Ranged level of $RANGED_REQ.")
+                    return
+                }
+                chatNpc(happy, "Good. My tracker Koftik is waiting for you outside the cave, in West Ardougne. He knows the first part of the road.")
+                undergroundPass.advanceTo(access, STAGE_STARTED)
+                player.lathasMet = 1
+                chatNpc(neutral, "Take a rope, a spade, a tinderbox and a bow with you, and food. Koftik will tell you the rest.")
+            }
+            2 -> {
+                chatPlayer(neutral, "Not today.")
+                chatNpc(neutral, "Very well. Return to me when you are ready and we will discuss our next steps.")
+            }
+        }
+    }
+
+    private suspend fun Dialogue.passInProgress() {
+        chatNpc(quiz, "How does it go down there?")
+        chatPlayer(worried, "Badly. There is a great deal of it and none of it wants me alive.")
+        chatNpc(neutral, "Then keep at it. Koftik is somewhere ahead of you, and he is a better tracker than he is a fighter. Look after him if you can.")
+    }
+
+    private suspend fun Dialogue.ibanIsDead() {
+        if (undergroundPass.isComplete(player)) {
+            chatNpc(happy, "The pass is open, and I have my brother to thank you for. My mages are still clearing the Well of Voyage.")
+            return
+        }
+        chatPlayer(happy, "It's done. Iban is dead and his temple is down on top of him.")
+        chatNpc(shocked, "Dead? You are certain?")
+        chatPlayer(neutral, "I threw his own likeness into the well under his throne and the hill came down. I am certain.")
+        chatNpc(happy, "Then the road west is open, and my brother's back is no longer to a mountain. You have done this kingdom a service it will not be able to repay.")
+        chatNpc(neutral, "I will send mages down to clear the Well of Voyage the dwarves spoke of - it is the only way an army will pass. Until then, keep the staff. He will not be wanting it.")
+        undergroundPass.advanceTo(access, STAGE_COMPLETE)
     }
 
     private companion object {

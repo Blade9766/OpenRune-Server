@@ -12,6 +12,25 @@ import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.ardougne.undergroundpass.DemonKillHook
+import org.rsmod.content.quest.area.ardougne.undergroundpass.DollOfIban
+import org.rsmod.content.quest.area.ardougne.undergroundpass.DwarvenCamp
+import org.rsmod.content.quest.area.ardougne.undergroundpass.IbanTemple
+import org.rsmod.content.quest.area.ardougne.undergroundpass.IbansIngredients
+import org.rsmod.content.quest.area.ardougne.undergroundpass.IbansLair
+import org.rsmod.content.quest.area.ardougne.undergroundpass.KalragKillHook
+import org.rsmod.content.quest.area.ardougne.undergroundpass.KardiaTheWitch
+import org.rsmod.content.quest.area.ardougne.undergroundpass.Koftik
+import org.rsmod.content.quest.area.ardougne.undergroundpass.OrbsOfLight
+import org.rsmod.content.quest.area.ardougne.undergroundpass.PaladinKillHook
+import org.rsmod.content.quest.area.ardougne.undergroundpass.Paladins
+import org.rsmod.content.quest.area.ardougne.undergroundpass.PassEntrance
+import org.rsmod.content.quest.area.ardougne.undergroundpass.PassObstacles
+import org.rsmod.content.quest.area.ardougne.undergroundpass.PrisonCells
+import org.rsmod.content.quest.area.ardougne.undergroundpass.TheGrid
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UnicornCave
+import org.rsmod.content.quest.area.ardougne.undergroundpass.WellOfDoors
 import org.rsmod.content.quest.area.burthorpe.trollstronghold.DadAttackHook
 import org.rsmod.content.quest.area.desert.icthlarin.Ceremony
 import org.rsmod.content.quest.area.desert.icthlarin.FlashbackTeleportHook
@@ -222,5 +241,24 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(WitchsExperimentHooks::class.java)
         addSetBinding<PlayerDeathCleanupHook>(WitchsExperimentHooks::class.java)
         bindInstance<TheGolemQuest>()
+        bindInstance<UndergroundPassQuest>()
+        bindInstance<PassEntrance>()
+        bindInstance<PassObstacles>()
+        bindInstance<TheGrid>()
+        bindInstance<OrbsOfLight>()
+        bindInstance<PrisonCells>()
+        bindInstance<UnicornCave>()
+        bindInstance<Paladins>()
+        bindInstance<WellOfDoors>()
+        bindInstance<IbansLair>()
+        bindInstance<DwarvenCamp>()
+        bindInstance<KardiaTheWitch>()
+        bindInstance<DollOfIban>()
+        bindInstance<IbansIngredients>()
+        bindInstance<IbanTemple>()
+        bindInstance<Koftik>()
+        addSetBinding<NpcDeathKillHook>(PaladinKillHook::class.java)
+        addSetBinding<NpcDeathKillHook>(KalragKillHook::class.java)
+        addSetBinding<NpcDeathKillHook>(DemonKillHook::class.java)
     }
 }

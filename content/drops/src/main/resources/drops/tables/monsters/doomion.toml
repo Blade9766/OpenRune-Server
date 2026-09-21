@@ -1,5 +1,5 @@
 id = "Doomion Drops"
-npcs = ["npc.doomion_vis"]
+npcs = ["npc.doomion", "npc.doomion_vis"]
 
 [[guaranteed]]
 obj = "obj.doomion_amulet"

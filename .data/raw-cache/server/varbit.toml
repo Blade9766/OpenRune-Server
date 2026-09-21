@@ -1166,3 +1166,178 @@ id = "varbit.fremtrials_salesman_pitched"
 varp = "varp.fremtrials_progress"
 startBit = 20
 endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_cloth_taken"
+varp = "varp.upass_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_plank_taken"
+varp = "varp.upass_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_railing_taken"
+varp = "varp.upass_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_mud_dug"
+varp = "varp.upass_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_rope_on_swing"
+varp = "varp.upass_state"
+startBit = 4
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_portcullis_open"
+varp = "varp.upass_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_orb_burnt_1"
+varp = "varp.upass_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_orb_burnt_2"
+varp = "varp.upass_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_orb_burnt_3"
+varp = "varp.upass_state"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_orb_burnt_4"
+varp = "varp.upass_state"
+startBit = 9
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_gauntlets_given"
+varp = "varp.upass_state"
+startBit = 10
+endBit = 10
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_doll_taken"
+varp = "varp.upass_state"
+startBit = 11
+endBit = 11
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_horn_in_well"
+varp = "varp.upass_state"
+startBit = 12
+endBit = 12
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_badges_in_well"
+varp = "varp.upass_state"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_amulet_doomion"
+varp = "varp.upass_state"
+startBit = 14
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_amulet_othainian"
+varp = "varp.upass_state"
+startBit = 15
+endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_amulet_holthion"
+varp = "varp.upass_state"
+startBit = 16
+endBit = 16
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_shadow_chest"
+varp = "varp.upass_state"
+startBit = 17
+endBit = 17
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_maze_gate"
+varp = "varp.upass_state"
+startBit = 18
+endBit = 18
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_niloof_told"
+varp = "varp.upass_state"
+startBit = 19
+endBit = 19
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_klank_told"
+varp = "varp.upass_state"
+startBit = 20
+endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_kamen_told"
+varp = "varp.upass_state"
+startBit = 21
+endBit = 21
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_doors_open"
+varp = "varp.upass_state"
+startBit = 22
+endBit = 22
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_temple_entered"
+varp = "varp.upass_state"
+startBit = 23
+endBit = 23
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.upass_badges_given"
+varp = "varp.upass_state"
+startBit = 24
+endBit = 25

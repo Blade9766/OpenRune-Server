@@ -217,6 +217,28 @@ golem_repairclay = 1850
 golem_teleport = 1851
 turn_statue = 1852
 
+# Underground Pass (dbrow.synth_undergroundpass and dbrow.synth_upass4), plus the generic
+# scenery sounds its obstacles play.
+upass_iban_lightning = 1341
+upass_bridgefall = 3159
+upass_springtrap = 1368
+upass_tripwire = 1369
+upass_bigfire = 1344
+upass_fire_arrow = 3577
+upass_arrowlaunch = 2693
+upass_disarm_trap = 4981
+biglever = 2382
+portcullis_open = 83
+portcullis_close = 82
+balancing_ledge = 2451
+cave_collapse = 2039
+cavein = 2294
+fire_crackling_big = 2064
+swamp_step = 7757
+mine_rumbling = 3828
+anger_unicorn_death = 877
+demon_death = 403
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -251,6 +273,12 @@ deathplateau_dice = 65456
 fremtrials_state = 65444
 fremtrials_progress = 65445
 fremtrials_temp = 65446
+
+# Underground Pass: the quest's own flags and the seed its grid path is generated from. The stage
+# lives in the cache varp `varp.upass`, which the unicorn and Iban's multinpcs index directly, so
+# nothing else may share it; the cache's thirty other flags are varbits on `varp.ibanmulti`.
+upass_state = 65451
+upass_grid = 65452
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -338,6 +366,32 @@ fremtrials_lock_c = 65658
 fremtrials_lock_d = 65659
 fremtrials_salesman_pitched = 65660
 
+upass_cloth_taken = 65683
+upass_plank_taken = 65684
+upass_railing_taken = 65685
+upass_mud_dug = 65686
+upass_rope_on_swing = 65687
+upass_portcullis_open = 65688
+upass_orb_burnt_1 = 65689
+upass_orb_burnt_2 = 65690
+upass_orb_burnt_3 = 65691
+upass_orb_burnt_4 = 65692
+upass_gauntlets_given = 65693
+upass_doll_taken = 65694
+upass_horn_in_well = 65695
+upass_badges_in_well = 65696
+upass_amulet_doomion = 65697
+upass_amulet_othainian = 65698
+upass_amulet_holthion = 65699
+upass_shadow_chest = 65700
+upass_maze_gate = 65701
+upass_niloof_told = 65702
+upass_klank_told = 65703
+upass_kamen_told = 65704
+upass_doors_open = 65705
+upass_temple_entered = 65706
+upass_badges_given = 65707
+
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
 mortmyre_swamp_decay = 124
@@ -357,6 +411,9 @@ ilh_pyramid_traps = 131
 ilh_klenter_haunt = 132
 # Witch's House: Nora T. Hagg watching her garden for trespassers.
 witchshouse_garden_watch = 133
+
+# Underground Pass: Iban reaching across his own temple for whoever walks into it.
+upass_temple = 136
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.

@@ -1,5 +1,5 @@
 id = "Disciple of Iban Drops"
-npcs = ["npc.ibanmonk_vis"]
+npcs = ["npc.ibanmonk", "npc.ibanmonk_vis"]
 
 [[guaranteed]]
 obj = "obj.zamrobetop"

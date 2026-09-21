@@ -911,3 +911,15 @@ isServerOnly = true
 id = "varp.fremtrials_temp"
 scope = "Temp"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.upass_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.upass_grid"
+scope = "Perm"
+transmit = "Never"
