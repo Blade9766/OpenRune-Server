@@ -11,6 +11,7 @@ import org.rsmod.api.combat.commons.DragonfireProtection
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.mechanics.toxins.impl.NpcPoison
 import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
+import org.rsmod.api.player.cheat.adminGodMode
 import org.rsmod.api.player.hit.modifier.NoopPlayerHitModifier
 import org.rsmod.api.player.hit.queueHit
 import org.rsmod.api.player.stat.agilityLvl
@@ -127,7 +128,7 @@ constructor(private val random: GameRandom, private val manager: PlayerAttackMan
         when (bolt) {
             Bolt.Ruby -> {
                 val cost = source.hitpoints / RUBY_SELF_DAMAGE_DIVISOR
-                if (cost > 0) {
+                if (cost > 0 && !source.adminGodMode) {
                     source.queueHit(
                         delay = hitDelay,
                         type = HitType.Typeless,
