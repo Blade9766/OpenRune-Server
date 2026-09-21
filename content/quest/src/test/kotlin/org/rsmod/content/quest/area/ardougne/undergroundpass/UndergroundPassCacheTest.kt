@@ -6,6 +6,8 @@ import dev.openrune.map.loc.MapLocDefinition
 import dev.openrune.map.loc.MapLocListDecoder
 import dev.openrune.map.npc.MapNpcDefinition
 import dev.openrune.map.npc.MapNpcListDecoder
+import dev.openrune.map.tile.MapTileDecoder
+import dev.openrune.map.tile.MapTileSimpleDefinition
 import dev.openrune.map.util.InlineByteBuf
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
@@ -154,34 +156,26 @@ class UndergroundPassCacheTest {
 
     @Test
     fun theSceneryOfThePassStandsWhereTheScriptsExpectIt() {
-        assertLocAt("loc.upass_caveentrance2", UpassCoords.CAVE_ENTRANCE)
-        assertLocAt("loc.cave_exit_upass", UpassCoords.CAVE_EXIT)
+        assertLocAt("loc.upass_caveentrance2", CoordGrid(0, 38, 51, 1, 49))
+        assertLocAt("loc.cave_exit_upass", CoordGrid(0, 39, 151, 0, 49))
         assertLocAt("loc.oldbridge_guiderope", UpassCoords.GUIDE_ROPE)
         assertLocAt("loc.old_bridge_up", UpassCoords.BRIDGE)
-        assertLocAt("loc.upass_lever_up", UpassCoords.BRIDGE_LEVER)
-        assertLocAt("loc.portcullis_lever_up", UpassCoords.PORTCULLIS_LEVER)
-        assertLocAt("loc.furnace_upass", UpassCoords.FURNACE)
+        assertLocAt("loc.upass_lever_up", CoordGrid(0, 38, 151, 4, 52))
+        assertLocAt("loc.portcullis_lever_up", CoordGrid(0, 38, 151, 34, 8))
+        assertLocAt("loc.obstical_rockswing_norope", UpassCoords.SWING_ROCK)
+        assertLocAt("loc.upass_logtrap", UpassCoords.ORB_LOG_TRAP)
         assertLocAt("loc.cave_well", UpassCoords.WELL_OF_IBAN)
-        assertLocAt("loc.upass_mud", UpassCoords.LOOSE_MUD)
-        assertLocAt("loc.cavewalltunnel_upass_tocells", UpassCoords.CELL_TUNNEL)
-        assertLocAt("loc.unicorncage_destroyed_upass", UpassCoords.UNICORN_CAGE)
         assertLocAt("loc.bloodwell_upass", UpassCoords.WELL_OF_DOORS)
         assertLocAt("loc.cave_temple_altar", UpassCoords.WELL_OF_THE_DAMNED)
-        assertLocAt("loc.upassdwarfbrewbarrel", UpassCoords.BREW_BARREL)
+        assertLocAt("loc.iban_temple_throne", UpassCoords.IBAN_THRONE)
         assertLocAt("loc.ibantomb_left", UpassCoords.IBAN_TOMB_LEFT)
         assertLocAt("loc.ibantomb_right", UpassCoords.IBAN_TOMB_RIGHT)
-        assertLocAt("loc.cavewitchchest", UpassCoords.WITCH_CHEST)
-        assertLocAt("loc.upassshutchest1", UpassCoords.SHADOW_CHEST)
-        assertLocAt("loc.upass_cage_dummy", UpassCoords.DOVE_CAGE)
-        assertLocAt("loc.upass_last_out", UpassCoords.PASS_EXIT_CAVE)
+        assertLocAt("loc.cavewalltunnel_upass_down", UpassCoords.LAIR_SHAFT_SOUTH)
+        assertLocAt("loc.cavewalltunnel_upass_up", UpassCoords.CAMP_SHAFT_SOUTH)
+        assertLocAt("loc.cavewalltunnel_upass_down", UpassCoords.LAIR_SHAFT_NORTH)
+        assertLocAt("loc.cavewalltunnel_upass_up", UpassCoords.CAMP_SHAFT_NORTH)
         for (coords in UpassCoords.PORTCULLIS) {
             assertLocAt("loc.portcullis_upass", coords)
-        }
-        for (coords in UpassCoords.DOORS_OF_IBAN) {
-            assertTrue(
-                locAt("loc.cavetempledoor2l", coords) || locAt("loc.cavetempledoor2r", coords),
-                "no Door of Iban at $coords",
-            )
         }
     }
 
@@ -217,8 +211,8 @@ class UndergroundPassCacheTest {
         assertNpcAt(UndergroundPassQuest.NILOOF, CoordGrid(2315, 9806, 0))
         assertNpcAt(UndergroundPassQuest.KLANK, CoordGrid(2323, 9804, 0))
         assertNpcAt(UndergroundPassQuest.KAMEN, CoordGrid(2325, 9799, 0))
-        assertNpcAt(UndergroundPassQuest.UNICORN, UpassCoords.UNICORN_SPAWN)
-        assertNpcAt(UndergroundPassQuest.BOULDER, UpassCoords.BOULDER_SPAWN)
+        assertNpcAt(UndergroundPassQuest.UNICORN, CoordGrid(0, 37, 150, 29, 3))
+        assertNpcAt(UndergroundPassQuest.BOULDER, CoordGrid(0, 37, 149, 28, 59))
         assertNpcAt(UndergroundPassQuest.KALRAG, CoordGrid(2356, 9911, 0))
         assertNpcAt(UndergroundPassQuest.PALADIN_JERRO, CoordGrid(2424, 9721, 0))
         assertNpcAt(UndergroundPassQuest.PALADIN_CARL, CoordGrid(2422, 9718, 0))
@@ -272,6 +266,75 @@ class UndergroundPassCacheTest {
         }
     }
 
+    /**
+     * Every tile a script puts the player on. The obstacles are crossed by gliding onto these, so
+     * one that is a wall or under a blocking loc strands the player inside the scenery.
+     */
+    @Test
+    fun everyLandingTileCanBeStoodOn() {
+        val landings =
+            mapOf(
+                "PASS_ARRIVAL" to UpassCoords.PASS_ARRIVAL,
+                "CAVE_EXIT_LANDING" to UpassCoords.CAVE_EXIT_LANDING,
+                "CREVASSE_FLOOR" to UpassCoords.CREVASSE_FLOOR,
+                "ROCKPILE_TOP" to UpassCoords.ROCKPILE_TOP,
+                "BRIDGE_WEST" to UpassCoords.BRIDGE_WEST,
+                "BRIDGE_EAST" to UpassCoords.BRIDGE_EAST,
+                "BRIDGE_LEVER_STAND" to UpassCoords.BRIDGE_LEVER_STAND,
+                "SWING_START" to UpassCoords.SWING_START,
+                "SWING_LANDING" to UpassCoords.SWING_LANDING,
+                "SWING_BACK_START" to UpassCoords.SWING_BACK_START,
+                "SWING_BACK_LANDING" to UpassCoords.SWING_BACK_LANDING,
+                "GRID_CLIMB_OUT" to UpassCoords.GRID_CLIMB_OUT,
+                "WELL_BOTTOM" to UpassCoords.WELL_BOTTOM,
+                "MUDPILE_TOP" to UpassCoords.MUDPILE_TOP,
+                "MUD_TUNNEL_EXIT" to UpassCoords.MUD_TUNNEL_EXIT,
+                "CELL_TUNNEL_INSIDE" to UpassCoords.CELL_TUNNEL_INSIDE,
+                "LEDGE_SOUTH_END" to UpassCoords.LEDGE_SOUTH_END,
+                "UNICORN_TUNNEL_NORTH" to UpassCoords.UNICORN_TUNNEL_NORTH,
+                "UNICORN_CAVE_ALIVE" to UpassCoords.UNICORN_CAVE_ALIVE,
+                "UNICORN_CAVE_DEAD" to UpassCoords.UNICORN_CAVE_DEAD,
+                "DOORS_PASS_SIDE" to UpassCoords.DOORS_PASS_SIDE,
+                "DOORS_LAIR_SIDE" to UpassCoords.DOORS_LAIR_SIDE,
+                "LAIR_SHAFT_SOUTH_LANDING" to UpassCoords.LAIR_SHAFT_SOUTH_LANDING,
+                "CAMP_SHAFT_SOUTH_LANDING" to UpassCoords.CAMP_SHAFT_SOUTH_LANDING,
+                "LAIR_SHAFT_NORTH_LANDING" to UpassCoords.LAIR_SHAFT_NORTH_LANDING,
+                "CAMP_SHAFT_NORTH_LANDING" to UpassCoords.CAMP_SHAFT_NORTH_LANDING,
+                "LAIR_FALL_0" to UpassCoords.LAIR_FALLS[0],
+                "LAIR_FALL_1" to UpassCoords.LAIR_FALLS[1],
+                "WITCH_HIDING_SPOT" to UpassCoords.WITCH_HIDING_SPOT,
+                "TEMPLE_ESCAPE_LANDING" to UpassCoords.TEMPLE_ESCAPE_LANDING,
+                "KOFTIK_LEADS_OUT" to UpassCoords.KOFTIK_LEADS_OUT,
+            ) + UpassCoords.ROPE_SHOT_WALK.withIndex().associate { "ROPE_SHOT_WALK_${it.index}" to it.value }
+        for ((name, coords) in landings) {
+            assertTrue(standable(coords), "$name at $coords cannot be stood on")
+        }
+    }
+
+    /** Floor that is neither flagged solid nor under a blocking loc, allowing for bridged tiles. */
+    private fun standable(coords: CoordGrid): Boolean {
+        val square = MapSquareKey.from(coords)
+        val tiles = MapTileDecoder.decode(InlineByteBuf(checkNotNull(cache.data(MAPS, square.id, 0))))
+        val localX = coords.x and (MAP_SQUARE_SIZE - 1)
+        val localZ = coords.z and (MAP_SQUARE_SIZE - 1)
+        if (tiles[localX, localZ, coords.level].toInt() and MapTileSimpleDefinition.BLOCK_MAP_SQUARE != 0) {
+            return false
+        }
+        val data = cache.data(MAPS, square.id, 1) ?: return true
+        return MapLocListDecoder.decode(InlineByteBuf(data)).spawns.map(::MapLocDefinition).none {
+            val bridged =
+                tiles[it.localX, it.localZ, 1].toInt() and MapTileSimpleDefinition.LINK_BELOW != 0
+            val level = if (bridged) it.level - 1 else it.level
+            val type = ServerCacheManager.getObject(it.id)
+            if (level != coords.level || type == null || type.blockWalk == 0 || it.shape !in 10..11) {
+                return@none false
+            }
+            val width = if (it.angle % 2 == 1) type.length else type.width
+            val length = if (it.angle % 2 == 1) type.width else type.length
+            localX in it.localX until it.localX + width && localZ in it.localZ until it.localZ + length
+        }
+    }
+
     private fun locAt(loc: String, coords: CoordGrid): Boolean {
         val id = loc.asRSCM(RSCMType.LOC)
         val square = MapSquareKey.from(coords)
@@ -301,6 +364,8 @@ class UndergroundPassCacheTest {
     }
 
     private companion object {
+        const val MAP_SQUARE_SIZE = 64
+
         /** Every map square the quest's npcs stand in. */
         val PASS_SQUARES =
             listOf(

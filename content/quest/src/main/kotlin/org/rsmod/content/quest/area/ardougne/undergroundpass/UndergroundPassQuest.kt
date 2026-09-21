@@ -85,6 +85,13 @@ class UndergroundPassQuest : QuestScript(
         for ((varbit, stages) in KOFTIK_STAGES) {
             setVarBit(player, varbit, if (stage in stages) KOFTIK_HERE else KOFTIK_GONE)
         }
+        // An orb taken and then lost before the furnace goes back in its cradle.
+        for ((index, orb) in ORBS.withIndex()) {
+            val lost = player.vars[orbBurntVarbit(index)] == 0 && !player.inv.contains(orb)
+            if (player.vars[orbTakenVarbit(index)] == 1 && lost) {
+                setVarBit(player, orbTakenVarbit(index), 0)
+            }
+        }
     }
 
     override fun subTitle(): String =
@@ -104,9 +111,9 @@ class UndergroundPassQuest : QuestScript(
                 visibleWhen { stage == STAGE_STARTED }
             }
             objective(
-                "Koftik is camped by a fire inside the pass. The bridge ahead has been cut: he " +
-                    "gave me an <red>oily cloth</red> from the abandoned equipment and told me to " +
-                    "burn the <red>guide rope</red> holding it.",
+                "Koftik is camped by a fire inside the pass. The bridge ahead is raised: he gave " +
+                    "me a <red>damp cloth</red> from some charred arrows. Wrapped round an arrow, " +
+                    "lit and fired from a bow, it should burn through the <red>guide rope</red>.",
             ) {
                 visibleWhen { stage == STAGE_ENTERED }
                 hasItem(OILY_CLOTH, "I have the oily cloth.").strike()
@@ -153,19 +160,20 @@ class UndergroundPassQuest : QuestScript(
                 custom(p.gaveCat == 1, "I brought Kardia her cat back.").strike()
             }
             objective(
-                "I stole the <red>Doll of Iban</red> from Kardia's chest. It needs four things of " +
-                    "Iban's before it will hold him: his ashes, his blood, his shadow and his dove.",
+                "I took the <red>Doll of Iban</red> from Kardia's chest. Niloof says Iban's four " +
+                    "elements are hidden in these caves: his flesh, his blood, his shadow and his " +
+                    "conscience. Kardia's old journal should say where.",
             ) {
                 visibleWhen { stage == STAGE_DOLL }
-                custom(p.ashesOnDoll == 1, "Iban's ashes: I burnt his tomb with dwarf brew.").strike()
-                custom(p.venomOnDoll == 1, "Iban's blood: I killed the giant spider Kalrag.").strike()
-                custom(p.shadowOnDoll == 1, "Iban's shadow: I took it from the chest the demons guard.").strike()
-                custom(p.doveOnDoll == 1, "Iban's dove: it was in one of the cages in the north.").strike()
+                custom(p.ashesOnDoll == 1, "His flesh: the ashes from his tomb, burnt with dwarf brew.").strike()
+                custom(p.venomOnDoll == 1, "His blood: the poisoned blood of the spider Kalrag.").strike()
+                custom(p.shadowOnDoll == 1, "His shadow: the dark liquid in the demons' chest.").strike()
+                custom(p.doveOnDoll == 1, "His conscience: the bones of a dove from the cages.").strike()
             }
             objective(
-                "The doll is finished. Iban's temple only admits his own: I need a full set of " +
-                    "<red>Zamorak monk robes</red> to get through the doors, and the <red>Well " +
-                    "of the Damned</red> inside is where the doll has to go.",
+                "Iban knows I am coming. The doll has to go into the <red>Well of the Damned</red> " +
+                    "in his temple, and only followers of Zamorak in <red>monk robes</red> and " +
+                    "nothing else may enter.",
             ) {
                 visibleWhen { stage == STAGE_DOLL_READY }
                 hasItem(DOLL, "I am carrying the doll of Iban.").strike()
@@ -340,22 +348,56 @@ class UndergroundPassQuest : QuestScript(
         const val SOUND_RUMBLE = "synth.mine_rumbling"
         const val SOUND_UNICORN_DEATH = "synth.anger_unicorn_death"
         const val SOUND_DEMON_DEATH = "synth.demon_death"
+        const val SOUND_STUNNED = "synth.thieving_stunned"
+        const val SOUND_LOCKED_DOOR = "synth.ikov_lockeddoor"
+        const val SOUND_FIRE_LIT = "synth.fire_lit"
+        const val SOUND_TAP_FILL = "synth.tap_fill"
+        const val SOUND_SQUEEZE = "synth.squeeze_in"
+        const val SOUND_JUMP = "synth.jump_no_land"
+        const val SOUND_GRATE_CLOSE = "synth.grate_close"
+        const val SOUND_CHEST_OPEN = "synth.chest_open"
+        const val SOUND_DOOR_OPEN = "synth.door_open"
+        const val SOUND_PICK = "synth.pick2"
+        const val SOUND_PUT_DOWN = "synth.put_down"
 
-        /* Animations. */
-        const val SEQ_HANG_READY = "seq.human_upass_hang_ready"
-        const val SEQ_STUMBLE = "seq.human_upass_stumble_into_hang"
-        const val SEQ_CLIMB_OUT = "seq.human_upass_climb_out_of_hang"
+        /* Player animations. */
         const val SEQ_SEARCH = "seq.human_pickuptable"
+        const val SEQ_PICKUP_FLOOR = "seq.human_pickupfloor"
         const val SEQ_DIG = "seq.human_dig"
-        const val SEQ_CLIMB = "seq.human_climbing"
         const val SEQ_LADDER = "seq.human_reachforladder"
-        const val SEQ_SQUEEZE = "seq.human_pipesqueeze"
-        const val SEQ_ROPESWING = "seq.human_ropeswing"
+        const val SEQ_PIPE_SQUEEZE = "seq.human_doublepipesqueeze"
+        const val SEQ_ROPESWING = "seq.human_ropeswing_long"
+        const val SEQ_THROW_ROPE = "seq.human_throwrope_up"
         const val SEQ_BALANCE = "seq.human_walk_logbalance"
-        const val SEQ_PICKLOCK = "seq.human_picklock_cagedoor"
-        const val SEQ_LEVER = "seq.human_leverdown"
-        const val SEQ_GET_UP = "seq.human_getup"
+        const val SEQ_BALANCE_STUMBLE = "seq.human_walk_logbalance_stumble"
+        const val SEQ_STUMBLE_BACK = "seq.human_stumble_back"
+        const val SEQ_CLIMB_DOWN = "seq.human_walk_style"
+        const val SEQ_LONGJUMP = "seq.human_longjump"
+        const val SEQ_DISARM = "seq.human_pickpocket"
+        const val SEQ_BOX_LEVER = "seq.human_boxlever"
+        const val SEQ_BOW = "seq.human_bow"
+        const val SEQ_STUNNED = "seq.human_stunned"
+        const val SEQ_BLOWN_BACK = "seq.human_blown_start"
+        const val SEQ_DEATH = "seq.human_death"
+        const val SEQ_OPEN_CHEST = "seq.human_openchest"
+        const val SEQ_DROWNING = "seq.human_drowning"
+        const val SEQ_PICKLOCK = "seq.human_pickpocket"
+
+        /* Loc and npc animations. */
+        const val SEQ_LOC_ROPESWING = "seq.ropeswing_long"
+        const val SEQ_LOC_SPEARTRAP = "seq.speartrap_release"
+        const val SEQ_LOC_SPRINGTRAP = "seq.double_springtrap_release"
+        const val SEQ_LOC_SPRINGTRAP_RESET = "seq.double_springtrap_reset"
+        const val SEQ_LOC_LOGTRAP = "seq.swinginglogtrap_release"
+        const val SEQ_LOC_PORTCULLIS_OPEN = "seq.portcullisopen"
+        const val SEQ_LOC_PORTCULLIS_CLOSE = "seq.portcullisclose"
+        const val SEQ_IBAN_ATTACK = "seq.sitting_throne_attack"
+
+        /* Spotanims. */
+        const val SPOT_STUNNED = "spotanim.stunned"
         const val SPOT_IBAN_CLAW = "spotanim.upass_claw"
+        const val SPOT_IBAN_BOLT = "spotanim.ibansbolt"
+        const val SPOT_ROCKFALL = "spotanim.rockfall"
 
         /**
          * Which stages each Koftik is standing in the pass for. They are all spawned on the map,
@@ -363,10 +405,10 @@ class UndergroundPassQuest : QuestScript(
          */
         val KOFTIK_STAGES: List<Pair<String, IntRange>> =
             listOf(
-                "varbit.upass_koftik_outside" to STAGE_STARTED..STAGE_STARTED,
-                "varbit.upass_koftik_bridge" to STAGE_STARTED..STAGE_ENTERED,
-                "varbit.upass_koftik_grid" to STAGE_BRIDGE..STAGE_BRIDGE,
-                "varbit.upass_koftik_maze" to STAGE_WELL..STAGE_WELL,
+                "varbit.upass_koftik_outside" to 0..STAGE_COMPLETE,
+                "varbit.upass_koftik_bridge" to STAGE_ENTERED..STAGE_COMPLETE,
+                "varbit.upass_koftik_grid" to STAGE_BRIDGE..STAGE_COMPLETE,
+                "varbit.upass_koftik_maze" to STAGE_WELL..STAGE_COMPLETE,
                 "varbit.upass_koftik_temple" to STAGE_DOORS..STAGE_DOLL_READY,
                 "varbit.upass_koftik_end" to STAGE_IBAN_DEAD..STAGE_COMPLETE,
             )

@@ -5223,3 +5223,9 @@ wanderRange = 3
 "param.attack_sound"="synth.chompy_bird_attack"
 "param.defend_sound"="synth.chompy_bird_hit"
 "param.death_sound"="synth.chompy_bird_death"
+
+[[npc]]
+id = "npc.boulder_upass"
+inherit = "npc.boulder_upass"
+moveRestrict = "NoMove"
+wanderRange = 0

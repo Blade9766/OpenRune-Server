@@ -2,71 +2,82 @@ package org.rsmod.content.quest.area.ardougne.undergroundpass
 
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.random.GameRandom
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_BALANCE
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_LADDER
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_LEDGE
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_LONGJUMP
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_JUMP
 import org.rsmod.content.quest.area.wilderness.magearena.nearestFree
+import org.rsmod.game.hit.HitType
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import org.rsmod.routefinder.collision.CollisionFlagMap
 
 /**
- * Iban's lair: a cavern with a pit through the middle of it, crossed on what is left of the
- * walkways his people built, and the two shafts that join it to the dwarves' camp below.
+ * Iban's lair: platforms over a deep pit, joined by what is left of the bridges his people built,
+ * and the two shafts down to the dwarves' camp below.
  *
- * The same two cave types are spawned on copies of this map that belong to other quests, so each
- * shaft only moves anyone standing on one of the four tiles the pass actually uses.
+ * Each broken bridge is a jump. A slip drops the player all the way down into the caverns under
+ * the lair, which is a long fall.
  */
 @Singleton
 class IbansLair
 @Inject
-constructor(private val collision: CollisionFlagMap) : PluginScript() {
+constructor(private val collision: CollisionFlagMap, private val random: GameRandom) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
         for (bridge in BROKEN_BRIDGES) {
             onOpLoc1(bridge) { crossBrokenBridge(it.loc) }
         }
-        onOpLoc1(SHAFT_DOWN) { useShaft(it.loc, descending = true) }
-        onOpLoc1(SHAFT_UP) { useShaft(it.loc, descending = false) }
+        onOpLoc1(SHAFT_DOWN) { useShaft(it.loc) }
+        onOpLoc1(SHAFT_UP) { useShaft(it.loc) }
     }
 
-    private suspend fun ProtectedAccess.crossBrokenBridge(loc: BoundLocInfo) {
+    private suspend fun ProtectedAccess.crossBrokenBridge(bridge: BoundLocInfo) {
         arriveDelay()
-        val dest = collision.nearestFree(acrossFrom(loc), CROSS_RADIUS)
+        mes("You attempt to walk over the remaining bridge...")
+        delay(1)
+        if (!statRandom("stat.agility", JUMP_LOW, JUMP_HIGH, 0)) {
+            telejump(UpassCoords.LAIR_FALLS[random.of(0, 1)], TeleportType.Exempt)
+            mes("... but you slip and tumble into the darkness.")
+            say("Ouch!")
+            takeInstantHit(HitType.Typeless, stat("stat.hitpoints") * 25 / 100 + 4)
+            return
+        }
+        val dest = collision.nearestFree(acrossFrom(bridge), LANDING_RADIUS)
         if (dest == null) {
             mes("There is nothing left of the bridge on that side.")
             return
         }
-        soundSynth(SOUND_LEDGE)
-        mes("You pick your way across what is left of the bridge.")
-        climbOver(dest, SEQ_BALANCE, CROSS_TICKS)
+        soundSynth(SOUND_JUMP)
+        climbOver(dest, SEQ_LONGJUMP, ticks = 2, startDelay = JUMP_START_CYCLES)
+        mes("... you manage to cross safely.")
     }
 
-    private suspend fun ProtectedAccess.useShaft(loc: BoundLocInfo, descending: Boolean) {
+    private suspend fun ProtectedAccess.useShaft(shaft: BoundLocInfo) {
         arriveDelay()
-        val ideal = SHAFTS[loc.coords]
-        val dest = ideal?.let { collision.nearestFree(it, CROSS_RADIUS) }
+        val dest = SHAFTS[shaft.coords]
         if (dest == null) {
             mes("The shaft is choked with rubble.")
             return
         }
         anim(SEQ_LADDER)
-        soundSynth(CLIMB_SOUND)
-        delay(2)
+        delay(1)
         telejump(dest)
-        mes(if (descending) "You climb down the shaft." else "You climb up the shaft.")
     }
 
     private companion object {
         val BROKEN_BRIDGES = arrayOf("loc.bridgecollapsed1", "loc.bridgecollapsed2")
         const val SHAFT_DOWN = "loc.cavewalltunnel_upass_down"
         const val SHAFT_UP = "loc.cavewalltunnel_upass_up"
-        const val CLIMB_SOUND = "synth.ropeclimb"
-        const val CROSS_TICKS = 3
-        const val CROSS_RADIUS = 3
+        const val JUMP_LOW = 90
+        const val JUMP_HIGH = 300
+        const val JUMP_START_CYCLES = 20
+        const val LANDING_RADIUS = 3
 
         /** The two shafts of the pass, keyed by the tile the cave mouth itself sits on. */
         val SHAFTS =

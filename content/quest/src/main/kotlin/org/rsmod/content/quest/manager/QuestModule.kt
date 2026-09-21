@@ -12,7 +12,6 @@ import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
-import org.rsmod.content.quest.area.ardougne.undergroundpass.DemonKillHook
 import org.rsmod.content.quest.area.ardougne.undergroundpass.DollOfIban
 import org.rsmod.content.quest.area.ardougne.undergroundpass.DwarvenCamp
 import org.rsmod.content.quest.area.ardougne.undergroundpass.IbanTemple
@@ -333,7 +332,6 @@ public class QuestModule : PluginModule() {
         bindInstance<Koftik>()
         addSetBinding<NpcDeathKillHook>(PaladinKillHook::class.java)
         addSetBinding<NpcDeathKillHook>(KalragKillHook::class.java)
-        addSetBinding<NpcDeathKillHook>(DemonKillHook::class.java)
         bindInstance<MerlinsCrystalQuest>()
     }
 }

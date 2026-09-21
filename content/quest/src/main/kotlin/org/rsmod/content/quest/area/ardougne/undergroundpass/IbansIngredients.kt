@@ -1,5 +1,6 @@
 package org.rsmod.content.quest.area.ardougne.undergroundpass
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
@@ -8,138 +9,113 @@ import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.random.GameRandom
-import org.rsmod.api.repo.obj.ObjRepository
+import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.AMULETS
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.DOOMION
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.DOLL
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.DOVE
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.GAUNTLETS
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.HALF_SOULLESS
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.HOLTHION
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.KALRAG
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.OTHAINIAN
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_SEARCH
-import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_DEMON_DEATH
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SHADOW
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_CHEST_OPEN
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_DOLL
 import org.rsmod.game.hit.HitType
+import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * The three things of Iban's that have to be taken off something living: his blood out of Kalrag,
- * his shadow out of the chest the three demons stand over, and his dove out of the cages in the
- * north of the cavern.
- *
- * The cages are watched by the half-soulless, whose touch takes the skin off anyone reaching past
- * them bare-handed. Klank's gauntlets are the whole reason he offers them.
+ * Three of Iban's four elements: his shadow in the chest the three demons were summoned to keep,
+ * his conscience in the bones of a dove left in one of the Soulless' cages, and his blood in the
+ * giant spider Kalrag. The fourth, his flesh, is burnt out of his tomb by the dwarves' camp.
  */
 @Singleton
 class IbansIngredients
 @Inject
-constructor(private val doll: DollOfIban, private val random: GameRandom) : PluginScript() {
+constructor(private val locRepo: LocRepository) : PluginScript() {
 
-    override fun ScriptContext.startup() {
-        onOpLoc1(SHADOW_CHEST) { openShadowChest() }
-        onOpLoc1(DOVE_CAGE) { searchCage(real = true) }
-        onOpLoc1(DECOY_CAGE) { searchCage(real = false) }
-        for (soulless in listOf(HALF_SOULLESS, UndergroundPassQuest.visibleTwin(HALF_SOULLESS))) {
-            onOpNpc1(soulless) { touchHalfSoulless() }
-        }
+    private val openChestType by lazy {
+        ServerCacheManager.getObject(CHEST_OPEN.asRSCM(RSCMType.LOC)) ?: error("Missing $CHEST_OPEN")
     }
 
-    /**
-     * The chest behind the demons. It only opens for someone carrying all three of their amulets,
-     * which means all three of them have to go down.
-     */
-    private suspend fun ProtectedAccess.openShadowChest() {
+    override fun ScriptContext.startup() {
+        onOpLoc1(SHADOW_CHEST) { openShadowChest(it.loc) }
+        onOpLoc1(DOVE_CAGE) { searchCage(real = true) }
+        onOpLoc1(DECOY_CAGE) { searchCage(real = false) }
+    }
+
+    /** The chest only opens to someone carrying the amulets of all three of its keepers. */
+    private suspend fun ProtectedAccess.openShadowChest(chest: BoundLocInfo) {
         arriveDelay()
-        if (player.shadowChestOpen) {
-            mes("The chest is empty and the lid will not shut again.")
+        mes("You attempt to open the chest...")
+        if (AMULETS.any { !inv.contains(it) }) {
+            mes("But it's magically sealed.")
             return
         }
-        val held = AMULETS.count { inv.contains(it) }
-        if (held < AMULETS.size) {
-            mesbox(
-                "There is no lock on the chest, but it will not lift. Three iron rings are set " +
-                    "into the lid, and there is a demon wearing the match of each of them.",
-            )
-            return
-        }
-        if (!with(doll) { holdingDoll() }) {
-            mes("Whatever is in there would need catching in something. The doll, perhaps.")
-            return
-        }
-        anim(SEQ_SEARCH)
-        soundSynth(CHEST_SOUND)
-        delay(2)
+        mes("The three amulets glow red in your backpack...")
         for (amulet in AMULETS) {
             invDel(inv, amulet)
         }
-        player.shadowChestOpen = true
-        mesbox("The lid comes up, and what comes out of the chest is not light and is not smoke.")
-        with(doll) { addIngredient(Ingredient.SHADOW_OF_IBAN) }
+        delay(1)
+        mes("...You place them on the chest and it opens.")
+        soundSynth(SOUND_CHEST_OPEN)
+        delay(1)
+        if (inv.contains(SHADOW) || player.shadowOnDoll == 1) {
+            mes("But you find nothing.")
+        } else {
+            invAdd(inv, SHADOW)
+            mes("Inside you find a strange dark liquid.")
+        }
+        locRepo.change(chest, openChestType, CHEST_TICKS)
     }
 
     /**
-     * Sixteen cages hang in the north of the cavern and fifteen of them hold nothing at all. The
-     * one that does is fixed by the map, not by chance, so the search is the same every time.
+     * Fifteen of the cages hold nothing but an entranced prisoner; one holds the bones of a dove.
+     * Every prisoner bites whoever reaches past him, and only Klank's gauntlets stop it.
      */
     private suspend fun ProtectedAccess.searchCage(real: Boolean) {
         arriveDelay()
-        if (!player.worn.contains(GAUNTLETS) && !inv.contains(GAUNTLETS)) {
-            mes("The bars are crusted with something that burns. I am not reaching in bare-handed.")
-            return
-        }
-        anim(SEQ_SEARCH)
+        mes("The man seems to be entranced.")
         delay(1)
-        if (!real) {
-            mes("Nothing but feathers and rust.")
-            return
+        mes("You search through the bottom of the cage...")
+        delay(1)
+        if (real && !inv.contains(DOVE) && player.doveOnDoll == 0) {
+            invAdd(inv, DOVE)
+            mes("...and find Iban's dove.")
+        } else {
+            mes("...But you find nothing.")
         }
-        if (player.doveOnDoll == 1) {
-            mes("The cage is empty now.")
-            return
-        }
-        if (!with(doll) { holdingDoll() }) {
-            mes("There are remains in here, but nothing to put them in.")
-            return
-        }
-        mesbox(
-            "At the back of the cage, under a hundred years of dust, is a dove. It has been dead " +
-                "a very long time and it has not rotted at all.",
-        )
-        with(doll) { addIngredient(Ingredient.DOVE_OF_IBAN) }
-    }
-
-    private suspend fun ProtectedAccess.touchHalfSoulless() {
+        delay(1)
+        mes("The soulless being bites into your arm.")
         if (player.worn.contains(GAUNTLETS)) {
-            mes("It reaches for you and finds nothing but dwarf leather.")
+            delay(1)
+            mes("Klank's gauntlets protect you.")
             return
         }
-        soundSynth(SOULLESS_SOUND)
-        takeInstantHit(HitType.Typeless, random.of(SOULLESS_MIN, SOULLESS_MAX))
-        mes("The half-soulless lays a hand on you, and everything it touches goes cold.")
+        say("Aaarrgghh!")
+        takeInstantHit(HitType.Typeless, BITE_DAMAGE)
     }
 
     private companion object {
         const val SHADOW_CHEST = "loc.upassshutchest1"
+        const val CHEST_OPEN = "loc.chestopen"
         const val DOVE_CAGE = "loc.upass_cage_dummy"
         const val DECOY_CAGE = "loc.upass_cage_dummy_dummy"
-        const val CHEST_SOUND = "synth.chest_open"
-        const val SOULLESS_SOUND = "synth.ghost_attack"
-        const val SOULLESS_MIN = 2
-        const val SOULLESS_MAX = 8
+        const val CHEST_TICKS = 10
+        const val BITE_DAMAGE = 10
     }
 }
 
 /**
- * Kalrag has been feeding on whatever comes down the corridor north of the tomb for as long as
- * Iban has been here, and there is enough of him in her to be going on with.
+ * Kalrag feeds on the warm blood of whatever comes down to his pit, and there is enough of Iban in
+ * it to count. Its poisoned blood only goes on the doll if the player is carrying it when he dies.
  */
 class KalragKillHook
 @Inject
-constructor(private val doll: DollOfIban, private val launcher: ProtectedAccessLauncher) :
-    NpcDeathKillHook {
+constructor(
+    private val quest: UndergroundPassQuest,
+    private val launcher: ProtectedAccessLauncher,
+) : NpcDeathKillHook {
 
     private val kalragIds: Set<Int> by lazy {
         setOf(KALRAG.asRSCM(RSCMType.NPC), UndergroundPassQuest.visibleTwin(KALRAG).asRSCM(RSCMType.NPC))
@@ -149,58 +125,30 @@ constructor(private val doll: DollOfIban, private val launcher: ProtectedAccessL
         if (context.npc.id !in kalragIds) {
             return
         }
-        val hero = context.hero
-        if (hero.venomOnDoll == 1) {
-            return
-        }
-        launcher.launch(hero) { drainKalrag() }
+        launcher.launch(context.hero) { kalragDies() }
     }
 
-    private suspend fun ProtectedAccess.drainKalrag() {
-        if (!with(doll) { holdingDoll() }) {
-            mes("Whatever is running out of the spider would need catching in something.")
+    private suspend fun ProtectedAccess.kalragDies() {
+        mes("Kalrag slumps to the floor...")
+        if (quest.stage(player) != STAGE_DOLL) {
             return
         }
-        mesbox(
-            "The spider's blood is not a spider's blood. It goes into the doll of its own accord " +
-                "and the doll grows warm.",
-        )
-        with(doll) { addIngredient(Ingredient.BLOOD_OF_IBAN) }
-    }
-}
-
-/** Each of Iban's three demons carries one of the rings the chest behind them is locked with. */
-class DemonKillHook
-@Inject
-constructor(
-    private val launcher: ProtectedAccessLauncher,
-    private val objRepo: ObjRepository,
-) : NpcDeathKillHook {
-
-    private val amuletsByNpc: Map<Int, Pair<String, String>> by lazy {
-        buildMap {
-            val demons =
-                listOf(
-                    DOOMION to (AMULETS[0] to "varbit.upass_amulet_doomion"),
-                    OTHAINIAN to (AMULETS[1] to "varbit.upass_amulet_othainian"),
-                    HOLTHION to (AMULETS[2] to "varbit.upass_amulet_holthion"),
-                )
-            for ((npc, reward) in demons) {
-                put(npc.asRSCM(RSCMType.NPC), reward)
-                put(UndergroundPassQuest.visibleTwin(npc).asRSCM(RSCMType.NPC), reward)
+        delay(1)
+        mes("poison flows from the corpse over the soil.")
+        delay(1)
+        when {
+            !inv.contains(DOLL) -> {
+                mes("It quickly seeps away into the earth.")
+                delay(1)
+                mes("You dare not collect any without Iban's doll.")
+            }
+            player.venomOnDoll == 1 -> mes("You have already collected Iban's blood on the doll.")
+            else -> {
+                mes("You smear the doll of Iban in the poisoned blood...")
+                delay(1)
+                UndergroundPassQuest.setVarBit(player, "varbit.upass_venom_on_doll", 1)
+                mes("It smells horrific.")
             }
         }
-    }
-
-    override fun onKill(context: NpcDeathKillContext) {
-        val (amulet, varbit) = amuletsByNpc[context.npc.id] ?: return
-        launcher.launch(context.hero) { claimAmulet(amulet, varbit) }
-    }
-
-    private suspend fun ProtectedAccess.claimAmulet(amulet: String, varbit: String) {
-        soundSynth(SOUND_DEMON_DEATH)
-        UndergroundPassQuest.setVarBit(player, varbit, 1)
-        invAddOrDrop(objRepo, amulet)
-        mes("The demon leaves an amulet behind it.")
     }
 }

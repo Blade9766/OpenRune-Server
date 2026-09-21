@@ -125,4 +125,19 @@ npc = [
     { id = "npc.yama_judge_of_yama", attack_anim = "seq.judgeofyama_attack", death_anim = "seq.judgeofyama_death" },
     # Skotizo is banished like Delrith rather than falling over.
     { id = "npc.cata_boss", death_anim = "seq.qip_ds_delrith_banished" },
+    # Underground Pass: the map spawns the varp-driven multinpcs themselves, whose base types carry
+    # no ops and so no generated entry; they fight with the base type's params, so they need the
+    # same set as the form the client draws. The three demons and Kalrag keep their own voices.
+    { id = "npc.doomion", attack_anim = "seq.demon_attack", defend_anim = "seq.demon_block", death_anim = "seq.demon_death_greater", attack_sound = 397, defend_sound = 399, death_sound = 398 },
+    { id = "npc.doomion_vis", death_anim = "seq.demon_death_greater", attack_sound = 397, defend_sound = 399, death_sound = 398 },
+    { id = "npc.othainian", attack_anim = "seq.demon_attack", defend_anim = "seq.demon_block", death_anim = "seq.demon_death_greater", attack_sound = 397, defend_sound = 399, death_sound = 398 },
+    { id = "npc.othainian_vis", death_anim = "seq.demon_death_greater", attack_sound = 397, defend_sound = 399, death_sound = 398 },
+    { id = "npc.holthion", attack_anim = "seq.demon_attack", defend_anim = "seq.demon_block", death_anim = "seq.demon_death_greater", attack_sound = 397, defend_sound = 399, death_sound = 398 },
+    { id = "npc.holthion_vis", death_anim = "seq.demon_death_greater", attack_sound = 397, defend_sound = 399, death_sound = 398 },
+    { id = "npc.kalrag", attack_sound = 541, defend_sound = 543, death_sound = 542 },
+    { id = "npc.kalrag_vis", attack_sound = 541, defend_sound = 543, death_sound = 542 },
+    { id = "npc.upass_paladin1", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_shield_defence" },
+    { id = "npc.upass_paladin2", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_shield_defence" },
+    { id = "npc.upass_paladin3", attack_anim = "seq.human_sword_slash", attack_type = "category.attacktype_slash", attack_sound = 2500, defend_anim = "seq.human_shield_defence" },
+    { id = "npc.souless", attack_anim = "seq.souless_attack", defend_anim = "seq.souless_block", death_anim = "seq.souless_death" },
 ]

@@ -6,16 +6,19 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
+import org.rsmod.api.npc.interact.AiPlayerInteractions
+import org.rsmod.api.npc.opPlayer2
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.BADGES
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.PALADIN_CARL
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.PALADIN_HARRY
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.PALADIN_JERRO
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_DOORS
+import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -23,98 +26,68 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Sir Jerro, Sir Carl and Sir Harry, the last three of King Lathas's own paladins to come down
  * here, camped in the cavern north of the unicorn.
  *
- * They are friendly, and they will feed anyone who asks, but their orders are to let nobody
- * through and they mean to keep them. The coats of arms the Doors of Iban want are on their belts,
- * and there is only one way to get all three.
+ * Sir Jerro feeds the player; all three warn them off. The coats of arms the well by the Doors of
+ * Iban wants are on their belts, and there is only one way to get them. Once the player is through
+ * the doors the survivors take them for one of Iban's own and attack on sight.
  */
 @Singleton
 class Paladins
 @Inject
-constructor(private val quest: UndergroundPassQuest, private val random: GameRandom) :
-    PluginScript() {
+constructor(
+    private val quest: UndergroundPassQuest,
+    private val objRepo: ObjRepository,
+    private val aiInteractions: AiPlayerInteractions,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         for (paladin in PALADINS) {
             for (npc in listOf(paladin.spawn, paladin.head)) {
-                onOpNpc1(npc) { startDialogue(it.npc) { paladin(paladin) } }
+                onOpNpc1(npc) { talkTo(it.npc, paladin) }
             }
         }
     }
 
-    private suspend fun Dialogue.paladin(paladin: Paladin) {
-        chatNpcSpecific(paladin.displayName, paladin.head, neutral, "Hold there. This is as far as you go.")
-        chatPlayer(quiz, "King Lathas sent me. I'm to get through the pass.")
-        chatNpcSpecific(
-            paladin.displayName,
-            paladin.head,
-            sad,
-            "So were we, friend. Forty of us came down that shaft and there are three left, and " +
-                "we have not been past those doors yet.",
-        )
-        when (
-            choice3(
-                "What is behind the doors?", 1,
-                "Do you have any food to spare?", 2,
-                "Stand aside.", 3,
-            )
-        ) {
-            1 -> {
-                chatPlayer(quiz, "What is behind the doors?")
-                chatNpcSpecific(
-                    paladin.displayName,
-                    paladin.head,
-                    worried,
-                    "Iban. Son of Zamorak, if the tablets tell it true. The well beside the doors " +
-                        "wants four tokens before it will open them, and it has had three of ours " +
-                        "and will not take a fourth.",
-                )
-                chatNpcSpecific(
-                    paladin.displayName,
-                    paladin.head,
-                    neutral,
-                    "Our badges, and something of this place. A unicorn's horn, Sir Carl reckons. " +
-                        "Not that it matters. Nobody is going through.",
-                )
-            }
-            2 -> {
-                chatPlayer(quiz, "Do you have any food to spare?")
-                offerFood(paladin)
-            }
-            3 -> {
-                chatPlayer(angry, "Stand aside.")
-                chatNpcSpecific(
-                    paladin.displayName,
-                    paladin.head,
-                    angry,
-                    "I will not. Go back up the shaft while you still can.",
-                )
+    private suspend fun ProtectedAccess.talkTo(npc: Npc, paladin: Paladin) {
+        if (quest.stage(player) >= STAGE_DOORS) {
+            startDialogue(npc) { chatPlayer(happy, "Hello.") }
+            npc.say("You again... die Zamorakian scum!")
+            npc.facePlayer(player)
+            npc.opPlayer2(player, aiInteractions)
+            return
+        }
+        startDialogue(npc) {
+            when (paladin.spawn) {
+                PALADIN_JERRO -> jerro(paladin)
+                PALADIN_CARL -> {
+                    chatPlayer(neutral, "Hello there.")
+                    chatNpcSpecific(paladin.displayName, paladin.head, neutral, "Take care down here, Evil things are abroad...")
+                }
+                else -> {
+                    chatPlayer(neutral, "Good day.")
+                    chatNpcSpecific(paladin.displayName, paladin.head, neutral, "Watch your back, the undead are about here...")
+                }
             }
         }
     }
 
-    private suspend fun Dialogue.offerFood(paladin: Paladin) {
+    private suspend fun Dialogue.jerro(paladin: Paladin) {
+        val name = paladin.displayName
+        val head = paladin.head
+        chatPlayer(happy, "Hello Paladin.")
         if (player.paladinFood == 1) {
-            chatNpcSpecific(
-                paladin.displayName,
-                paladin.head,
-                neutral,
-                "You have had your share of it. There are three of us to feed as well.",
-            )
+            chatNpcSpecific(name, head, neutral, "You should leave this place now traveller, I heard the crashing of rocks further down the cavern. Iban must be restless.")
+            chatNpcSpecific(name, head, neutral, "I doubt not that Zamorak still influences these caverns. A little further on lies the great door of Iban. We've tried everything, but it will not let us enter. Leave now before Iban awakes and it's too late.")
             return
         }
-        chatNpcSpecific(
-            paladin.displayName,
-            paladin.head,
-            happy,
-            "We are not so far gone that we would see anyone starve. Here.",
-        )
-        val gift = PALADIN_FOOD[random.of(0, PALADIN_FOOD.size - 1)]
-        if (access.invAdd(access.inv, gift).failure) {
-            chatNpcSpecific(paladin.displayName, paladin.head, neutral, "You have no room to carry it.")
-            return
+        chatNpcSpecific(name, head, confused, "Traveller, what are you doing in this most unholy place?")
+        chatPlayer(neutral, "I'm looking for safe route through the caverns, under order of King Lathas.")
+        chatNpcSpecific(name, head, happy, "You've done well to get this far traveller, here eat...")
+        for (supply in PALADIN_SUPPLIES) {
+            access.invAddOrDrop(objRepo, supply)
         }
+        access.mes("The Paladin gives you some food.")
         UndergroundPassQuest.setVarBit(player, "varbit.upass_paladin_food", 1)
-        access.mes("Sir ${paladin.shortName} hands you some of the camp's food.")
+        chatPlayer(happy, "Great, thanks a lot.")
     }
 
     data class Paladin(
@@ -155,7 +128,16 @@ constructor(private val quest: UndergroundPassQuest, private val random: GameRan
                 ),
             )
 
-        val PALADIN_FOOD = arrayOf("obj.bread", "obj.meat_pie", "obj.stew")
+        val PALADIN_SUPPLIES =
+            listOf(
+                "obj.meat_pie",
+                "obj.meat_pie",
+                "obj.bread",
+                "obj.bread",
+                "obj.stew",
+                "obj.2dose1attack",
+                "obj.2doseprayerrestore",
+            )
     }
 }
 

@@ -109,7 +109,6 @@ constructor(
      * the Ranged requirement is checked here rather than by the quest journal alone.
      */
     private suspend fun Dialogue.undergroundPass() {
-        chatNpc(neutral, "As we've previously discussed, my brother is currently gathering strength in the lands west of here. The only known way into those lands is through the Underground Pass.")
         chatNpc(neutral, "Nobody who has gone down there has come back to tell of it. It runs under the mountains from a cave west of the city wall, and something has made a home of it.")
         chatNpc(quiz, "I need that road opened. Will you do it?")
         when (

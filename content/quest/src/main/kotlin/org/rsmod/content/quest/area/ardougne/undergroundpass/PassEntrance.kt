@@ -10,15 +10,16 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.loc.LocRepository
+import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
-import org.rsmod.api.script.onPlayerCoordsChanged
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.OILY_CLOTH
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.ROPE
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_BOW
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_BOX_LEVER
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_DROWNING
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SEQ_SEARCH
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_ARROW_LAUNCH
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_BRIDGE_FALL
@@ -26,23 +27,22 @@ import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQues
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_LEVER
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.SOUND_SWAMP_STEP
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_BRIDGE
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_ENTERED
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_STARTED
-import org.rsmod.game.entity.Player
+import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.TINDERBOX
 import org.rsmod.game.hit.HitType
-import org.rsmod.game.loc.LocAngle
-import org.rsmod.game.loc.LocShape
+import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
  * The mouth of the pass in West Ardougne, the first cavern behind it, and the bridge Iban's people
- * cut when they sealed themselves in.
+ * raised when they sealed themselves in.
  *
- * The swamp filling the middle of the cavern is a trap: anything that walks into it is pulled
- * under and washed up back at the entrance. The way round is the line of rockslides to the north.
- * Past them Koftik keeps a fire going, and the only thing left of the party that came before him
- * is an oily cloth in the abandoned equipment. Wrapped round an arrow, lit at his fire and shot
- * into the guide rope, that cloth brings the bridge down.
+ * The swamp in the middle of the cavern drags anyone who wades in down into the crevasse below.
+ * Koftik keeps a fire going by the bridge and gives the player a damp cloth he found among some
+ * charred arrows: wrapped round an arrow, lit and fired from a bow, it burns through the guide
+ * rope holding the bridge up. The lever on the far bank lowers it again for the way back.
  */
 @Singleton
 class PassEntrance
@@ -50,13 +50,12 @@ class PassEntrance
 constructor(
     private val quest: UndergroundPassQuest,
     private val locRepo: LocRepository,
-    private val launcher: ProtectedAccessLauncher,
-    private val random: GameRandom,
+    private val koftik: Koftik,
 ) : PluginScript() {
 
-    private val guideRopeType by lazy { locType(GUIDE_ROPE) }
-    private val cutRopeType by lazy { locType(ROPE_CUT) }
     private val bridgeType by lazy { locType(BRIDGE_UP) }
+    private val fallingBridgeType by lazy { locType(BRIDGE_FALLING) }
+    private val leverDownType by lazy { locType(LEVER_DOWN) }
 
     override fun ScriptContext.startup() {
         onOpLoc1(CAVE_ENTRANCE) { enterPass() }
@@ -66,17 +65,22 @@ constructor(
         onOpLoc1(ABANDONED_GEAR) { searchGear() }
         onOpLoc1(ROPE_CRATE) { searchRopeCrate() }
         onOpLoc1(SWAMP) { crossSwamp() }
+        onOpLoc1(MUD_PILE) { climbMudPile() }
 
         for ((arrow, forms) in UndergroundPassQuest.ARROW_PAIRS) {
             val (unlit, lit) = forms
             onOpHeldU(OILY_CLOTH, arrow) { wrapArrow(arrow, unlit) }
-            onOpLocU(FIRE, unlit) { lightArrow(it.loc.coords, unlit, lit) }
+            onOpHeldU(TINDERBOX, unlit) { lightArrow(unlit, lit) }
+            onOpLocU(FIRE, unlit) { lightArrow(unlit, lit) }
         }
 
-        onOpLoc1(GUIDE_ROPE) { fireAtRope() }
-        onOpLoc1(BRIDGE_LEVER) { pullBridgeLever() }
-
-        onPlayerCoordsChanged { crossBridge(player) }
+        onApLoc1(GUIDE_ROPE) {
+            if (isWithinApRange(it.loc, ROPE_SHOT_RANGE)) {
+                fireAtRope(it.loc)
+            }
+        }
+        onOpLoc1(GUIDE_ROPE) { fireAtRope(it.loc) }
+        onOpLoc1(BRIDGE_LEVER) { pullBridgeLever(it.loc) }
     }
 
     private fun locType(name: String): ObjectServerType =
@@ -85,196 +89,181 @@ constructor(
     private suspend fun ProtectedAccess.enterPass() {
         arriveDelay()
         if (!quest.isStarted(player)) {
-            mesbox(
-                "A cold draught comes up out of that hole, and something in it smells like a " +
-                    "battlefield. I'm not going down there without a reason.",
-            )
+            mes("You must talk to King Lathas before you can enter.")
             return
         }
-        mes("You climb down into the darkness.")
-        delay(1)
-        telejump(UpassCoords.PASS_ARRIVAL)
-        if (quest.stage(player) == STAGE_STARTED && player.koftikChat == 0) {
-            mes("<col=800000>There is firelight somewhere away to the west.</col>")
+        if (quest.stage(player) == STAGE_STARTED) {
+            with(koftik) { meetOutside() }
+            return
         }
+        mes("You cautiously enter the cave...")
+        delay(3)
+        telejump(UpassCoords.PASS_ARRIVAL)
     }
 
     private suspend fun ProtectedAccess.leavePass() {
         arriveDelay()
-        mes("You climb back up into the daylight.")
-        delay(1)
-        telejump(UpassCoords.CAVE_ENTRANCE_STEP)
+        mes("You leave the underground pass.")
+        delay(3)
+        telejump(UpassCoords.CAVE_EXIT_LANDING)
     }
 
     private suspend fun ProtectedAccess.searchGear() {
         arriveDelay()
         anim(SEQ_SEARCH)
-        delay(1)
-        if (inv.contains(OILY_CLOTH)) {
-            mes("You already have an oily cloth.")
+        mes("You search the abandoned equipment...")
+        delay(2)
+        if (inv.contains(OILY_CLOTH) || quest.stage(player) >= STAGE_BRIDGE) {
+            mes("...but find nothing of use.")
             return
         }
         if (invAdd(inv, OILY_CLOTH).failure) {
             mes("You don't have enough inventory space.")
             return
         }
-        player.clothTaken = true
-        mesbox(
-            "Among the rusted packs is a cloth, stiff with old lamp oil. Wrapped round an " +
-                "arrowhead it would burn for a good while.",
-        )
+        mes("...and find a damp cloth among some charred arrows.")
     }
 
     private suspend fun ProtectedAccess.searchRopeCrate() {
         arriveDelay()
         anim(SEQ_SEARCH)
-        delay(1)
+        mes("You search the crate...")
+        delay(2)
         if (invAdd(inv, ROPE).failure) {
             mes("You don't have enough inventory space.")
             return
         }
-        mes("You find a coil of rope in the crate.")
+        mes("...and find a coil of rope.")
     }
 
-    /**
-     * The swamp is not a crossing. Wading in drags the player under and washes them up on the bank
-     * by the cave mouth; the way past is the rockslides along the north wall.
-     */
     private suspend fun ProtectedAccess.crossSwamp() {
         arriveDelay()
         soundSynth(SOUND_SWAMP_STEP)
-        mes("You wade out into the swamp...")
+        mes("You try to cross the swamp...")
         delay(1)
-        takeInstantHit(HitType.Typeless, random.of(SWAMP_MIN_DAMAGE, SWAMP_MAX_DAMAGE))
-        mes("Something under the surface takes hold of you and pulls you down.")
-        delay(2)
-        telejump(UpassCoords.SWAMP_SPIT_OUT, TeleportType.Exempt)
-        mesbox(
-            "You are spat out on the bank, coughing. Whatever lives in that swamp does not want " +
-                "company; there must be a way round it.",
-        )
+        mes("The swamp seems to cling to your legs.")
+        delay(1)
+        mes("You feel yourself being slowly dragged below...")
+        say("Gulp!")
+        setWalkStyle(SEQ_DROWNING)
+        try {
+            delay(2)
+        } finally {
+            clearWalkStyle()
+        }
+        mes("You tumble deep into the crevasse.")
+        mes("You land battered and bruised at the base.")
+        telejump(UpassCoords.CREVASSE_FLOOR, TeleportType.Exempt)
+        say("Aargh!")
+        takeInstantHit(HitType.Typeless, stat("stat.hitpoints") * SWAMP_DAMAGE_PERCENT / 100)
     }
 
-    private suspend fun ProtectedAccess.wrapArrow(arrow: String, unlit: String) {
-        if (invDel(inv, arrow).failure) {
-            return
-        }
-        invDel(inv, OILY_CLOTH)
-        anim(SEQ_SEARCH)
-        delay(1)
-        invAdd(inv, unlit)
-        mes("You wrap the oily cloth tightly round the arrow's head.")
-    }
-
-    private suspend fun ProtectedAccess.lightArrow(
-        fire: org.rsmod.map.CoordGrid,
-        unlit: String,
-        lit: String,
-    ) {
-        if (fire != UpassCoords.KOFTIK_FIRE) {
-            mes("This fire is nowhere near the bridge. The cloth would burn out long before.")
-            return
-        }
+    private suspend fun ProtectedAccess.climbMudPile() {
         arriveDelay()
+        mes("You climb up the pile of mud...")
+        delay(3)
+        telejump(UpassCoords.ROCKPILE_TOP)
+        mes("It leads into darkness, the stench is unbearable.")
+        mes("You surface by the swamp, covered in muck.")
+    }
+
+    private fun ProtectedAccess.wrapArrow(arrow: String, unlit: String) {
+        if (inv.count(arrow) > 1 && inv.freeSpace() == 0 && !inv.contains(unlit)) {
+            mes("You don't have space to do that.")
+            return
+        }
+        if (invDel(inv, OILY_CLOTH).failure || invDel(inv, arrow).failure) {
+            return
+        }
+        invAdd(inv, unlit)
+        mes("You wrap the damp cloth around the arrow head.")
+    }
+
+    private fun ProtectedAccess.lightArrow(unlit: String, lit: String) {
+        if (inv.count(unlit) > 1 && inv.freeSpace() == 0 && !inv.contains(lit)) {
+            return
+        }
         if (invDel(inv, unlit).failure) {
             return
         }
-        anim(SEQ_SEARCH)
-        soundSynth(SOUND_FIRE_ARROW)
-        delay(1)
         invAdd(inv, lit)
-        mes("You hold the wrapped arrow in Koftik's fire until the cloth catches.")
+        soundSynth(SOUND_FIRE_ARROW)
+        mes("You light the cloth wrapped arrow head.")
     }
 
-    private suspend fun ProtectedAccess.fireAtRope() {
-        arriveDelay()
-        val lit = UndergroundPassQuest.ARROW_PAIRS.map { it.second.second }
-            .firstOrNull { inv.contains(it) }
+    /**
+     * The rope has to be shot from the far bank, north of the chasm, with a lit arrow loaded in
+     * the quiver. When it parts the bridge swings down and the player runs round to it and over.
+     */
+    private suspend fun ProtectedAccess.fireAtRope(rope: BoundLocInfo) {
+        if (coords.x < rope.coords.x) {
+            mes("You don't need to shoot the bridge from this side.")
+            return
+        }
+        if (coords.z < UpassCoords.ROPE_SHOT_MIN_Z) {
+            mes("You can't get a clear shot from here.")
+            return
+        }
+        val weapon = player.worn[Wearpos.RightHand.slot]
+        val weaponType = weapon?.let { ServerCacheManager.getItem(it.id) }
+        if (weaponType?.weaponCategory != WeaponCategory.Bow) {
+            mes("You'll need to equip a bow before you can fire arrows at the rope.")
+            return
+        }
+        val ammo = player.worn[Wearpos.Quiver.slot]
+        val lit = ammo?.let { obj -> LIT_ARROWS.firstOrNull { it.asRSCM(RSCMType.OBJ) == obj.id } }
         if (lit == null) {
-            mesbox(
-                "The rope is too far to reach and far too thick to cut. If it could be set " +
-                    "alight from here it would part on its own.",
-            )
+            mes("You need something to fire that will make the bridge drop.")
             return
         }
-        if (!hasBowEquipped()) {
-            mes("I need a bow to shoot that far.")
-            return
-        }
-        faceSquare(UpassCoords.GUIDE_ROPE)
-        anim(BOW_SEQ)
+        invDel(worn, lit)
+        faceSquare(rope.coords)
+        mes("You fire your arrow at the rope supporting the bridge...")
+        anim(SEQ_BOW)
         soundSynth(SOUND_ARROW_LAUNCH)
-        invDel(inv, lit)
-        delay(2)
-        locRepo.findExact(UpassCoords.GUIDE_ROPE, guideRopeType)?.let {
-            locRepo.change(it, cutRopeType, LOC_DURATION)
+        delay(1)
+        if (!statRandom("stat.ranged", RANGED_LOW, RANGED_HIGH, 0)) {
+            mes("The arrow just misses the rope.")
+            return
         }
         soundSynth(SOUND_FIRE_ARROW)
-        mesbox("The arrow buries itself in the guide rope and the oily cloth takes hold.")
-        delay(3)
+        mes("The arrow impales the rope support.")
+        for (tile in UpassCoords.ROPE_SHOT_WALK) {
+            playerRun(tile)
+        }
+        delay(1)
+        mes("The bridge falls.")
+        mes("You rush across the bridge.")
         soundSynth(SOUND_BRIDGE_FALL)
-        locRepo.findExact(UpassCoords.BRIDGE, bridgeType)?.let { locRepo.del(it, LOC_DURATION) }
+        lowerBridge(ROPE_BRIDGE_TICKS)
+        delay(3)
+        telejump(UpassCoords.BRIDGE_WEST, TeleportType.Exempt)
         player.foundBridge = 1
-        quest.advanceTo(this, STAGE_BRIDGE)
-        mesbox(
-            "The rope parts with a crack and the whole span comes down across the chasm. It will " +
-                "hold long enough to walk over.",
-        )
+        if (quest.stage(player) == STAGE_ENTERED) {
+            quest.advanceTo(this, STAGE_BRIDGE)
+        }
     }
 
-    /**
-     * The winch on the near bank pulls the span back up. It is the one thing in the cavern that
-     * can undo the fire arrow, so it asks first.
-     */
-    private suspend fun ProtectedAccess.pullBridgeLever() {
+    private suspend fun ProtectedAccess.pullBridgeLever(lever: BoundLocInfo) {
         arriveDelay()
-        if (player.foundBridge == 0) {
-            soundSynth(SOUND_LEVER)
-            anim(LEVER_SEQ)
-            delay(1)
-            mes("The winch turns, but there is nothing left on the other end of it to pull.")
-            return
-        }
-        val choice = menu("Winch the bridge back up?", "Yes.", "No.", hotkeys = true)
-        ifClose()
-        if (choice != 1) {
-            return
-        }
+        mes("You pull the old lever...")
+        anim(SEQ_BOX_LEVER)
         soundSynth(SOUND_LEVER)
-        anim(LEVER_SEQ)
+        locRepo.change(lever, leverDownType, LEVER_TICKS)
+        stepThrough(lineTo(UpassCoords.BRIDGE_LEVER_STAND))
         delay(2)
-        locRepo.findExact(UpassCoords.GUIDE_ROPE, cutRopeType)?.let {
-            locRepo.change(it, guideRopeType, LOC_DURATION)
-        }
-        locRepo.add(UpassCoords.BRIDGE, bridgeType, LOC_DURATION, BRIDGE_ANGLE, BRIDGE_SHAPE)
-        player.foundBridge = 0
-        mesbox("The span grinds back up into the roof. You will have to burn the rope again.")
+        stepThrough(listOf(UpassCoords.BRIDGE_LEVER_STAND.translate(1, 1)))
+        lowerBridge(LEVER_BRIDGE_TICKS)
+        stepThrough(lineTo(UpassCoords.BRIDGE_WEST))
+        delay(1)
+        mes("You cross the lowered bridge.")
+        telejump(UpassCoords.BRIDGE_EAST, TeleportType.Exempt)
     }
 
-    /**
-     * With the span down the chasm is crossed by stepping onto the lip of it from either bank.
-     * The fallen bridge is scenery with no option on it, so the tiles either side do the work.
-     */
-    private fun crossBridge(player: Player) {
-        if (player.foundBridge == 0) {
-            return
+    private fun lowerBridge(ticks: Int) {
+        locRepo.findExact(UpassCoords.BRIDGE, bridgeType)?.let {
+            locRepo.change(it, fallingBridgeType, ticks)
         }
-        val dest =
-            when (player.coords) {
-                in UpassCoords.BRIDGE_WEST_EDGE -> UpassCoords.BRIDGE_EAST_LANDING
-                in UpassCoords.BRIDGE_EAST_EDGE -> UpassCoords.BRIDGE_WEST_LANDING
-                else -> return
-            }
-        launcher.launch(player) {
-            mes("You pick your way across the fallen bridge.")
-            climbOver(dest, WALK_SEQ, BRIDGE_CROSS_TICKS)
-        }
-    }
-
-    private fun ProtectedAccess.hasBowEquipped(): Boolean {
-        val weapon = player.worn[Wearpos.RightHand.slot] ?: return false
-        val type = ServerCacheManager.getItem(weapon.id) ?: return false
-        return type.weaponCategory == WeaponCategory.Bow
     }
 
     private companion object {
@@ -284,22 +273,22 @@ constructor(
         const val ABANDONED_GEAR = "loc.upass_gear"
         const val ROPE_CRATE = "loc.upass_crate_rope"
         const val SWAMP = "loc.upass_swampbubbles1"
+        const val MUD_PILE = "loc.caverockpile"
         const val GUIDE_ROPE = "loc.oldbridge_guiderope"
-        const val ROPE_CUT = "loc.oldbridge_guiderope_cut"
         const val BRIDGE_UP = "loc.old_bridge_up"
+        const val BRIDGE_FALLING = "loc.old_bridge_animated"
         const val BRIDGE_LEVER = "loc.upass_lever_up"
+        const val LEVER_DOWN = "loc.upass_lever_down"
         const val FIRE = "loc.fire"
 
-        const val LOC_DURATION = Int.MAX_VALUE
-        const val BRIDGE_CROSS_TICKS = 3
-        const val SWAMP_MIN_DAMAGE = 3
-        const val SWAMP_MAX_DAMAGE = 9
+        const val ROPE_SHOT_RANGE = 10
+        const val RANGED_LOW = 90
+        const val RANGED_HIGH = 300
+        const val ROPE_BRIDGE_TICKS = 8
+        const val LEVER_BRIDGE_TICKS = 5
+        const val LEVER_TICKS = 4
+        const val SWAMP_DAMAGE_PERCENT = 15
 
-        val BRIDGE_ANGLE = LocAngle.South
-        val BRIDGE_SHAPE = LocShape.CentrepieceStraight
-
-        const val BOW_SEQ = "seq.human_bow"
-        const val LEVER_SEQ = "seq.human_leverdown"
-        const val WALK_SEQ = "seq.human_walk_f"
+        val LIT_ARROWS = UndergroundPassQuest.ARROW_PAIRS.map { it.second.second }
     }
 }

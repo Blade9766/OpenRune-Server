@@ -1,8 +1,8 @@
 package org.rsmod.content.quest.area.ardougne.undergroundpass
 
-import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
+import dev.openrune.types.BasType
 import kotlin.math.sign
 import org.rsmod.api.config.constants
 import org.rsmod.api.player.hook.TeleportType
@@ -18,13 +18,18 @@ private const val CLIENT_CYCLES_PER_TICK = 30
  * them standing on [dest]. The obstacles of the pass all sit on tiles the routefinder refuses, so
  * every one of them has to be crossed this way rather than walked.
  */
-internal suspend fun ProtectedAccess.climbOver(dest: CoordGrid, seq: String, ticks: Int = 2) {
+internal suspend fun ProtectedAccess.climbOver(
+    dest: CoordGrid,
+    seq: String,
+    ticks: Int = 2,
+    startDelay: Int = 0,
+) {
     val start = coords
     anim(seq)
     exactMove(
         start = start,
         end = dest,
-        delay1 = 0,
+        delay1 = startDelay,
         delay2 = ticks * CLIENT_CYCLES_PER_TICK,
         dir = faceTowards(start, dest),
         teleportType = TeleportType.Exempt,
@@ -33,17 +38,66 @@ internal suspend fun ProtectedAccess.climbOver(dest: CoordGrid, seq: String, tic
     resetAnim()
 }
 
-/** Number of server ticks [seq] plays for, or [fallback] when the cache holds no duration. */
-internal fun upassSeqTicks(seq: String, fallback: Int): Int {
-    val type = ServerCacheManager.getAnim(seq.asRSCM(RSCMType.SEQ))
-    val ticks = type?.tickDuration ?: 0
-    return if (ticks > 0) ticks else fallback
+/**
+ * Replaces the player's stand and walk animations with [walk] (and [ready] when stood still) until
+ * [clearWalkStyle] is called: the sidestep along the ledge and the drowning in the swamp.
+ */
+internal fun ProtectedAccess.setWalkStyle(walk: String, ready: String = walk) {
+    val readyId = ready.asRSCM(RSCMType.SEQ)
+    val walkId = walk.asRSCM(RSCMType.SEQ)
+    player.bas =
+        BasType(
+            id = -1,
+            readyAnim = readyId,
+            turnOnSpot = readyId,
+            walkForward = walkId,
+            walkBack = walkId,
+            walkLeft = walkId,
+            walkRight = walkId,
+            running = walkId,
+        )
+    rebuildAppearance()
+}
+
+internal fun ProtectedAccess.clearWalkStyle() {
+    if (player.bas != null) {
+        player.bas = null
+        rebuildAppearance()
+    }
+}
+
+/**
+ * Steps the player through [tiles] one a tick. Each step is a teleport move, which the client draws
+ * as a walk but which ignores collision, so the player cannot be pushed off a ledge or out of a
+ * forced walk by their own clicks.
+ */
+internal suspend fun ProtectedAccess.stepThrough(tiles: List<CoordGrid>) {
+    for (tile in tiles) {
+        if (coords == tile) {
+            continue
+        }
+        teleport(tile, TeleportType.Exempt)
+        delay(1)
+    }
+}
+
+/** Every tile in a straight line from the player to [dest], [dest] included. */
+internal fun ProtectedAccess.lineTo(dest: CoordGrid): List<CoordGrid> {
+    val tiles = mutableListOf<CoordGrid>()
+    var x = coords.x
+    var z = coords.z
+    while (x != dest.x || z != dest.z) {
+        x += (dest.x - x).sign
+        z += (dest.z - z).sign
+        tiles += CoordGrid(x, z, dest.level)
+    }
+    return tiles
 }
 
 /**
  * The tile directly across [loc] from where the player is standing. Used by every blocking
- * obstacle that is crossed perpendicular to its own footprint: the rockslides, the pipes, the
- * tunnels through the unicorn doors and the picklocked cell gates.
+ * obstacle that is crossed perpendicular to its own footprint: the rockslides, the pipes and the
+ * picklocked cell gates.
  */
 internal fun ProtectedAccess.acrossFrom(loc: BoundLocInfo): CoordGrid {
     val minX = loc.coords.x
@@ -53,20 +107,16 @@ internal fun ProtectedAccess.acrossFrom(loc: BoundLocInfo): CoordGrid {
     val px = coords.x
     val pz = coords.z
     return when {
-        px < minX -> CoordGrid(maxX + 1, pz.coerceIn(minZ, maxZ), loc.level)
-        px > maxX -> CoordGrid(minX - 1, pz.coerceIn(minZ, maxZ), loc.level)
-        pz < minZ -> CoordGrid(px.coerceIn(minX, maxX), maxZ + 1, loc.level)
-        pz > maxZ -> CoordGrid(px.coerceIn(minX, maxX), minZ - 1, loc.level)
+        px < minX -> CoordGrid(maxX + 1, pz.coerceIn(minZ, maxZ), coords.level)
+        px > maxX -> CoordGrid(minX - 1, pz.coerceIn(minZ, maxZ), coords.level)
+        pz < minZ -> CoordGrid(px.coerceIn(minX, maxX), maxZ + 1, coords.level)
+        pz > maxZ -> CoordGrid(px.coerceIn(minX, maxX), minZ - 1, coords.level)
         // Standing inside the footprint: leave by the nearest edge.
-        else -> CoordGrid(px, if (pz - minZ <= maxZ - pz) minZ - 1 else maxZ + 1, loc.level)
+        else -> CoordGrid(px, if (pz - minZ <= maxZ - pz) minZ - 1 else maxZ + 1, coords.level)
     }
 }
 
-/** Of [first] and [second], the one the player is not already standing next to. */
-internal fun ProtectedAccess.farEndOf(first: CoordGrid, second: CoordGrid): CoordGrid =
-    if (coords.chebyshevDistance(first) <= coords.chebyshevDistance(second)) second else first
-
-private fun faceTowards(from: CoordGrid, to: CoordGrid): Int {
+internal fun faceTowards(from: CoordGrid, to: CoordGrid): Int {
     val dx = (to.x - from.x).sign
     val dz = (to.z - from.z).sign
     return when {
