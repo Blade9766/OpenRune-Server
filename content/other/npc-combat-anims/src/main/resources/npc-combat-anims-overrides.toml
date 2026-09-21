@@ -123,4 +123,6 @@ npc = [
     # The Judge has its own attack and death on the demon_update rig.
     { id = "npc.akd_judge_of_yama_combat", attack_anim = "seq.judgeofyama_attack", death_anim = "seq.judgeofyama_death" },
     { id = "npc.yama_judge_of_yama", attack_anim = "seq.judgeofyama_attack", death_anim = "seq.judgeofyama_death" },
+    # Skotizo is banished like Delrith rather than falling over.
+    { id = "npc.cata_boss", death_anim = "seq.qip_ds_delrith_banished" },
 ]
