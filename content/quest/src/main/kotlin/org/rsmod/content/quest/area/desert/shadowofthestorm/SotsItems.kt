@@ -91,7 +91,7 @@ class SotsItems @Inject constructor(private val sots: ShadowOfTheStormQuest) : P
         }
         mesbox(
             "The tome names the words of the summoning, and the order they must be spoken in:" +
-                "<br><br><col=7f0000>${Incantation.render(Incantation.tomeOrder(player))}</col>",
+                "<br><col=7f0000>${Incantation.render(Incantation.tomeOrder(player))}</col>",
         )
         mesbox("That is the same five words Denath gave you, and exactly backwards to them.")
     }

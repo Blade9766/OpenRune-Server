@@ -43,5 +43,5 @@ internal object Incantation {
 
     fun words(order: List<Int>): List<String> = order.map(WORDS::get)
 
-    fun render(order: List<Int>): String = words(order).joinToString("<br>")
+    fun render(order: List<Int>): String = words(order).joinToString(", ")
 }

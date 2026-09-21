@@ -109,7 +109,7 @@ constructor(private val sots: ShadowOfTheStormQuest) : PluginScript() {
             chatNpc(neutral, "Awaiting the circle.")
             return
         }
-        chatPlayer(neutral, "Ask me again about the summoning.")
+        chatPlayer(neutral, "Let me ask you again about the summoning.")
         chatNpc(
             neutral,
             "No instruction found. Proposal evaluated on its merits: a demon inside a circle is " +
@@ -119,9 +119,9 @@ constructor(private val sots: ShadowOfTheStormQuest) : PluginScript() {
             chatNpc(neutral, "A sigil is required. I have no hands for casting one.")
             return
         }
+        chatNpc(happy, "Proceeding to the temple. This is the first new thing I have done in three thousand years.")
         player.golemConvinced = GOLEM_RECRUITED
         player.golemClay = GOLEM_CLAY_AWAY
-        chatNpc(happy, "Proceeding to the temple. This is the first new thing I have done in three thousand years.")
         access.mes("The golem sets off towards the temple stairs.")
     }
 

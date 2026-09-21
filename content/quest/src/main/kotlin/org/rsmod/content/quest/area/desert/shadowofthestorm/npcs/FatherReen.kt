@@ -164,14 +164,14 @@ constructor(private val sots: ShadowOfTheStormQuest) : PluginScript() {
             chatNpc(worried, "Bring me one of those sigils and I will carry it into the circle.")
             return
         }
-        player.reenAtUzer = RECRUITED
         chatNpc(neutral, "Very well. Give me the sigil. I will meet you below.")
+        player.reenAtUzer = RECRUITED
         access.mes("Father Reen takes the sigil and starts down towards the temple.")
     }
 
     private suspend fun Dialogue.finish() {
         chatNpc(happy, "It is over. I felt it go.")
-        chatPlayer(neutral, "It's over. The sword took most of him with it.")
+        chatPlayer(neutral, "The sword took most of him with it.")
         chatNpc(
             neutral,
             "So it did. That is not Silverlight any more - it has had a taste of something older " +
@@ -185,9 +185,9 @@ constructor(private val sots: ShadowOfTheStormQuest) : PluginScript() {
                 "Strength", "stat.strength",
                 "Defence", "stat.defence",
                 "Hitpoints", "stat.hitpoints",
-                "Ranged", "stat.ranged",
+                "More...", null,
                 title = "Which skill?",
-            )
+            ) ?: choice2("Ranged", "stat.ranged", "Magic", "stat.magic", title = "Which skill?")
         access.statAdvance(stat, COMBAT_XP_REWARD)
         player.reenAtUzer = IN_UZER
         player.baddenAtUzer = IN_UZER

@@ -15,6 +15,7 @@ import org.rsmod.content.quest.area.desert.shadowofthestorm.ShadowOfTheStormQues
 import org.rsmod.content.quest.area.desert.shadowofthestorm.ShadowOfTheStormQuest.Companion.STAGE_RECRUITING
 import org.rsmod.content.quest.area.desert.shadowofthestorm.ShadowOfTheStormQuest.Companion.STAGE_STARTED
 import org.rsmod.content.quest.area.desert.shadowofthestorm.baddenAtUzer
+import org.rsmod.content.quest.area.desert.shadowofthestorm.reenAtUzer
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -132,8 +133,13 @@ constructor(private val sots: ShadowOfTheStormQuest) : PluginScript() {
         chatNpc(shocked, "You want me to summon it?")
         chatPlayer(neutral, "I want you to summon it somewhere I can reach it with a sword.")
         chatNpc(worried, "Reen would have my hide.")
-        chatPlayer(neutral, "Reen is already holding one.")
-        chatNpc(laugh, "Of course he is. Very well.")
+        if (player.reenAtUzer == RECRUITED) {
+            chatPlayer(neutral, "Reen is already holding one.")
+            chatNpc(laugh, "Of course he is. Very well.")
+        } else {
+            chatPlayer(neutral, "Reen will be holding one too, if I have any say in it.")
+            chatNpc(worried, "Then I had better not be the brother who refused. Very well.")
+        }
         if (access.invDel(player.inv, SIGIL).failure) {
             chatNpc(neutral, "Bring me a sigil, then, and I will go down with you.")
             return

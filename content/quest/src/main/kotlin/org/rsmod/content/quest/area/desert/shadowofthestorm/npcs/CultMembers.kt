@@ -137,7 +137,7 @@ constructor(
     private suspend fun Dialogue.reciteIncantation() {
         mesbox(
             "Denath speaks five words, slowly, and waits until you can say them back:" +
-                "<br><br><col=7f0000>${Incantation.render(Incantation.denathOrder(player))}</col>",
+                "<br><col=7f0000>${Incantation.render(Incantation.denathOrder(player))}</col>",
         )
     }
 
