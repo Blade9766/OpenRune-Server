@@ -77,6 +77,8 @@ public class Appearance {
             rebuild = true
         }
 
+    private val wornOverrides: MutableMap<Int, Int> = HashMap(0)
+
     private val colours: ByteArray = ByteArray(5)
     private val identKit: ShortArray = ShortArray(7) { -1 }
 
@@ -106,6 +108,33 @@ public class Appearance {
         this.identKit[index] = identKit.toShort()
         this.rebuild = true
     }
+
+    /**
+     * Cosmetic worn-obj overrides, by wearpos slot: the appearance shows these objs in place of
+     * whatever is worn there, without affecting the worn inv or any bonus. [HIDDEN_WORN_OVERRIDE]
+     * shows the slot as empty instead.
+     */
+    public fun setWornOverride(slot: Int, obj: Int) {
+        wornOverrides[slot] = obj
+        this.rebuild = true
+    }
+
+    public fun clearWornOverride(slot: Int) {
+        if (wornOverrides.remove(slot) != null) {
+            this.rebuild = true
+        }
+    }
+
+    public fun clearWornOverrides() {
+        if (wornOverrides.isNotEmpty()) {
+            wornOverrides.clear()
+            this.rebuild = true
+        }
+    }
+
+    public fun wornOverride(slot: Int): Int? = wornOverrides[slot]
+
+    public fun wornOverrideSlots(): Set<Int> = wornOverrides.keys.toSet()
 
     public fun coloursSnapshot(): List<Byte> = colours.toList()
 
@@ -142,6 +171,9 @@ public class Appearance {
     }
 
     public companion object {
+        /** Shows a worn-override slot as empty, hiding whatever is worn there. */
+        public const val HIDDEN_WORN_OVERRIDE: Int = -1
+
         /** Leaves an ident-kit slot empty; the protocol encodes it as "no model". */
         public const val NO_IDENT_KIT: Int = -1
 

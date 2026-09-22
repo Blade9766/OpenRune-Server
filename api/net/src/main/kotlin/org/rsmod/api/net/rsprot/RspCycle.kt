@@ -24,6 +24,7 @@ import org.rsmod.api.player.righthand
 import org.rsmod.api.registry.region.RegionRegistry
 import org.rsmod.game.client.ClientCycle
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.Appearance
 import org.rsmod.game.entity.util.EntityFaceAngle
 import org.rsmod.game.headbar.Headbar
 import org.rsmod.game.hit.Hitmark
@@ -424,13 +425,22 @@ class RspCycle(
         )
 
         for (wearpos in Wearpos.visibleWearpos) {
-            val obj = worn[wearpos.slot]
-            if (obj == null) {
+            val override = appearance.wornOverride(wearpos.slot)
+            if (override == Appearance.HIDDEN_WORN_OVERRIDE) {
                 info.setWornObj(wearpos.slot, -1, -1, -1)
                 continue
             }
-            val objType = getInvObj(obj)
-            info.setWornObj(wearpos.slot, obj.id, objType.wearpos2, objType.wearpos3)
+            val objType =
+                if (override != null) {
+                    ServerCacheManager.getItem(override)
+                } else {
+                    worn[wearpos.slot]?.let(::getInvObj)
+                }
+            if (objType == null) {
+                info.setWornObj(wearpos.slot, -1, -1, -1)
+                continue
+            }
+            info.setWornObj(wearpos.slot, objType.id, objType.wearpos2, objType.wearpos3)
         }
     }
 }
