@@ -5229,3 +5229,18 @@ id = "npc.boulder_upass"
 inherit = "npc.boulder_upass"
 moveRestrict = "NoMove"
 wanderRange = 0
+
+[[npc]]
+id = "npc.lunar_pirate_captain"
+inherit = "npc.lunar_pirate_captain"
+wanderRange = 0
+
+[[npc]]
+id = "npc.quest_lunar_mirror_of_player"
+inherit = "npc.quest_lunar_mirror_of_player"
+maxRange = 40
+
+[[npc]]
+id = "npc.quest_lunar_mirror_of_player_female"
+inherit = "npc.quest_lunar_mirror_of_player_female"
+maxRange = 40

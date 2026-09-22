@@ -94,8 +94,12 @@ constructor(
         player.battlePos = slot
         player.anim(SHIFT_SEQ)
         player.spotanim(SHIFT_SPOT)
-        PathingEntityCommon.telejump(player, collision, dream.at(player, SHIFT_TILES[slot]))
+        val tile = SHIFT_TILES[slot]
+        PathingEntityCommon.telejump(player, collision, dream.at(player, tile))
         player.mes("You've been teleported for some unknown reason...")
+        me.teleport(collision, dream.at(player, tile.translateX(ME_SHIFT_OFFSET)))
+        me.spotanim(SHIFT_SPOT)
+        me.opPlayer2(player, aiInteractions)
     }
 
     /** Called from Me's death; the player's quest moves on and they are sent back to the centre. */
@@ -127,7 +131,12 @@ constructor(
         private const val SHIFT_SPOT = "spotanim.lunar_fighting_me_tele_spotanim"
 
         val PLAYER_START = CoordGrid(1816, 5087, 2)
-        val ME_START = CoordGrid(1826, 5087, 2)
+
+        /** On the outer floor: npcs walk straight at their target and cannot leave the middle. */
+        val ME_START = CoordGrid(1816, 5091, 2)
+
+        /** Every shift tile has open floor two tiles east of it, where Me follows the player. */
+        private const val ME_SHIFT_OFFSET = 2
         val CENTRE_RETURN = DreamWorld.CENTRE
 
         val SHIFT_TILES =

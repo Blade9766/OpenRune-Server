@@ -30,7 +30,7 @@ class LunarDiplomacyQuest : QuestScript(
     "varp.lunar_quest",
     rewards {
         xp("stat.magic", REWARD_XP)
-        xp("stat.runecraft", REWARD_XP)
+        xp("stat.runecrafting", REWARD_XP)
         scroll(
             "5,000 Magic XP",
             "5,000 Runecraft XP",

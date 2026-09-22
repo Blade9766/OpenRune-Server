@@ -39,7 +39,7 @@ enum class LunarPiece(val obj: String, val varbit: String, val label: String) {
     Torso("obj.lunar_torso", "varbit.lunar_pt2_oneiro_given_torso", "torso"),
     Gloves("obj.lunar_gloves", "varbit.lunar_pt2_oneiro_given_gloves", "gloves"),
     Boots("obj.lunar_boots", "varbit.lunar_pt2_oneiro_given_boots", "boots"),
-    Trousers("obj.lunar_legs", "varbit.lunar_pt2_oneiro_given_trousers", "trousers"),
+    Trousers("obj.lunar_legs", "varbit.lunar_pt2_oneiro_given_trousers", "legs"),
     Ring("obj.lunar_ring", "varbit.lunar_pt2_oneiro_given_ring", "ring");
 
     fun given(player: Player): Boolean = player.vars[varbit] == 1

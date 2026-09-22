@@ -394,6 +394,9 @@ object RunecraftAction {
             "obj.cosmicrune" -> floor(level / 59.0) + 1
             "obj.chaosrune" -> floor(level / 74.0) + 1
             "obj.naturerune" -> floor(level / 91.0) + 1
+            "obj.astralrune" -> floor(level / 82.0) + 1
+            "obj.lawrune" -> floor(level / 95.0) + 1
+            "obj.deathrune" -> floor(level / 99.0) + 1
             else -> 1.0
         }
 

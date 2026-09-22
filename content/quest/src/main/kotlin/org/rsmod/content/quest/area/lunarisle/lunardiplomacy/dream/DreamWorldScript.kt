@@ -1,5 +1,7 @@
 package org.rsmod.content.quest.area.lunarisle.lunardiplomacy.dream
 
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.midiJingle
@@ -43,6 +45,10 @@ constructor(
     private val fight: MeFight,
     private val worldRepo: WorldRepository,
 ) : PluginScript() {
+    private val ceremonialDress by lazy {
+        (LunarPiece.entries.map { it.obj } + LUNAR_STAFF).map { it.asRSCM(RSCMType.OBJ) }.toSet()
+    }
+
     override fun ScriptContext.startup() {
         onOpLocU(BRAZIER, TINDERBOX) { lightBrazier() }
         onOpLocU(BRAZIER, SOAKED_KINDLING) { burnKindling() }
@@ -93,7 +99,7 @@ constructor(
                 chatPlayer(
                     confused,
                     "Huh? If I dreamt, I don't remember any of it. Wait a minute! I have to wear ALL " +
-                        "the ceremonial gear AND be holding the staff.",
+                        "the ceremonial gear AND be holding the staff, and nothing else.",
                 )
             }
             return
@@ -121,8 +127,10 @@ constructor(
         say("Huh? Where am I?")
     }
 
-    private fun ProtectedAccess.wearingCeremonialDress(): Boolean =
-        LunarPiece.entries.all { it.obj in player.worn } && LUNAR_STAFF in player.worn
+    private fun ProtectedAccess.wearingCeremonialDress(): Boolean {
+        val worn = player.worn.filterNotNull { true }.map { it.id }.toSet()
+        return worn == ceremonialDress
+    }
 
     private suspend fun ProtectedAccess.readLife() {
         var wake = false

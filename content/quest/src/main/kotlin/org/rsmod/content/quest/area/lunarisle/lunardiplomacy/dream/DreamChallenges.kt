@@ -21,6 +21,7 @@ import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.lunarSpokenCentre
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.PlayerUid
+import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.hit.HitType
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.map.Direction
@@ -199,7 +200,7 @@ constructor(
                 )
                 chatPlayer(neutral, "Erm, ok. I can't really say no in this place.")
                 player.numbersIntro = true
-                newSequence(player, exclude = -1)
+                firstSequence(player)
                 chatNpc(neutral, currentSequence(player))
                 return@startDialogue
             }
@@ -235,7 +236,7 @@ constructor(
         val position = player.numbersAnswered
         val npc = dream.npc(player, DreamWorld.NUMERATOR)
         if (number != sequence.answers[position]) {
-            newSequence(player, exclude = player.numbersSequence)
+            nextSequence(player)
             npc?.say("That's not it! Try a new sequence!")
             mes(currentSequence(player))
             return
@@ -250,7 +251,7 @@ constructor(
         DreamChallenge.Numbers.setProgress(player, done)
         if (done < DreamChallenge.Numbers.needed) {
             val left = DreamChallenge.Numbers.needed - done
-            newSequence(player, exclude = player.numbersSequence)
+            nextSequence(player)
             npc?.say("That's it! $left more to go!")
             mes("That's it! You've completed $done ${if (done == 1) "sequence" else "sequences"}. ${currentSequence(player)}")
             return
@@ -271,12 +272,14 @@ constructor(
         finish(DreamChallenge.Numbers)
     }
 
-    private fun newSequence(player: Player, exclude: Int) {
-        var next: Int
-        do {
-            next = random.of(0, SEQUENCES.lastIndex)
-        } while (next == exclude)
-        player.numbersSequence = next
+    private fun firstSequence(player: Player) {
+        player.numbersSequence = random.of(0, SEQUENCES.lastIndex)
+        player.numbersAnswered = 0
+    }
+
+    /** Steps by a stride coprime with the sequence count, so no sequence repeats within a round. */
+    private fun nextSequence(player: Player) {
+        player.numbersSequence = (player.numbersSequence + SEQUENCE_STRIDE) % SEQUENCES.size
         player.numbersAnswered = 0
     }
 
@@ -417,6 +420,10 @@ constructor(
         if (!start) {
             return
         }
+        val heldLogs = inv.count(DREAM_LOGS)
+        if (heldLogs > 0) {
+            invDel(inv, DREAM_LOGS, heldLogs)
+        }
         player.treePlaying = true
         player.playerLogs = 0
         player.rivalLogs = 0
@@ -548,6 +555,14 @@ constructor(
                 }
                 return@startDialogue
             }
+            if (player.uid in raceTicks) {
+                chatNpc(happy, "Back for another go? I'll still beat you!")
+                race = choice2("Ok.", true, "No thanks.", false)
+                if (!race) {
+                    chatPlayer(neutral, "No thanks.")
+                }
+                return@startDialogue
+            }
             chatPlayer(neutral, "This looks like an interesting island.")
             chatNpc(happy, "Oh, it is. Fancy a race?!")
             chatPlayer(confused, "That's a bit sudden. What kind of race?")
@@ -584,10 +599,6 @@ constructor(
     }
 
     suspend fun ProtectedAccess.jumpHurdle(loc: BoundLocInfo) {
-        if (!player.raceRunning && !DreamChallenge.Race.isComplete(player)) {
-            mesbox("You should probably talk to that nearby character first.")
-            return
-        }
         val north = coords.z < loc.coords.z
         val dest = CoordGrid(coords.x, if (north) loc.coords.z + 1 else loc.coords.z - 1, coords.level)
         val failChance = (HURDLE_BASE_FAIL - statBase(AGILITY) / HURDLE_AGILITY_DIVISOR).coerceAtLeast(HURDLE_MIN_FAIL)
@@ -644,6 +655,7 @@ constructor(
         npc.say("Woo hoo! Ha ha! You'll never beat me, I'm far too fast!")
         player.mes("The Ethereal Expert beat you to the end. Talk to him to race again.")
         npc.teleport(collision, dream.at(player, EXPERT_HOME))
+        PathingEntityCommon.telejump(player, collision, dream.at(player, RACE_START))
     }
 
     private suspend fun ProtectedAccess.wonRace() {
@@ -709,7 +721,7 @@ constructor(
             mes("You can't jump diagonally!")
             return
         }
-        if (abs(dx) + abs(dz) != PUFF_SPACING) {
+        if (abs(dx) + abs(dz) !in EDGE_GAP..PUFF_SPACING) {
             mes("That's too far to jump from here.")
             return
         }
@@ -946,7 +958,9 @@ constructor(
         private const val PUFF_ROWS = 8
         private const val PUFF_FIRST_X = 1731
         private const val PUFF_FIRST_Z = 5085
+        private const val SEQUENCE_STRIDE = 5
         private const val PUFF_SPACING = 3
+        private const val EDGE_GAP = 2
         private const val PUFF_JUMP_TICKS = 2
         private const val MEMORY_START_Z = 5108
         private const val MEMORY_END_Z = 5083

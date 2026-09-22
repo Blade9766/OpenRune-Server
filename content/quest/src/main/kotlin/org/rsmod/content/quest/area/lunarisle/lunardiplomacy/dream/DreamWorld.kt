@@ -79,7 +79,7 @@ class DreamWorld @Inject constructor(private val manager: InstanceManager) {
             InstanceArea.copyRegions(
                 regionIds = REGIONS,
                 level = arrival.level,
-                enterCoord = RegionLocal(arrival.level, arrival.mx, arrival.mz, arrival.lx, arrival.lz),
+                enterCoord = RegionLocal(ANCHOR.level, ANCHOR.mx, ANCHOR.mz, ANCHOR.lx, ANCHOR.lz),
                 exitCoord = LunarCoords.BRAZIER_SIDE,
                 npcSpawns = spawns(isBodyTypeB()),
             )
@@ -110,7 +110,9 @@ class DreamWorld @Inject constructor(private val manager: InstanceManager) {
             return false
         }
         manager.finalizeEntry(player, session, mapClock)
-        dreams[player.uid] = Dream(session, enter.x - arrival.x, enter.z - arrival.z)
+        val dream = Dream(session, enter.x - ANCHOR.x, enter.z - ANCHOR.z)
+        dreams[player.uid] = dream
+        telejump(CoordGrid(arrival.x + dream.dx, arrival.z + dream.dz, arrival.level), TeleportType.Exempt)
         return true
     }
 
@@ -172,6 +174,12 @@ class DreamWorld @Inject constructor(private val manager: InstanceManager) {
 
         val BEING_TILE = CoordGrid(1761, 5088, 2)
         val CENTRE = CoordGrid(1763, 5088, 2)
+
+        /**
+         * The tile the instance is anchored on. The instance manager drops anyone more than 64
+         * tiles from it, so it sits between the islands and Me's arena rather than on the centre.
+         */
+        private val ANCHOR = CoordGrid(1785, 5079, 2)
 
         val CHALLENGERS =
             listOf(

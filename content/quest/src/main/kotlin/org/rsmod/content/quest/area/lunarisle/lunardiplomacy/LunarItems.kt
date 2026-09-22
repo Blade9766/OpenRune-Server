@@ -1,5 +1,8 @@
 package org.rsmod.content.quest.area.lunarisle.lunardiplomacy
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpHeld3
@@ -8,6 +11,7 @@ import org.rsmod.api.script.onOpLocCategoryU
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest.Companion.LUNAR_STAFF
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest.Companion.STAGE_STAFF
+import org.rsmod.game.inv.isType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -50,36 +54,43 @@ class LunarItems @Inject constructor(private val lunar: LunarDiplomacyQuest) : P
             return
         }
         invDel(inv, herb)
-        invReplace(inv, vial, 1, product)
+        replaceInPlace(vial, product)
         anim(MIX_SEQ)
         soundSynth(MIX_SOUND)
         mes("You add the $herbName to the vial.")
     }
 
+    /** Swaps one [from] for [to] in the same inventory slot, the way OSRS item actions do. */
+    private fun ProtectedAccess.replaceInPlace(from: String, to: String) {
+        val slot = inv.indices.firstOrNull { inv[it]?.isType(from) == true } ?: return
+        val type = ServerCacheManager.getItem(to.asRSCM(RSCMType.OBJ)) ?: return
+        invReplaceSlot(inv, slot, 1, type)
+    }
+
     private fun ProtectedAccess.grindTooth() {
         anim(GRIND_SEQ)
-        invReplace(inv, SUQAH_TOOTH, 1, GROUND_TOOTH)
+        replaceInPlace(SUQAH_TOOTH, GROUND_TOOTH)
         mes("You grind the Suqah tooth into a fine powder.")
     }
 
     private fun ProtectedAccess.finishPotion() {
         invDel(inv, GROUND_TOOTH)
-        invReplace(inv, GUAMMARR_VIAL, 1, FULL_VIAL)
+        replaceInPlace(GUAMMARR_VIAL, FULL_VIAL)
         anim(MIX_SEQ)
         soundSynth(MIX_SOUND)
         mes("You add the ground tooth to the vial. The mixture swirls and settles. You have a waking sleep potion.")
     }
 
     private fun ProtectedAccess.soakKindling() {
-        invReplace(inv, FULL_VIAL, 1, EMPTY_VIAL)
-        invReplace(inv, KINDLING, 1, SOAKED_KINDLING)
+        replaceInPlace(FULL_VIAL, EMPTY_VIAL)
+        replaceInPlace(KINDLING, SOAKED_KINDLING)
         soundSynth(POUR_SOUND)
         mes("You pour the waking sleep potion over the kindling.")
     }
 
     private fun ProtectedAccess.fitLens(lantern: String, result: String) {
         invDel(inv, EMERALD_LENS)
-        invReplace(inv, lantern, 1, result)
+        replaceInPlace(lantern, result)
         if (lantern != LANTERN_FRAME) {
             invAddOrDropLens()
         }
@@ -98,12 +109,12 @@ class LunarItems @Inject constructor(private val lunar: LunarDiplomacyQuest) : P
             mes("You need a Firemaking level of $LANTERN_FIREMAKING to light the lantern.")
             return
         }
-        invReplace(inv, UNLIT_EMERALD, 1, LIT_EMERALD)
+        replaceInPlace(UNLIT_EMERALD, LIT_EMERALD)
         mes("You light the emerald lantern.")
     }
 
     private fun ProtectedAccess.extinguish() {
-        invReplace(inv, LIT_EMERALD, 1, UNLIT_EMERALD)
+        replaceInPlace(LIT_EMERALD, UNLIT_EMERALD)
         mes("You extinguish the lantern.")
     }
 
@@ -116,7 +127,7 @@ class LunarItems @Inject constructor(private val lunar: LunarDiplomacyQuest) : P
         spotanim(step.spot, height = SPOT_HEIGHT)
         soundSynth(IMBUE_SOUND)
         delay(2)
-        invReplace(inv, step.input, 1, step.output)
+        replaceInPlace(step.input, step.output)
         mes(step.message)
     }
 
@@ -128,7 +139,7 @@ class LunarItems @Inject constructor(private val lunar: LunarDiplomacyQuest) : P
         anim(FURNACE_SEQ)
         soundSynth(FURNACE_SOUND)
         delay(3)
-        invReplace(inv, LUNAR_ORE, 1, LUNAR_BAR)
+        replaceInPlace(LUNAR_ORE, LUNAR_BAR)
         mes("You smelt the lunar ore into a bar.")
     }
 
@@ -149,7 +160,7 @@ class LunarItems @Inject constructor(private val lunar: LunarDiplomacyQuest) : P
         anim(SMITH_SEQ)
         soundSynth(SMITH_SOUND)
         delay(3)
-        invReplace(inv, LUNAR_BAR, 1, LunarPiece.Helm.obj)
+        replaceInPlace(LUNAR_BAR, LunarPiece.Helm.obj)
         mes("You hammer the lunar bar into a helm.")
     }
 
@@ -186,8 +197,9 @@ class LunarItems @Inject constructor(private val lunar: LunarDiplomacyQuest) : P
         soundSynth(SEW_SOUND)
         delay(2)
         invDel(inv, THREAD)
-        invReplace(inv, TANNED_HIDE, 1, garment.obj)
-        mes("You sew the Suqah leather into a lunar ${garment.label}.")
+        replaceInPlace(TANNED_HIDE, garment.obj)
+        val article = if (garment == LunarPiece.Torso) "a" else "a pair of"
+        mes("You sew the Suqah leather into $article lunar ${garment.label}.")
     }
 
     /** One altar's worth of power on the way from a Dramen staff to a Lunar staff. */
