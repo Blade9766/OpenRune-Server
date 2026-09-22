@@ -116,14 +116,30 @@ data class Quest(
     }
 
     fun getQuestStage(access: Player): Int {
+        if (questVarbit != null) return access.vars[questVarbit]
         val stages = access.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
         return stages[key] ?: 0
     }
 
-    private fun storeQuestStage(access: ProtectedAccess, stage: Int) {
+    private fun storeQuestStage(player: Player, stage: Int) {
         val clampedStage = stage.coerceIn(0, maxSteps)
-        val stages = access.player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
+        if (questVarbit != null) {
+            if (player.vars[questVarbit] != clampedStage) {
+                setClientState(player, clampedStage)
+            }
+            return
+        }
+        val stages = player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
         stages[key] = clampedStage
+    }
+
+    /** Moves a stage saved in the attribute map before the quest kept it in [questVarbit]. */
+    private fun migrateLegacyStage(player: Player) {
+        val varbit = questVarbit ?: return
+        val legacy = player.attr[QUEST_STAGE_MAP_ATTR]?.remove(key) ?: return
+        if (player.vars[varbit] == 0) {
+            VarPlayerIntMapSetter.set(player, varbit, legacy.coerceIn(0, maxSteps))
+        }
     }
 
     /** The stage as the client currently sees it (the varbit when one is configured, else the varp). */
@@ -143,6 +159,7 @@ data class Quest(
 
     /** Pushes the stored stage into the quest varp/varbit; called on login and after stage changes. */
     fun syncState(player: Player) {
+        migrateLegacyStage(player)
         val stage = getQuestStage(player)
         if (clientState(player) != stage) {
             setClientState(player, stage)
@@ -188,7 +205,7 @@ data class Quest(
     fun setQuestStage(access: ProtectedAccess, newStage: Int): Int {
         require(newStage in 0..maxSteps) { "Quest '$key' stage must be within 0..$maxSteps." }
         val wasCompleted = getQuestStage(access.player) >= maxSteps
-        storeQuestStage(access, newStage)
+        storeQuestStage(access.player, newStage)
 
         // Quest varps store the real stage (0..endstate). Multinpc / journal clients depend on
         // endstate (e.g. runemysteries=6) rather than a collapsed 0/1/2 progress flag.
@@ -232,8 +249,7 @@ data class Quest(
      */
     fun jumpToStage(player: Player, stage: Int) {
         val clamped = stage.coerceIn(0, maxSteps)
-        val stages = player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
-        stages[key] = clamped
+        storeQuestStage(player, clamped)
         setClientState(player, clamped)
         varSync?.invoke(player)
     }

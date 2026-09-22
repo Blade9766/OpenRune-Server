@@ -5,7 +5,6 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -22,7 +21,6 @@ private enum class PortSarimShop(
     Fishing("npc.gerrant", "Gerrant's Fishy Business.", "inv.fishingshop", 100.0, 70.0, 1.0),
     Food("npc.wydin", "Food Store", "inv.wydinstore", 100.0, 70.0, 1.0),
     Jewellery("npc.grum", "Grum's Gold Exchange.", "inv.goldshop", 100.0, 70.0, 2.0),
-    Magic("npc.betty", "Betty's Magic Emporium.", "inv.magicshop", 100.0, 60.0, 0.1),
     Battleaxes("npc.brian", "Brian's Battleaxe Bazaar.", "inv.battleaxeshop", 100.0, 55.0, 1.0),
 }
 
@@ -36,7 +34,6 @@ class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
         onTalkAcross(PortSarimShop.Jewellery.npc) { startDialogue(it) { grum() } }
         onOpNpc1(PortSarimShop.Fishing.npc) { startDialogue(it.npc) { gerrant() } }
         onOpNpc1(PortSarimShop.Food.npc) { startDialogue(it.npc) { wydin() } }
-        onOpNpc1(PortSarimShop.Magic.npc) { startDialogue(it.npc) { betty() } }
         onOpNpc1(PortSarimShop.Battleaxes.npc) { startDialogue(it.npc) { brian() } }
     }
 
@@ -99,38 +96,6 @@ class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
         }
         chatPlayer(sad, "No, I'm not that rich.")
         chatNpc(angry, "Get out then! We don't want any riff-raff in here.")
-    }
-
-    private suspend fun Dialogue.betty() {
-        chatNpc(quiz, "Hello again. What can I do for you?")
-        val sellsDye = QuestRequirements.hasCompleted(player, HAND_IN_THE_SAND)
-        val topic =
-            if (sellsDye) {
-                choice3(
-                    "Can I see your wares?",
-                    BettyTopic.Wares,
-                    "Could I buy some more pink dye?",
-                    BettyTopic.Dye,
-                    "I'm good, thanks.",
-                    BettyTopic.Leave,
-                )
-            } else {
-                choice2(
-                    "Can I see your wares?",
-                    BettyTopic.Wares,
-                    "I'm good, thanks.",
-                    BettyTopic.Leave,
-                )
-            }
-        when (topic) {
-            BettyTopic.Wares -> {
-                chatPlayer(quiz, "Can I see your wares?")
-                chatNpc(happy, "Of course.")
-                player.openShop(PortSarimShop.Magic)
-            }
-            BettyTopic.Dye -> buyPinkDye()
-            BettyTopic.Leave -> chatPlayer(neutral, "I'm good, thanks.")
-        }
     }
 
     private suspend fun Dialogue.buyPinkDye() {
