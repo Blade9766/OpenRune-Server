@@ -54,6 +54,15 @@ class AnimationFamiliesTest {
             "thzaar_magic_attack",
             "maiden_idle",
             "maiden_attack",
+            "dog_update_small_dog_ready",
+            "dog_update_small_dog_attack",
+            "dog_update_medium_dog_attack",
+            "dog_update_medium_dog_defend",
+            "dog_update_medium_dog_death",
+            "demon_ready",
+            "demon_attack",
+            "demon_block",
+            "demon_death",
             "ork_update_weapon_ready",
             "ork_update_weapon_walk",
             "ork_update_double_grip_attack",
@@ -207,6 +216,23 @@ class AnimationFamiliesTest {
     fun `unarmed attack beats an armed sibling`() {
         assertEquals("thzaar_unarmed_attack", AnimationFamilies.resolve("thzaar_ready", sequences).attack)
         assertEquals("thzaar_parry", AnimationFamilies.resolve("thzaar_ready", sequences).defend)
+    }
+
+    @Test
+    fun `small dogs borrow the medium dog block and death but keep their own attack`() {
+        val family = AnimationFamilies.resolve("dog_update_small_dog_ready", sequences)
+        assertEquals("dog_update_small_dog_attack", family.attack)
+        assertEquals("dog_update_medium_dog_defend", family.defend)
+        assertEquals("dog_update_medium_dog_death", family.death)
+    }
+
+    @Test
+    fun `demons carry the demon sounds`() {
+        val family = AnimationFamilies.resolve("demon_ready", sequences)
+        assertEquals("demon_death", family.death)
+        assertEquals(400, family.attackSound)
+        assertEquals(404, family.defendSound)
+        assertEquals(403, family.deathSound)
     }
 
     @Test

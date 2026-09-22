@@ -50,6 +50,22 @@ object AnimationFamilies {
         )
 
     /**
+     * Sound effects keyed on the whole ready animation, for families whose prefix is too short to
+     * key [familySounds] on: `demon` would also catch the `demon_update` rig of Agrith-Naar and
+     * Skotizo. The lesser and black demons play `demon_attack`, `demon_hit` and `demon_death`.
+     */
+    private val readySounds: Map<String, Sounds> =
+        mapOf("demon_ready" to Sounds(attack = 400, defend = 404, death = 403))
+
+    /**
+     * Families that borrow their block and death from a sibling set. The small dogs (hellhounds,
+     * guard dogs, jackals) have only a ready and an attack of their own; the medium dog set has no
+     * ready animation and supplies the block and death they share.
+     */
+    private val familyKin: Map<String, String> =
+        mapOf("dog_update_small_dog" to "dog_update_medium_dog")
+
+    /**
      * Attacks by family prefix, for the families whose plainly named attack member is a one-frame
      * stub that plays as an invisible swing. `demon_update_attack` is the first frame of
      * `demon_update_ready`; Skotizo, the one member with a recorded attack, swings
@@ -74,11 +90,16 @@ object AnimationFamilies {
         if (splits.isEmpty()) {
             return Family(null, null, null)
         }
-        val sounds = splits.firstNotNullOfOrNull { (prefix, _) -> familySounds[prefix] }
+        val sounds =
+            readySounds[readyAnim]
+                ?: splits.firstNotNullOfOrNull { (prefix, _) -> familySounds[prefix] }
+        val withKin = splits + splits.mapNotNull { (prefix, variant) ->
+            familyKin[prefix]?.let { it to variant }
+        }
         return Family(
             attack = splits.firstNotNullOfOrNull { attackFor(it, sequences) },
-            defend = splits.firstNotNullOfOrNull { defendFor(it, sequences) },
-            death = splits.firstNotNullOfOrNull { deathFor(it, sequences) },
+            defend = withKin.firstNotNullOfOrNull { defendFor(it, sequences) },
+            death = withKin.firstNotNullOfOrNull { deathFor(it, sequences) },
             attackSound = sounds?.attack,
             defendSound = sounds?.defend,
             deathSound = sounds?.death,
