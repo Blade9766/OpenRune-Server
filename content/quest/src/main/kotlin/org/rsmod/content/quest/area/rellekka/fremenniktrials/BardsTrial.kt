@@ -1100,7 +1100,7 @@ constructor(
                 "stat.thieving" to "Thieving",
                 "stat.slayer" to "Slayer",
                 "stat.farming" to "Farming",
-                "stat.runecraft" to "Runecraft",
+                "stat.runecrafting" to "Runecraft",
                 "stat.hunter" to "Hunter",
                 "stat.construction" to "Construction",
             )
