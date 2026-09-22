@@ -29,7 +29,7 @@ class FamilyCrestQuest :
         "varp.crestquest",
         rewards {
             item(STEEL_GAUNTLETS)
-            extra("Gauntlets the Fitzharmon brothers will enchant")
+            extra("Gauntlet enchanting by the brothers")
         },
         ItemRewardDisplay(STEEL_GAUNTLETS, zoom = 110),
         completionJingle = Quest.QUEST_COMPLETE_2_JINGLE,

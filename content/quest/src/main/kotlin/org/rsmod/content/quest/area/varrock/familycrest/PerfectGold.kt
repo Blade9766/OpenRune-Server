@@ -11,7 +11,7 @@ import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * The three gold seams in the hellhound room under Witchaven. They look like any other gold rock
+ * The four gold seams in the hellhound room under Witchaven. They look like any other gold rock
  * and give ordinary ore to anyone else, but a player carrying Avan's errand pulls 'perfect' gold
  * out of them instead.
  */
@@ -40,6 +40,7 @@ class PerfectGold @Inject constructor(private val familyCrest: FamilyCrestQuest)
         val PERFECT_SEAMS =
             setOf(
                 CoordGrid(2732, 9680, 0),
+                CoordGrid(2743, 9676, 0),
                 CoordGrid(2740, 9700, 0),
                 CoordGrid(2743, 9699, 0),
             )

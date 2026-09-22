@@ -170,10 +170,11 @@ class FamilyCrestCacheTest {
     }
 
     private companion object {
-        /** The three `loc.goldrock2` spawns inside the hellhound room. */
+        /** The four `loc.goldrock2` spawns inside the hellhound room. */
         val PERFECT_SEAMS =
             listOf(
                 CoordGrid(2732, 9680, 0),
+                CoordGrid(2743, 9676, 0),
                 CoordGrid(2740, 9700, 0),
                 CoordGrid(2743, 9699, 0),
             )

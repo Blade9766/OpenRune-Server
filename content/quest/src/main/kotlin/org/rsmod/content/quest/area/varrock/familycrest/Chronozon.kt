@@ -28,8 +28,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  *
  * Chronozon is bound to all four elements at once. Until wind, water, earth and fire blast have
  * each drawn blood from him he cannot be killed: the blow that should finish him knits him back
- * together at full health instead, and the elements he was already weakened by are lost with it.
- * Only the blast spells count, and only when they land - a splash does nothing.
+ * together at full health instead. The elements he has already been weakened by stay weakened, so
+ * a fight that runs him down early only costs time. Only the blast spells count, and only when
+ * they land - a splash does nothing.
  *
  * The binding is Johnathon's problem, not the demon's: once the player has taken the crest part
  * from him he dies like anything else. The weakness itself lives on a temporary varbit, so it is
@@ -100,7 +101,6 @@ class Chronozon @Inject constructor(private val playerList: PlayerList) : Plugin
         npc.clearQueue(DEATH_QUEUE)
         npc.heal(npc.baseHitpointsLvl - npc.hitpoints)
         npc.spotanim(REGENERATE_SPOTANIM)
-        source.chronozonWeakness = 0
         source.mes("Chronozon knits himself back together. Only all four elements will hold him.")
     }
 
