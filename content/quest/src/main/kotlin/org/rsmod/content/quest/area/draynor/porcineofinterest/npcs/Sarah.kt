@@ -44,7 +44,7 @@ constructor(private val porcine: PorcineOfInterestQuest, private val shops: Shop
         chatNpc(happy, "Hello. How can I help you?")
         val stage = porcine.stage(player)
         if (stage == 0 || porcine.isComplete(player)) {
-            farmSupplies(npc)
+            generalTopics(npc)
             return
         }
         val askAboutBounty =
@@ -52,7 +52,7 @@ constructor(private val porcine: PorcineOfInterestQuest, private val shops: Shop
         if (askAboutBounty) {
             bounty(stage)
         } else {
-            farmSupplies(npc)
+            generalTopics(npc)
         }
     }
 
@@ -206,9 +206,71 @@ constructor(private val porcine: PorcineOfInterestQuest, private val shops: Shop
         chatNpc(happy, "Safe travels!")
     }
 
-    private suspend fun Dialogue.farmSupplies(npc: Npc) {
-        chatPlayer(quiz, "What do you sell?")
-        chatNpc(happy, "Everything a farmer needs: seeds, tools, compost and a sack to carry it in.")
-        player.openShop(npc)
+    private suspend fun Dialogue.generalTopics(npc: Npc) {
+        when (
+            choice5(
+                "What are you selling?", 1,
+                "Can you give me any Farming advice?", 2,
+                "Can you tell me how to use the loom?", 3,
+                "That's a nice dog you have. What's its name?", 4,
+                "I'm okay, thank you.", 5,
+            )
+        ) {
+            1 -> {
+                chatPlayer(quiz, "What are you selling?")
+                player.openShop(npc)
+            }
+            2 -> {
+                chatPlayer(quiz, "Can you give me any Farming advice?")
+                chatNpc(neutral, "Yes - ask a gardener.")
+            }
+            3 -> loom()
+            4 -> {
+                chatPlayer(neutral, "That's a nice dog you have there. What's its name?")
+                chatNpc(happy, "Oh that's Rosie, our resident sheepdog! She sure does like the fire.")
+                chatNpc(neutral, "You can pet her if you like. She's very friendly.")
+            }
+            else -> chatPlayer(neutral, "I'm okay, thank you.")
+        }
+    }
+
+    private suspend fun Dialogue.loom() {
+        chatPlayer(quiz, "Can you tell me how to use the loom?")
+        chatNpc(
+            neutral,
+            "Well, it's actually my loom, but I don't mind you using it, if you like. You can use " +
+                "it to weave sacks and baskets in which you can put vegetables and fruit.",
+        )
+        when (
+            choice3(
+                "What do I need to weave sacks?", 1,
+                "What do I need to weave baskets?", 2,
+                "Thank you, that's very kind.", 3,
+            )
+        ) {
+            1 -> {
+                chatPlayer(quiz, "What do I need to weave sacks?")
+                chatNpc(
+                    neutral,
+                    "Well, the best sacks are made with jute fibres; you can grow jute yourself in " +
+                        "a hops patch. I'd say about 4 jute fibres should be enough to weave a sack.",
+                )
+            }
+            2 -> {
+                chatPlayer(quiz, "What do I need to weave baskets?")
+                chatNpc(
+                    neutral,
+                    "Well, the best baskets are made with young branches cut from a willow tree. " +
+                        "You'll need a very young willow tree; otherwise, the branches will have " +
+                        "grown too thick to be able to weave. I suggest growing your own.",
+                )
+                chatNpc(
+                    neutral,
+                    "You can cut the branches with a standard pair of secateurs. You will probably " +
+                        "need about 6 willow branches to weave a complete basket.",
+                )
+            }
+        }
+        chatPlayer(happy, "Thank you, that's very kind.")
     }
 }
