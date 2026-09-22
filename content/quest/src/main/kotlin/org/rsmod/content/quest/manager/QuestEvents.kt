@@ -33,7 +33,9 @@ class QuestEvents : PluginScript() {
         onPlayerLogin {
             player.questTotalCount = questCount
             player.questPointMax = questPointCap
+        }
 
+        onIfOpen("interface.questjournal_overview") {
             player.ifSetEvents(
                 "component.questjournal_overview:content_inner",
                 0..23,
@@ -42,8 +44,6 @@ class QuestEvents : PluginScript() {
                 IfEvent.Op3,
                 IfEvent.Op4,
             )
-
-            player.enableQuestListOps()
         }
     }
 

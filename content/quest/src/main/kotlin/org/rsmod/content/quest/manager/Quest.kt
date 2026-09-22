@@ -120,7 +120,7 @@ data class Quest(
         return stages[key] ?: 0
     }
 
-    private fun setQuestStage(access: ProtectedAccess, stage: Int) {
+    private fun storeQuestStage(access: ProtectedAccess, stage: Int) {
         val clampedStage = stage.coerceIn(0, maxSteps)
         val stages = access.player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
         stages[key] = clampedStage
@@ -182,9 +182,13 @@ data class Quest(
             throw IllegalStateException("Quest '$key' cannot advance past stage $maxSteps.")
         }
 
-        val newStage = attemptedStage.coerceIn(0, maxSteps)
-        val wasCompleted = currentStage >= maxSteps
-        setQuestStage(access, newStage)
+        return setQuestStage(access, attemptedStage.coerceIn(0, maxSteps))
+    }
+
+    fun setQuestStage(access: ProtectedAccess, newStage: Int): Int {
+        require(newStage in 0..maxSteps) { "Quest '$key' stage must be within 0..$maxSteps." }
+        val wasCompleted = getQuestStage(access.player) >= maxSteps
+        storeQuestStage(access, newStage)
 
         // Quest varps store the real stage (0..endstate). Multinpc / journal clients depend on
         // endstate (e.g. runemysteries=6) rather than a collapsed 0/1/2 progress flag.
@@ -292,7 +296,7 @@ data class Quest(
         rewards.items.forEach { (item, amount) ->
             access.invAdd(access.inv, item, amount)
             val type = ServerCacheManager.getItem(item.asRSCM(RSCMType.OBJ)) ?: error("No item found for $item")
-            rewardLines.add("$amount x ${type.name}")
+            rewardLines.add(rewards.itemLabels[item] ?: "$amount x ${type.name}")
         }
 
         rewards.extraText?.let {
