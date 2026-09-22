@@ -151,6 +151,9 @@ import org.rsmod.content.quest.area.varrock.familycrest.npcs.Caleb
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Dimintheis
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Johnathon
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest
+import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
+import org.rsmod.content.quest.area.varrock.shieldofarrav.npcs.JonnyAttackHook
+import org.rsmod.content.quest.area.varrock.shieldofarrav.npcs.WeaponsmasterKillHook
 import org.rsmod.content.quest.area.wilderness.magearena.FollowerSpawns
 import org.rsmod.content.quest.area.wilderness.magearena.GodFollowerKillHook
 import org.rsmod.content.quest.area.wilderness.magearena.KolodionAttackHook
@@ -333,5 +336,8 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(PaladinKillHook::class.java)
         addSetBinding<NpcDeathKillHook>(KalragKillHook::class.java)
         bindInstance<MerlinsCrystalQuest>()
+        bindInstance<ShieldOfArravQuest>()
+        addSetBinding<NpcAttackValidateHook>(JonnyAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(WeaponsmasterKillHook::class.java)
     }
 }

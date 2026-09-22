@@ -23,6 +23,10 @@ import org.rsmod.content.quest.area.digsite.TheDigSiteQuest.Companion.STAGE_STAM
 import org.rsmod.content.quest.area.digsite.TheDigSiteQuest.Companion.STAMPED_LETTER
 import org.rsmod.content.quest.area.digsite.carriesOrBanks
 import org.rsmod.content.quest.area.digsite.setVarBit
+import org.rsmod.content.quest.area.varrock.shieldofarrav.ARRAV_OPTION
+import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
+import org.rsmod.content.quest.area.varrock.shieldofarrav.canAskCurator
+import org.rsmod.content.quest.area.varrock.shieldofarrav.curatorShieldOfArrav
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
@@ -31,11 +35,16 @@ import org.rsmod.plugin.scripts.ScriptContext
 /**
  * Curator Haig Halen in the Varrock Museum. He stamps the examiner's letter of recommendation and
  * afterwards takes the Earth Sciences certificates off the player's hands, paying for the level 3
- * one with something to eat or drink. During The Golem he can be asked about the Uzer statuette.
+ * one with something to eat or drink. During The Golem he can be asked about the Uzer statuette,
+ * and during Shield of Arrav he verifies the player's half of the shield.
  */
 class CuratorHaigHalen
 @Inject
-constructor(private val quest: TheDigSiteQuest, private val golem: TheGolemQuest) : PluginScript() {
+constructor(
+    private val quest: TheDigSiteQuest,
+    private val golem: TheGolemQuest,
+    private val arrav: ShieldOfArravQuest,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(CURATOR) { startDialogue(it.npc) { curator() } }
@@ -55,12 +64,22 @@ constructor(private val quest: TheDigSiteQuest, private val golem: TheGolemQuest
                 }
             CERTIFICATE_1, CERTIFICATE_2, CERTIFICATE_3 ->
                 startDialogue(npc) { handInCertificate(obj) }
+            in ARRAV_SHIELDS ->
+                if (arrav.canAskCurator(this)) {
+                    startDialogue(npc) { curatorShieldOfArrav(arrav) }
+                } else {
+                    mes("Nothing interesting happens.")
+                }
             else -> mes("Nothing interesting happens.")
         }
     }
 
     private suspend fun Dialogue.curator() {
         chatNpc(neutral, "Welcome to the museum of Varrock.")
+        if (arrav.canAskCurator(access) && choice2(ARRAV_OPTION, true, "Something else.", false)) {
+            curatorShieldOfArrav(arrav)
+            return
+        }
         if (golem.canAskCuratorAboutStatuette(player)) {
             val statuette = choice2(CURATOR_STATUETTE_OPTION, true, "Something else.", false)
             if (statuette) {
@@ -196,6 +215,9 @@ constructor(private val quest: TheDigSiteQuest, private val golem: TheGolemQuest
 
     private companion object {
         const val SHIELD_OF_ARRAV = "quest_shieldofarrav"
+
+        val ARRAV_SHIELDS =
+            setOf(ShieldOfArravQuest.PHOENIX_SHIELD, ShieldOfArravQuest.BLACKARM_SHIELD)
 
         val CERTIFICATES = listOf(CERTIFICATE_3, CERTIFICATE_2, CERTIFICATE_1)
     }

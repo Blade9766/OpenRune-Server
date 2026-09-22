@@ -3,6 +3,7 @@ package org.rsmod.content.quest.area.paterdomus.priestinperil.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.api.script.onOpNpcU
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest.Companion.KING_ROALD
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest.Companion.RECOMMENDED_COMBAT
@@ -17,27 +18,53 @@ import org.rsmod.content.quest.area.paterdomus.priestinperil.hoodedMonkDead
 import org.rsmod.content.quest.area.paterdomus.priestinperil.returnedToFakeDrezel
 import org.rsmod.content.quest.area.paterdomus.priestinperil.returnedToRoald
 import org.rsmod.content.quest.area.paterdomus.priestinperil.triedFakeKey
+import org.rsmod.content.quest.area.varrock.shieldofarrav.ARRAV_OPTION
+import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
+import org.rsmod.content.quest.area.varrock.shieldofarrav.canAskKing
+import org.rsmod.content.quest.area.varrock.shieldofarrav.kingShieldOfArrav
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/** King Roald, in the throne room of Varrock Palace. He starts Priest in Peril. */
-class KingRoald @Inject constructor(private val priestInPeril: PriestInPerilQuest) : PluginScript() {
+/**
+ * King Roald, in the throne room of Varrock Palace. He starts Priest in Peril and pays out the
+ * Shield of Arrav reward.
+ */
+class KingRoald
+@Inject
+constructor(
+    private val priestInPeril: PriestInPerilQuest,
+    private val arrav: ShieldOfArravQuest,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(KING_ROALD) { startDialogue(it.npc) { roald() } }
+        onOpNpcU(KING_ROALD) {
+            if (arrav.canAskKing(this)) {
+                startDialogue(it.npc) { kingShieldOfArrav(arrav) }
+            } else {
+                mes("Nothing interesting happens.")
+            }
+        }
     }
 
     private suspend fun Dialogue.roald() {
         val stage = priestInPeril.stage(player)
+        val arravTopic = arrav.canAskKing(access)
         if (stage >= STAGE_COMPLETE) {
-            afterQuest()
+            afterQuest(arravTopic)
             return
         }
         chatPlayer(neutral, "Greetings, your majesty.")
         chatNpc(neutral, "Yes, citizen. Do you need something?")
         val job = if (stage == 0) "I'm looking for a quest!" else "About that job I'm doing..."
-        when (choice2(job, true, "Not really.", false)) {
-            true ->
+        val picked =
+            if (arravTopic) {
+                choice3(job, JOB, ARRAV_OPTION, ARRAV, "Not really.", NOTHING)
+            } else {
+                choice2(job, JOB, "Not really.", NOTHING)
+            }
+        when (picked) {
+            JOB ->
                 when (stage) {
                     0 -> offerQuest()
                     STAGE_STARTED -> jobOptions()
@@ -48,7 +75,8 @@ class KingRoald @Inject constructor(private val priestInPeril: PriestInPerilQues
                     STAGE_CELL_UNLOCKED -> nationalSecurity()
                     else -> keepItUp()
                 }
-            false -> busy()
+            ARRAV -> kingShieldOfArrav(arrav)
+            else -> busy()
         }
     }
 
@@ -336,9 +364,19 @@ class KingRoald @Inject constructor(private val priestInPeril: PriestInPerilQues
         chatNpc(happy, "Good, good. Keep up the good work.")
     }
 
-    private suspend fun Dialogue.afterQuest() {
+    private suspend fun Dialogue.afterQuest(arravTopic: Boolean) {
         chatNpc(neutral, "Yes, citizen. Do you need something?")
-        if (!choice2("About that job you gave me...", true, "Not really.", false)) {
+        val picked =
+            if (arravTopic) {
+                choice3("About that job you gave me...", JOB, ARRAV_OPTION, ARRAV, "Not really.", NOTHING)
+            } else {
+                choice2("About that job you gave me...", JOB, "Not really.", NOTHING)
+            }
+        if (picked == ARRAV) {
+            kingShieldOfArrav(arrav)
+            return
+        }
+        if (picked != JOB) {
             busy()
             return
         }
@@ -362,6 +400,10 @@ class KingRoald @Inject constructor(private val priestInPeril: PriestInPerilQues
     }
 
     private companion object {
+        const val JOB = 1
+        const val ARRAV = 2
+        const val NOTHING = 3
+
         const val WHERE = 1
         const val WHY = 2
         const val REWARD = 3

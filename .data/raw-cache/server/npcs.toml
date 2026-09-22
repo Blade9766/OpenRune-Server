@@ -5503,3 +5503,74 @@ moveRestrict = "Outdoors"
 id = "npc.murder_mystery_guarddog"
 inherit = "npc.murder_mystery_guarddog"
 timer = 1
+
+[[npc]]
+id = "npc.jonny_the_beard"
+inherit = "npc.jonny_the_beard"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.jonny_the_beard_2op"
+inherit = "npc.jonny_the_beard_2op"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_male01"
+inherit = "npc.qip_soa_thief_male01"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_male02"
+inherit = "npc.qip_soa_thief_male02"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_female01"
+inherit = "npc.qip_soa_thief_female01"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=506
+"param.death_sound"=505
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_female02"
+inherit = "npc.qip_soa_thief_female02"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=506
+"param.death_sound"=505
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_newspaperseller"
+inherit = "npc.qip_soa_newspaperseller"
+timer = 1
