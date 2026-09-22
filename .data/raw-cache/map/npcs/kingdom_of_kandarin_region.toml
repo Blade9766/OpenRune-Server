@@ -935,10 +935,6 @@ npc = "npc.bigdave"
 coords = "0_41_53_10_33"
 
 [[spawn]]
-npc = "npc.bob_sinclair"
-coords = "0_42_55_60_40"
-
-[[spawn]]
 npc = "npc.bonzo"
 coords = "0_41_53_17_45"
 

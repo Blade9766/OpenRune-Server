@@ -286,6 +286,14 @@ bees_1 = 3046
 light_candle = 2305
 glass_break = 2127
 
+# Murder Mystery
+drawer_open = 64
+drawer_close = 63
+barklike = 652
+insect_swarm = 1582
+mosquitos_1 = 2008
+fill_grain = 2576
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -344,6 +352,10 @@ upass_grid = 65452
 # Merlin's Crystal: everything the quest remembers besides its stage. The stage itself is the
 # whole of the cache varp `varp.arthur`, which carries no varbits of its own.
 merlin_state = 65453
+
+# Murder Mystery: the evidence the player has gathered. The stage is the whole of the cache varp
+# `varp.murderquest` and the murderer the cache varp `varp.murdersus`; neither carries varbits.
+murder_state = 65420
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -487,6 +499,9 @@ merlin_excalibur_test = 65710
 merlin_beehive_free = 65711
 merlin_crate_dest = 65712
 merlin_in_crate = 65713
+murder_poison_progress = 65750
+murder_found_thread = 65751
+murder_found_prints = 65752
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.

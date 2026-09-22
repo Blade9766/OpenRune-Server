@@ -1,18 +1,6 @@
 [[spawn]]
-npc = "npc.carol_sinclair"
-coords = "1_42_55_47_62"
-
-[[spawn]]
 npc = "npc.donovan_the_family_handyman"
 coords = "1_42_55_57_56"
-
-[[spawn]]
-npc = "npc.elizabeth_sinclair"
-coords = "1_42_55_58_62"
-
-[[spawn]]
-npc = "npc.frank_sinclair"
-coords = "0_42_55_54_58"
 
 [[spawn]]
 npc = "npc.hobbes_the_butler"

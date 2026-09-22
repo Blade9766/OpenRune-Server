@@ -5498,3 +5498,8 @@ moveRestrict = "Outdoors"
 id = "npc.fai_falador_guard6"
 inherit = "npc.fai_falador_guard6"
 moveRestrict = "Outdoors"
+
+[[npc]]
+id = "npc.murder_mystery_guarddog"
+inherit = "npc.murder_mystery_guarddog"
+timer = 1

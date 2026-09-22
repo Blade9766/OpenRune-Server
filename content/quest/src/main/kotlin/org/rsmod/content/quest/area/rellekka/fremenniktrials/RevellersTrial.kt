@@ -18,6 +18,7 @@ import org.rsmod.api.script.onPlayerTimer
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.FremennikTrialsQuest.Companion.COINS
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.FremennikTrialsQuest.Companion.MANNI
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.npcs.outerlanderRebuff
+import org.rsmod.content.quest.area.seers.murdermystery.npcs.PoisonSalesmanInquiry
 import org.rsmod.game.entity.Player
 import org.rsmod.game.hit.HitType
 import org.rsmod.game.obj.Obj
@@ -38,6 +39,7 @@ class RevellersTrial
 @Inject
 constructor(
     private val quest: FremennikTrialsQuest,
+    private val murderInquiry: PoisonSalesmanInquiry,
     private val merchant: MerchantTrial,
     private val search: NpcSearch,
 ) : PluginScript() {
@@ -284,6 +286,10 @@ constructor(
     /* The poison salesman in the Seers' Village inn */
 
     private suspend fun Dialogue.poisonSalesman() {
+        if (murderInquiry.isInvestigating(player)) {
+            with(murderInquiry) { murderInquiry() }
+            return
+        }
         if (!quest.isInProgress(player) || player.voted(Trial.Reveller)) {
             chatNpc(
                 happy,

@@ -1537,3 +1537,24 @@ id = "varbit.merlin_in_crate"
 varp = "varp.merlin_state"
 startBit = 6
 endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.murder_poison_progress"
+varp = "varp.murder_state"
+startBit = 0
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.murder_found_thread"
+varp = "varp.murder_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.murder_found_prints"
+varp = "varp.murder_state"
+startBit = 3
+endBit = 3
