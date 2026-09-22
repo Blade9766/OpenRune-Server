@@ -4,6 +4,7 @@ import dev.openrune.util.Wearpos
 import kotlin.math.max
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.player.front
 import org.rsmod.api.player.hands
 import org.rsmod.api.player.hat
 import org.rsmod.api.player.legs
@@ -12,6 +13,7 @@ import org.rsmod.api.player.torso
 import org.rsmod.api.player.worn.DizanasQuiver
 import org.rsmod.api.player.worn.EquipmentChecks
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.isAnyType
 import org.rsmod.game.type.getInvObj
 import org.rsmod.game.type.getOrNull
 
@@ -222,6 +224,10 @@ public class WornBonuses {
             magicDmg += 50
         }
 
+        if (player.isWearingVeracSetWithDamnedAmulet()) {
+            prayer += 7
+        }
+
         // TODO: +10 off ranged and +1 ranged str with dizana's quiver.
         //  Verify if this is visible in equipment bonus interface. If it's not then it can be
         //  handled purely in combat formulae and not here.
@@ -255,6 +261,10 @@ public class WornBonuses {
             EquipmentChecks.isEliteVoidTop(torso) &&
             EquipmentChecks.isEliteVoidRobe(legs) &&
             EquipmentChecks.isVoidGloves(hands)
+
+    private fun Player.isWearingVeracSetWithDamnedAmulet(): Boolean =
+        EquipmentChecks.isVeracSet(hat, torso, legs, righthand) &&
+            front.isAnyType("obj.damned_amulet", "obj.damned_amulet_degraded")
 
     public data class Bonuses(
         val offStab: Int,

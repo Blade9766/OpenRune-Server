@@ -14,6 +14,7 @@ import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.mechanics.toxins.impl.NpcPoison
 import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
 import org.rsmod.api.npc.events.NpcHitEvents
 import org.rsmod.api.player.events.PlayerHitEvents

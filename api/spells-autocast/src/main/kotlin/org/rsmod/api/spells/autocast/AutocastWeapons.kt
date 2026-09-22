@@ -137,6 +137,7 @@ public class AutocastWeapons @Inject constructor(private val spells: AutocastSpe
         val AncientAutocastWeapons =
             objSet(
                 "obj.staff_of_zaros",
+                "obj.trail_ancient_staff",
                 "obj.beta_item_6",
                 "obj.beta_item_7",
                 "obj.beta_item_8",

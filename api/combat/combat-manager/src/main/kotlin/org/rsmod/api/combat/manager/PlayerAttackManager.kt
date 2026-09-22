@@ -34,6 +34,7 @@ import org.rsmod.api.npc.hit.isStyleImmuneTo
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.queueHit
 import org.rsmod.api.player.cheat.adminMaxHit
+import org.rsmod.api.player.hit.modifier.PIERCE_PROTECTION_PRAYER_ATTR
 import org.rsmod.api.player.hit.modifier.PlayerHitModifier
 import org.rsmod.api.player.hit.queueHit
 import org.rsmod.api.player.interact.NpcInteractions
@@ -42,6 +43,7 @@ import org.rsmod.api.player.interact.PlayerInteractions
 import org.rsmod.api.player.interact.PlayerTInteractions
 import org.rsmod.api.player.ironman.shouldBlockNpcCombatXp
 import org.rsmod.api.player.protect.clearPendingAction
+import org.rsmod.api.player.righthand
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.random.GameRandom
@@ -537,26 +539,34 @@ constructor(
         blockType: MeleeAttackType? = attack.type,
         roundMaxHitUp: Boolean = false,
     ): Int {
+        val defiler = VeracDefiler.roll(source, random)
         val successfulAccuracyRoll =
-            rollMeleeAccuracy(
-                source = source,
-                target = target,
-                multiplier = accuracyMultiplier,
-                attackType = attackType,
-                attackStyle = attackStyle,
-                blockType = blockType,
-            )
+            defiler ||
+                rollMeleeAccuracy(
+                    source = source,
+                    target = target,
+                    multiplier = accuracyMultiplier,
+                    attackType = attackType,
+                    attackStyle = attackStyle,
+                    blockType = blockType,
+                )
         if (!successfulAccuracyRoll) {
             return 0
         }
-        return rollMeleeMaxHit(
-            source,
-            target,
-            attackType,
-            attackStyle,
-            maxHitMultiplier,
-            roundMaxHitUp,
-        )
+        val damage =
+            rollMeleeMaxHit(
+                source,
+                target,
+                attackType,
+                attackStyle,
+                maxHitMultiplier,
+                roundMaxHitUp,
+            )
+        if (!defiler) {
+            return damage
+        }
+        target.spotanim("spotanim.barrows_verac_desolation")
+        return if (target is Npc) damage + 1 else damage
     }
 
     /**
@@ -753,6 +763,7 @@ constructor(
         // last entries in the queue list at the time of processing.
         target.queueCombatRetaliate(source)
 
+        VeracDefiler.consume(source)
         val hit = target.queueHit(source, delay, HitType.Melee, damage, npcHitModifier)
         target.combatPlayDefendAnim()
         return hit
@@ -764,7 +775,12 @@ constructor(
         // last entries in the queue list at the time of processing.
         target.queueCombatRetaliate(source)
 
+        val pierce = VeracDefiler.consume(source)
+        if (pierce) {
+            target.attr[PIERCE_PROTECTION_PRAYER_ATTR] = true
+        }
         val hit = target.queueHit(source, delay, HitType.Melee, damage, playerHitModifier)
+        target.attr.remove(PIERCE_PROTECTION_PRAYER_ATTR)
         notifyPlayerHit(source, target)
         target.combatPlayDefendAnim()
         return hit
@@ -1193,6 +1209,8 @@ constructor(
      * @param spellbook The [Spellbook] the spell belongs to (e.g., Standard or Ancients), usually
      *   derived from the player's current spellbook.
      * @param sunfireRune Set to `true` if the spell was cast using a Sunfire rune.
+     * @param conflictionEligible Set to `false` when the confliction gauntlets passive must not
+     *   apply, e.g. secondary targets of a multi-target spell.
      * @return `true` if the accuracy roll succeeds (the spell will "land"), `false` otherwise.
      */
     public fun rollSpellAccuracy(
@@ -1201,13 +1219,16 @@ constructor(
         spell: ItemServerType,
         spellbook: Spellbook?,
         sunfireRune: Boolean,
+        conflictionEligible: Boolean = true,
     ): Boolean {
         if (source.adminMaxHit) {
             return true
         }
-        return when (target) {
-            is Npc -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
-            is Player -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+        return ConflictionGauntlets.roll(source, target, spell.id, conflictionEligible) {
+            when (target) {
+                is Npc -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+                is Player -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+            }
         }
     }
 
@@ -1393,9 +1414,12 @@ constructor(
         attackStyle: MagicAttackStyle?,
         multiplier: Double,
     ): Boolean {
-        return when (target) {
-            is Npc -> rollStaffAccuracy(source, target, attackStyle, multiplier)
-            is Player -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+        val weapon = source.righthand?.id ?: -1
+        return ConflictionGauntlets.roll(source, target, weapon, eligible = true) {
+            when (target) {
+                is Npc -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+                is Player -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+            }
         }
     }
 

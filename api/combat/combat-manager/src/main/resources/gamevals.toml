@@ -1,0 +1,13 @@
+# Enchanted bolt effect sounds, from the OSRS wiki list of sound IDs; the stock gameval tables
+# do not name them.
+[gamevals.synth]
+blood_sacrifice = 2911
+clear_mind = 2912
+crossbow_diamond = 2913
+down_to_earth = 2914
+dragons_breath = 2915
+earths_fury = 2916
+life_leech = 2917
+lucky_lightning = 2918
+magical_poison = 2919
+sea_curse = 2920

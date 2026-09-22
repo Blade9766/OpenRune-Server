@@ -84,7 +84,11 @@ class AncientSpells @Inject constructor(private val npcSearch: NpcSearch) : Spel
                 else -> "spotanim.${name0}_${tier.name0}_travel"
             }
 
-        fun impact(tier: Tier): String = "spotanim.${name0}_${tier.name0}_impact"
+        fun impact(tier: Tier): String =
+            when {
+                this == Blood && tier.area -> "spotanim.spell_${name0}_${tier.name0}_impact"
+                else -> "spotanim.${name0}_${tier.name0}_impact"
+            }
 
         fun castSound(): String = "synth.${name0}_cast"
 
@@ -150,7 +154,8 @@ class AncientSpells @Inject constructor(private val npcSearch: NpcSearch) : Spel
         ) {
             val spell = attack.spell.obj
             val castSound = if (primary) element.castSound() else null
-            val splash = manager.rollSplash(this, target, attack, castResult)
+            val confliction = primary && !(element == Element.Ice && target is Player)
+            val splash = manager.rollSplash(this, target, attack, castResult, confliction)
             if (splash) {
                 manager.playSplashFx(this, target, clientDelay, castSound, soundRadius = 8)
                 manager.queueSplashHit(this, target, spell, clientDelay, serverDelay)

@@ -1,6 +1,7 @@
 package org.rsmod.api.player.hit.modifier
 
 import jakarta.inject.Inject
+import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.player.cheat.adminGodMode
 import org.rsmod.api.player.events.PlayerHitEvents
 import org.rsmod.api.player.hit.PlayerAbsorption
@@ -8,6 +9,9 @@ import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.game.hit.HitBuilder
 import org.rsmod.game.hit.HitType
+
+/** Set on the target while a hit that ignores protection prayers is being queued. */
+public val PIERCE_PROTECTION_PRAYER_ATTR: AttributeKey<Boolean> = AttributeKey(temp = true)
 
 public class StandardPlayerHitModifier @Inject constructor(private val eventBus: EventBus) :
     PlayerHitModifier {
@@ -27,7 +31,7 @@ public class StandardPlayerHitModifier @Inject constructor(private val eventBus:
                 HitType.Magic -> target.vars["varbit.prayer_protectfrommagic"] == 1
             }
 
-        if (protectionPrayer) {
+        if (protectionPrayer && target.attr[PIERCE_PROTECTION_PRAYER_ATTR] != true) {
             val reduction = if (isFromPlayer) 40 else 100
             damage = (damage * (100 - reduction)) / 100
         }

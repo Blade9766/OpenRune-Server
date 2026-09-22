@@ -145,82 +145,33 @@ public object EquipmentChecks {
         )
 
     public fun isDharokSet(helm: InvObj?, top: InvObj?, legs: InvObj?, weapon: InvObj?): Boolean =
-        helm.isAnyType(
-            "obj.barrows_dharok_head_100",
-            "obj.barrows_dharok_head_75",
-            "obj.barrows_dharok_head_50",
-            "obj.barrows_dharok_head_25",
-        ) &&
-            top.isAnyType(
-                "obj.barrows_dharok_body_100",
-                "obj.barrows_dharok_body_75",
-                "obj.barrows_dharok_body_50",
-                "obj.barrows_dharok_body_25",
-            ) &&
-            legs.isAnyType(
-                "obj.barrows_dharok_legs_100",
-                "obj.barrows_dharok_legs_75",
-                "obj.barrows_dharok_legs_50",
-                "obj.barrows_dharok_legs_25",
-            ) &&
-            weapon.isAnyType(
-                "obj.barrows_dharok_weapon_100",
-                "obj.barrows_dharok_weapon_75",
-                "obj.barrows_dharok_weapon_50",
-                "obj.barrows_dharok_weapon_25",
-            )
+        isBarrowsSet("dharok", helm, top, legs, weapon)
 
     public fun isToragSet(helm: InvObj?, top: InvObj?, legs: InvObj?, weapon: InvObj?): Boolean =
-        helm.isAnyType(
-            "obj.barrows_torag_head_100",
-            "obj.barrows_torag_head_75",
-            "obj.barrows_torag_head_50",
-            "obj.barrows_torag_head_25",
-        ) &&
-            top.isAnyType(
-                "obj.barrows_torag_body_100",
-                "obj.barrows_torag_body_75",
-                "obj.barrows_torag_body_50",
-                "obj.barrows_torag_body_25",
-            ) &&
-            legs.isAnyType(
-                "obj.barrows_torag_legs_100",
-                "obj.barrows_torag_legs_75",
-                "obj.barrows_torag_legs_50",
-                "obj.barrows_torag_legs_25",
-            ) &&
-            weapon.isAnyType(
-                "obj.barrows_torag_weapon_100",
-                "obj.barrows_torag_weapon_75",
-                "obj.barrows_torag_weapon_50",
-                "obj.barrows_torag_weapon_25",
-            )
+        isBarrowsSet("torag", helm, top, legs, weapon)
 
     public fun isAhrimSet(helm: InvObj?, top: InvObj?, legs: InvObj?, weapon: InvObj?): Boolean =
-        helm.isAnyType(
-            "obj.barrows_ahrim_head_100",
-            "obj.barrows_ahrim_head_75",
-            "obj.barrows_ahrim_head_50",
-            "obj.barrows_ahrim_head_25",
-        ) &&
-            top.isAnyType(
-                "obj.barrows_ahrim_body_100",
-                "obj.barrows_ahrim_body_75",
-                "obj.barrows_ahrim_body_50",
-                "obj.barrows_ahrim_body_25",
-            ) &&
-            legs.isAnyType(
-                "obj.barrows_ahrim_legs_100",
-                "obj.barrows_ahrim_legs_75",
-                "obj.barrows_ahrim_legs_50",
-                "obj.barrows_ahrim_legs_25",
-            ) &&
-            weapon.isAnyType(
-                "obj.barrows_ahrim_weapon_100",
-                "obj.barrows_ahrim_weapon_75",
-                "obj.barrows_ahrim_weapon_50",
-                "obj.barrows_ahrim_weapon_25",
-            )
+        isBarrowsSet("ahrim", helm, top, legs, weapon)
+
+    public fun isVeracSet(helm: InvObj?, top: InvObj?, legs: InvObj?, weapon: InvObj?): Boolean =
+        isBarrowsSet("verac", helm, top, legs, weapon)
+
+    private fun isBarrowsSet(
+        brother: String,
+        helm: InvObj?,
+        top: InvObj?,
+        legs: InvObj?,
+        weapon: InvObj?,
+    ): Boolean =
+        helm.isBarrowsPiece(brother, "head") &&
+            top.isBarrowsPiece(brother, "body") &&
+            legs.isBarrowsPiece(brother, "legs") &&
+            weapon.isBarrowsPiece(brother, "weapon")
+
+    private fun InvObj?.isBarrowsPiece(brother: String, piece: String): Boolean {
+        val base = "obj.barrows_${brother}_$piece"
+        return isAnyType(base, "${base}_100", "${base}_75", "${base}_50", "${base}_25")
+    }
 
     public fun isJusticiarSet(helm: InvObj?, top: InvObj?, legs: InvObj?): Boolean =
         helm.isType("obj.justiciar_faceguard") &&

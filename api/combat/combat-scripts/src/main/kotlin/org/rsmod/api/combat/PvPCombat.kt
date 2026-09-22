@@ -5,6 +5,7 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.commons.hook.PvPAttackRestrictionHook
+import org.rsmod.api.combat.manager.EnchantedBolts
 import org.rsmod.api.combat.manager.PlayerAttackManager
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.combat.player.activateMagicSpecial
@@ -43,6 +44,7 @@ constructor(
     private val weaponsReg: WeaponRegistry,
     private val manager: PlayerAttackManager,
     private val ammunition: RangedAmmoManager,
+    private val enchantedBolts: EnchantedBolts,
     private val spellsReg: SpellAttackRegistry,
     private val skullHooks: Set<PvPSkullHook>,
     private val specialAttackHooks: Set<PvPSpecialAttackHook>,
@@ -270,7 +272,11 @@ constructor(
         // has no `proj_launch` param, a "null" (-1) spotanim will still be sent in the same slot
         // and height as usual.
         val launchSpotanim = weaponType.paramOrNull(params.proj_launch)?.id ?: NULL_SPOTANIM_ID
-        player.spotanim(RSCM.getReverseMapping(RSCMType.SPOTANIM, launchSpotanim), height = 96, slot = constants.spotanim_slot_combat)
+        val launchSpotanimName =
+            launchSpotanim
+                .takeUnless { it == NULL_SPOTANIM_ID }
+                ?.let { RSCM.getReverseMapping(RSCMType.SPOTANIM, it) }
+        spotanim(launchSpotanimName, height = 96, slot = constants.spotanim_slot_combat)
 
         val projanim = manager.spawnProjectile(player, target, travelSpotanim, projanimType)
         val (serverDelay, clientDelay) = projanim.durations
@@ -286,11 +292,11 @@ constructor(
             ammunition.useQuiverAmmo(player, quiverType, target.coords, dropDelay = serverDelay)
         }
 
-        val damage = manager.rollRangedDamage(player, target, attack)
-        manager.giveCombatXp(player, target, attack, damage)
-
         val hitAmmoObj = if (usingThrown) null else quiverType
-        manager.queueRangedHit(player, target, hitAmmoObj, damage, clientDelay, serverDelay)
+        val shot = enchantedBolts.shoot(player, target, attack, hitAmmoObj)
+        manager.giveCombatXp(player, target, attack, shot.damage)
+        manager.queueRangedHit(player, target, hitAmmoObj, shot.damage, clientDelay, serverDelay)
+        enchantedBolts.applyEffect(player, target, shot, clientDelay, serverDelay)
 
         if (usingThrown && player.righthand == null) {
             mes("That was your last one!")

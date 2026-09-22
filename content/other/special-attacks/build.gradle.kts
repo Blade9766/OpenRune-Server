@@ -7,5 +7,5 @@ dependencies {
     implementation(projects.api.pluginCommons)
     implementation(projects.api.scriptAdvanced)
     implementation(projects.api.specials)
-    implementation(projects.content.other.poison)
+    implementation(projects.api.spells)
 }

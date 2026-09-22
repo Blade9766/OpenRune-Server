@@ -13,6 +13,8 @@ public val ADMIN_INFINITE_RUNES_ATTR: AttributeKey<Boolean> = AttributeKey()
 
 public val ADMIN_NO_CLIP_ATTR: AttributeKey<Boolean> = AttributeKey()
 
+public val ADMIN_BOLT_PROC_ATTR: AttributeKey<Boolean> = AttributeKey()
+
 public var Player.adminGodMode: Boolean
     get() = attr[ADMIN_GOD_MODE_ATTR] == true
     set(value) {
@@ -72,5 +74,19 @@ public var Player.adminNoClip: Boolean
             attr[ADMIN_NO_CLIP_ATTR] = true
         } else {
             attr.remove(ADMIN_NO_CLIP_ATTR)
+        }
+    }
+
+/**
+ * When enabled, every enchanted bolt this player fires activates its special effect and hits,
+ * wherever the effect can apply to the target.
+ */
+public var Player.adminBoltProc: Boolean
+    get() = attr[ADMIN_BOLT_PROC_ATTR] == true
+    set(value) {
+        if (value) {
+            attr[ADMIN_BOLT_PROC_ATTR] = true
+        } else {
+            attr.remove(ADMIN_BOLT_PROC_ATTR)
         }
     }
