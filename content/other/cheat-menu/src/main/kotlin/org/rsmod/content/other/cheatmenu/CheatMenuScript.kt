@@ -66,8 +66,10 @@ constructor(
             switchSpellbook(this)
         }
         adminCommand("ohk", "Toggle one-hit-kill on npcs", ::toggleOneHitKill)
-        adminCommand("norunes", "Toggle casting spells without runes", ::toggleInfiniteRunes)
-        adminCommand("noclip", "Toggle walking through walls and objects", ::toggleNoClip)
+        // Command names must not start with an emote name ("no", "run", "sit"...): the client
+        // plays that emote for "::<emote>..." and never sends the command.
+        adminCommand("freerunes", "Toggle casting spells without runes", ::toggleInfiniteRunes)
+        adminCommand("ghost", "Toggle walking through walls and objects", ::toggleNoClip)
         adminCommand("heal", "Fully restore stats, hitpoints, prayer and run energy", ::fullHeal)
     }
 

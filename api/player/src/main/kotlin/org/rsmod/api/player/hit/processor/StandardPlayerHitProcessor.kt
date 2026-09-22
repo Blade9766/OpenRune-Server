@@ -7,6 +7,7 @@ import dev.openrune.types.aconverted.SynthType
 import kotlin.math.min
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.BaseParams
+import org.rsmod.api.player.cheat.adminGodMode
 import org.rsmod.api.player.death.recordDeathCause
 import org.rsmod.api.player.death.resolveDeathCause
 import org.rsmod.api.player.events.PlayerHitEvents
@@ -35,6 +36,10 @@ public object StandardPlayerHitProcessor : QueuedPlayerHitProcessor {
 
     override fun ProtectedAccess.process(hit: Hit) {
         if (!hit.isValid(this)) {
+            return
+        }
+        // Hits queued without StandardPlayerHitModifier (poison, self-damage) keep their damage.
+        if (player.adminGodMode && hit.damage > 0) {
             return
         }
         preventLogout("You can't log out until 10 seconds after the end of combat.", 16)
