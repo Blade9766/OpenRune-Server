@@ -200,6 +200,22 @@ constructor(private val equipOp: HeldEquipOp, private val charges: ObjChargeMana
                                 "obj.barrows_verac_weapon",
                             )
                     ),
+                "defencebonus" to
+                    Preset(
+                        worn =
+                            listOf(
+                                "obj.justiciar_faceguard",
+                                "obj.enchanted_onyx_amulet",
+                                "obj.justiciar_chestguard",
+                                "obj.justiciar_leg_guards",
+                                "obj.guardian_boots",
+                                "obj.infernal_cape",
+                                "obj.wyvern_shield",
+                                "obj.confliction_gauntlets",
+                                "obj.steel_ring",
+                                "obj.belles_folly",
+                            )
+                    ),
             )
     }
 }

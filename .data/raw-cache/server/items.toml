@@ -18786,6 +18786,24 @@ weaponCategory="StabSword"
 
 
 [[item]]
+id = "obj.belles_folly"
+inherit = "obj.belles_folly"
+weaponCategory="StabSword"
+[item.params]
+"param.equipment_sound"=2248
+"param.attack_anim_stance1"="seq.ghrazi_rapier_attack"
+"param.attack_sound_stance1"=2549
+"param.attack_anim_stance2"="seq.ghrazi_rapier_attack"
+"param.attack_sound_stance2"=2549
+"param.attack_anim_stance3"="seq.human_sword_slash"
+"param.attack_sound_stance3"=2548
+"param.attack_anim_stance4"="seq.ghrazi_rapier_attack"
+"param.attack_sound_stance4"=2549
+"param.bas_readyanim"="seq.human_ds_ready"
+"param.defend_anim"="seq.human_sword_def"
+
+
+[[item]]
 id = "obj.scythe_of_vitur"
 inherit = "obj.scythe_of_vitur"
 weaponCategory="Scythe"
