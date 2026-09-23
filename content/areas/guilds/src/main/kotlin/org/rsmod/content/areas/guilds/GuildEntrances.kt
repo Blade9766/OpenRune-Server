@@ -27,7 +27,6 @@ class GuildEntrance(
 )
 
 object GuildEntrances {
-    private const val HEROES_QUEST = "quest_heroes"
     private const val LEGENDS_QUEST = "quest_legends"
 
     val fishing =
@@ -110,25 +109,6 @@ object GuildEntrances {
             },
         )
 
-    val heroes =
-        GuildEntrance(
-            name = "Heroes' Guild",
-            locs = listOf("loc.herodoor_l", "loc.herodoor_r"),
-            inside = { it.x <= 2901 },
-            canEnter = { QuestRequirements.hasCompleted(it, HEROES_QUEST) },
-            refuse = {
-                startDialogue {
-                    chatNpcSpecific("Achietties", "npc.achietties", neutral, "Greetings. Welcome to the Heroes' Guild.")
-                    chatNpcSpecific(
-                        "Achietties",
-                        "npc.achietties",
-                        neutral,
-                        "Only the greatest heroes of this land may gain entrance to this guild.",
-                    )
-                }
-            },
-        )
-
     val legendsGrounds =
         GuildEntrance(
             name = "Legends' Guild grounds",
@@ -186,5 +166,5 @@ object GuildEntrances {
         )
 
     val all: List<GuildEntrance> =
-        listOf(fishing, ranging, wizards, woodcutting, farming, heroes, legendsGrounds, legendsHall, warriors)
+        listOf(fishing, ranging, wizards, woodcutting, farming, legendsGrounds, legendsHall, warriors)
 }

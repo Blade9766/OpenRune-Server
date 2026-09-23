@@ -13,4 +13,7 @@ npc = [
     { id = "npc.tourtrap_qip_desert_mining_merc_2", wiki = "Mercenary", aggressive = false },
     { id = "npc.tourtrap_qip_desert_mining_merc_3", wiki = "Mercenary", aggressive = false },
     { id = "npc.tourtrap_qip_desert_mining_merc_4", wiki = "Mercenary", aggressive = false },
+    # Guard dogs (Mr Olbors' garden in Brimhaven, Handelmort Mansion): the wiki's "Varies" is
+    # only the Hosidius fruit-stall dogs, which use their own npc.
+    { id = "npc.guarddog", wiki = "Guard dog" },
 ]

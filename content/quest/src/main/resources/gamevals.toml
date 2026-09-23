@@ -294,6 +294,9 @@ insect_swarm = 1582
 mosquitos_1 = 2008
 fill_grain = 2576
 
+# Heroes' Quest: clearing the rock slide to the Ice Queen's lair
+mine_quick = 2659
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -555,3 +558,8 @@ rantz_arrow_lands = 65431
 merlin_crate_evict = 65432
 # Romeo & Juliet: Romeo walking up to a player who hasn't started the quest and greeting them.
 romeo_approach = 65433
+# Heroes' Quest: Grip storming over to his drinks cabinet, the warning when attacking him in
+# front of witnesses, and the burn from grabbing a firebird feather bare-handed.
+hero_drinks_cabinet = 65434
+hero_grip_attack_warning = 65435
+hero_hot_feather = 65436

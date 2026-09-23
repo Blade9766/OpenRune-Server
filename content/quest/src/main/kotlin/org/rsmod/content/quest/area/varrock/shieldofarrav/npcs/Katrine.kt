@@ -3,6 +3,10 @@ package org.rsmod.content.quest.area.varrock.shieldofarrav.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
+import org.rsmod.content.quest.area.burthorpe.heroesquest.katrineArmband
+import org.rsmod.content.quest.area.burthorpe.heroesquest.katrineArmbandOption
+import org.rsmod.content.quest.area.burthorpe.heroesquest.katrineReplacesArmband
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.BLACKARM_JOINED
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.BLACKARM_TASKED
@@ -16,9 +20,12 @@ import org.rsmod.plugin.scripts.ScriptContext
 /**
  * Katrine, who runs the Black Arm Gang from their hideout in the alley by Varrock's south gate.
  * She lets a Shield of Arrav player join once they bring her two crossbows stolen from the
- * Phoenix Gang.
+ * Phoenix Gang. Members working towards the Heroes' Quest armband are sent to Brimhaven.
  */
-class Katrine @Inject constructor(private val arrav: ShieldOfArravQuest) : PluginScript() {
+class Katrine
+@Inject
+constructor(private val arrav: ShieldOfArravQuest, private val heroes: HeroesQuest) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(KATRINE) { startDialogue(it.npc) { katrine() } }
@@ -248,15 +255,32 @@ class Katrine @Inject constructor(private val arrav: ShieldOfArravQuest) : Plugi
     private suspend fun Dialogue.member() {
         chatPlayer(neutral, "Hey.")
         chatNpc(neutral, "Hey.")
+        if (katrineReplacesArmband(heroes)) {
+            return
+        }
+        val armband = katrineArmbandOption(heroes)
         val topic =
-            choice3(
-                "So I'm a part of the gang now?",
-                1,
-                "Who are all those people in there?",
-                2,
-                "Teach me to be a top class criminal!",
-                3,
-            )
+            if (armband != null) {
+                choice4(
+                    "So I'm a part of the gang now?",
+                    1,
+                    "Who are all those people in there?",
+                    2,
+                    "Teach me to be a top class criminal!",
+                    3,
+                    armband,
+                    4,
+                )
+            } else {
+                choice3(
+                    "So I'm a part of the gang now?",
+                    1,
+                    "Who are all those people in there?",
+                    2,
+                    "Teach me to be a top class criminal!",
+                    3,
+                )
+            }
         when (topic) {
             1 -> {
                 chatPlayer(quiz, "So I'm part of the gang now?")
@@ -278,10 +302,11 @@ class Katrine @Inject constructor(private val arrav: ShieldOfArravQuest) : Plugi
                 chatPlayer(quiz, "They're not very chatty...")
                 chatNpc(neutral, "Nope.")
             }
-            else -> {
+            3 -> {
                 chatPlayer(neutral, "Teach me to be a top class criminal.")
                 chatNpc(bored, "Teach yourself.")
             }
+            else -> katrineArmband(heroes)
         }
     }
 

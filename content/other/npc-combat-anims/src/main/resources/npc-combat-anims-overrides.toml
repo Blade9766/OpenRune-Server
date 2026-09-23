@@ -70,6 +70,10 @@ npc = [
     # Priest in Peril's Temple Guardian stabs, and wears the model the original dark beasts shared,
     # so it carries their voice (dark_beast_attack/hit/death).
     { id = "npc.priestperilguarddog", attack_anim = "seq.dm_attack", attack_type = "category.attacktype_stab", attack_sound = 389, defend_anim = "seq.dm_block", defend_sound = 391, death_anim = "seq.dm_death", death_sound = 390 },
+    # Heroes' Quest: Mr Olbors' guard dogs and the Entranan Firebird carry their family's
+    # animations but no sounds; the ids are the wiki's dog_* and bird_* effects.
+    { id = "npc.guarddog", attack_anim = "seq.dog_update_small_dog_attack", attack_type = "category.attacktype_crush", attack_sound = 3717, defend_anim = "seq.dog_update_medium_dog_defend", defend_sound = 3719, death_anim = "seq.dog_update_medium_dog_death", death_sound = 3718 },
+    { id = "npc.fire_bird", attack_anim = "seq.firebird_update_attack", attack_type = "category.attacktype_stab", attack_sound = 306, defend_anim = "seq.firebird_update_defend", defend_sound = 308, death_anim = "seq.firebird_update_death", death_sound = 307 },
     # Mort Myre's solid ghasts slash, with their own voice (ghast_attack/hit/death).
     { id = "npc.ghast_vis", attack_anim = "seq.ghast_attack", attack_type = "category.attacktype_slash", attack_sound = 433, defend_anim = "seq.ghast_block", defend_sound = 435, death_anim = "seq.ghast_death", death_sound = 434 },
     # Shilo Village: Nazastarool's ghost form has its own animation set, and the undead ones and

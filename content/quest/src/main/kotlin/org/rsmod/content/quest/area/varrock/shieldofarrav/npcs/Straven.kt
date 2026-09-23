@@ -4,6 +4,8 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
+import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
+import org.rsmod.content.quest.area.burthorpe.heroesquest.stravenArmband
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.INTEL_REPORT
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.PHOENIX_JOINED
@@ -21,12 +23,22 @@ internal const val STRAVEN = "npc.straven"
 /**
  * Straven, one of the Phoenix Gang's leaders, who keeps the hideout door under the VTAM
  * Corporation building. He sets the Jonny the Beard task, swaps the intelligence report for gang
- * membership and the weapon store key, and replaces the key if it is lost.
+ * membership and the weapon store key, and replaces the key if it is lost. For the Heroes' Quest
+ * he sends members after Scarface Pete's candlesticks and pays out the Master Thief armband.
  */
-class Straven @Inject constructor(private val arrav: ShieldOfArravQuest) : PluginScript() {
+class Straven
+@Inject
+constructor(private val arrav: ShieldOfArravQuest, private val heroes: HeroesQuest) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
-        onOpNpc1(STRAVEN) { startDialogue(it.npc) { straven(arrav, atDoor = false) } }
+        onOpNpc1(STRAVEN) {
+            startDialogue(it.npc) {
+                if (!stravenArmband(heroes)) {
+                    straven(arrav, atDoor = false)
+                }
+            }
+        }
         onOpNpcU(STRAVEN) {
             if (it.objType.internalName != INTEL_REPORT) {
                 mes("Nothing interesting happens.")

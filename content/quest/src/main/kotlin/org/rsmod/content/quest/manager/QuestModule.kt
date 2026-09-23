@@ -30,6 +30,11 @@ import org.rsmod.content.quest.area.ardougne.undergroundpass.TheGrid
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UnicornCave
 import org.rsmod.content.quest.area.ardougne.undergroundpass.WellOfDoors
+import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
+import org.rsmod.content.quest.area.burthorpe.heroesquest.HotFeatherTakeHook
+import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.AchiettiesDialogue
+import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.GripAttackHook
+import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.GripKillHook
 import org.rsmod.content.quest.area.burthorpe.trollstronghold.DadAttackHook
 import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest
 import org.rsmod.content.quest.area.desert.icthlarin.Ceremony
@@ -347,5 +352,10 @@ public class QuestModule : PluginModule() {
         bindInstance<RomeoJulietScenes>()
         bindInstance<JulietScene>()
         bindInstance<CryptScene>()
+        bindInstance<HeroesQuest>()
+        bindInstance<AchiettiesDialogue>()
+        addSetBinding<NpcAttackValidateHook>(GripAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(GripKillHook::class.java)
+        addSetBinding<PlayerObjTakeValidateHook>(HotFeatherTakeHook::class.java)
     }
 }

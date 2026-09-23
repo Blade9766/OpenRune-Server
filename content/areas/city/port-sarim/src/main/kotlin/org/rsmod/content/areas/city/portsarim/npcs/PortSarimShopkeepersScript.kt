@@ -5,6 +5,9 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
+import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
+import org.rsmod.content.quest.area.burthorpe.heroesquest.lavaEelAdvice
+import org.rsmod.content.quest.area.burthorpe.heroesquest.lavaEelOption
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -24,8 +27,9 @@ private enum class PortSarimShop(
     Battleaxes("npc.brian", "Brian's Battleaxe Bazaar.", "inv.battleaxeshop", 100.0, 55.0, 1.0),
 }
 
-class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
-    PluginScript() {
+class PortSarimShopkeepersScript
+@Inject
+constructor(private val shops: Shops, private val heroes: HeroesQuest) : PluginScript() {
     override fun ScriptContext.startup() {
         for (shop in PortSarimShop.entries - PortSarimShop.Jewellery) {
             onOpNpc3(shop.npc) { player.openShop(shop) }
@@ -43,11 +47,20 @@ class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
             "Welcome! You can buy fishing equipment at my store. We'll also buy anything you " +
                 "catch off you.",
         )
-        if (choice2("Let's see what you've got then.", true, "Sorry, I'm not interested.", false)) {
-            chatPlayer(neutral, "Let's see what you've got then.")
-            player.openShop(PortSarimShop.Fishing)
-        } else {
-            chatPlayer(neutral, "Sorry, I'm not interested.")
+        val lavaEel = lavaEelOption(heroes)
+        val topic =
+            if (lavaEel != null) {
+                choice3("Let's see what you've got then.", 1, "Sorry, I'm not interested.", 2, lavaEel, 3)
+            } else {
+                choice2("Let's see what you've got then.", 1, "Sorry, I'm not interested.", 2)
+            }
+        when (topic) {
+            1 -> {
+                chatPlayer(neutral, "Let's see what you've got then.")
+                player.openShop(PortSarimShop.Fishing)
+            }
+            2 -> chatPlayer(neutral, "Sorry, I'm not interested.")
+            else -> lavaEelAdvice(heroes)
         }
     }
 
