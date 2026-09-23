@@ -151,6 +151,10 @@ import org.rsmod.content.quest.area.varrock.familycrest.npcs.Caleb
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Dimintheis
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Johnathon
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest
+import org.rsmod.content.quest.area.varrock.romeojuliet.CryptScene
+import org.rsmod.content.quest.area.varrock.romeojuliet.JulietScene
+import org.rsmod.content.quest.area.varrock.romeojuliet.RomeoJulietQuest
+import org.rsmod.content.quest.area.varrock.romeojuliet.RomeoJulietScenes
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
 import org.rsmod.content.quest.area.varrock.shieldofarrav.npcs.JonnyAttackHook
 import org.rsmod.content.quest.area.varrock.shieldofarrav.npcs.WeaponsmasterKillHook
@@ -339,5 +343,9 @@ public class QuestModule : PluginModule() {
         bindInstance<ShieldOfArravQuest>()
         addSetBinding<NpcAttackValidateHook>(JonnyAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(WeaponsmasterKillHook::class.java)
+        bindInstance<RomeoJulietQuest>()
+        bindInstance<RomeoJulietScenes>()
+        bindInstance<JulietScene>()
+        bindInstance<CryptScene>()
     }
 }

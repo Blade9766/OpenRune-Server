@@ -5574,3 +5574,30 @@ inherit = "npc.qip_soa_thief_female02"
 id = "npc.qip_soa_newspaperseller"
 inherit = "npc.qip_soa_newspaperseller"
 timer = 1
+
+[[npc]]
+id = "npc.father_lawrence"
+inherit = "npc.father_lawrence"
+timer = 1
+wanderRange = 2
+
+[[npc]]
+id = "npc.romeo_juliet_pew_sleeping_man"
+inherit = "npc.romeo_juliet_pew_sleeping_man"
+timer = 1
+moveRestrict = "NoMove"
+wanderRange = 0
+respawnDir = "North"
+
+[[npc]]
+id = "npc.romeo_juliet_pew_sleeping_woman"
+inherit = "npc.romeo_juliet_pew_sleeping_woman"
+timer = 1
+moveRestrict = "NoMove"
+wanderRange = 0
+respawnDir = "North"
+
+[[npc]]
+id = "npc.romeo"
+inherit = "npc.romeo"
+timer = 1

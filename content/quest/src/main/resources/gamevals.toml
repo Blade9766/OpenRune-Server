@@ -553,3 +553,5 @@ rantz_arrow_lands = 65431
 # Merlin's Crystal: putting a player who logged out inside Arhein's shipping crate back on
 # the dock it was bound for.
 merlin_crate_evict = 65432
+# Romeo & Juliet: Romeo walking up to a player who hasn't started the quest and greeting them.
+romeo_approach = 65433
