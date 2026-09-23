@@ -202,7 +202,6 @@ pit_jump_fall = 1173
 pit_land = 1174
 tile_move = 1178
 tile_reset = 1179
-wall_crushed = 1181
 wall_crusher = 1182
 pitfall = 1477
 scarabs_appear = 1478
@@ -290,7 +289,6 @@ glass_break = 2127
 drawer_open = 64
 drawer_close = 63
 barklike = 652
-insect_swarm = 1582
 mosquitos_1 = 2008
 fill_grain = 2576
 

@@ -744,7 +744,7 @@ constructor(
         const val PIT_FALL = "synth.pit_fall"
         const val PITFALL = "synth.pitfall"
         const val WALL_CRUSHER = "synth.wall_crusher"
-        const val WALL_CRUSHED = "synth.wall_crushed"
+        const val WALL_CRUSHED = "synth.wom_recycle_remove"
         const val SCARABS_APPEAR = "synth.scarabs_appear"
     }
 }

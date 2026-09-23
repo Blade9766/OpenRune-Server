@@ -472,7 +472,7 @@ constructor(
         const val SPRINKLE_SOUND = "synth.ernest_sprinkle"
         const val FLYPAPER_SOUND = "synth.paper_move"
         const val BARK_SOUND = "synth.barklike"
-        const val BEES_SOUND = "synth.insect_swarm"
+        const val BEES_SOUND = "synth.swamp_cave_insects"
         const val MOSQUITO_SOUND = "synth.mosquitos_1"
         const val DRAWER_OPEN_SOUND = "synth.drawer_open"
         const val DRAWER_CLOSE_SOUND = "synth.drawer_close"

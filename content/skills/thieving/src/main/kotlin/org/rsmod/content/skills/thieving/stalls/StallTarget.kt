@@ -191,6 +191,22 @@ enum class StallTarget(
             },
         locs = mapOf("loc.seed_stall" to "loc.market"),
     ),
+    WINE(
+        label = "wine stall",
+        level = 22,
+        xp = 27.0,
+        respawnCycles = 8,
+        petBase = 36_490,
+        loot =
+            loot {
+                item(39, "obj.jug_empty")
+                item(20, "obj.jug_water")
+                item(17, "obj.grapes")
+                item(13, "obj.jug_wine")
+                item(11, "obj.rag_bottle_wine")
+            },
+        locs = mapOf("loc.rag_market_stall" to "loc.rag_market_stall_empty"),
+    ),
     FUR(
         label = "fur stall",
         level = 35,

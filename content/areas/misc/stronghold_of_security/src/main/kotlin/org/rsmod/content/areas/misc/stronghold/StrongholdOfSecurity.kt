@@ -172,11 +172,9 @@ object Stronghold {
     const val COINS = "obj.coins"
 
     /* Npcs */
-    const val COUNT_CHECK = "npc.count_check"
     const val SOLZTUN = "npc.sos_barb_spirit"
 
     /* Vars */
-    const val TELEPORTED_BY_COUNT = "varbit.sos_teleported_by_count"
     const val SCEPTRE_IMBUED = "varbit.sos_sceptre_imbued"
     const val SCEPTRE_CHARGES = "varbit.sos_sceptre_charges"
 
