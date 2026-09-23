@@ -1558,3 +1558,108 @@ id = "varbit.murder_found_prints"
 varp = "varp.murder_state"
 startBit = 3
 endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_mapped"
+varp = "varp.legends_state"
+startBit = 0
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_entered_cavern"
+varp = "varp.legends_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_asked_where"
+varp = "varp.legends_state"
+startBit = 4
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_asked_who"
+varp = "varp.legends_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_called_vacu"
+varp = "varp.legends_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_runes_placed"
+varp = "varp.legends_state"
+startBit = 7
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_gems"
+varp = "varp.legends_state"
+startBit = 10
+endBit = 16
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_bowl_uses"
+varp = "varp.legends_state"
+startBit = 17
+endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_winch_rope"
+varp = "varp.legends_state"
+startBit = 21
+endBit = 21
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_bravery"
+varp = "varp.legends_state"
+startBit = 22
+endBit = 22
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_crystals"
+varp = "varp.legends_state"
+startBit = 23
+endBit = 25
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_killed_viyeldi"
+varp = "varp.legends_state"
+startBit = 26
+endBit = 26
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_gave_dagger"
+varp = "varp.legends_state"
+startBit = 27
+endBit = 27
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_heroes_slain"
+varp = "varp.legends_state"
+startBit = 28
+endBit = 30
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.legends_soaked_ungadulu"
+varp = "varp.legends_state"
+startBit = 31
+endBit = 31

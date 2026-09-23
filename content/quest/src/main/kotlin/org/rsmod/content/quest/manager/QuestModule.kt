@@ -8,6 +8,7 @@ import org.rsmod.api.death.PlayerRespawnHook
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
+import org.rsmod.api.weapons.WeaponMap
 import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
@@ -96,6 +97,15 @@ import org.rsmod.content.quest.area.gnomestronghold.monkeymadness.npcs.NarnodeMo
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest
 import org.rsmod.content.quest.area.karamja.junglepotion.JunglePotionQuest
 import org.rsmod.content.quest.area.karamja.junglepotion.TrufitusJunglePotion
+import org.rsmod.content.quest.area.karamja.legendsquest.CarvedRockGemTakeHook
+import org.rsmod.content.quest.area.karamja.legendsquest.HolyWaterWeapon
+import org.rsmod.content.quest.area.karamja.legendsquest.LegendsQuest
+import org.rsmod.content.quest.area.karamja.legendsquest.LegendsSupport
+import org.rsmod.content.quest.area.karamja.legendsquest.Nezikchened
+import org.rsmod.content.quest.area.karamja.legendsquest.NezikchenedAttackHook
+import org.rsmod.content.quest.area.karamja.legendsquest.NezikchenedKillHook
+import org.rsmod.content.quest.area.karamja.legendsquest.npcs.Gujuo
+import org.rsmod.content.quest.area.karamja.legendsquest.npcs.Ungadulu
 import org.rsmod.content.quest.area.karamja.shilovillage.Nazastarool
 import org.rsmod.content.quest.area.karamja.shilovillage.NazastaroolAttackHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
@@ -357,5 +367,14 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(GripAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(GripKillHook::class.java)
         addSetBinding<PlayerObjTakeValidateHook>(HotFeatherTakeHook::class.java)
+        bindInstance<LegendsQuest>()
+        bindInstance<LegendsSupport>()
+        bindInstance<Nezikchened>()
+        bindInstance<Gujuo>()
+        bindInstance<Ungadulu>()
+        addSetBinding<NpcAttackValidateHook>(NezikchenedAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(NezikchenedKillHook::class.java)
+        addSetBinding<PlayerObjTakeValidateHook>(CarvedRockGemTakeHook::class.java)
+        addSetBinding<WeaponMap>(HolyWaterWeapon::class.java)
     }
 }

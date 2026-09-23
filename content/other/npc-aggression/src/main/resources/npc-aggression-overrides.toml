@@ -16,4 +16,7 @@ npc = [
     # Guard dogs (Mr Olbors' garden in Brimhaven, Handelmort Mansion): the wiki's "Varies" is
     # only the Hosidius fruit-stall dogs, which use their own npc.
     { id = "npc.guarddog", wiki = "Guard dog" },
+    # Legends' Quest: Echned Zekin is a talking spirit; the wiki's entry is Nezikchened, the form
+    # he takes once unmasked, which the quest sets on the player itself.
+    { id = "npc.echned_zekin", wiki = "Nezikchened", aggressive = false },
 ]

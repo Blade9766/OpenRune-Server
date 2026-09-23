@@ -13,6 +13,8 @@ private val CONTAINERS =
         "obj.jug_empty" to "obj.jug_water",
         "obj.bowl_empty" to "obj.bowl_water",
         "obj.vial_empty" to "obj.vial_water",
+        "obj.goldbowl_empty" to "obj.goldbowl_water",
+        "obj.goldbowlbless_empty" to "obj.goldbowlbless_water",
     )
 
 class WaterSourceScript : PluginScript() {

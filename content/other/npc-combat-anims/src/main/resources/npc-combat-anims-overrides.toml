@@ -172,4 +172,13 @@ npc = [
     { id = "npc.wild_cave_hell_hound", attack_sound = 488, defend_sound = 487 },
     { id = "npc.poh_hellhound", attack_sound = 488, defend_sound = 487 },
     { id = "npc.arceuus_reanimated_hellhound", attack_sound = 488, defend_sound = 487 },
+    # Legends' Quest: the three dead heroes of the Viyeldi caves swing swords with the updated
+    # skeleton set and carry its voice; death wings screech like the other bats.
+    { id = "npc.san_tojalon", attack_type = "category.attacktype_slash", attack_sound = 776, defend_sound = 779, death_sound = 777 },
+    { id = "npc.irvig_senay", attack_type = "category.attacktype_slash", attack_sound = 776, defend_sound = 779, death_sound = 777 },
+    { id = "npc.ranalph_devere", attack_type = "category.attacktype_slash", attack_sound = 776, defend_sound = 779, death_sound = 777 },
+    { id = "npc.deathwing", attack_sound = 292, defend_sound = 294, death_sound = 293 },
+    # Nezikchened casts his flamestrike from up to ten tiles away (content/quest legendsquest
+    # NezikchenedCombat) and only claws a player standing beside him.
+    { id = "npc.nezikchened", attack_range = 10 },
 ]

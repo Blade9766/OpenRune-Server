@@ -297,6 +297,15 @@ fill_grain = 2576
 # Heroes' Quest: clearing the rock slide to the Ice Queen's lair
 mine_quick = 2659
 
+# Legends' Quest: swinging the bullroarer, Gujuo's blessing and forging the gold bowl, hacking
+# through the Kharazi jungle and Nezikchened's parting fire bolt.
+bullroarer = 1640
+anvil_4 = 2721
+woodchop_4 = 2736
+fire_bolt_all = 2340
+# Legends' Quest: throwing a vial of holy water.
+thrown = 2708
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
@@ -359,6 +368,10 @@ merlin_state = 65453
 # Murder Mystery: the evidence the player has gathered. The stage is the whole of the cache varp
 # `varp.murderquest` and the murderer the cache varp `varp.murdersus`; neither carries varbits.
 murder_state = 65420
+
+# Legends' Quest: everything the quest remembers besides its stage, which is the whole of the
+# cache varp `varp.legendsquest`; the Radimus multinpcs index that varp directly.
+legends_state = 65409
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -505,6 +518,22 @@ merlin_in_crate = 65713
 murder_poison_progress = 65750
 murder_found_thread = 65751
 murder_found_prints = 65752
+
+legends_mapped = 65753
+legends_entered_cavern = 65754
+legends_asked_where = 65755
+legends_asked_who = 65756
+legends_called_vacu = 65757
+legends_runes_placed = 65758
+legends_gems = 65759
+legends_bowl_uses = 65760
+legends_winch_rope = 65761
+legends_bravery = 65762
+legends_crystals = 65763
+legends_killed_viyeldi = 65764
+legends_gave_dagger = 65765
+legends_heroes_slain = 65766
+legends_soaked_ungadulu = 65767
 
 [gamevals.timer]
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.

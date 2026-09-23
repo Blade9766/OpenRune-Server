@@ -8,7 +8,6 @@ import org.rsmod.api.player.stat.fishingLvl
 import org.rsmod.api.player.stat.magicLvl
 import org.rsmod.api.player.stat.rangedLvl
 import org.rsmod.api.player.stat.woodcuttingLvl
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
 
@@ -27,8 +26,6 @@ class GuildEntrance(
 )
 
 object GuildEntrances {
-    private const val LEGENDS_QUEST = "quest_legends"
-
     val fishing =
         GuildEntrance(
             name = "Fishing Guild",
@@ -109,40 +106,6 @@ object GuildEntrances {
             },
         )
 
-    val legendsGrounds =
-        GuildEntrance(
-            name = "Legends' Guild grounds",
-            locs = listOf("loc.legendsguildgatel", "loc.legendsguildgater"),
-            inside = { it.z >= 3350 },
-            canEnter = {
-                QuestRequirements.hasCompleted(it, LEGENDS_QUEST) ||
-                    QuestRequirements.isOnQuest(it, LEGENDS_QUEST)
-            },
-            refuse = {
-                mes("A nearby guard approaches you...")
-                startDialogue {
-                    chatNpcSpecific("Legends' Guard", "npc.legends_guild_guard1", neutral, "Yes, how can I help you?")
-                    mesbox("You need to complete the Legends' quest before you can enter the Legends' Guild.")
-                }
-            },
-            onEnter = {
-                if (!QuestRequirements.hasCompleted(player, LEGENDS_QUEST)) {
-                    mes("A guard nods at you as you walk past.")
-                }
-            },
-        )
-
-    val legendsHall =
-        GuildEntrance(
-            name = "Legends' Guild",
-            locs = listOf("loc.legendsguilddoorl", "loc.legendsguilddoorr"),
-            inside = { it.z >= 3374 },
-            canEnter = { QuestRequirements.hasCompleted(it, LEGENDS_QUEST) },
-            refuse = {
-                mesbox("You need to complete the Legends' quest before you can enter the Legends' Guild.")
-            },
-        )
-
     val warriors =
         GuildEntrance(
             name = "Warriors' Guild",
@@ -166,5 +129,5 @@ object GuildEntrances {
         )
 
     val all: List<GuildEntrance> =
-        listOf(fishing, ranging, wizards, woodcutting, farming, legendsGrounds, legendsHall, warriors)
+        listOf(fishing, ranging, wizards, woodcutting, farming, warriors)
 }
