@@ -1,5 +1,6 @@
 package org.rsmod.api.db.jdbc
 
+import dev.or2.central.db.FlywayMigrator
 import jakarta.inject.Inject
 import jakarta.inject.Provider
 import java.sql.Connection
@@ -9,7 +10,6 @@ import org.rsmod.api.db.Database
 import org.rsmod.api.db.DatabaseConfig
 import org.rsmod.api.db.DatabaseConnection
 import org.rsmod.api.db.util.DatabaseRollbackException
-import dev.or2.central.db.FlywayMigrator
 
 public class GameDatabase
 @Inject
