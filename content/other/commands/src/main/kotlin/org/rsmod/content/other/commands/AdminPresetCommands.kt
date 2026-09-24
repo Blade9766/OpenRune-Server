@@ -216,6 +216,22 @@ constructor(private val equipOp: HeldEquipOp, private val charges: ObjChargeMana
                                 "obj.belles_folly",
                             )
                     ),
+                "attack" to
+                    Preset(
+                        worn =
+                            listOf(
+                                "obj.barbassault_penance_fighter_hat",
+                                "obj.amulet_of_rancour",
+                                "obj.hide_top",
+                                "obj.hide_legs",
+                                "obj.avernic_treads_max",
+                                "obj.ardy_cape_elite",
+                                "obj.infernal_defender",
+                                "obj.ferocious_gloves",
+                                "obj.nzone_sharp_ring",
+                                "obj.osmumtens_fang",
+                            )
+                    ),
             )
     }
 }
