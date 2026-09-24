@@ -29,7 +29,7 @@ public class PlayerRunUpdateProcessor {
     private fun Player.updateRunEnergy() {
         val startRunEnergy = runEnergy
 
-        if (pendingStepCount > 1) {
+        if (pendingStepCount > 1 && !forcedRoute) {
             decreaseRunEnergy()
         } else {
             restoreRunEnergy()
