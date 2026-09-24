@@ -424,6 +424,12 @@ class RspCycle(
         )
 
         for (wearpos in Wearpos.visibleWearpos) {
+            val override = appearance.wornOverride(wearpos.slot)
+            if (override != null) {
+                val overrideType = ServerCacheManager.getItemOrDefault(override)
+                info.setWornObj(wearpos.slot, override, overrideType.wearpos2, overrideType.wearpos3)
+                continue
+            }
             val obj = worn[wearpos.slot]
             if (obj == null) {
                 info.setWornObj(wearpos.slot, -1, -1, -1)

@@ -79,6 +79,7 @@ public class Appearance {
 
     private val colours: ByteArray = ByteArray(5)
     private val identKit: ShortArray = ShortArray(7) { -1 }
+    private val wornOverrides = HashMap<Int, Int>()
 
     // TODO: Move default colours/identkit assignment to a relevant plugin and
     //  delete this init block.
@@ -106,6 +107,20 @@ public class Appearance {
         this.identKit[index] = identKit.toShort()
         this.rebuild = true
     }
+
+    /** Shows obj [type] in wearpos [slot] in place of the worn obj, leaving the worn inv as is. */
+    public fun setWornOverride(slot: Int, type: Int) {
+        wornOverrides[slot] = type
+        rebuild = true
+    }
+
+    public fun clearWornOverride(slot: Int) {
+        if (wornOverrides.remove(slot) != null) {
+            rebuild = true
+        }
+    }
+
+    public fun wornOverride(slot: Int): Int? = wornOverrides[slot]
 
     public fun coloursSnapshot(): List<Byte> = colours.toList()
 
