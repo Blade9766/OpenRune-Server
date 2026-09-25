@@ -7,29 +7,35 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.output.spam
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.barbarianoutpost.barcrawl.BarcrawlBar
+import org.rsmod.content.quest.area.barbarianoutpost.barcrawl.BarcrawlQuest
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class BlueMoonBartender @Inject constructor(private val objRepo: ObjRepository) : PluginScript() {
+class BlueMoonBartender
+@Inject
+constructor(private val objRepo: ObjRepository, private val barcrawl: BarcrawlQuest) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.bluemoon_bartender") { startDialogue(it.npc) { bartender() } }
     }
 
     private suspend fun Dialogue.bartender() {
         chatNpcNoTurn(happy, "What can I do yer for?")
-        when (
-            choice3(
-                "A glass of your finest ale please.",
-                1,
-                "Can you recommend where an adventurer might make his fortune?",
-                2,
-                "Do you know where I can get some good equipment?",
-                3,
-            )
-        ) {
+        val options = buildList {
+            add("A glass of your finest ale please." to 1)
+            add("Can you recommend where an adventurer might make his fortune?" to 2)
+            add("Do you know where I can get some good equipment?" to 3)
+            if (barcrawl.canServe(player, BarcrawlBar.BlueMoon)) {
+                add(BarcrawlQuest.BARCRAWL_LINE to 4)
+            }
+        }
+        when (menu(options)) {
             1 -> buyBeer()
             2 -> fortune()
             3 -> equipment()
+            4 -> with(barcrawl) { serve(BarcrawlBar.BlueMoon) }
         }
     }
 

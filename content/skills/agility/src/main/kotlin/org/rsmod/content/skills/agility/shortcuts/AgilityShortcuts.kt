@@ -143,6 +143,16 @@ object AgilityShortcuts {
                 move = crawl,
             ),
             AgilityShortcut(
+                name = "Obstacle pipe",
+                level = 35,
+                xp = 10.0,
+                locs = listOf("loc.agility_obstical_pipe_barbarian"),
+                sideA = tile(2552, 3561),
+                sideB = tile(2552, 3558),
+                move = pipe,
+                quest = ShortcutQuest("miniquest_barcrawl", "Alfred Grimhand's Barcrawl"),
+            ),
+            AgilityShortcut(
                 name = "Rocks",
                 level = 37,
                 xp = 0.0,

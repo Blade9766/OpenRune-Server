@@ -303,6 +303,8 @@ woodchop_4 = 2736
 fire_bolt_all = 2340
 # Legends' Quest: throwing a vial of holy water.
 thrown = 2708
+# Alfred Grimhand's Barcrawl: the Black Skull Ale's hiccups.
+hiccup = 1903
 
 [gamevals.clientscript]
 quest_available_set = 45550

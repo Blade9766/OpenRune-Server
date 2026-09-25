@@ -31,6 +31,7 @@ import org.rsmod.content.quest.area.ardougne.undergroundpass.TheGrid
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UnicornCave
 import org.rsmod.content.quest.area.ardougne.undergroundpass.WellOfDoors
+import org.rsmod.content.quest.area.barbarianoutpost.barcrawl.BarcrawlQuest
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HotFeatherTakeHook
 import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.AchiettiesDialogue
@@ -206,6 +207,7 @@ public class QuestModule : PluginModule() {
         bindInstance<WallyVision>()
         bindInstance<MageArenaQuest>()
         bindInstance<MageArena2Quest>()
+        bindInstance<BarcrawlQuest>()
         bindInstance<KolodionFights>()
         bindInstance<FollowerSpawns>()
         bindInstance<DragonSlayerQuest>()

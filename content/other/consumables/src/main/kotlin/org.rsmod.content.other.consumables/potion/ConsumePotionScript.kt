@@ -1,9 +1,13 @@
 package org.rsmod.content.other.consumables.potion
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
 import org.rsmod.api.area.checker.AreaChecker
 import org.rsmod.api.area.checker.isInWilderness
+import org.rsmod.api.invtx.invDel
 import org.rsmod.api.player.hook.PlayerRestrictions
 import org.rsmod.api.player.hook.RestrictedAction
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -221,15 +225,23 @@ constructor(
             potion.items.getOrNull(doseIndex + 1)
                 ?: potion.empty
 
-        val transaction =
-            invReplaceSlot(
-                inv = inventory,
-                slot = slot,
-                count = 1,
-                replacement = replacement,
-            )
+        val smashVial =
+            replacement.id == emptyVial.id &&
+                vars[AUTO_SMASH_VIALS] == 1
 
-        if (transaction.failure) {
+        val failed =
+            if (smashVial) {
+                player.invDel(inventory, obj = type.id, count = 1, slot = slot).failure
+            } else {
+                invReplaceSlot(
+                    inv = inventory,
+                    slot = slot,
+                    count = 1,
+                    replacement = replacement,
+                ).failure
+            }
+
+        if (failed) {
             return
         }
 
@@ -265,6 +277,11 @@ constructor(
                 consumedIndex = doseIndex,
             ),
         )
+
+        if (smashVial) {
+            soundSynth(VIAL_SMASH_SOUND)
+            mes("You quickly smash the empty vial using the trick a Barbarian taught you.")
+        }
     }
 
     private fun remainingDoseMessage(
@@ -347,9 +364,20 @@ constructor(
         val option: Int,
     )
 
+    private val emptyVial: ItemServerType by lazy {
+        ServerCacheManager.getItem("obj.vial_empty".asRSCM(RSCMType.OBJ))
+            ?: error("Missing obj.vial_empty")
+    }
+
     private companion object {
         const val DRINK_SOUND: Int =
             2401
+
+        const val VIAL_SMASH_SOUND: Int =
+            2127
+
+        const val AUTO_SMASH_VIALS: String =
+            "varbit.auto_smash_vials"
 
         const val DRINK_ANIMATION: String =
             "seq.human_eat"
