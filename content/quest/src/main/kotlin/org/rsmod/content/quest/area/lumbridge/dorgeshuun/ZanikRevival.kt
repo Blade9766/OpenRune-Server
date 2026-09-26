@@ -5,6 +5,7 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
+import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpHeld5
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onPlayerLogin
@@ -15,6 +16,7 @@ import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQue
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest.Companion.TEARS_OF_GUTHIX
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
+import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -42,13 +44,32 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
             }
         }
         onOpLoc1(JUNA) { startDialogue { juna() } }
-        onOpLoc1(WEEPING_WALL) { collectTear() }
+        onOpLoc1(WEEPING_WALL) { collectTear(it.loc) }
+        onApLoc1(STEPPING_STONE) {
+            if (isWithinApRange(it.loc, STONE_REACH)) {
+                jumpStones(it.loc.coords)
+            }
+        }
         onOpLoc1(STEPPING_STONE) { jumpStones(it.loc.coords) }
         onOpLoc1(CAVE_TUNNEL_DOWN) { enterTunnel(CAVE_LANDING) }
         onOpLoc1(CAVE_TUNNEL_UP) { enterTunnel(SWAMP_LANDING) }
         onOpLoc1(ROCKS_TO_JUNA) { climbRocks(ROCKS_TO_JUNA_X, JUNA_SIDE_Z) }
         onOpLoc1(ROCKS_TO_MINE) { climbRocks(ROCKS_TO_MINE_X, MINE_SIDE_Z) }
-        onPlayerLogin { restoreLostBody(player) }
+        onPlayerLogin {
+            restoreLostBody(player)
+            leaveChamber(player)
+        }
+    }
+
+    /** The chamber is only open while collecting, so a player who logged out in it starts outside. */
+    private fun leaveChamber(player: Player) {
+        val coords = player.coords
+        if (coords.level != CAVE_LEVEL || coords.x !in CHAMBER_X || coords.z !in CHAMBER_Z) {
+            return
+        }
+        player.coords = OUTSIDE_CHAMBER
+        player.dttdCollectingTears = false
+        player.dttdTearsCollected = 0
     }
 
     /** A body lost on death goes back to where the guards left it. */
@@ -176,11 +197,12 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
         access.beginCollecting()
     }
 
-    private fun ProtectedAccess.beginCollecting() {
+    private suspend fun ProtectedAccess.beginCollecting() {
         player.dttdCollectingTears = true
         player.dttdTearsCollected = 0
         ifOpenOverlay(TEARS_PANEL)
         ifSetText(TEARS_COUNT, "0")
+        telejump(CHAMBER_ENTRY, TeleportType.Exempt)
     }
 
     private fun ProtectedAccess.stopCollecting() {
@@ -189,7 +211,7 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
         ifCloseSub(TEARS_PANEL)
     }
 
-    private suspend fun ProtectedAccess.collectTear() {
+    private suspend fun ProtectedAccess.collectTear(wall: BoundLocInfo) {
         arriveDelay()
         if (dttd.stage(player) != STAGE_TEARS || !player.dttdCollectingTears) {
             mes("You need a bowl to collect the tears in.")
@@ -218,10 +240,12 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
         player.dttdTearsCollected = tears
         ifSetText(TEARS_COUNT, tears.toString())
         if (tears < TEARS_NEEDED) {
+            opLoc1(wall)
             return
         }
         mes("You have collected twenty tears.")
         stopCollecting()
+        telejump(OUTSIDE_CHAMBER, TeleportType.Exempt)
         startDialogue { chatPlayer(happy, "I have the Tears.") }
         with(scenes) { revival() }
     }
@@ -312,6 +336,11 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
         const val JUNA = "loc.tog_juna"
         const val WEEPING_WALL = "loc.tog_weepingwall"
         const val STEPPING_STONE = "loc.swamp_cave_steppingstone_b"
+        private const val STONE_REACH = 2
+        private val CHAMBER_ENTRY = CoordGrid(3257, 9517, 2)
+        private val OUTSIDE_CHAMBER = CoordGrid(3250, 9516, 2)
+        private val CHAMBER_X = 3253..3261
+        private val CHAMBER_Z = 9513..9521
         const val CAVE_TUNNEL_DOWN = "loc.tog_cave_down"
         const val CAVE_TUNNEL_UP = "loc.tog_cave_up"
         const val ROCKS_TO_JUNA = "loc.tog_climbing_rocks_up"

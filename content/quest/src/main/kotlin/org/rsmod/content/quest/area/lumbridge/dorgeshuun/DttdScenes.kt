@@ -83,8 +83,8 @@ constructor(
         val origin = player.coords
         midiJingle(ZANIKS_THEME)
         inScene(MARK_KEY, TOG_PLAYER_TILE, origin) { visit -> playMarkStory(visit) }
-        val zanik = follower.following(player)
-        val finish: suspend Dialogue.() -> Unit = {
+        val zanik = follower.following(player) ?: follower.spawn(player)
+        startDialogue(zanik) {
             chatNpc(
                 neutral,
                 "Ever since then I've wondered what the sign meant. But perhaps you will help me to find out, " +
@@ -95,11 +95,8 @@ constructor(
                 "I've seen enough of Lumbridge now. Let's get to the HAM lair and see if they're up to anything!",
             )
         }
-        if (zanik != null) startDialogue(zanik, conversation = finish) else startDialogue(finish)
         dttd.advanceTo(this, STAGE_HAM_HIDEOUT)
-        if (follower.isFollowing(player)) {
-            follower.spawn(player, ZANIK_FOLLOWER_HAM, at = zanik?.coords)
-        }
+        follower.spawn(player, ZANIK_FOLLOWER_HAM, at = zanik.coords)
     }
 
     private suspend fun ProtectedAccess.playMarkStory(visit: RomeoJulietScenes.Visit) {
@@ -370,6 +367,7 @@ constructor(
             zanik?.let { follower.followAgain(player) }
             return
         }
+        zanik?.let { follower.remove(player) }
         try {
             beginCutscene()
             if (title != null) {
@@ -387,9 +385,8 @@ constructor(
             fadeFromBlack()
             closeFadeOverlay()
         }
-        if (follower.isFollowing(player)) {
-            follower.relocate(player, returnTo)
-            follower.followAgain(player)
+        if (zanik != null) {
+            follower.spawn(player, at = zanik.coords)
         }
     }
 

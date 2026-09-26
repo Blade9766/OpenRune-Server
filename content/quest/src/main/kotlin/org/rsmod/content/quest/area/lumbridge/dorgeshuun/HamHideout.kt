@@ -372,7 +372,7 @@ constructor(
         chatPlayer(quiz, "Are you planning to do anything about the cave goblins?")
         chatNpc(
             neutral,
-            "You should know, brother... we don't let ordinary members in on all our plans... but rest assured " +
+            "You should know, ${player.brother()}... we don't let ordinary members in on all our plans... but rest assured " +
                 "those foul creatures will be dealt with very soon!",
         )
         player.dttdHamJohanhus = true

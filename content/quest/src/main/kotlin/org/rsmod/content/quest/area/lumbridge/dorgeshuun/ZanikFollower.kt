@@ -31,6 +31,7 @@ import org.rsmod.game.map.collision.isZoneValid
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
+import org.rsmod.routefinder.StepValidator
 import org.rsmod.routefinder.collision.CollisionFlagMap
 
 /**
@@ -53,6 +54,7 @@ constructor(
 ) : PluginScript() {
 
     private val listeners = mutableListOf<(Player, Npc) -> Unit>()
+    private val steps by lazy { StepValidator(collision) }
     private val zanikTypes by lazy {
         listOf(ZANIK_FOLLOWER, ZANIK_FOLLOWER_HAM, ZANIK_SHOWDOWN).map { it.asRSCM(RSCMType.NPC) }.toSet()
     }
@@ -72,7 +74,6 @@ constructor(
     fun onTick(listener: (Player, Npc) -> Unit) {
         listeners += listener
     }
-
     fun following(player: Player): Npc? {
         val npc = player.attr[ZANIK_NPC] ?: return null
         return if (npc.isSlotAssigned) npc else null
@@ -162,6 +163,7 @@ constructor(
 
     fun followAgain(player: Player) {
         val npc = following(player) ?: return
+        player.attr[LAST_COORDS] = player.coords
         npc.facePlayer(player)
         npc.mode = NpcMode.PlayerFollow
     }
@@ -194,7 +196,8 @@ constructor(
             sendHome(player)
             return
         }
-        if (npc.coords.level != player.coords.level || !npc.coords.isWithinDistance(player.coords, LOST_DISTANCE)) {
+        val lost = npc.mode != NpcMode.None && !npc.coords.isWithinDistance(player.coords, LOST_DISTANCE)
+        if (npc.coords.level != player.coords.level || lost) {
             relocate(player)
         }
         if (npc.mode != NpcMode.None) {
@@ -246,7 +249,11 @@ constructor(
     private fun spawnTile(origin: CoordGrid): CoordGrid {
         for (direction in SPAWN_DIRECTIONS) {
             val tile = origin.translate(direction.xOff, direction.zOff)
-            if (collision.isZoneValid(tile) && !collision.isWalkBlocked(tile)) {
+            if (
+                collision.isZoneValid(tile) &&
+                    !collision.isWalkBlocked(tile) &&
+                    steps.canTravel(origin.level, origin.x, origin.z, direction.xOff, direction.zOff)
+            ) {
                 return tile
             }
         }

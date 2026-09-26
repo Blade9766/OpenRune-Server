@@ -93,6 +93,7 @@ constructor(
         var patrolPause = 0
         var chasing = false
         var ending = false
+        var zanikHeld = false
 
         fun at(world: CoordGrid): CoordGrid = CoordGrid(world.x + dx, world.z + dz, world.level)
 
@@ -194,7 +195,7 @@ constructor(
         visits[player.uid] = visit
         telejump(visit.at(STOREROOM_LANDING), TeleportType.Exempt)
         swapMeetingDoors(visit)
-        spawnGuards(visit)
+        spawnGuards(player, visit)
         follower.spawn(player, ZANIK_FOLLOWER_HAM, at = visit.at(ZANIK_LANDING))
         dttd.advanceTo(this, STAGE_STOREROOMS)
         val zanik = follower.following(player) ?: return
@@ -216,9 +217,9 @@ constructor(
         }
     }
 
-    private fun spawnGuards(visit: Visit) {
+    private fun spawnGuards(player: Player, visit: Visit) {
         for ((index, post) in GUARD_POSTS.withIndex()) {
-            if (visit.guards[index]?.isSlotAssigned == true) {
+            if (visit.guards[index]?.isSlotAssigned == true || player.vars[post.dead] == 1) {
                 continue
             }
             visit.facing[index] = post.facing
@@ -301,7 +302,7 @@ constructor(
         when (index) {
             FIRST -> {
                 faceGuardAt(visit, index, player.coords)
-                if (zanikBehind(player, visit, index)) {
+                if (canShoot(player, visit, index)) {
                     shoot(visit, index)
                 } else {
                     startDialogue(npc) {
@@ -324,6 +325,7 @@ constructor(
             return
         }
         stepPatrol(visit)
+        holdBackFromGuards(player, visit)
         if (player.isAccessProtected) {
             return
         }
@@ -344,7 +346,7 @@ constructor(
                         launcher.launch(player) { firstWarning(guard) }
                         return
                     }
-                    if (guard.coords.isWithinDistance(coords, FIRST_REACH) && zanikBehind(player, visit, index)) {
+                    if (guard.coords.isWithinDistance(coords, FIRST_REACH) && canShoot(player, visit, index)) {
                         launcher.launch(player) { shoot(visit, index) }
                         return
                     }
@@ -371,13 +373,33 @@ constructor(
                     }
                 }
                 else -> {
-                    if (inCone(guard.coords, visit.facing[index], coords, CONE_RANGE) && sees(guard.coords, coords)) {
+                    val range = if (index == PATROL) PATROL_SIGHT else CONE_RANGE
+                    if (inCone(guard.coords, visit.facing[index], coords, range) && sees(guard.coords, coords)) {
                         faceGuardAt(visit, index, coords)
                         launcher.launch(player) { spotted(visit, index) }
                         return
                     }
                 }
             }
+        }
+    }
+
+    /** Zanik keeps her distance from any guard the player walks up to, so they can't see she's a goblin. */
+    private fun holdBackFromGuards(player: Player, visit: Visit) {
+        val nearGuard =
+            visit.guards.withIndex().any { (index, guard) ->
+                index != PATROL &&
+                    index != CHASER &&
+                    guard != null &&
+                    guard.isSlotAssigned &&
+                    guard.coords.isWithinDistance(player.coords, HOLD_BACK_RANGE)
+            }
+        if (nearGuard && !visit.zanikHeld && !follower.isWaiting(player)) {
+            visit.zanikHeld = true
+            follower.waitHere(player)
+        } else if (!nearGuard && visit.zanikHeld) {
+            visit.zanikHeld = false
+            follower.followAgain(player)
         }
     }
 
@@ -438,7 +460,7 @@ constructor(
     /** A guard has the player in his sights: Zanik shoots him if she can, otherwise he raises the alarm. */
     private suspend fun ProtectedAccess.spotted(visit: Visit, index: Int) {
         val guard = visit.guards[index] ?: return
-        if (zanikBehind(player, visit, index)) {
+        if (canShoot(player, visit, index)) {
             shoot(visit, index)
             return
         }
@@ -530,15 +552,19 @@ constructor(
             return
         }
         visit.ending = true
-        if (line != null) {
-            guard.say(line)
-            startDialogue(guard) { chatNpc(angry, line) }
+        try {
+            if (line != null) {
+                guard.say(line)
+                delay(CAUGHT_SHOUT_TICKS)
+            }
+            fadeToBlack()
+            resetGuards()
+            follower.remove(player)
+            leaveCopy()
+            telejump(JAIL_WAKE_TILE, TeleportType.Exempt)
+        } finally {
+            visit.ending = false
         }
-        fadeToBlack()
-        resetGuards()
-        follower.remove(player)
-        leaveCopy()
-        telejump(JAIL_WAKE_TILE, TeleportType.Exempt)
         delay(1)
         fadeFromBlack()
         closeFadeOverlay()
@@ -632,7 +658,7 @@ constructor(
     }
 
     private suspend fun Dialogue.orders() {
-        val waiting = follower.isWaiting(player)
+        val waiting = follower.isWaiting(player) && visitFor(player)?.zanikHeld != true
         when (
             menu(
                 "Okay." to 0,
@@ -672,6 +698,7 @@ constructor(
     }
 
     private suspend fun Dialogue.waitOrFollow(waiting: Boolean) {
+        visitFor(player)?.zanikHeld = false
         if (waiting) {
             chatPlayer(neutral, "Follow me!")
             chatNpc(happy, "Okay, let's go!")
@@ -712,9 +739,34 @@ constructor(
         }
         val zanik = follower.following(player)
         visit.ending = true
+        try {
+            overhearPlot(visit, zanik)
+        } finally {
+            visit.ending = false
+        }
+        fadeToBlack()
+        resetGuards()
+        follower.remove(player)
+        leaveCopy()
+        player.dttdHamTrapdoor = TRAPDOOR_BURIED
+        player.dttdZanikCorpse = true
+        dttd.advanceTo(this, STAGE_ZANIK_DEAD)
+        telejump(JAIL_WAKE_TILE, TeleportType.Exempt)
+        delay(1)
+        fadeFromBlack()
+        closeFadeOverlay()
+        startDialogue {
+            chatPlayer(sad, "Oww... my head...")
+            chatPlayer(confused, "Zanik?")
+            chatPlayer(worried, "Where's Zanik?")
+        }
+    }
+
+    private suspend fun ProtectedAccess.overhearPlot(visit: Visit, zanik: Npc?) {
         startDialogue { mesbox("You listen at the door...") }
         anim(LISTEN_BEND_SEQ)
         zanik?.let {
+            follower.relocate(player)
             follower.waitHere(player)
             it.anim(ZANIK_LISTEN_SEQ)
         }
@@ -743,28 +795,29 @@ constructor(
         captor.anim(GUARD_POINT_SEQ)
         resetAnim()
         startDialogue(captor) { chatNpc(angry, "Got you, you spy!") }
-        fadeToBlack()
-        resetGuards()
-        follower.remove(player)
-        leaveCopy()
-        player.dttdHamTrapdoor = TRAPDOOR_BURIED
-        player.dttdZanikCorpse = true
-        dttd.advanceTo(this, STAGE_ZANIK_DEAD)
-        telejump(JAIL_WAKE_TILE, TeleportType.Exempt)
-        delay(1)
-        fadeFromBlack()
-        closeFadeOverlay()
-        startDialogue {
-            chatPlayer(sad, "Oww... my head...")
-            chatPlayer(confused, "Zanik?")
-            chatPlayer(worried, "Where's Zanik?")
-        }
     }
 
     /* Sight lines */
 
     private fun sees(from: CoordGrid, to: CoordGrid): Boolean =
         rays.hasLineOfSight(from, to, extraFlag = CollisionFlag.BLOCK_PLAYERS)
+
+    /**
+     * The two guards at their posts are beaten by getting round the side they keep watch on: once
+     * the player is behind a guard's post he turns his back on wherever Zanik came from.
+     */
+    private fun canShoot(player: Player, visit: Visit, index: Int): Boolean {
+        if (index != FIRST && index != SECOND) {
+            return zanikBehind(player, visit, index)
+        }
+        val guard = visit.guards[index] ?: return false
+        val zanik = follower.following(player) ?: return false
+        if (!guard.coords.isWithinDistance(zanik.coords, SHOT_RANGE)) {
+            return false
+        }
+        val post = GUARD_POSTS[index].facing
+        return post.xOff * (player.coords.x - guard.coords.x) + post.zOff * (player.coords.z - guard.coords.z) < 0
+    }
 
     private fun zanikBehind(player: Player, visit: Visit, index: Int): Boolean {
         val guard = visit.guards[index] ?: return false
@@ -784,9 +837,7 @@ constructor(
         val facing = visit.facing[PATROL]
         val towardZanik =
             facing.xOff * (zanik.coords.x - guard.coords.x) + facing.zOff * (zanik.coords.z - guard.coords.z)
-        return towardZanik < 0 &&
-            sees(zanik.coords, guard.coords) &&
-            guard.coords.isWithinDistance(zanik.coords, PATROL_SHOT_RANGE)
+        return towardZanik < 0 && guard.coords.isWithinDistance(zanik.coords, PATROL_SHOT_RANGE)
     }
 
     private fun faceGuardAt(visit: Visit, index: Int, target: CoordGrid) {
@@ -852,6 +903,8 @@ constructor(
 
         const val CRACK_TICKS = 2
         const val DEATH_TICKS = 2
+        const val CAUGHT_SHOUT_TICKS = 2
+        const val HOLD_BACK_RANGE = 2
         const val CAPTOR_TICKS = 20
 
         const val GUARD_COUNT = 5
@@ -865,6 +918,7 @@ constructor(
         const val FIRST_REACH = 3
         const val LAST_AWARENESS = 7
         const val CONE_RANGE = 7
+        const val PATROL_SIGHT = 4
         const val SHOT_RANGE = 8
         const val PATROL_SHOT_RANGE = 10
         const val CHASE_SHOT_RANGE = 1
