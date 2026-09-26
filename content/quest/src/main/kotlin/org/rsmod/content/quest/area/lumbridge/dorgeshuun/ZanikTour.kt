@@ -51,7 +51,7 @@ constructor(
             zanik.coords.isWithinDistance(player.coords, JOIN_DISTANCE)
     }
 
-    fun inCastle(coords: CoordGrid): Boolean = coords.x in 3200..3227 && coords.z in 3200..3237 && coords.z < 6400
+    fun inCastle(coords: CoordGrid): Boolean = coords.x in 3200..3216 && coords.z in 3200..3237 && coords.z < 6400
 
     fun inHamHideout(coords: CoordGrid): Boolean =
         coords.level == 0 && coords.x in 3140..3190 && coords.z in 9600..9660

@@ -115,6 +115,8 @@ constructor(
         val npc = player.attr[ZANIK_NPC]
         player.attr.remove(ZANIK_NPC)
         player.attr.remove(LAST_COORDS)
+        player.attr.remove(ZANIK_LAST_COORDS)
+        player.attr.remove(STUCK_TICKS)
         player.clearSoftTimer(TICK_TIMER)
         if (npc != null) {
             if (npc.isSlotAssigned) {
@@ -181,6 +183,7 @@ constructor(
             }
         }
         if (npc.mode != NpcMode.None) {
+            catchUpIfStuck(player, npc)
             if (!npc.isFacingPlayer) {
                 npc.facePlayer(player)
             }
@@ -195,6 +198,27 @@ constructor(
             }
             listener(player, npc)
         }
+    }
+
+    /**
+     * Npc following walks a naive route, so a wall between Zanik and the player (a doorway she has
+     * to step round) holds her in place. Like a pet, she hops to the player once she has stood
+     * still out of reach for a few ticks.
+     */
+    private fun catchUpIfStuck(player: Player, npc: Npc) {
+        val previous = player.attr[ZANIK_LAST_COORDS]
+        player.attr[ZANIK_LAST_COORDS] = npc.coords
+        if (npc.coords != previous || npc.coords.isWithinDistance(player.coords, CLOSE_ENOUGH)) {
+            player.attr.remove(STUCK_TICKS)
+            return
+        }
+        val stuck = (player.attr[STUCK_TICKS] ?: 0) + 1
+        if (stuck < STUCK_LIMIT) {
+            player.attr[STUCK_TICKS] = stuck
+            return
+        }
+        player.attr.remove(STUCK_TICKS)
+        relocate(player)
     }
 
     /** Tiles moved in one go, treating the underground copy of a map as lying beneath it. */
@@ -220,10 +244,14 @@ constructor(
         private const val NO_FOLLOWER = -1
         private const val LOST_DISTANCE = 15
         private const val NEAR_TRAVEL = 96
+        private const val CLOSE_ENOUGH = 2
+        private const val STUCK_LIMIT = 3
 
         private val ZANIK_NPC = AttributeKey<Npc>()
         private val LAST_COORDS = AttributeKey<CoordGrid>()
         private val RESYNC = AttributeKey<Boolean>()
+        private val ZANIK_LAST_COORDS = AttributeKey<CoordGrid>()
+        private val STUCK_TICKS = AttributeKey<Int>()
 
         private val SPAWN_DIRECTIONS =
             listOf(
