@@ -12,11 +12,11 @@ import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.script.onOpNpc4
 import org.rsmod.api.script.onOpNpc5
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.other.pets.PetRewards
 import org.rsmod.content.skills.thieving.Thieving
 import org.rsmod.content.skills.thieving.Thieving.giveLoot
 import org.rsmod.content.skills.thieving.Thieving.giveThievingXp
 import org.rsmod.content.skills.thieving.equipment.ThievingEquipment
-import org.rsmod.content.skills.thieving.pets.RockyPetManager
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.hit.HitType
 import org.rsmod.plugin.scripts.PluginScript
@@ -38,7 +38,7 @@ constructor(
     private val xpMods: XpModifiers,
     private val objRepo: ObjRepository,
     private val equipment: ThievingEquipment,
-    private val rocky: RockyPetManager,
+    private val pets: PetRewards,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -107,7 +107,7 @@ constructor(
         if (multiplier > 1) {
             spam("Your rogue outfit lets you steal twice as much!")
         }
-        rocky.roll(this, target.petBase)
+        pets.rollSkillingPet(player, ROCKY, THIEVING_STAT, target.petBase)
     }
 
     private fun ProtectedAccess.fail(npc: Npc, target: PickpocketTarget, name: String) {
@@ -155,6 +155,8 @@ constructor(
     }
 
     private companion object {
+        const val ROCKY: String = "obj.skillpetthieving"
+        const val THIEVING_STAT: String = "stat.thieving"
         const val MAX_POUCHES: Int = 28
         const val STUN_SPOTANIM_HEIGHT: Int = 100
     }

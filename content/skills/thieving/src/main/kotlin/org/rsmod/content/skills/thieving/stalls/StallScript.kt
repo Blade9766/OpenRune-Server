@@ -8,10 +8,10 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.other.pets.PetRewards
 import org.rsmod.content.skills.thieving.Thieving
 import org.rsmod.content.skills.thieving.Thieving.giveLoot
 import org.rsmod.content.skills.thieving.Thieving.giveThievingXp
-import org.rsmod.content.skills.thieving.pets.RockyPetManager
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -27,7 +27,7 @@ constructor(
     private val locRepo: LocRepository,
     private val objRepo: ObjRepository,
     private val xpMods: XpModifiers,
-    private val rocky: RockyPetManager,
+    private val pets: PetRewards,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -77,6 +77,11 @@ constructor(
         if (stolen != null) {
             spam("You steal ${Thieving.withArticle(Thieving.objName(stolen.obj))}.")
         }
-        rocky.roll(this, stall.petBase)
+        pets.rollSkillingPet(player, ROCKY, THIEVING_STAT, stall.petBase)
+    }
+
+    private companion object {
+        const val ROCKY: String = "obj.skillpetthieving"
+        const val THIEVING_STAT: String = "stat.thieving"
     }
 }

@@ -965,3 +965,9 @@ isServerOnly = true
 id = "varp.legends_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.drop_rate_multiplier"
+scope = "Perm"
+transmit = "Never"

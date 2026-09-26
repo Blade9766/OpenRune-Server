@@ -1,6 +1,10 @@
 # Sound effects used by the quest plugins. The vanilla gamevals dump carries no synth names, so
 # the raw cache ids are declared here (ids taken from the OSRS wiki "List of sound IDs").
 [gamevals.synth]
+kittens_mew = 339
+purr = 340
+cat_hiss = 335
+meeoow = 1169
 coffin_open = 54
 coffin_close = 53
 skeleton_resurrect = 1687
@@ -333,7 +337,7 @@ quest_available_set = 45550
 [gamevals.varp]
 # Server-only: 1 while a greegree has the player in monkey form, read by the Ape Atoll hunt modes.
 # 65400-65405 are upstream's motherlode varps; this is a Temp varp so the id is free to move.
-mm_greegree_form = 65478
+mm_greegree_form = 65410
 
 # The Dig Site: the quest's own flags. The stage itself lives in the cache varp
 # `varp.itexamlevel`, and the multiloc flags on `varp.itdigsitemulti`.

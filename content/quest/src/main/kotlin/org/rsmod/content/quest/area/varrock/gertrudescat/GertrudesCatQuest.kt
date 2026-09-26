@@ -3,10 +3,12 @@ package org.rsmod.content.quest.area.varrock.gertrudescat
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.content.other.pets.PetFollowers
 import org.rsmod.content.other.pets.cats.CatColour
-import org.rsmod.content.other.pets.cats.CatPet
-import org.rsmod.content.other.pets.cats.CatPetManager
+import org.rsmod.content.other.pets.cats.CatForm
 import org.rsmod.content.other.pets.cats.CatStage
+import org.rsmod.content.other.pets.cats.Cats
+import org.rsmod.content.other.pets.storesAnyObj
 import org.rsmod.content.quest.manager.ItemRewardDisplay
 import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
@@ -26,7 +28,7 @@ import org.rsmod.plugin.scripts.ScriptContext
  * - [STAGE_COMPLETE]: Gertrude handed over a kitten of her own.
  */
 @Singleton
-class GertrudesCatQuest @Inject constructor(private val cats: CatPetManager) : QuestScript(
+class GertrudesCatQuest @Inject constructor(private val followers: PetFollowers) : QuestScript(
     "quest_gertrudescat",
     "varp.fluffs",
     rewards {
@@ -131,14 +133,14 @@ class GertrudesCatQuest @Inject constructor(private val cats: CatPetManager) : Q
         }
 
     /** A random kitten in one of the ordinary colours; the hellcat only comes from Kharidian rats. */
-    fun randomKitten(): CatPet = CatPet(CatStage.KITTEN, KITTEN_COLOURS.random())
+    fun randomKitten(): CatForm = Cats.of(CatStage.Kitten, CatColour.natural.random())
 
     /** Whether the player already has any cat: following them, in their pack or in their bank. */
     fun ProtectedAccess.hasAnyCat(): Boolean {
-        if (cats.hasFollower(player)) {
+        if (followers.hasFollower(player)) {
             return true
         }
-        return CatPet.all.any { inv.count(it.obj) > 0 || bank.count(it.obj) > 0 }
+        return player.storesAnyObj(Cats.all.map { it.obj })
     }
 
     fun stage(player: Player): Int = quest.getQuestStage(player)
@@ -163,7 +165,5 @@ class GertrudesCatQuest @Inject constructor(private val cats: CatPetManager) : Q
 
         const val KIDS_FEE = 100
         const val KITTEN_PRICE = 100
-
-        val KITTEN_COLOURS = CatColour.entries.filter { it != CatColour.HELL }
     }
 }

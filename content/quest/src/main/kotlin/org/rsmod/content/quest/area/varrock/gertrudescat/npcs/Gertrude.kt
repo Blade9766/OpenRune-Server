@@ -4,6 +4,9 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.other.pets.cats.CatCare
+import org.rsmod.content.other.pets.cats.catMedalGiven
+import org.rsmod.content.other.pets.cats.catRatsCaught
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Companion.KITTEN_PRICE
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Companion.STAGE_GAVE_MILK
@@ -12,6 +15,7 @@ import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Compa
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Companion.STAGE_PAID_KIDS
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Companion.STAGE_STARTED
 import org.rsmod.game.entity.Npc
+import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -19,7 +23,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Gertrude, in her house west of Varrock. The cache swaps her between a quest form and a
  * post-quest form (with a "Kitten" option) on the quest varp, so both forms are handled here.
  */
-class Gertrude @Inject constructor(private val gertrudesCat: GertrudesCatQuest) : PluginScript() {
+class Gertrude
+@Inject
+constructor(private val gertrudesCat: GertrudesCatQuest, private val care: CatCare) : PluginScript() {
 
     private val quest
         get() = gertrudesCat.quest
@@ -136,6 +142,7 @@ class Gertrude @Inject constructor(private val gertrudesCat: GertrudesCatQuest) 
 
         val kitten = gertrudesCat.randomKitten()
         access.invAdd(access.inv, kitten.obj)
+        care.resetKitten(player)
         access.soundSynth("synth.kittens_mew")
         objbox(kitten.obj, "Gertrude gives you a kitten.")
         mesbox("...and some food!")
@@ -143,6 +150,10 @@ class Gertrude @Inject constructor(private val gertrudesCat: GertrudesCatQuest) 
     }
 
     private suspend fun Dialogue.afterQuest() {
+        if (medalDue(player)) {
+            felineMedal()
+            return
+        }
         chatPlayer(happy, "Hello Gertrude.")
         chatNpc(happy, "Hello, dear! Fluffs is curled up by the fire, thanks to you.")
         when (
@@ -162,6 +173,26 @@ class Gertrude @Inject constructor(private val gertrudesCat: GertrudesCatQuest) 
             2 -> buyKitten()
         }
     }
+
+    /** Gertrude rewards the first cat to catch [MEDAL_RATS] rats with a medal of her own. */
+    private suspend fun Dialogue.felineMedal() {
+        chatPlayer(happy, "Hello again Gertrude!")
+        chatNpc(happy, "Well, hello adventurer! How are you?")
+        chatPlayer(happy, "My cat has caught $MEDAL_RATS rats!")
+        if (access.inv.isFull()) {
+            chatNpc(happy, "Well well! You are good with cats! I'd give you a little present if you had space to take it.")
+            chatPlayer(happy, "That's very kind of you - I'll come back again when I've got more space.")
+            return
+        }
+        chatNpc(happy, "Well well! You are good with cats! Here, I have a little present for you...")
+        objbox(MEDAL, "Gertrude shows you a small medal.")
+        chatPlayer(happy, "Hey, thanks Gertrude.")
+        access.invAdd(access.inv, MEDAL, 1)
+        player.catMedalGiven = true
+    }
+
+    private fun medalDue(player: Player): Boolean =
+        !player.catMedalGiven && player.catRatsCaught >= MEDAL_RATS
 
     /** The "Kitten" option on post-quest Gertrude: one kitten at a time, for a small fee. */
     private suspend fun Dialogue.buyKitten() {
@@ -192,6 +223,7 @@ class Gertrude @Inject constructor(private val gertrudesCat: GertrudesCatQuest) 
         }
         val kitten = gertrudesCat.randomKitten()
         access.invAdd(access.inv, kitten.obj)
+        care.resetKitten(player)
         access.soundSynth("synth.kittens_mew")
         objbox(kitten.obj, "Gertrude hands you a kitten.")
         chatNpc(happy, "Take good care of her. Feed her and stroke her often, or she'll run away!")
@@ -203,5 +235,10 @@ class Gertrude @Inject constructor(private val gertrudesCat: GertrudesCatQuest) 
 
         /** Kitten, chocolate cake and stew. */
         const val REWARD_SLOTS = 3
+
+        const val MEDAL = "obj.felinemedal"
+
+        /** Rats the player's cat must catch before Gertrude hands over the medal. */
+        const val MEDAL_RATS = 100
     }
 }

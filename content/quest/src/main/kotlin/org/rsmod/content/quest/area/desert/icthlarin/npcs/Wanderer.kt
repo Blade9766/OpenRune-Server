@@ -10,7 +10,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
-import org.rsmod.content.other.pets.cats.CatPet
+import org.rsmod.content.other.pets.cats.CatForm
 import org.rsmod.content.quest.area.desert.icthlarin.CanopicJar
 import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinCats
 import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinsLittleHelperQuest
@@ -161,7 +161,7 @@ constructor(
         hypnotise()
     }
 
-    private suspend fun Dialogue.catHisses(cat: CatPet) {
+    private suspend fun Dialogue.catHisses(cat: CatForm) {
         cats.follower(player)?.say("Hiss!")
         access.soundSynth(CAT_HISS)
         chatNpcSpecific("Cat", cat.npc, angry, "Hiss!")

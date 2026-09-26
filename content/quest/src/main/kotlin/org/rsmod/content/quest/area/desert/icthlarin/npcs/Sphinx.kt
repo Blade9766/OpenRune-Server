@@ -7,7 +7,7 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.front
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.script.onOpNpc1
-import org.rsmod.content.other.pets.cats.CatPet
+import org.rsmod.content.other.pets.cats.CatForm
 import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinCats
 import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinsLittleHelperQuest
 import org.rsmod.content.quest.area.desert.icthlarin.IcthlarinsLittleHelperQuest.Companion.CATSPEAK_AMULET
@@ -438,12 +438,12 @@ constructor(
         chatNpc(neutral, "How disappointing. Still, nothing ventured, nothing gained. Goodbye.")
     }
 
-    private suspend fun Dialogue.catGreeting(cat: CatPet) {
+    private suspend fun Dialogue.catGreeting(cat: CatForm) {
         chatPlayer(happy, "Good day.")
         catConverses(cat)
     }
 
-    private suspend fun Dialogue.catConverses(cat: CatPet) {
+    private suspend fun Dialogue.catConverses(cat: CatForm) {
         mesbox("The Sphinx ignores you.")
         chatNpc(happy, "Ah, how interesting... a cat. Come here to me, kitty.")
         access.soundSynth(MEEOOW)
