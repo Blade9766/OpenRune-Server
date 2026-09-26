@@ -481,9 +481,6 @@ constructor(
         }
         dropCrate()
         val zanik = follower.spawn(player, ZANIK_SHOWDOWN, at = fight.at(ZANIK_LANDING))
-        if (!returning) {
-            zanik.anim(ZANIK_JUMP_SEQ)
-        }
         spawnFoes(fight)
         dttd.advanceTo(this, STAGE_SHOWDOWN)
         val sigmund = fight.sigmund
@@ -1019,8 +1016,8 @@ constructor(
         const val ZANIK_RANGE = 10
         const val ZANIK_MAX_HIT = 8
         const val GUARDS_TOTAL = 3
-        const val VANISH_TICKS = 3
-        const val SMASH_TICKS = 3
+        const val VANISH_TICKS = 5
+        const val SMASH_TICKS = 6
         const val CRAWL_TICKS = 2
 
         val PRAYER_LINES =

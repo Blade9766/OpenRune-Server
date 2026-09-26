@@ -26,6 +26,8 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.route.RayCastValidator
+import org.rsmod.api.route.RouteFactory
+import org.rsmod.api.route.walkTo
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc4
 import org.rsmod.api.script.onOpNpc1
@@ -84,6 +86,7 @@ constructor(
     private val launcher: ProtectedAccessLauncher,
     private val random: GameRandom,
     private val mapClock: MapClock,
+    private val routeFactory: RouteFactory,
 ) : PluginScript() {
 
     private class Visit(val session: InstanceSession, val dx: Int, val dz: Int) {
@@ -432,7 +435,11 @@ constructor(
     private fun chase(player: Player, visit: Visit, guard: Npc, zanik: Npc) {
         val step = stepToward(guard.coords, player.coords)
         visit.facing[CHASER] = step
-        if (guard.coords.isWithinDistance(zanik.coords, CHASE_SHOT_RANGE) && !facingToward(guard.coords, step, zanik.coords)) {
+        if (
+            guard.coords.isWithinDistance(zanik.coords, CHASE_SHOT_RANGE) &&
+                !facingToward(guard.coords, step, zanik.coords) &&
+                sees(zanik.coords, guard.coords)
+        ) {
             launcher.launch(player) { shoot(visit, CHASER) }
             return
         }
@@ -441,7 +448,7 @@ constructor(
             return
         }
         guard.clearFacingLock()
-        guard.walk(player.coords)
+        guard.walkTo(routeFactory, player.coords, passThroughEntities = false)
     }
 
     private suspend fun ProtectedAccess.firstWarning(guard: Npc) {
@@ -771,7 +778,6 @@ constructor(
             it.anim(ZANIK_LISTEN_SEQ)
         }
         delay(1)
-        anim(LISTEN_IDLE_SEQ)
         startDialogue { chatPlayer(neutral, "I can't hear anything.") }
         if (zanik != null) {
             startDialogue(zanik) { chatNpc(shifty, "Shh! I can hear them.") }
@@ -793,7 +799,8 @@ constructor(
         manager.attachNpc(visit.session.id, captor)
         captor.facePlayer(player)
         captor.anim(GUARD_POINT_SEQ)
-        resetAnim()
+        anim(LISTEN_STAND_SEQ)
+        zanik?.anim(ZANIK_LISTEN_STAND_SEQ)
         startDialogue(captor) { chatNpc(angry, "Got you, you spy!") }
     }
 
@@ -889,8 +896,9 @@ constructor(
         const val CRACK_SEQ = "seq.dttd_player_through_crack"
         const val CRACK_SOUND = "synth.squeeze_thru_crack"
         const val LISTEN_BEND_SEQ = "seq.dttd_bend_to_listen_at_door"
-        const val LISTEN_IDLE_SEQ = "seq.dttd_bent_to_listen_at_door_idle"
+        const val LISTEN_STAND_SEQ = "seq.dttd_standing_after_listen_at_door"
         const val ZANIK_LISTEN_SEQ = "seq.dttd_zanik_bend_to_listen_at_door"
+        const val ZANIK_LISTEN_STAND_SEQ = "seq.dttd_zanik_stands_after_listening_at_door"
         const val ZANIK_SHOOT_SEQ = "seq.dttd_zanik_draw_and_fire_crossbow"
         const val ZANIK_SHOOT_SPOTANIM = "spotanim.dttd_zaniks_crossbow_drawn_and_fired"
         const val ZANIK_OPEN_CELL_SEQ = "seq.dttd_zanik_open_cell"
@@ -921,7 +929,7 @@ constructor(
         const val PATROL_SIGHT = 4
         const val SHOT_RANGE = 8
         const val PATROL_SHOT_RANGE = 10
-        const val CHASE_SHOT_RANGE = 1
+        const val CHASE_SHOT_RANGE = 2
         const val PATROL_PAUSE = 3
         const val PATROL_WEST_END = 2566
         const val PATROL_EAST_END = 2577

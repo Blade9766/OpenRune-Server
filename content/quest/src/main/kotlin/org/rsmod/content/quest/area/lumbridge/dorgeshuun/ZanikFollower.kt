@@ -81,7 +81,7 @@ constructor(
 
     fun isFollowing(player: Player): Boolean = following(player) != null
 
-    fun isWaiting(player: Player): Boolean = following(player)?.mode == NpcMode.None
+    fun isWaiting(player: Player): Boolean = isFollowing(player) && player.attr[WAITING] == true
 
     /** Whether the player has some other follower (a pet) out, which Zanik won't share them with. */
     fun hasOtherFollower(player: Player): Boolean {
@@ -111,6 +111,7 @@ constructor(
         player.attr[ZANIK_NPC] = npc
         player.attr[LAST_COORDS] = player.coords
         player.attr[RESYNC] = true
+        player.attr.remove(WAITING)
         VarPlayerIntMapSetter.set(player, FOLLOWER_VARP, (npc.visType.id shl 16) or (npc.slotId and 0xFFFF))
         if (player.dttdZanikInCellar) {
             player.dttdZanikInCellar = false
@@ -126,6 +127,7 @@ constructor(
         player.attr.remove(LAST_COORDS)
         player.attr.remove(ZANIK_LAST_COORDS)
         player.attr.remove(STUCK_TICKS)
+        player.attr.remove(WAITING)
         player.clearSoftTimer(TICK_TIMER)
         if (npc != null) {
             if (npc.isSlotAssigned) {
@@ -157,12 +159,14 @@ constructor(
 
     fun waitHere(player: Player) {
         val npc = following(player) ?: return
+        player.attr[WAITING] = true
         npc.mode = NpcMode.None
         npc.resetFaceEntity()
     }
 
     fun followAgain(player: Player) {
         val npc = following(player) ?: return
+        player.attr.remove(WAITING)
         player.attr[LAST_COORDS] = player.coords
         npc.facePlayer(player)
         npc.mode = NpcMode.PlayerFollow
@@ -173,7 +177,7 @@ constructor(
         val npc = following(player) ?: return
         npc.telejump(collision, spawnTile(dest))
         player.attr[LAST_COORDS] = dest
-        if (npc.mode != NpcMode.None) {
+        if (!isWaiting(player)) {
             npc.facePlayer(player)
             npc.mode = NpcMode.PlayerFollow
         }
@@ -196,11 +200,12 @@ constructor(
             sendHome(player)
             return
         }
-        val lost = npc.mode != NpcMode.None && !npc.coords.isWithinDistance(player.coords, LOST_DISTANCE)
+        val waiting = isWaiting(player)
+        val lost = !waiting && !npc.coords.isWithinDistance(player.coords, LOST_DISTANCE)
         if (npc.coords.level != player.coords.level || lost) {
             relocate(player)
         }
-        if (npc.mode != NpcMode.None) {
+        if (!waiting) {
             catchUpIfStuck(player, npc)
             if (!npc.isFacingPlayer) {
                 npc.facePlayer(player)
@@ -274,6 +279,7 @@ constructor(
         private val RESYNC = AttributeKey<Boolean>()
         private val ZANIK_LAST_COORDS = AttributeKey<CoordGrid>()
         private val STUCK_TICKS = AttributeKey<Int>()
+        private val WAITING = AttributeKey<Boolean>()
 
         private val SPAWN_DIRECTIONS =
             listOf(

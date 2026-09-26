@@ -129,7 +129,7 @@ constructor(
         zanik.anim(ZANIK_DRINK_SEQ)
         soundSynth(DRINK_SOUND)
         delay(DRINK_TICKS)
-        val marked = scenes.spawn(visit, ZANIK_MARKED_GLOWING, WEEPING_WALL_TILE, Direction.West)
+        val marked = scenes.spawn(visit, ZANIK_MARKED_GLOWING, WEEPING_WALL_TILE, Direction.South)
         npcRepo.del(zanik, Int.MAX_VALUE)
         marked.anim(ZANIK_BRANDED_SEQ)
         soundSynth(BRANDING_SOUND)
@@ -157,6 +157,7 @@ constructor(
         zanik.moveRestrict = MoveRestrict.NoMove
         zanik.respawns = false
         npcRepo.add(zanik, REVIVAL_NPC_TICKS)
+        zanik.anim(ZANIK_LIFELESS_SEQ)
         try {
             beginCutscene()
             camMoveTo(REVIVAL_CAMERA_FROM, height = STORY_CAMERA_HEIGHT, rate = FAST, rate2 = FAST)
@@ -227,8 +228,6 @@ constructor(
         camLookAt(visit.at(MEETING_CAMERA_AT), height = LOOK_HEIGHT, rate = FAST, rate2 = FAST)
         delay(1)
         fadeFromBlack()
-        anim(LISTEN_IDLE_SEQ)
-        zanik.anim(ZANIK_LISTEN_IDLE_SEQ)
         line { chatPlayer(neutral, "I can't hear anything.") }
         line(zanik) { chatNpcNoTurn(neutral, "Shh! I can hear them.") }
         line(sigmund) {
@@ -380,6 +379,7 @@ constructor(
             fadeToBlack()
             endCutscene()
             with(scenes) { leaveScene() }
+            resetAnim()
             telejump(returnTo, TeleportType.Exempt)
             delay(1)
             fadeFromBlack()
@@ -444,13 +444,12 @@ constructor(
         const val ZANIK_TURN_SEQ = "seq.dttd_zanik_turnonspot"
         const val ZANIK_DRINK_SEQ = "seq.dttd_zanik_drink_togbowl"
         const val ZANIK_BRANDED_SEQ = "seq.dttd_zanik_drunk_tog_in_pain"
+        const val ZANIK_LIFELESS_SEQ = "seq.dttd_zanik_revival_static"
         const val ZANIK_HOVER_SEQ = "seq.dttd_zanik_revival"
         const val ZANIK_WAKE_SEQ = "seq.dttd_zanik_return_to_life"
         const val ZANIK_LISTEN_BEND_SEQ = "seq.dttd_zanik_bend_to_listen_at_door"
-        const val ZANIK_LISTEN_IDLE_SEQ = "seq.dttd_zanik_bent_to_listen_at_door_idle"
         const val ZANIK_FIRE_SEQ = "seq.dttd_zanik_firing_crossbow"
         const val LISTEN_BEND_SEQ = "seq.dttd_bend_to_listen_at_door"
-        const val LISTEN_IDLE_SEQ = "seq.dttd_bent_to_listen_at_door_idle"
         const val TOAST_SEQ = "seq.dttd_ham_meeting_toasting"
         const val BOWL_MAGIC_SEQ = "seq.dttd_bowl_dropping_magic"
         const val BOWL_MAGIC_SPOTANIM = "spotanim.dttd_bowl_magic"
@@ -468,9 +467,9 @@ constructor(
         const val LOOK_HEIGHT = 150
         const val FAST = 100
         const val DRINK_TICKS = 3
-        const val HOVER_TICKS = 4
+        const val HOVER_TICKS = 11
         const val WAKE_TICKS = 3
-        const val TOAST_TICKS = 3
+        const val TOAST_TICKS = 6
         const val TITLE_TICKS = 4
         const val WALK_TIMEOUT = 12
         const val REVIVAL_NPC_TICKS = 200
