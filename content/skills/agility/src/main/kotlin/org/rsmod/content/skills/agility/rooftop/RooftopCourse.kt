@@ -2,21 +2,31 @@ package org.rsmod.content.skills.agility.rooftop
 
 import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.BalanceStyle
+import org.rsmod.content.skills.agility.shortcuts.ShortcutQuest
 import org.rsmod.map.CoordGrid
 
 /**
- * The rooftop courses, with the Agility level needed to start them and the marks of grace chance
- * ([markNumerator] in [markDenominator]) rolled when a full lap is completed.
+ * The lap-based agility courses, with the Agility level needed to start them and the marks of
+ * grace chance ([markNumerator] in [markDenominator]) rolled when a full lap is completed. A
+ * [quest] must be completed before any obstacle of the course can be used.
  */
 enum class RooftopCourse(
     val displayName: String,
     val level: Int,
     val markNumerator: Int,
     val markDenominator: Int,
+    val quest: ShortcutQuest? = null,
 ) {
     Draynor("Draynor Village", 1, 1, 3),
     AlKharid("Al Kharid", 20, 1, 3),
     Varrock("Varrock", 30, 1, 3),
+    Barbarian(
+        "Barbarian Outpost",
+        35,
+        1,
+        3,
+        ShortcutQuest("miniquest_barcrawl", "Alfred Grimhand's Barcrawl"),
+    ),
     Canifis("Canifis", 40, 2, 3),
     Falador("Falador", 50, 1, 5),
     Seers("Seers' Village", 60, 1, 3),
@@ -89,13 +99,24 @@ sealed class ObstacleMove {
 /**
  * Failure rules for an obstacle: it can be failed until the player reaches [noFailLevel], dropping
  * them on [landing] for [minDamage]..[maxDamage] damage.
+ *
+ * When [chance] is given the pass roll is the game's skill-success roll between its low and high
+ * values out of 256; otherwise the chance rises linearly to certainty at [noFailLevel]. [seq] and
+ * [message] replace the obstacle's own animation and the default fall message.
  */
 data class ObstacleFailure(
     val noFailLevel: Int,
     val landing: CoordGrid,
     val minDamage: Int,
     val maxDamage: Int,
-)
+    val chance: IntRange? = null,
+    val seq: String? = null,
+    val message: String = DEFAULT_FALL_MESSAGE,
+) {
+    companion object {
+        const val DEFAULT_FALL_MESSAGE = "You lose your footing and fall to the ground below."
+    }
+}
 
 /**
  * One obstacle of a rooftop course.
@@ -109,6 +130,10 @@ data class ObstacleFailure(
  *   many tiles of the loc with a line of sight to it, without having to reach it. Needed where the
  *   map fences the loc off from the tile it is used from (a railing between a landing platform
  *   and the tree that is swung from), which makes the loc unreachable to the route finder.
+ * @param lapBonusStrengthXp Strength experience paid with [lapBonusXp].
+ * @param locSeq Animation the obstacle loc itself plays when used (a rope swinging).
+ * @param locAt Where the obstacle's loc stands, for loc types the course uses more than once (the
+ *   Barbarian Outpost's three crumbling walls); the clicked loc then picks the obstacle.
  */
 data class RooftopObstacle(
     val locs: List<String>,
@@ -119,6 +144,9 @@ data class RooftopObstacle(
     val failure: ObstacleFailure? = null,
     val lapBonusXp: Double = 0.0,
     val apRange: Int = 0,
+    val lapBonusStrengthXp: Double = 0.0,
+    val locSeq: String? = null,
+    val locAt: CoordGrid? = null,
 ) {
     val isFinish: Boolean get() = lapBonusXp > 0.0
 

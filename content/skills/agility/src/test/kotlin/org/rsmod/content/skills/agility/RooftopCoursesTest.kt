@@ -30,6 +30,7 @@ class RooftopCoursesTest {
                 RooftopCourse.Draynor to 120.0,
                 RooftopCourse.AlKharid to 216.0,
                 RooftopCourse.Varrock to 269.7,
+                RooftopCourse.Barbarian to 153.3,
                 RooftopCourse.Canifis to 240.0,
                 RooftopCourse.Falador to 586.0,
                 RooftopCourse.Seers to 570.0,
@@ -94,10 +95,34 @@ class RooftopCoursesTest {
     }
 
     @Test
-    fun `locs are unique across all courses`() {
-        val locs = RooftopCourses.layouts.flatMap { it.obstacles }.flatMap { it.locs }
-        assertEquals(locs.size, locs.toSet().size, "duplicate obstacle locs: $locs")
-        assertTrue(locs.all { it.startsWith("loc.rooftops_") })
+    fun `locs are unique across all courses unless told apart by position`() {
+        val placed =
+            RooftopCourses.layouts.flatMap { it.obstacles }.flatMap { obstacle ->
+                obstacle.locs.map { it to obstacle.locAt }
+            }
+        assertEquals(placed.size, placed.toSet().size, "duplicate obstacle locs: $placed")
+        for ((loc, uses) in placed.groupBy({ it.first }, { it.second })) {
+            if (uses.size > 1) {
+                assertTrue(uses.none { it == null }, "$loc is shared but not every use has a position")
+            }
+        }
+        val rooftopLocs =
+            RooftopCourses.layouts
+                .filter { it.course != RooftopCourse.Barbarian }
+                .flatMap { it.obstacles }
+                .flatMap { it.locs }
+        assertTrue(rooftopLocs.all { it.startsWith("loc.rooftops_") })
+    }
+
+    @Test
+    fun `barbarian outpost needs the barcrawl and pays strength on a full lap`() {
+        val course = RooftopCourse.Barbarian
+        assertEquals("miniquest_barcrawl", course.quest?.key)
+        val layout = RooftopCourses.layout(course)
+        assertEquals(8, layout.obstacles.size)
+        assertEquals(41.3, layout.obstacles.last().lapBonusStrengthXp, 0.01)
+        val walls = layout.obstacles.filter { it.name == "Crumbling wall" }
+        assertEquals(3, walls.mapNotNull { it.locAt }.toSet().size)
     }
 
     @Test

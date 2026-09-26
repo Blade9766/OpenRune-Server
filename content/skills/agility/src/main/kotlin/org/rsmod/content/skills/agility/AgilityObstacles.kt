@@ -339,12 +339,13 @@ internal suspend fun ProtectedAccess.fallTo(
     seq: String,
     minDamage: Int,
     maxDamage: Int,
+    message: String = "You lose your footing and fall to the ground below.",
 ) {
     anim(seq)
     delay(1)
     telejump(landing, TeleportType.Exempt)
     val damage = random.of(minDamage, maxDamage)
     queueHit(delay = 1, type = HitType.Typeless, damage = damage)
-    mes("You lose your footing and fall to the ground below.")
+    mes(message)
     delay(1)
 }

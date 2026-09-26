@@ -28,6 +28,7 @@ object RooftopCourses {
             draynor(),
             alKharid(),
             varrock(),
+            barbarian(),
             canifis(),
             falador(),
             seers(),
@@ -286,6 +287,100 @@ object RooftopCourses {
                     tile(3237, 3406, 3),
                     tile(3237, 3413, 3),
                 ),
+        )
+
+    /**
+     * The Barbarian Outpost course is on the ground: the log crosses a pond on bridge tiles that
+     * collide on level 0, and only the net, ledge and ladder use the level 1 platform. A missed
+     * ropeswing drops the player into the pit under the crevice, which has its own ladder out.
+     */
+    private fun barbarian(): CourseLayout =
+        CourseLayout(
+            course = RooftopCourse.Barbarian,
+            obstacles =
+                listOf(
+                    RooftopObstacle(
+                        locs = listOf("loc.obstical_ropeswing1"),
+                        name = "Ropeswing",
+                        xp = 22.0,
+                        start = tile(2551, 3554, 0),
+                        move = Leap(tile(2551, 3549, 0), seq = AgilityAnims.ROPE_SWING),
+                        failure =
+                            ObstacleFailure(
+                                noFailLevel = 70,
+                                landing = tile(2551, 9950, 0),
+                                minDamage = 1,
+                                maxDamage = 5,
+                                chance = 200..280,
+                                seq = "seq.human_ropeswing_long_miss",
+                                message = "You slip and fall to the pit below.",
+                            ),
+                        locSeq = "seq.ropeswing_long",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.barbarian_log_balance1"),
+                        name = "Log balance",
+                        xp = 13.7,
+                        start = tile(2551, 3546, 0),
+                        move = Balance(line(tile(2551, 3546, 0), tile(2541, 3546, 0))),
+                        failure =
+                            ObstacleFailure(
+                                noFailLevel = 95,
+                                landing = tile(2546, 3542, 0),
+                                minDamage = 1,
+                                maxDamage = 4,
+                                chance = 180..260,
+                                message = "You lose your footing and fall into the water.",
+                            ),
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.agility_obstical_net_barbarian"),
+                        name = "Obstacle net",
+                        xp = 8.2,
+                        start = tile(2539, 3546, 0),
+                        move = Climb(tile(2537, 3546, 1), ticks = 2),
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.balancing_ledge1"),
+                        name = "Balancing ledge",
+                        xp = 22.0,
+                        start = tile(2536, 3547, 1),
+                        move =
+                            Balance(
+                                line(tile(2536, 3547, 1), tile(2532, 3547, 1)),
+                                BalanceStyle.Sidestep,
+                            ),
+                        failure =
+                            ObstacleFailure(
+                                noFailLevel = 70,
+                                landing = tile(2533, 3547, 0),
+                                minDamage = 1,
+                                maxDamage = 5,
+                                chance = 200..280,
+                            ),
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.barbarian_laddertop_norim"),
+                        name = "Ladder",
+                        xp = 0.0,
+                        start = tile(2532, 3546, 1),
+                        move = Climb(tile(2532, 3546, 0), ticks = 2),
+                    ),
+                    crumblingWall(2536),
+                    crumblingWall(2539),
+                    crumblingWall(2542).copy(lapBonusXp = 46.3, lapBonusStrengthXp = 41.3),
+                ),
+            markTiles = listOf(tile(2537, 3550, 0), tile(2545, 3555, 0), tile(2549, 3541, 0)),
+        )
+
+    private fun crumblingWall(x: Int): RooftopObstacle =
+        RooftopObstacle(
+            locs = listOf("loc.castlecrumbly1"),
+            name = "Crumbling wall",
+            xp = 13.7,
+            start = tile(x - 1, 3553, 0),
+            move = Leap(tile(x + 1, 3553, 0), seq = AgilityAnims.CRUMBLED_WALL, ticks = 2),
+            locAt = tile(x, 3553, 0),
         )
 
     private fun canifis(): CourseLayout =
