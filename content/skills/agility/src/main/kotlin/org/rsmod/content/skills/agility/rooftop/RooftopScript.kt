@@ -1,10 +1,10 @@
 package org.rsmod.content.skills.agility.rooftop
 
 import jakarta.inject.Inject
-import kotlin.math.sign
 import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
+import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
@@ -15,13 +15,16 @@ import org.rsmod.content.skills.agility.climbTo
 import org.rsmod.content.skills.agility.dropTo
 import org.rsmod.content.skills.agility.fallTo
 import org.rsmod.content.skills.agility.leapTo
+import org.rsmod.content.skills.agility.pipeThrough
 import org.rsmod.content.skills.agility.seqGlideTicks
 import org.rsmod.content.skills.agility.stepOnto
 import org.rsmod.content.skills.agility.successChance
 import org.rsmod.content.skills.agility.zipTo
+import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
+import org.rsmod.map.zone.ZoneKey
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -35,7 +38,11 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class RooftopScript
 @Inject
-constructor(private val marks: MarksOfGrace, private val worldRepo: WorldRepository) : PluginScript() {
+constructor(
+    private val marks: MarksOfGrace,
+    private val worldRepo: WorldRepository,
+    private val npcRepo: NpcRepository,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         val byLoc = LinkedHashMap<String, MutableList<CourseStep>>()
         for (layout in RooftopCourses.layouts) {
@@ -62,14 +69,6 @@ constructor(private val marks: MarksOfGrace, private val worldRepo: WorldReposit
         }
     }
 
-    /** A positioned obstacle is crossed one way only: the player must stand on its start side. */
-    private fun RooftopObstacle.isBehind(coords: CoordGrid): Boolean {
-        val at = locAt ?: return false
-        val wrongX = (coords.x - at.x).sign * (start.x - at.x).sign < 0
-        val wrongZ = (coords.z - at.z).sign * (start.z - at.z).sign < 0
-        return wrongX || wrongZ
-    }
-
     private class CourseStep(val layout: CourseLayout, val index: Int, val obstacle: RooftopObstacle)
 
     private fun List<CourseStep>.stepAt(loc: BoundLocInfo): CourseStep? =
@@ -93,11 +92,14 @@ constructor(private val marks: MarksOfGrace, private val worldRepo: WorldReposit
             return
         }
         if (obstacle.isBehind(coords)) {
-            mes("You can't climb over the ${obstacle.name.lowercase()} from this side.")
+            val verb = if (obstacle.locAt != null) "climb over" else "cross"
+            mes("You can't $verb the ${obstacle.name.lowercase()} from this side.")
             return
         }
         stepOnto(obstacle.start)
 
+        obstacle.shout?.let { shout -> layout.nearestTrainer(coords)?.say(shout) }
+        obstacle.messages.first?.let { mes(it) }
         obstacle.locSeq?.let { locAnim(worldRepo, loc, it) }
         val failure = obstacle.failure?.takeIf { rollFailure(course, it) }
         val completed = perform(obstacle.move, failure)
@@ -106,8 +108,9 @@ constructor(private val marks: MarksOfGrace, private val worldRepo: WorldReposit
             return
         }
 
+        obstacle.messages.second?.let { mes(it) }
         statAdvance(AGILITY, obstacle.xp)
-        val progress = player.progressOn(course) or (1 shl index)
+        val progress = player.progressOn(course) or (1 shl layout.steps[index])
         if (!obstacle.isFinish) {
             player.courseProgress = pack(course, progress)
             return
@@ -121,6 +124,14 @@ constructor(private val marks: MarksOfGrace, private val worldRepo: WorldReposit
             }
             marks.roll(player, random, layout)
         }
+    }
+
+    private fun CourseLayout.nearestTrainer(coords: CoordGrid): Npc? {
+        val trainer = trainer ?: return null
+        return npcRepo
+            .findAll(ZoneKey.from(coords), TRAINER_ZONE_RADIUS)
+            .filter { it.isType(trainer) && it.coords.level == coords.level }
+            .minByOrNull { it.coords.chebyshevDistance(coords) }
     }
 
     private fun ProtectedAccess.rollFailure(course: RooftopCourse, failure: ObstacleFailure): Boolean {
@@ -164,6 +175,7 @@ constructor(private val marks: MarksOfGrace, private val worldRepo: WorldReposit
                 }
                 zipTo(move.dest, move.ticks)
             }
+            is ObstacleMove.Pipe -> pipeThrough(move.dest)
             is ObstacleMove.Balance -> {
                 val stopAt = if (failure != null) move.path.size / 2 else -1
                 val crossed = balanceAlong(move.path, move.style, stopAt)
@@ -189,6 +201,7 @@ constructor(private val marks: MarksOfGrace, private val worldRepo: WorldReposit
     private companion object {
         const val AGILITY = "stat.agility"
         const val STRENGTH = "stat.strength"
+        const val TRAINER_ZONE_RADIUS = 1
 
         /** Packed `course ordinal shl 16 or completed-obstacle mask`; not persisted. */
         val COURSE_PROGRESS = AttributeKey<Int>()

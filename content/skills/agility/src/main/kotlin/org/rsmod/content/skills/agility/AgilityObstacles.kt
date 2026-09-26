@@ -175,6 +175,27 @@ internal suspend fun ProtectedAccess.stepOnto(start: CoordGrid) {
     delay(1)
 }
 
+/** Squeezes the player through a long pipe to [dest], a few tiles per wriggle. */
+internal suspend fun ProtectedAccess.pipeThrough(dest: CoordGrid) {
+    for (exit in line(coords, dest).chunked(PIPE_STRETCH).map { it.last() }) {
+        val start = coords
+        anim(AgilityAnims.DOUBLE_PIPE_SQUEEZE, delay = CLIENT_CYCLES_PER_TICK)
+        exactMove(
+            start = start,
+            end = exit,
+            delay1 = CLIENT_CYCLES_PER_TICK,
+            delay2 = PIPE_EXIT_CYCLE,
+            dir = emFaceTowards(start, exit),
+            teleportType = TeleportType.Exempt,
+        )
+        delay(PIPE_TICKS)
+    }
+}
+
+private const val PIPE_STRETCH = 3
+private const val PIPE_EXIT_CYCLE = 126
+private const val PIPE_TICKS = 5
+
 /** Plays [seq] for [ticks] cycles and then places the player on [dest]. */
 internal suspend fun ProtectedAccess.climbTo(dest: CoordGrid, seq: String, ticks: Int) {
     faceSquare(dest)

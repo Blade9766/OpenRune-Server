@@ -25,6 +25,7 @@ import org.rsmod.map.CoordGrid
 object RooftopCourses {
     val layouts: List<CourseLayout> =
         listOf(
+            gnome(),
             draynor(),
             alKharid(),
             varrock(),
@@ -40,6 +41,91 @@ object RooftopCourses {
     fun layout(course: RooftopCourse): CourseLayout = layouts.first { it.course == course }
 
     private fun tile(x: Int, z: Int, level: Int): CoordGrid = CoordGrid(x, z, level)
+
+    /**
+     * The Gnome Stronghold course: a log over the pond, up a net and a tree to the rope platform,
+     * back down the far tree and over a second net to the two pipes, either of which ends a lap.
+     * The log's pond tiles are bridge tiles that collide on level 0. Nothing on it can be failed.
+     */
+    private fun gnome(): CourseLayout =
+        CourseLayout(
+            course = RooftopCourse.Gnome,
+            obstacles =
+                listOf(
+                    RooftopObstacle(
+                        locs = listOf("loc.gnome_log_balance1"),
+                        name = "Log balance",
+                        xp = 10.0,
+                        start = tile(2474, 3436, 0),
+                        move = Balance(line(tile(2474, 3436, 0), tile(2474, 3429, 0))),
+                        messages =
+                            "You walk carefully across the slippery log..." to
+                                "...You make it safely to the other side.",
+                        shout = "Okay get over that log, quick quick!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.obstical_net2"),
+                        name = "Obstacle net",
+                        xp = 10.0,
+                        start = tile(2473, 3426, 0),
+                        move = Climb(tile(2473, 3424, 1), ticks = 2),
+                        messages = "You climb the netting." to null,
+                        shout = "Move it, move it, move it!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.climbing_branch"),
+                        name = "Tree branch",
+                        xp = 6.5,
+                        start = tile(2473, 3423, 1),
+                        move = Climb(tile(2473, 3420, 2), ticks = 2),
+                        messages = "You climb the tree..." to "...To the platform above.",
+                        shout = "That's it - straight up",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.balancing_rope", "loc.balancing_rope_mid"),
+                        name = "Balancing rope",
+                        xp = 10.0,
+                        start = tile(2477, 3420, 2),
+                        move = Balance(line(tile(2477, 3420, 2), tile(2483, 3420, 2))),
+                        messages = "You carefully cross the tightrope." to null,
+                        shout = "Come on scaredy cat, get across that rope!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.climbing_tree", "loc.climbing_tree2"),
+                        name = "Tree branch",
+                        xp = 6.5,
+                        start = tile(2485, 3420, 2),
+                        move = Climb(tile(2487, 3420, 0), ticks = 2),
+                        messages = "You climb down the tree..." to "You land on the ground.",
+                        shout = "My Granny can move faster than you.",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.obstical_net3"),
+                        name = "Obstacle net",
+                        xp = 10.0,
+                        start = tile(2485, 3425, 0),
+                        move = Climb(tile(2485, 3427, 0), ticks = 2),
+                        messages = "You climb the netting." to null,
+                        shout = "Move it, move it, move it!",
+                    ),
+                    gnomePipe(x = 2484, loc = "loc.obstical_pipe3_1", alternative = false),
+                    gnomePipe(x = 2487, loc = "loc.obstical_pipe3_2", alternative = true),
+                ),
+            markTiles = listOf(tile(2478, 3427, 0), tile(2481, 3416, 0), tile(2490, 3433, 0)),
+            trainer = "npc.gnometrainer",
+        )
+
+    private fun gnomePipe(x: Int, loc: String, alternative: Boolean): RooftopObstacle =
+        RooftopObstacle(
+            locs = listOf(loc),
+            name = "Obstacle pipe",
+            xp = 7.5,
+            start = tile(x, 3430, 0),
+            move = ObstacleMove.Pipe(tile(x, 3437, 0)),
+            lapBonusXp = 50.0,
+            alternative = alternative,
+            messages = "You pull yourself through the pipes." to null,
+        )
 
     private fun draynor(): CourseLayout =
         CourseLayout(

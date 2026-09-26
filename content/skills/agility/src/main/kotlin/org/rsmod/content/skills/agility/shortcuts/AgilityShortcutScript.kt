@@ -14,6 +14,7 @@ import org.rsmod.content.skills.agility.climbTo
 import org.rsmod.content.skills.agility.emFaceTowards
 import org.rsmod.content.skills.agility.leapTo
 import org.rsmod.content.skills.agility.line
+import org.rsmod.content.skills.agility.pipeThrough
 import org.rsmod.content.skills.agility.seqGlideTicks
 import org.rsmod.content.skills.agility.seqTicks
 import org.rsmod.content.skills.agility.stepOnto
@@ -120,11 +121,7 @@ class AgilityShortcutScript : PluginScript() {
                     hopTo(stone)
                 }
             }
-            is ShortcutMove.Pipe -> {
-                for (exit in line(coords, dest).chunked(PIPE_STRETCH).map { it.last() }) {
-                    squeezeTo(exit)
-                }
-            }
+            is ShortcutMove.Pipe -> pipeThrough(dest)
         }
     }
 
@@ -142,20 +139,6 @@ class AgilityShortcutScript : PluginScript() {
         delay(HOP_TICKS)
     }
 
-    private suspend fun ProtectedAccess.squeezeTo(exit: CoordGrid) {
-        val start = coords
-        anim(AgilityAnims.DOUBLE_PIPE_SQUEEZE, delay = CLIENT_CYCLES_PER_TICK)
-        exactMove(
-            start = start,
-            end = exit,
-            delay1 = CLIENT_CYCLES_PER_TICK,
-            delay2 = PIPE_EXIT_CYCLE,
-            dir = emFaceTowards(start, exit),
-            teleportType = TeleportType.Exempt,
-        )
-        delay(PIPE_TICKS)
-    }
-
     private companion object {
         const val CLIMB_OVER_LANDING_CYCLE = 100
         const val CLIMB_OVER_TICKS = 3
@@ -164,9 +147,5 @@ class AgilityShortcutScript : PluginScript() {
         const val HOP_TAKEOFF_CYCLE = 48
         const val HOP_LANDING_CYCLE = 60
         const val HOP_TICKS = 3
-
-        const val PIPE_STRETCH = 3
-        const val PIPE_EXIT_CYCLE = 126
-        const val PIPE_TICKS = 5
     }
 }

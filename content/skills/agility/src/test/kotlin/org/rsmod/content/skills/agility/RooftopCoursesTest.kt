@@ -12,15 +12,42 @@ import org.rsmod.map.CoordGrid
 
 class RooftopCoursesTest {
     @Test
-    fun `every course has a layout and every layout ends with its only finish obstacle`() {
+    fun `every course has a layout and every layout ends with its only finish step`() {
         for (course in RooftopCourse.entries) {
             val layout = RooftopCourses.layout(course)
             assertTrue(layout.obstacles.size >= 6, "$course has too few obstacles")
-            val finishes = layout.obstacles.filter { it.isFinish }
-            assertEquals(1, finishes.size, "$course must have exactly one finish obstacle")
-            assertTrue(layout.obstacles.last().isFinish, "$course finish must be the last obstacle")
+            val lastStep = layout.steps.last()
+            for ((index, obstacle) in layout.obstacles.withIndex()) {
+                val onLastStep = layout.steps[index] == lastStep
+                assertEquals(onLastStep, obstacle.isFinish, "$course ${obstacle.name} finish flag")
+            }
             assertTrue(layout.markTiles.isNotEmpty(), "$course needs mark of grace tiles")
         }
+    }
+
+    @Test
+    fun `every obstacle accepts the player where the previous one leaves them`() {
+        for (layout in RooftopCourses.layouts) {
+            val obstacles = layout.obstacles
+            for ((index, next) in obstacles.withIndex()) {
+                val step = layout.steps[index]
+                if (step == 0) continue
+                val previous = obstacles.filterIndexed { i, it -> layout.steps[i] == step - 1 && !it.alternative }
+                val landed = previous.single().move.destination
+                assertFalse(next.isBehind(landed), "${layout.course} ${next.name} refuses $landed")
+            }
+        }
+    }
+
+    @Test
+    fun `gnome stronghold pipes are two ways through the last step`() {
+        val layout = RooftopCourses.layout(RooftopCourse.Gnome)
+        val pipes = layout.obstacles.filter { it.name == "Obstacle pipe" }
+        assertEquals(2, pipes.size)
+        assertEquals(1, pipes.count { it.alternative })
+        assertEquals(6, layout.steps.last())
+        assertEquals((1 shl 7) - 1, layout.fullMask)
+        assertEquals("npc.gnometrainer", layout.trainer)
     }
 
     @Test
@@ -31,6 +58,7 @@ class RooftopCoursesTest {
                 RooftopCourse.AlKharid to 216.0,
                 RooftopCourse.Varrock to 269.7,
                 RooftopCourse.Barbarian to 153.3,
+                RooftopCourse.Gnome to 110.5,
                 RooftopCourse.Canifis to 240.0,
                 RooftopCourse.Falador to 586.0,
                 RooftopCourse.Seers to 570.0,
@@ -108,7 +136,7 @@ class RooftopCoursesTest {
         }
         val rooftopLocs =
             RooftopCourses.layouts
-                .filter { it.course != RooftopCourse.Barbarian }
+                .filter { it.course != RooftopCourse.Barbarian && it.course != RooftopCourse.Gnome }
                 .flatMap { it.obstacles }
                 .flatMap { it.locs }
         assertTrue(rooftopLocs.all { it.startsWith("loc.rooftops_") })

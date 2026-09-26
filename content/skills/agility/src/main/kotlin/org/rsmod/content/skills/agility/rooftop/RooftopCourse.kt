@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.agility.rooftop
 
+import kotlin.math.sign
 import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.BalanceStyle
 import org.rsmod.content.skills.agility.shortcuts.ShortcutQuest
@@ -17,6 +18,7 @@ enum class RooftopCourse(
     val markDenominator: Int,
     val quest: ShortcutQuest? = null,
 ) {
+    Gnome("Gnome Stronghold", 1, 1, 3),
     Draynor("Draynor Village", 1, 1, 3),
     AlKharid("Al Kharid", 20, 1, 3),
     Varrock("Varrock", 30, 1, 3),
@@ -94,6 +96,11 @@ sealed class ObstacleMove {
     data class Zipline(val dest: CoordGrid, val ticks: Int = 3) : ObstacleMove() {
         override val destination: CoordGrid get() = dest
     }
+
+    /** Squeeze through a long pipe to [dest]. */
+    data class Pipe(val dest: CoordGrid) : ObstacleMove() {
+        override val destination: CoordGrid get() = dest
+    }
 }
 
 /**
@@ -134,6 +141,10 @@ data class ObstacleFailure(
  * @param locSeq Animation the obstacle loc itself plays when used (a rope swinging).
  * @param locAt Where the obstacle's loc stands, for loc types the course uses more than once (the
  *   Barbarian Outpost's three crumbling walls); the clicked loc then picks the obstacle.
+ * @param alternative This obstacle is another way through the obstacle listed before it (the
+ *   Gnome Stronghold's two pipes) and counts as the same step of a lap.
+ * @param messages Chat messages shown as the obstacle starts and, after it, as it completes.
+ * @param shout What the course trainer nearest the player shouts when the obstacle is started.
  */
 data class RooftopObstacle(
     val locs: List<String>,
@@ -147,20 +158,51 @@ data class RooftopObstacle(
     val lapBonusStrengthXp: Double = 0.0,
     val locSeq: String? = null,
     val locAt: CoordGrid? = null,
+    val alternative: Boolean = false,
+    val messages: Pair<String?, String?> = null to null,
+    val shout: String? = null,
 ) {
     val isFinish: Boolean get() = lapBonusXp > 0.0
+
+    /**
+     * Obstacles are crossed one way only. A positioned one needs the player on its start side; any
+     * other obstacle that stays on one level refuses a player nearer its far end than its start.
+     */
+    fun isBehind(coords: CoordGrid): Boolean {
+        val at = locAt
+        if (at != null) {
+            val wrongX = (coords.x - at.x).sign * (start.x - at.x).sign < 0
+            val wrongZ = (coords.z - at.z).sign * (start.z - at.z).sign < 0
+            return wrongX || wrongZ
+        }
+        val dest = move.destination
+        if (coords.level != start.level || dest.level != start.level) {
+            return false
+        }
+        return coords.chebyshevDistance(dest) < coords.chebyshevDistance(start)
+    }
 
     val totalXp: Double get() = xp + lapBonusXp
 }
 
-/** A course together with its obstacles (in lap order) and the tiles marks of grace spawn on. */
+/**
+ * A course together with its obstacles (in lap order), the tiles marks of grace spawn on and the
+ * [trainer] npc that shouts at players on the course.
+ */
 class CourseLayout(
     val course: RooftopCourse,
     val obstacles: List<RooftopObstacle>,
     val markTiles: List<CoordGrid>,
+    val trainer: String? = null,
 ) {
-    /** Bit mask with one bit per obstacle; a lap is complete when every bit has been set. */
-    val fullMask: Int = (1 shl obstacles.size) - 1
+    /** The lap step of each obstacle; alternatives share the step of the obstacle before them. */
+    val steps: List<Int> =
+        obstacles.runningFold(-1) { step, obstacle -> if (obstacle.alternative) step else step + 1 }
+            .drop(1)
 
-    val lapXp: Double get() = obstacles.sumOf { it.totalXp }
+    /** Bit mask with one bit per lap step; a lap is complete when every bit has been set. */
+    val fullMask: Int = (1 shl (steps.last() + 1)) - 1
+
+    /** Experience for a lap taking the first way through every step. */
+    val lapXp: Double get() = obstacles.filterNot { it.alternative }.sumOf { it.totalXp }
 }
