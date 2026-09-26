@@ -8,6 +8,7 @@ import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.NARDOK
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -15,7 +16,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 /** Nardok, the Dorgeshuun mines' whispering arms dealer. He only trades once there is peace. */
 class Nardok
 @Inject
-constructor(private val lostTribe: LostTribeQuest, private val shops: Shops) : PluginScript() {
+constructor(private val shops: Shops) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(NARDOK) { startDialogue(it.npc) { nardok(it.npc) } }
@@ -23,7 +24,7 @@ constructor(private val lostTribe: LostTribeQuest, private val shops: Shops) : P
     }
 
     private suspend fun ProtectedAccess.trade(npc: Npc) {
-        if (!lostTribe.isComplete(player)) {
+        if (!QuestRequirements.hasCompleted(player, LostTribeQuest.QUEST_KEY)) {
             startDialogue(npc) { refuse() }
             return
         }
@@ -39,7 +40,7 @@ constructor(private val lostTribe: LostTribeQuest, private val shops: Shops) : P
     }
 
     private suspend fun Dialogue.nardok(npc: Npc) {
-        if (!lostTribe.isComplete(player)) {
+        if (!QuestRequirements.hasCompleted(player, LostTribeQuest.QUEST_KEY)) {
             refuse()
             return
         }

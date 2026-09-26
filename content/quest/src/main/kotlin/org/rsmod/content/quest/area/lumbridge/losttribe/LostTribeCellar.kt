@@ -55,8 +55,8 @@ constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepos
             onOpLocU(CELLAR_WALL, pickaxe) { digRubble(it.vis) }
             onOpLocU(RUBBLE, pickaxe) { digRubble(it.vis) }
         }
-        onOpLoc1(CELLAR_WALL) { squeeze(CELLAR_SIDE, TUNNEL_SIDE, intoTunnel = true) }
-        onOpLoc1(CELLAR_WALL_BACK) { squeeze(TUNNEL_SIDE, CELLAR_SIDE, intoTunnel = false) }
+        onOpLoc1(CELLAR_WALL) { squeezeCellarHole() }
+        onOpLoc1(CELLAR_WALL_BACK) { squeezeCellarHole() }
         onOpLoc1(SWAMP_HOLE) { squeezeSwampHole(it.loc) }
         onOpHeld1(BROOCH) {
             objbox(BROOCH, "It's a stone brooch with a strange symbol carved on it.")
@@ -90,6 +90,15 @@ constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepos
         resetAnim()
         lostTribe.advanceTo(this, STAGE_TUNNEL_DUG)
         mesbox("You dig a narrow tunnel through the rocks.")
+    }
+
+    /** Both sides of the hole show the same loc, so the direction comes from where the player stands. */
+    private suspend fun ProtectedAccess.squeezeCellarHole() {
+        if (coords.x <= CELLAR_SIDE.x) {
+            squeeze(CELLAR_SIDE, TUNNEL_SIDE, intoTunnel = true)
+        } else {
+            squeeze(TUNNEL_SIDE, CELLAR_SIDE, intoTunnel = false)
+        }
     }
 
     private suspend fun ProtectedAccess.squeeze(from: CoordGrid, to: CoordGrid, intoTunnel: Boolean) {

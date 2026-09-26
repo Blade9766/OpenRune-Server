@@ -23,7 +23,6 @@ import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.STAGE_WITNESS_FOUND
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.TREATY
 import org.rsmod.content.quest.manager.QuestRequirements
-import org.rsmod.content.quest.manager.menu
 import org.rsmod.game.entity.Player
 
 /**
@@ -44,9 +43,9 @@ constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepos
             STAGE_READ_BOOK -> "I found out about the symbol..."
             STAGE_EMOTES_LEARNT -> "I spoke to the generals in the goblin village..."
             STAGE_CONTACT -> "I've made contact with the cave goblins..."
+            STAGE_SILVERWARE_MISSING -> silverwareTopic(player).line
             STAGE_PERMISSION,
             STAGE_SHOWN_BROOCH,
-            STAGE_SILVERWARE_MISSING,
             STAGE_TREATY -> "What was I doing again?"
             else -> null
         }
@@ -231,27 +230,26 @@ constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepos
         }
     }
 
-    private suspend fun Dialogue.silverware() {
-        val options = buildList {
-            add("What was I doing again?" to 1)
-            if (player.lostTribeHam == HAM_ROBES_FOUND) {
-                add("Did you know Sigmund is a member of HAM?" to 2)
-            }
-            if (SILVERWARE in player.inv) {
-                add("I found the missing silverware in the HAM cave!" to 3)
-            }
+    /** The one silverware line the Duke's menu offers: the best evidence the player holds. */
+    private fun silverwareTopic(player: Player): SilverwareTopic =
+        when {
+            SILVERWARE in player.inv -> SilverwareTopic.Return
+            player.lostTribeHam == HAM_ROBES_FOUND -> SilverwareTopic.Ham
+            else -> SilverwareTopic.Reminder
         }
-        when (menu(options)) {
-            1 -> {
-                chatPlayer(quiz, "What was I doing again?")
+
+    private suspend fun Dialogue.silverware() {
+        when (silverwareTopic(player)) {
+            SilverwareTopic.Reminder -> {
+                chatPlayer(quiz, SilverwareTopic.Reminder.line)
                 chatNpc(
                     sad,
                     "We are preparing to go to war with the underground goblins over the missing silverware. " +
                         "If you think the cave goblins are innocent you should present evidence quickly!",
                 )
             }
-            2 -> {
-                chatPlayer(quiz, "Did you know Sigmund is a member of HAM?")
+            SilverwareTopic.Ham -> {
+                chatPlayer(quiz, SilverwareTopic.Ham.line)
                 chatNpc(
                     neutral,
                     "Hmm, I had suspected it. But however much I disapprove of the HAM movement it's not " +
@@ -259,13 +257,19 @@ constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepos
                 )
                 player.lostTribeHam = HAM_TOLD_DUKE
             }
-            3 -> returnSilverware()
+            SilverwareTopic.Return -> returnSilverware()
         }
+    }
+
+    private enum class SilverwareTopic(val line: String) {
+        Reminder("What was I doing again?"),
+        Ham("Did you know Sigmund is a member of HAM?"),
+        Return("I found the missing silverware in the HAM cave!"),
     }
 
     private suspend fun Dialogue.returnSilverware() {
         with(lostTribe) {
-            chatPlayer(happy, "I found the missing silverware in the HAM cave!")
+            chatPlayer(happy, SilverwareTopic.Return.line)
             if (access.invDel(access.inv, SILVERWARE).failure) {
                 return
             }
