@@ -25,7 +25,8 @@ object LootingBags {
     fun rejection(obj: InvObj, type: ItemServerType): String? =
         when {
             obj.id in ids -> "You may be surprised to learn that bagception is not permitted."
-            !type.tradeable || obj.id == coinsId -> "Only tradeable items can be put in the bag."
+            !(type.tradeable || type.stockmarket) || obj.id == coinsId ->
+                "Only tradeable items can be put in the bag."
             else -> null
         }
 }

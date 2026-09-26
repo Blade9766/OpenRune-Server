@@ -57,6 +57,12 @@ scope = "Perm"
 stack = "Always"
 protect = false
 
+[[inventory]]
+isServerOnly = true
+id = "inv.looting_bag"
+inherit = "inv.looting_bag"
+protect = false
+
 
 # Emir's Arena duel stakes. Persisted so a crash or restart mid-duel cannot lose a stake; the
 # plugin shows it through the trade screen's inv id and returns leftovers at login.

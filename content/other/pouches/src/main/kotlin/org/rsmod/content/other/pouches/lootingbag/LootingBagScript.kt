@@ -97,8 +97,8 @@ constructor(
 
     private fun ProtectedAccess.openCheck() {
         val bag = player.lootingBag
-        player.attr[VIEW_ATTR] = BagView.Check
         ifOpenMainModal(INTERFACE)
+        player.attr[VIEW_ATTR] = BagView.Check
         runClientScript(SETUP_SCRIPT, MODE_BAG_CONTENTS, TITLE)
         invTransmit(bag)
         ifSetEvents(COMPONENT_ITEMS, 0 until LootingBags.CAPACITY, IfEvent.Op10)
@@ -110,8 +110,8 @@ constructor(
             mes(MSG_WILDERNESS_ONLY)
             return
         }
-        player.attr[VIEW_ATTR] = BagView.Deposit
         ifOpenMainModal(INTERFACE)
+        player.attr[VIEW_ATTR] = BagView.Deposit
         runClientScript(SETUP_SCRIPT, MODE_INVENTORY, TITLE)
         ifSetEvents(
             COMPONENT_ITEMS,
@@ -412,8 +412,8 @@ constructor(
 
         /** `[clientscript,wilderness_lootingbag_setup](int mode, string title)`. */
         private const val SETUP_SCRIPT = 495
-        private const val MODE_BAG_CONTENTS = 1
-        private const val MODE_INVENTORY = 0
+        private const val MODE_BAG_CONTENTS = 0
+        private const val MODE_INVENTORY = 1
         private const val TITLE = "Looting bag"
 
         private const val MSG_WILDERNESS_ONLY =
