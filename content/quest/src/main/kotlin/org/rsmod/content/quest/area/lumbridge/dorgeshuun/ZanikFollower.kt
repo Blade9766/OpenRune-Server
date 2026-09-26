@@ -1,5 +1,7 @@
 package org.rsmod.content.quest.area.lumbridge.dorgeshuun
 
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.types.NpcMode
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -51,10 +53,16 @@ constructor(
 ) : PluginScript() {
 
     private val listeners = mutableListOf<(Player, Npc) -> Unit>()
+    private val zanikTypes by lazy {
+        listOf(ZANIK_FOLLOWER, ZANIK_FOLLOWER_HAM, ZANIK_SHOWDOWN).map { it.asRSCM(RSCMType.NPC) }.toSet()
+    }
 
     override fun ScriptContext.startup() {
         onPlayerSoftTimer(TICK_TIMER) { tick(player) }
-        onPlayerLogin { returnToCellarIfDue(player) }
+        onPlayerLogin {
+            clearSavedFollower(player)
+            returnToCellarIfDue(player)
+        }
         onPlayerLogout {
             remove(player)
             returnToCellarIfDue(player)
@@ -132,6 +140,14 @@ constructor(
         returnToCellarIfDue(player)
     }
 
+    /** Zanik never survives a logout, so a follower var still naming her would read as a pet. */
+    private fun clearSavedFollower(player: Player) {
+        val packed = player.vars[FOLLOWER_VARP]
+        if (packed != NO_FOLLOWER && packed ushr 16 in zanikTypes) {
+            VarPlayerIntMapSetter.set(player, FOLLOWER_VARP, NO_FOLLOWER)
+        }
+    }
+
     fun returnToCellarIfDue(player: Player) {
         if (dttd.stage(player) in CELLAR_STAGES && !isFollowing(player)) {
             player.dttdZanikInCellar = true
@@ -174,13 +190,12 @@ constructor(
         }
         val last = player.attr[LAST_COORDS] ?: player.coords
         player.attr[LAST_COORDS] = player.coords
+        if (travelled(last, player.coords) > NEAR_TRAVEL) {
+            sendHome(player)
+            return
+        }
         if (npc.coords.level != player.coords.level || !npc.coords.isWithinDistance(player.coords, LOST_DISTANCE)) {
-            if (travelled(last, player.coords) <= NEAR_TRAVEL) {
-                relocate(player)
-            } else {
-                sendHome(player)
-                return
-            }
+            relocate(player)
         }
         if (npc.mode != NpcMode.None) {
             catchUpIfStuck(player, npc)
