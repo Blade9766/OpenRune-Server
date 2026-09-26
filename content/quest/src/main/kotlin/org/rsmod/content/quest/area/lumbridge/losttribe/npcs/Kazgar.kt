@@ -4,6 +4,8 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.api.script.onOpNpc4
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.WaterMill
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.KAZGAR
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.MINES_ARRIVAL
@@ -14,14 +16,20 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Kazgar, posted by Mistag just inside the tunnel from the castle cellar once the silverware goes
  * missing, to guide surface-dwellers safely through the maze to the Dorgeshuun mines.
  */
-class Kazgar @Inject constructor(private val lostTribe: LostTribeQuest) : PluginScript() {
+class Kazgar
+@Inject
+constructor(private val lostTribe: LostTribeQuest, private val mill: WaterMill) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(KAZGAR) { startDialogue(it.npc) { kazgar() } }
         onOpNpc3(KAZGAR) { lostTribe.run { guideThroughTunnels("Kazgar", MINES_ARRIVAL) } }
+        onOpNpc4(KAZGAR) { lostTribe.run { guideThroughTunnels("Kazgar", WaterMill.MILLSIDE_LANDING) } }
     }
 
     private suspend fun Dialogue.kazgar() {
+        if (with(mill) { kazgarInterrupted() }) {
+            return
+        }
         chatNpc(neutral, "Hello, surface-dweller.")
         when (
             choice3(

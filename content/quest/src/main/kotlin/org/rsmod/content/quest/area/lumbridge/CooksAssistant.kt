@@ -4,6 +4,7 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.content.quest.manager.ItemRewardDisplay
@@ -15,7 +16,7 @@ import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.ScriptContext
 
-class CooksAssistant @Inject constructor(private val lostTribe: LostTribeQuest) : QuestScript("quest_cooksassistant", "varp.cookquest", rewards {
+class CooksAssistant @Inject constructor(private val lostTribe: LostTribeQuest, private val zanikTour: ZanikTour) : QuestScript("quest_cooksassistant", "varp.cookquest", rewards {
     xp("stat.cooking", 300.0)
 }, ItemRewardDisplay("obj.cake")) {
 
@@ -34,6 +35,9 @@ class CooksAssistant @Inject constructor(private val lostTribe: LostTribeQuest) 
     }
 
     private suspend fun Dialogue.cookDialogue(npc: Npc) {
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { cookIntro() }
+        }
         when {
             quest.isQuestCompleted(player) -> dialogAfterCook(npc)
             quest.questState(player) == QuestProgressState.IN_PROGRESS -> {

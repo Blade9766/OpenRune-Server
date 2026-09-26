@@ -3,6 +3,7 @@ package org.rsmod.content.quest.area.lumbridge.restlessghost.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
@@ -18,8 +19,11 @@ import org.rsmod.plugin.scripts.ScriptContext
 /** Father Aereck, priest of the Lumbridge church. Starts The Restless Ghost. */
 class FatherAereck
 @Inject
-constructor(private val restlessGhost: RestlessGhostQuest, private val lostTribe: LostTribeQuest) :
-    PluginScript() {
+constructor(
+    private val restlessGhost: RestlessGhostQuest,
+    private val lostTribe: LostTribeQuest,
+    private val zanikTour: ZanikTour,
+) : PluginScript() {
 
     private val quest
         get() = restlessGhost.quest
@@ -29,6 +33,10 @@ constructor(private val restlessGhost: RestlessGhostQuest, private val lostTribe
     }
 
     private suspend fun Dialogue.aereck() {
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { aereckVisit() }
+            return
+        }
         val stage = quest.getQuestStage(player)
         val midQuest = stage != 0 && !quest.isQuestCompleted(player)
         if (midQuest && with(lostTribe) { offerCellarQuestion(Witness.Aereck) }) {

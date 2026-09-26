@@ -12,8 +12,12 @@ import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.api.script.onOpNpc4
 import org.rsmod.api.script.onOpNpcU
 import org.rsmod.content.interfaces.emotes.PlayEmote
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.WaterMill
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikFollower
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.BROOCH
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.CELLAR_ARRIVAL
@@ -49,6 +53,8 @@ constructor(
     private val npcRepo: NpcRepository,
     private val objRepo: ObjRepository,
     private val launcher: ProtectedAccessLauncher,
+    private val dttd: DeathToTheDorgeshuunQuest,
+    private val zanik: ZanikFollower,
 ) : PluginScript() {
 
     private val mistagIds by lazy { MISTAG_TYPES.map { it.asRSCM(RSCMType.NPC) }.toSet() }
@@ -58,6 +64,7 @@ constructor(
     override fun ScriptContext.startup() {
         onOpNpc1(MISTAG) { talk(it.npc) }
         onOpNpc3(MISTAG) { lostTribe.run { guideThroughTunnels("Mistag", KAZGAR_ARRIVAL) } }
+        onOpNpc4(MISTAG) { lostTribe.run { guideThroughTunnels("Mistag", WaterMill.MILLSIDE_LANDING) } }
         val mistag = ServerCacheManager.getNpc(MISTAG.asRSCM(RSCMType.NPC)) ?: error("Missing $MISTAG")
         val brooch = ServerCacheManager.getItem(BROOCH.asRSCM(RSCMType.OBJ)) ?: error("Missing $BROOCH")
         onOpNpcU(mistag, brooch) { startDialogue(it.npc) { returnBrooch() } }
@@ -79,9 +86,33 @@ constructor(
             panic()
             return
         }
-        chatNpc(quiz, "Hello, friend?")
         val complete = lostTribe.isComplete(player)
+        val offerFavour = complete && dttd.stage(player) == 0 && dttd.canStart(player)
+        when {
+            offerFavour ->
+                chatNpc(
+                    happy,
+                    "It is good to see you again! The Dorgeshuun Council would like to ask a favour of you, if you " +
+                        "are interested?",
+                )
+            zanik.isFollowing(player) -> {
+                chatNpc(
+                    happy,
+                    "Hello Zanik, hello ${player.displayName}. How is your exploration of the surface going?",
+                )
+                chatNpcSpecific(
+                    "Zanik",
+                    DeathToTheDorgeshuunQuest.ZANIK_CHATHEAD,
+                    angry,
+                    "I've hardly SEEN the surface yet! ${player.displayName} just dragged me back down here!",
+                )
+            }
+            else -> chatNpc(quiz, "Hello, friend?")
+        }
         val options = buildList {
+            if (offerFavour) {
+                add("What is this favour?" to Topic.Favour)
+            }
             if (complete) {
                 add("Can I sell you some ore?" to Topic.SellOre)
             } else if (stage == STAGE_SILVERWARE_MISSING) {
@@ -95,6 +126,7 @@ constructor(
             add("Can you show me the way out of the mines?" to Topic.WayOut)
         }
         when (menu(options)) {
+            Topic.Favour -> favour()
             Topic.SellOre -> sellOre()
             Topic.Innocent -> {
                 chatPlayer(worried, "Some silverware has gone missing from the castle, and the Duke thinks you stole it!")
@@ -334,7 +366,41 @@ constructor(
             it.type.id in mistagIds && it.coords.chebyshevDistance(player.coords) <= GREET_RANGE
         }
 
+    private suspend fun Dialogue.favour() {
+        chatPlayer(quiz, "What is this favour?")
+        chatNpc(
+            neutral,
+            "Surface-dwellers have been visiting the mines for some time now, but no Dorgeshuun has yet visited " +
+                "the surface.",
+        )
+        chatNpc(
+            worried,
+            "We are curious about the surface, and we are also worried about the dangers it poses. We know that " +
+                "Lumbridge is friendly but we are worried that the HAM group may be plotting against us.",
+        )
+        chatNpc(neutral, "We are planning to send an agent to the surface and we would like you to act as a guide.")
+        if (!choice2("Yes.", true, "No.", false, title = "Start the Death to the Dorgeshuun quest?")) {
+            chatPlayer(neutral, "I'm too busy.")
+            chatNpc(
+                sad,
+                "Oh dear! Our agent is ready, but the Council will not let an expedition go ahead without a guide. " +
+                    "If you reconsider, please let me know!",
+            )
+            return
+        }
+        chatPlayer(happy, "I'll act as a guide.")
+        dttd.advanceTo(access, DeathToTheDorgeshuunQuest.STAGE_STARTED)
+        zanik.returnToCellarIfDue(player)
+        chatNpc(happy, "Thank you!")
+        chatNpc(
+            neutral,
+            "In order to get into the HAM base undetected you will both need to go in disguise. You should get two " +
+                "full sets of HAM robes. Once you have them, our agent will meet you in the cellar of Lumbridge castle.",
+        )
+    }
+
     private enum class Topic {
+        Favour,
         SellOre,
         Innocent,
         Accuse,

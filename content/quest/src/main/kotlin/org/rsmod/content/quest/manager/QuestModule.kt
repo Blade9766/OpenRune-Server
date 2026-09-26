@@ -113,6 +113,13 @@ import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageKillHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DttdScenes
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.HamHideout
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.HamStorerooms
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.WaterMill
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikFollower
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.area.lumbridge.lostcity.LostCityQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
@@ -216,6 +223,13 @@ public class QuestModule : PluginModule() {
         bindInstance<LostTribeDuke>()
         bindInstance<LostTribeLore>()
         bindInstance<TreatySigning>()
+        bindInstance<DeathToTheDorgeshuunQuest>()
+        bindInstance<ZanikFollower>()
+        bindInstance<ZanikTour>()
+        bindInstance<DttdScenes>()
+        bindInstance<HamHideout>()
+        bindInstance<HamStorerooms>()
+        bindInstance<WaterMill>()
         bindInstance<KolodionFights>()
         bindInstance<FollowerSpawns>()
         bindInstance<DragonSlayerQuest>()

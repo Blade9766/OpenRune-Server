@@ -7,6 +7,7 @@ import org.rsmod.api.player.stat.thievingLvl
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.HamHideout
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.CHEST_KEY
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Companion.HAM_ROBES_FOUND
@@ -42,7 +43,11 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class LumbridgeSigmund
 @Inject
-constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepository) :
+constructor(
+    private val lostTribe: LostTribeQuest,
+    private val objRepo: ObjRepository,
+    private val hideout: HamHideout,
+) :
     PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -50,6 +55,9 @@ constructor(private val lostTribe: LostTribeQuest, private val objRepo: ObjRepos
         onOpNpc3(SIGMUND) { pickpocket(it.npc) }
         onOpNpc1(SIGMUND_HAM) {
             startDialogue(it.npc) {
+                if (with(hideout) { sigmundMeetsZanik() }) {
+                    return@startDialogue
+                }
                 chatNpc(
                     angry,
                     "...And I would have gotten away with it too, if it wasn't for that pesky adventurer!",

@@ -6,6 +6,7 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
 import org.rsmod.content.quest.area.lumbridge.rmTalisman
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
@@ -21,6 +22,7 @@ constructor(
     private val runeMysteries: RuneMysteriesQuest,
     private val dragonSlayer: DragonSlayerQuest,
     private val lostTribe: LostTribeDuke,
+    private val zanikTour: ZanikTour,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -32,6 +34,10 @@ constructor(
     }
 
     private suspend fun Dialogue.dukeDialogue(npc: Npc) {
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { dukeVisit() }
+            return
+        }
         chatNpc(happy, "Greetings. Welcome to my castle.")
 
         val hasShield = player.ownsAntiDragonShield()

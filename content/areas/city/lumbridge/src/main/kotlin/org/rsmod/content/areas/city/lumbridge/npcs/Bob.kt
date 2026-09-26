@@ -8,6 +8,7 @@ import org.rsmod.api.script.advanced.onUnimplementedOpNpc4
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.content.quest.manager.menu
@@ -16,8 +17,13 @@ import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class Bob @Inject constructor(private val shops: Shops, private val lostTribe: LostTribeQuest) :
-    PluginScript() {
+class Bob
+@Inject
+constructor(
+    private val shops: Shops,
+    private val lostTribe: LostTribeQuest,
+    private val zanikTour: ZanikTour,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.bob") { startDialogue(it.npc) }
         onOpNpc3("npc.bob") { player.openShop(it.npc) }
@@ -33,6 +39,9 @@ class Bob @Inject constructor(private val shops: Shops, private val lostTribe: L
     }
 
     private suspend fun Dialogue.bobDialogue(npc: Npc) {
+        if (zanikTour.isTouring(player) && !with(zanikTour) { bobVisit() }) {
+            return
+        }
         val options = buildList {
             lostTribe.cellarQuestion(player, Witness.Bob)?.let { add(it to 4) }
             add("Give me a quest!" to 1)

@@ -7,13 +7,17 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class Hans @Inject constructor(private val lostTribe: LostTribeQuest) : PluginScript() {
+class Hans
+@Inject
+constructor(private val lostTribe: LostTribeQuest, private val zanikTour: ZanikTour) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.hans") { hansDialogue(it.npc) }
         onOpNpc3("npc.hans") { hansAgeDialogue(it.npc) }
@@ -23,7 +27,11 @@ class Hans @Inject constructor(private val lostTribe: LostTribeQuest) : PluginSc
         startDialogue(npc) { optionsDialogue(npc) }
 
     private suspend fun Dialogue.optionsDialogue(npc: Npc) {
-        chatNpc(neutral, "Hello. What are you doing here?")
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { hansIntro() }
+        } else {
+            chatNpc(neutral, "Hello. What are you doing here?")
+        }
         val cellarQuestion = lostTribe.cellarQuestion(player, Witness.Hans)
         val choice =
             choice5(

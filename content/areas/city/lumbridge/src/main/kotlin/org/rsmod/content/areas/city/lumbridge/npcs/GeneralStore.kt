@@ -6,12 +6,14 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class GeneralStore @Inject constructor(private val shops: Shops) : PluginScript() {
+class GeneralStore @Inject constructor(private val shops: Shops, private val zanikTour: ZanikTour) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.generalshopkeeper1") { shopDialogue(it.npc) }
         onOpNpc3("npc.generalshopkeeper1") { player.openGeneralStore(it.npc) }
@@ -27,7 +29,11 @@ class GeneralStore @Inject constructor(private val shops: Shops) : PluginScript(
         startDialogue(npc) { shopKeeper(npc) }
 
     private suspend fun Dialogue.shopKeeper(npc: Npc) {
-        chatNpc(happy, "Can I help you at all?")
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { shopIntro() }
+        } else {
+            chatNpc(happy, "Can I help you at all?")
+        }
         val choice = choice2("Yes please. What are you selling?", 1, "No thanks.", 2)
         if (choice == 1) {
             player.openGeneralStore(npc)

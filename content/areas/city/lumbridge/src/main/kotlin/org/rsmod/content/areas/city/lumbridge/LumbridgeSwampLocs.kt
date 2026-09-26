@@ -1,5 +1,6 @@
 package org.rsmod.content.areas.city.lumbridge
 
+import jakarta.inject.Inject
 import org.rsmod.api.player.cinematic.Cinematic
 import org.rsmod.api.player.cinematic.MinimapState
 import org.rsmod.api.player.output.ChatType
@@ -14,6 +15,7 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.script.onOpLoc5
 import org.rsmod.api.script.onPlayerSoftTimer
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.HamHideout
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
@@ -22,7 +24,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 private var Player.darkness by intVarBit("varbit.darkness_level")
 private var Player.hamTrapdoorOpen by boolVarBit("varbit.ham_thief")
 
-class LumbridgeSwampLocs : PluginScript() {
+class LumbridgeSwampLocs @Inject constructor(private val hamHideout: HamHideout) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpLoc1("loc.goblin_cave_entrance") { enterCave() }
         onIfModalButton("component.cws_warning_13:warn1") {
@@ -46,10 +48,14 @@ class LumbridgeSwampLocs : PluginScript() {
             soundSynth("synth.locked")
             return
         }
+        if (!with(hamHideout) { beforeDescending() }) {
+            return
+        }
         anim("seq.human_pickupfloor")
         delay(1)
         mes("You climb down through the trapdoor.")
         telejump(HAM_HIDEOUT_LANDING)
+        hamHideout.afterDescending(player)
     }
 
     private suspend fun ProtectedAccess.closeTrapdoor() {
@@ -85,6 +91,7 @@ class LumbridgeSwampLocs : PluginScript() {
         anim("seq.human_reachforladder")
         delay(1)
         telejump(HAM_TRAPDOOR_EXIT)
+        with(hamHideout) { afterClimbingOut() }
     }
 
     private fun ProtectedAccess.hasLight(): Boolean =

@@ -1,19 +1,26 @@
 package org.rsmod.content.areas.city.lumbridge.npcs
 
+import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /** Phileas, the Lumbridge Guide, outside the castle's east door. */
-class LumbridgeGuide : PluginScript() {
+class LumbridgeGuide @Inject constructor(private val zanikTour: ZanikTour) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.lumbridge_guide") { startDialogue(it.npc) { guide() } }
     }
 
     private suspend fun Dialogue.guide() {
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { guideIntro() }
+            mainMenu()
+            return
+        }
         chatNpc(
             happy,
             "Greetings, adventurer. I am Phileas, the Lumbridge Guide. I am here to give information " +

@@ -300,6 +300,22 @@ squeeze_through_rocks = 1310
 pitfall_fall = 2476
 gas_explosion = 2299
 
+# Death to the Dorgeshuun (dbrow.synth_deathtothedorgeshun).
+dttd_branding_zanik = 1088
+dttd_bone_crossbow = 1081
+dttd_bone_crossbow_sa = 1080
+dttd_branding = 1089
+dttd_branding_2 = 1090
+dttd_drink = 1085
+dttd_zanik_attack = 1082
+dttd_zanik_death = 1086
+dttd_zanik_hit = 1087
+dttd_juna_meditates = 1091
+dttd_pick_up_zaniks_body = 1092
+dttd_smash_machine = 1093
+dttd_zanik_gets_in_crate = 1094
+dttd_zanik_resurrection = 1095
+
 # Legends' Quest: swinging the bullroarer, Gujuo's blessing and forging the gold bowl, hacking
 # through the Kharazi jungle and Nezikchened's parting fire bolt.
 bullroarer = 1640
@@ -564,6 +580,10 @@ lunar_dream_rival = 134
 lunar_me_fight = 135
 # Underground Pass: Iban reaching across his own temple for whoever walks into it.
 upass_temple = 136
+# Death to the Dorgeshuun: Zanik following the player, and Zanik riding in her crate.
+dttd_zanik = 137
+dttd_crate = 138
+
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
 porcine_sourhog_blind = 65421
