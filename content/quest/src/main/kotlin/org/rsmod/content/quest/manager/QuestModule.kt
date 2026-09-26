@@ -114,6 +114,10 @@ import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageKillHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.lostcity.LostCityQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.TreatySigning
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
@@ -208,6 +212,10 @@ public class QuestModule : PluginModule() {
         bindInstance<MageArenaQuest>()
         bindInstance<MageArena2Quest>()
         bindInstance<BarcrawlQuest>()
+        bindInstance<LostTribeQuest>()
+        bindInstance<LostTribeDuke>()
+        bindInstance<LostTribeLore>()
+        bindInstance<TreatySigning>()
         bindInstance<KolodionFights>()
         bindInstance<FollowerSpawns>()
         bindInstance<DragonSlayerQuest>()

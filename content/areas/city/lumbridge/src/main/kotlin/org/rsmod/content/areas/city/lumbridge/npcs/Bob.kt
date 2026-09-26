@@ -1,19 +1,23 @@
 package org.rsmod.content.areas.city.lumbridge.npcs
 
 import jakarta.inject.Inject
-import org.rsmod.api.player.dialogue.mesanims
 import org.rsmod.api.player.dialogue.Dialogue
+import org.rsmod.api.player.dialogue.mesanims
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.advanced.onUnimplementedOpNpc4
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class Bob @Inject constructor(private val shops: Shops) : PluginScript() {
+class Bob @Inject constructor(private val shops: Shops, private val lostTribe: LostTribeQuest) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.bob") { startDialogue(it.npc) }
         onOpNpc3("npc.bob") { player.openShop(it.npc) }
@@ -29,19 +33,18 @@ class Bob @Inject constructor(private val shops: Shops) : PluginScript() {
     }
 
     private suspend fun Dialogue.bobDialogue(npc: Npc) {
-        val choice =
-            choice3(
-                "Give me a quest!",
-                1,
-                "Have you anything to sell?",
-                2,
-                "Can you repair my items for me?",
-                3,
-            )
+        val options = buildList {
+            lostTribe.cellarQuestion(player, Witness.Bob)?.let { add(it to 4) }
+            add("Give me a quest!" to 1)
+            add("Have you anything to sell?" to 2)
+            add("Can you repair my items for me?" to 3)
+        }
+        val choice = menu(options)
         when (choice) {
             1 -> requestQuest()
             2 -> openShop(npc)
             3 -> repairItems()
+            4 -> with(lostTribe) { askAboutCellar(Witness.Bob) }
         }
     }
 

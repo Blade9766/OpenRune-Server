@@ -33,7 +33,8 @@ object AnimationFamilies {
      * `defend_sound` or `death_sound` params in the cache. The ids are the ones the cache does
      * attach to a member of the family where one exists (the giant spider `npc.giantspider1` and
      * the small `npc.spider`), and the OSRS wiki "List of sound IDs" names otherwise
-     * (`ghost_attack`, `ghost_hit`, `ghost_death`).
+     * (`ghost_attack`, `ghost_hit`, `ghost_death`; the cave goblins' `cave_goblin_attack`, `_hit` and
+     * `_death`).
      */
     private val familySounds: Map<String, Sounds> =
         mapOf(
@@ -47,6 +48,7 @@ object AnimationFamilies {
             "skeleton_update_gorilla" to Sounds(attack = 3350, defend = 3352, death = 3351),
             "sourhog" to Sounds(attack = 2314, defend = 2312, death = 2315),
             "suqka" to Sounds(attack = 815, defend = 817, death = 816),
+            "dorgesh_goblin" to Sounds(attack = 465, defend = 467, death = 466),
         )
 
     /**

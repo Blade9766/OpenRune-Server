@@ -21,6 +21,7 @@ import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomac
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest.Companion.GRUBFOOT_ORANGE
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest.Companion.ORANGE_MAIL
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest.Companion.colourName
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
 import org.rsmod.content.quest.area.varrock.demonslayer.fadeFromBlack
 import org.rsmod.content.quest.area.varrock.demonslayer.fadeToBlack
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
@@ -41,6 +42,7 @@ class GoblinGenerals
 constructor(
     private val goblinDiplomacy: GoblinDiplomacyQuest,
     private val dragonSlayer: DragonSlayerQuest,
+    private val lostTribeLore: LostTribeLore,
     private val random: GameRandom,
     private val search: NpcSearch,
     private val collision: CollisionFlagMap,
@@ -74,6 +76,9 @@ constructor(
 
     private suspend fun Dialogue.generals() {
         if (seekingLozarsMap() && askAboutMap()) {
+            return
+        }
+        if (lostTribeLore.asksGenerals(player) && askAboutDorgeshuun()) {
             return
         }
         if (quest.isQuestCompleted(player)) {
@@ -173,6 +178,21 @@ constructor(
         bent(laugh, "Wormbrain steals too much. He got caught. Now he lives in Port Sarim town jail.")
         dragonSlayer.askedGenerals.set(player, true)
         dragonSlayer.syncVars(player)
+        return true
+    }
+
+    /** Returns true when the player asked about the Dorgeshuun and the conversation is over. */
+    private suspend fun Dialogue.askAboutDorgeshuun(): Boolean {
+        val asked =
+            choice2(
+                "Have you ever heard of the Dorgeshuun?", 1,
+                "So how is life for the goblins?", 2,
+            )
+        if (asked != 1) {
+            chatPlayer(quiz, "So how is life for the goblins?")
+            return false
+        }
+        with(lostTribeLore) { dorgeshuunLegend() }
         return true
     }
 

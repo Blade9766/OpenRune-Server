@@ -29,6 +29,7 @@ import org.rsmod.api.script.onOpContentU
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.table.mining.MiningRocksRow
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.mining.MiningEquipment.miningGloveExtras
 import org.rsmod.content.skills.mining.MiningEquipment.wearingChargedGlory
@@ -75,6 +76,10 @@ constructor(
 
     private fun ProtectedAccess.attempt(rock: BoundLocInfo, type: ObjectServerType) {
         val data = rockData(type) ?: return
+        LostTribeQuest.mineRefusal(player, rock.coords)?.let {
+            mes(it)
+            return
+        }
         if (player.miningLvl < data.level) {
             mes("You need a Mining level of ${data.level} to mine this rock.")
             return
@@ -104,6 +109,10 @@ constructor(
 
     private fun ProtectedAccess.mine(rock: BoundLocInfo, type: ObjectServerType) {
         val data = rockData(type) ?: return
+        LostTribeQuest.mineRefusal(player, rock.coords)?.let {
+            mes(it)
+            return
+        }
         val pickaxe = findPickaxe(player)
         if (pickaxe == null) {
             mesPickaxeMissing()

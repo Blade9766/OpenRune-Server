@@ -3,6 +3,7 @@ package org.rsmod.content.quest.area.varrock.shieldofarrav.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.BLACKARM_SHIELD
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.BOOK
@@ -13,6 +14,7 @@ import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Com
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.RECOMMENDED_COMBAT
 import org.rsmod.content.quest.area.varrock.shieldofarrav.phoenixGang
 import org.rsmod.content.quest.area.varrock.shieldofarrav.reldoMet
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -21,7 +23,10 @@ import org.rsmod.plugin.scripts.ScriptContext
  * points them at both gangs. `npc.reldo` is the spawned multinpc (its A Tail of Two Cats form is
  * `reldo_normal` until that quest), so the op is bound to the base name.
  */
-class Reldo @Inject constructor(private val arrav: ShieldOfArravQuest) : PluginScript() {
+class Reldo
+@Inject
+constructor(private val arrav: ShieldOfArravQuest, private val lostTribeLore: LostTribeLore) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(RELDO) { startDialogue(it.npc) { reldo() } }
@@ -41,18 +46,14 @@ class Reldo @Inject constructor(private val arrav: ShieldOfArravQuest) : PluginS
                 else -> null
             }
         val picked =
-            if (quest == null) {
-                choice2("Do you have anything to trade?", Topic.Trade, "I'd better get going.", Topic.Leave)
-            } else {
-                choice3(
-                    quest.option,
-                    quest,
-                    "Do you have anything to trade?",
-                    Topic.Trade,
-                    "I'd better get going.",
-                    Topic.Leave,
-                )
-            }
+            menu(
+                buildList {
+                    quest?.let { add(it.option to it) }
+                    lostTribeLore.reldoOption(player)?.let { add(it to Topic.Brooch) }
+                    add("Do you have anything to trade?" to Topic.Trade)
+                    add("I'd better get going." to Topic.Leave)
+                },
+            )
         when (picked) {
             Topic.Quest -> offerQuest()
             Topic.WhereIsBook -> {
@@ -65,6 +66,7 @@ class Reldo @Inject constructor(private val arrav: ShieldOfArravQuest) : PluginS
             }
             Topic.ReadBook -> readBook()
             Topic.HalfShield -> halfShield()
+            Topic.Brooch -> with(lostTribeLore) { reldoBrooch() }
             Topic.Trade -> trade()
             Topic.Leave -> {
                 chatPlayer(neutral, "I'd better get going.")
@@ -192,6 +194,7 @@ class Reldo @Inject constructor(private val arrav: ShieldOfArravQuest) : PluginS
         FoundBook("I found that book."),
         ReadBook("I've read that book about the Shield of Arrav."),
         HalfShield("I've found half of the Shield of Arrav!"),
+        Brooch(""),
         Trade(""),
         Leave(""),
     }

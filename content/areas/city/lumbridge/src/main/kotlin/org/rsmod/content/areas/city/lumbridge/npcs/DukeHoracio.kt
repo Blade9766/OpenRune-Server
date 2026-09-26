@@ -6,9 +6,11 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
 import org.rsmod.content.quest.area.lumbridge.rmTalisman
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.ownsAntiDragonShield
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -18,6 +20,7 @@ class DukeHoracio
 constructor(
     private val runeMysteries: RuneMysteriesQuest,
     private val dragonSlayer: DragonSlayerQuest,
+    private val lostTribe: LostTribeDuke,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -40,24 +43,15 @@ constructor(
                 else -> "Have you any quests for me?"
             }
 
-        val choice =
+        val options = buildList {
             if (showShieldOption) {
-                choice3(
-                    "I seek a shield that will protect me from dragonbreath.",
-                    1,
-                    questOption,
-                    2,
-                    "Where can I find money?",
-                    3,
-                )
-            } else {
-                choice2(
-                    questOption,
-                    2,
-                    "Where can I find money?",
-                    3,
-                )
+                add("I seek a shield that will protect me from dragonbreath." to 1)
             }
+            add(questOption to 2)
+            add("Where can I find money?" to 3)
+            lostTribe.option(player)?.let { add(it to 4) }
+        }
+        val choice = menu(options)
 
         when (choice) {
             1 -> dukeDragonShield(npc)
@@ -70,6 +64,7 @@ constructor(
                         "Maybe you could try your hand at that?",
                 )
             }
+            4 -> with(lostTribe) { talk() }
         }
     }
 

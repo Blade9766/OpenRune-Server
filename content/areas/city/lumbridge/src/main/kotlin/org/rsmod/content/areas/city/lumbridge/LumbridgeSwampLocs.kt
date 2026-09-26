@@ -6,9 +6,13 @@ import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.player.stat.thievingLvl
+import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onOpLoc1
+import org.rsmod.api.script.onOpLoc2
+import org.rsmod.api.script.onOpLoc5
 import org.rsmod.api.script.onPlayerSoftTimer
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
@@ -16,6 +20,7 @@ import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 private var Player.darkness by intVarBit("varbit.darkness_level")
+private var Player.hamTrapdoorOpen by boolVarBit("varbit.ham_thief")
 
 class LumbridgeSwampLocs : PluginScript() {
     override fun ScriptContext.startup() {
@@ -27,12 +32,59 @@ class LumbridgeSwampLocs : PluginScript() {
         onIfModalButton("component.cws_warning_13:warn2") { ifClose() }
         onOpLoc1("loc.swamp_cave_climbing_rope") { climbRope() }
         onPlayerSoftTimer(INSECT_TIMER) { player.insectWarning() }
-        onOpLoc1("loc.ham_multi_trapdoor") {
-            arriveDelay()
+        onOpLoc1(HAM_TRAPDOOR) { openOrClimbTrapdoor() }
+        onOpLoc2(HAM_TRAPDOOR) { closeTrapdoor() }
+        onOpLoc5(HAM_TRAPDOOR) { pickTrapdoorLock() }
+        onOpLoc1("loc.osf_ham_ladder") { climbHamLadder() }
+    }
+
+    private suspend fun ProtectedAccess.openOrClimbTrapdoor() {
+        arriveDelay()
+        if (!player.hamTrapdoorOpen) {
             mes("You try to open the trap door.", ChatType.Spam)
             mes("This trapdoor seems totally locked.", ChatType.Spam)
             soundSynth("synth.locked")
+            return
         }
+        anim("seq.human_pickupfloor")
+        delay(1)
+        mes("You climb down through the trapdoor.")
+        telejump(HAM_HIDEOUT_LANDING)
+    }
+
+    private suspend fun ProtectedAccess.closeTrapdoor() {
+        arriveDelay()
+        anim("seq.human_pickupfloor")
+        soundSynth("synth.trapdoor_close")
+        player.hamTrapdoorOpen = false
+    }
+
+    /** The H.A.M. hideout lock has no level requirement; it just takes a few tries. */
+    private suspend fun ProtectedAccess.pickTrapdoorLock() {
+        arriveDelay()
+        if (player.hamTrapdoorOpen) {
+            mes("The trapdoor is already unlocked.")
+            return
+        }
+        mes("You attempt to pick the lock on the trap door.", ChatType.Spam)
+        anim("seq.human_picklock_chest")
+        soundSynth("synth.pick_lock")
+        delay(PICK_LOCK_TICKS)
+        val chance = (PICK_LOCK_BASE + player.thievingLvl).coerceAtMost(PICK_LOCK_MAX)
+        if (random.of(maxExclusive = 100) >= chance) {
+            mes("You fail to pick the lock - your fingers get numb from fumbling with the lock.")
+            return
+        }
+        mes("You pick the lock on the trap door.")
+        soundSynth("synth.trapdoor_open")
+        player.hamTrapdoorOpen = true
+    }
+
+    private suspend fun ProtectedAccess.climbHamLadder() {
+        arriveDelay()
+        anim("seq.human_reachforladder")
+        delay(1)
+        telejump(HAM_TRAPDOOR_EXIT)
     }
 
     private fun ProtectedAccess.hasLight(): Boolean =
@@ -92,9 +144,15 @@ class LumbridgeSwampLocs : PluginScript() {
         const val INSECT_WARNING_TICKS = 16
         const val DARK = 3
         const val TINDERBOX = "obj.tinderbox"
+        const val HAM_TRAPDOOR = "loc.ham_multi_trapdoor"
+        const val PICK_LOCK_TICKS = 3
+        const val PICK_LOCK_BASE = 30
+        const val PICK_LOCK_MAX = 90
 
         val CAVE_LANDING = CoordGrid(3167, 9573, 0)
         val SWAMP_EXIT = CoordGrid(3168, 3172, 0)
+        val HAM_HIDEOUT_LANDING = CoordGrid(3149, 9652, 0)
+        val HAM_TRAPDOOR_EXIT = CoordGrid(3165, 3251, 0)
         val LIGHT_SOURCES =
             listOf(
                 "obj.lit_candle",

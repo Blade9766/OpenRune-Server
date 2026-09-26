@@ -3,17 +3,23 @@ package org.rsmod.content.quest.area.lumbridge.restlessghost.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest.Companion.GHOST_SKULL
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest.Companion.STAGE_GOT_AMULET
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest.Companion.STAGE_GOT_SKULL
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest.Companion.STAGE_SPOKE_TO_GHOST
 import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest.Companion.STAGE_STARTED
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /** Father Aereck, priest of the Lumbridge church. Starts The Restless Ghost. */
-class FatherAereck @Inject constructor(private val restlessGhost: RestlessGhostQuest) : PluginScript() {
+class FatherAereck
+@Inject
+constructor(private val restlessGhost: RestlessGhostQuest, private val lostTribe: LostTribeQuest) :
+    PluginScript() {
 
     private val quest
         get() = restlessGhost.quest
@@ -23,7 +29,12 @@ class FatherAereck @Inject constructor(private val restlessGhost: RestlessGhostQ
     }
 
     private suspend fun Dialogue.aereck() {
-        when (quest.getQuestStage(player)) {
+        val stage = quest.getQuestStage(player)
+        val midQuest = stage != 0 && !quest.isQuestCompleted(player)
+        if (midQuest && with(lostTribe) { offerCellarQuestion(Witness.Aereck) }) {
+            return
+        }
+        when (stage) {
             0 -> beforeQuest()
             STAGE_STARTED -> {
                 chatNpc(quiz, "Have you got rid of the ghost yet?")
@@ -59,16 +70,17 @@ class FatherAereck @Inject constructor(private val restlessGhost: RestlessGhostQ
 
     private suspend fun Dialogue.beforeQuest() {
         chatNpc(happy, "Welcome to the church of holy Saradomin.")
-        when (
-            choice3(
-                "Who's Saradomin?", 1,
-                "Nice place you've got here.", 2,
-                "I'm looking for a quest!", 3,
-            )
-        ) {
+        val options = buildList {
+            add("Who's Saradomin?" to 1)
+            add("Nice place you've got here." to 2)
+            add("I'm looking for a quest!" to 3)
+            lostTribe.cellarQuestion(player, Witness.Aereck)?.let { add(it to 4) }
+        }
+        when (menu(options)) {
             1 -> whoIsSaradomin()
             2 -> nicePlace()
             3 -> offerQuest()
+            4 -> with(lostTribe) { askAboutCellar(Witness.Aereck) }
         }
     }
 
@@ -116,19 +128,20 @@ class FatherAereck @Inject constructor(private val restlessGhost: RestlessGhostQ
 
     private suspend fun Dialogue.afterQuest() {
         chatNpc(happy, "Welcome to the church of holy Saradomin. Thank you again for laying that poor ghost to rest.")
-        when (
-            choice3(
-                "Who's Saradomin?", 1,
-                "Nice place you've got here.", 2,
-                "Any more ghosts need dealing with?", 3,
-            )
-        ) {
+        val options = buildList {
+            add("Who's Saradomin?" to 1)
+            add("Nice place you've got here." to 2)
+            add("Any more ghosts need dealing with?" to 3)
+            lostTribe.cellarQuestion(player, Witness.Aereck)?.let { add(it to 4) }
+        }
+        when (menu(options)) {
             1 -> whoIsSaradomin()
             2 -> nicePlace()
             3 -> {
                 chatPlayer(quiz, "Any more ghosts need dealing with?")
                 chatNpc(happy, "Thankfully not. The graveyard has been quite peaceful since you found that skull. I hope it stays that way!")
             }
+            4 -> with(lostTribe) { askAboutCellar(Witness.Aereck) }
         }
     }
 }

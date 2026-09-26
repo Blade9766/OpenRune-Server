@@ -295,6 +295,11 @@ fill_grain = 2576
 # Heroes' Quest: clearing the rock slide to the Ice Queen's lair
 mine_quick = 2659
 
+# The Lost Tribe (dbrow.synth_thelosttribe), plus the maze traps and the swamp gas under them.
+squeeze_through_rocks = 1310
+pitfall_fall = 2476
+gas_explosion = 2299
+
 # Legends' Quest: swinging the bullroarer, Gujuo's blessing and forging the gold bowl, hacking
 # through the Kharazi jungle and Nezikchened's parting fire bolt.
 bullroarer = 1640
@@ -559,7 +564,6 @@ lunar_dream_rival = 134
 lunar_me_fight = 135
 # Underground Pass: Iban reaching across his own temple for whoever walks into it.
 upass_temple = 136
-
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
 porcine_sourhog_blind = 65421
