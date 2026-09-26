@@ -9,7 +9,6 @@ import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.balanceAlong
 import org.rsmod.content.skills.agility.climbTo
@@ -25,6 +24,7 @@ import org.rsmod.content.skills.agility.wilderness.WildernessLaps
 import org.rsmod.content.skills.agility.zipTo
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.isType
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
@@ -87,7 +87,7 @@ constructor(
         val course = layout.course
         arriveDelay()
         val quest = course.quest
-        if (quest != null && !QuestRequirements.hasCompleted(player, quest.key)) {
+        if (quest != null && !quest.isMet(player)) {
             mes("You need to complete ${quest.name} to use this course.")
             return
         }
@@ -104,6 +104,12 @@ constructor(
             return
         }
         stepOnto(obstacle.start)
+
+        if (course.wornForm.isNotEmpty() && !player.wearsAny(course.wornForm)) {
+            failWithoutForm(obstacle)
+            player.courseProgress = 0
+            return
+        }
 
         obstacle.shout?.let { shout -> layout.nearestTrainer(coords)?.say(shout) }
         obstacle.messages.first?.let { mes(it) }
@@ -135,6 +141,20 @@ constructor(
             }
         }
     }
+
+    private suspend fun ProtectedAccess.failWithoutForm(obstacle: RooftopObstacle) {
+        val failure = obstacle.formFailure ?: obstacle.failure
+        val message = obstacle.formFailMessage
+        if (failure == null) {
+            message?.let { mes(it) }
+            return
+        }
+        val slip = failure.copy(seq = AgilityAnims.HUMAN_STUMBLE_BACK, message = message ?: failure.message)
+        fall(slip, AgilityAnims.HUMAN_STUMBLE_BACK)
+    }
+
+    private fun Player.wearsAny(objs: List<String>): Boolean =
+        worn.objs.any { obj -> obj != null && objs.any(obj::isType) }
 
     private fun CourseLayout.nearestTrainer(coords: CoordGrid): Npc? {
         val trainer = trainer ?: return null

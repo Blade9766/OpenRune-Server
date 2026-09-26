@@ -11,7 +11,7 @@ import org.rsmod.content.skills.agility.rooftop.ObstacleMove.Zipline
 import org.rsmod.map.CoordGrid
 
 /**
- * Layouts of the nine rooftop courses.
+ * Layouts of the rooftop courses and the lap-based ground courses.
  *
  * Every start tile, landing tile and balance path was read from the game map: the obstacle loc
  * positions and sizes come from the cache, and each tile a player is placed on was checked to be
@@ -31,6 +31,7 @@ object RooftopCourses {
             varrock(),
             barbarian(),
             canifis(),
+            apeAtoll(),
             wilderness(),
             falador(),
             seers(),
@@ -544,6 +545,103 @@ object RooftopCourses {
                     tile(3495, 3475, 3),
                     tile(3511, 3479, 2),
                 ),
+        )
+
+    /**
+     * The Ape Atoll course, run as a ninja or Kruk monkey: over the stepping stone, up the tropical
+     * tree to the monkey bars, which drop to the foot of the skull slope, then round to the vine
+     * rope over the river and the second tree, whose vines slide back down towards the start.
+     * Without the greegree every obstacle is failed at once. Falls land back at the course entrance
+     * by the signpost, except the rope, which drops the player by the first tree.
+     */
+    private fun apeAtoll(): CourseLayout =
+        CourseLayout(
+            course = RooftopCourse.ApeAtoll,
+            obstacles =
+                listOf(
+                    RooftopObstacle(
+                        locs = listOf("loc.100_ilm_stepping_stone"),
+                        name = "Stepping stone",
+                        xp = 40.0,
+                        start = tile(2755, 2742, 0),
+                        move = Leap(tile(2753, 2742, 0), seq = AgilityAnims.MONKEY_STEPPING_STONE, ticks = 2),
+                        formFailure = apeFailure(landing = tile(2755, 2742, 0)),
+                        formFailMessage =
+                            "The rock is covered in slime and you slip into the water... " +
+                                "...you're not monkey enough to try this!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.100_ilm_climbable_tree"),
+                        name = "Tropical tree",
+                        xp = 40.0,
+                        start = tile(2753, 2742, 0),
+                        move = Climb(tile(2753, 2742, 2), seq = AgilityAnims.MONKEY_CLIMB_TREE, ticks = 3),
+                        failure = apeFailure(seq = AgilityAnims.MONKEY_CLIMB_TREE_FAIL),
+                        formFailMessage =
+                            "You reach for the tree trunk and lose your footing... " +
+                                "...you're not monkey enough to try this!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.100_ilm_monkeybars_start"),
+                        name = "Monkeybars",
+                        xp = 40.0,
+                        start = tile(2752, 2741, 2),
+                        move =
+                            Balance(
+                                line(tile(2752, 2741, 2), tile(2748, 2741, 2)) + tile(2747, 2741, 0),
+                                BalanceStyle.NinjaMonkeybars,
+                            ),
+                        failure = apeFailure(),
+                        formFailMessage =
+                            "Your hands slip from the rung... ...you're not monkey enough to try this!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.100_ilm_cliff_climb_1"),
+                        name = "Skull slope",
+                        xp = 60.0,
+                        start = tile(2747, 2741, 0),
+                        move = Balance(line(tile(2747, 2741, 0), tile(2742, 2741, 0)), BalanceStyle.MonkeySlope),
+                        failure = apeFailure(seq = AgilityAnims.MONKEY_SLOPE_SLIDE_BACK, failAt = 1),
+                        formFailMessage =
+                            "The hand holds are too small to hold onto... " +
+                                "...you're not monkey enough to try this!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.100_ilm_rope_swing"),
+                        name = "Rope",
+                        xp = 100.0,
+                        start = tile(2751, 2731, 0),
+                        move = Leap(tile(2756, 2731, 0), seq = AgilityAnims.MONKEY_VINE_SWING, ticks = 2),
+                        failure = apeFailure(landing = tile(2752, 2742, 0)),
+                        formFailMessage = "You lose your grip on the vine! ...you're not monkey enough to try this!",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.100_ilm_agility_tree_base"),
+                        name = "Tropical tree",
+                        xp = 0.0,
+                        start = tile(2757, 2733, 0),
+                        move = Leap(tile(2770, 2747, 0), seq = AgilityAnims.MONKEY_DOWN_VINE, ticks = 4),
+                        formFailure = apeFailure(landing = tile(2757, 2733, 0)),
+                        lapBonusXp = 300.0,
+                        formFailMessage = "You jump up to seize the vine... ...and lose your grip!",
+                    ),
+                ),
+            markTiles = listOf(tile(2745, 2738, 0), tile(2748, 2733, 0), tile(2760, 2748, 0)),
+        )
+
+    /** A fall off an Ape Atoll obstacle; nothing on the course can be failed from level 75. */
+    private fun apeFailure(
+        landing: CoordGrid = tile(2756, 2742, 0),
+        seq: String = AgilityAnims.MONKEY_FALLING,
+        failAt: Int? = null,
+    ): ObstacleFailure =
+        ObstacleFailure(
+            noFailLevel = 75,
+            landing = landing,
+            minDamage = 1,
+            maxDamage = 3,
+            seq = seq,
+            failAt = failAt,
         )
 
     /**

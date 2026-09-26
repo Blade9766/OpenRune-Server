@@ -9,7 +9,8 @@ import org.rsmod.map.CoordGrid
 /**
  * The lap-based agility courses, with the Agility level needed to start them and the marks of
  * grace chance ([markNumerator] in [markDenominator]) rolled when a full lap is completed. A
- * [quest] must be completed before any obstacle of the course can be used.
+ * [quest] must be completed before any obstacle of the course can be used, and one of the
+ * [wornForm] objs must be worn to cross an obstacle rather than fall off it.
  */
 enum class RooftopCourse(
     val displayName: String,
@@ -17,6 +18,7 @@ enum class RooftopCourse(
     val markNumerator: Int,
     val markDenominator: Int,
     val quest: ShortcutQuest? = null,
+    val wornForm: List<String> = emptyList(),
 ) {
     Gnome("Gnome Stronghold", 1, 1, 3),
     Draynor("Draynor Village", 1, 1, 3),
@@ -30,6 +32,18 @@ enum class RooftopCourse(
         ShortcutQuest("miniquest_barcrawl", "Alfred Grimhand's Barcrawl"),
     ),
     Canifis("Canifis", 40, 2, 3),
+    ApeAtoll(
+        "Ape Atoll",
+        48,
+        1,
+        17,
+        ShortcutQuest("quest_monkeymadness1", "Monkey Madness I", minStage = 6),
+        listOf(
+            "obj.mm_monkey_greegree_for_small_ninja_monkey",
+            "obj.mm_monkey_greegree_for_medium_ninja_monkey",
+            "obj.mm2_kruk_greegree",
+        ),
+    ),
     Wilderness("Wilderness", 49, 0, 1),
     Falador("Falador", 50, 1, 5),
     Seers("Seers' Village", 60, 1, 3),
@@ -160,6 +174,9 @@ data class ObstacleFailure(
  *   Gnome Stronghold's two pipes) and counts as the same step of a lap.
  * @param messages Chat messages shown as the obstacle starts and, after it, as it completes.
  * @param shout What the course trainer nearest the player shouts when the obstacle is started.
+ * @param formFailure The fall taken at once, however high the player's level, when the course's
+ *   worn form is missing; the obstacle's [failure] unless given.
+ * @param formFailMessage Shown with that fall.
  */
 data class RooftopObstacle(
     val locs: List<String>,
@@ -176,6 +193,8 @@ data class RooftopObstacle(
     val alternative: Boolean = false,
     val messages: Pair<String?, String?> = null to null,
     val shout: String? = null,
+    val formFailure: ObstacleFailure? = null,
+    val formFailMessage: String? = null,
 ) {
     val isFinish: Boolean get() = lapBonusXp > 0.0
 

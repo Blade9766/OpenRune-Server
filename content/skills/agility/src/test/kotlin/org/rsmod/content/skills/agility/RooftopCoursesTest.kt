@@ -157,6 +157,19 @@ class RooftopCoursesTest {
     }
 
     @Test
+    fun `ape atoll is run as a monkey part way through monkey madness`() {
+        val course = RooftopCourse.ApeAtoll
+        assertEquals("quest_monkeymadness1", course.quest?.key)
+        assertEquals(6, course.quest?.minStage)
+        assertEquals(3, course.wornForm.size)
+        val layout = RooftopCourses.layout(course)
+        assertEquals(6, layout.obstacles.size)
+        assertEquals(580.0, layout.lapXp, 0.01)
+        assertTrue(layout.obstacles.all { it.formFailMessage != null })
+        assertTrue(layout.obstacles.all { (it.formFailure ?: it.failure) != null })
+    }
+
+    @Test
     fun `line spells out straight and diagonal paths`() {
         val straight = line(CoordGrid(10, 10, 3), CoordGrid(10, 7, 3))
         assertEquals(listOf(CoordGrid(10, 9, 3), CoordGrid(10, 8, 3), CoordGrid(10, 7, 3)), straight)
@@ -179,6 +192,6 @@ class RooftopCoursesTest {
     }
 
     private companion object {
-        val GROUND_COURSES = setOf("Gnome", "Barbarian", "Wilderness")
+        val GROUND_COURSES = setOf("Gnome", "Barbarian", "ApeAtoll", "Wilderness")
     }
 }

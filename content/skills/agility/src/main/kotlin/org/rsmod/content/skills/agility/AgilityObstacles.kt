@@ -58,6 +58,20 @@ object AgilityAnims {
     const val TUNNEL_WALK = "seq.agilty_shortcut_tunnel_walk"
     const val TUNNEL_EXIT = "seq.agilty_shortcut_exit_hole"
     const val STEPPING_STONE = "seq.human_steppingstonejump"
+
+    /** The ninja monkey set used on the Ape Atoll course while wearing a greegree. */
+    const val MONKEY_STEPPING_STONE = "seq.100_ilm_stepping_stone_jump"
+    const val MONKEY_CLIMB_TREE = "seq.100_ilm_climb_tree"
+    const val MONKEY_CLIMB_TREE_FAIL = "seq.100_ilm_climb_tree_fail"
+    const val MONKEYBARS_JUMP_UP = "seq.100_ilm_monkeybar_jump_up"
+    const val MONKEYBARS_MOVE = "seq.100_ilm_monkeybar_move"
+    const val MONKEYBARS_JUMP_DOWN = "seq.100_ilm_monkeybar_jump_down"
+    const val MONKEY_CLIMB_SLOPE = "seq.100_ilm_climb_slope"
+    const val MONKEY_SLOPE_SLIDE_BACK = "seq.100_ilm_slope_fail_slide_back"
+    const val MONKEY_VINE_SWING = "seq.100_ilm_vine_swing"
+    const val MONKEY_DOWN_VINE = "seq.100_ilm_monkey_down_vine"
+    const val MONKEY_FALLING = "seq.100_ilm_falling"
+    const val HUMAN_STUMBLE_BACK = "seq.human_stumble_back"
 }
 
 /**
@@ -86,6 +100,13 @@ enum class BalanceStyle(
         AgilityAnims.SIDESTEP_OFF,
     ),
     Climbing(AgilityAnims.CLIMB_READY, AgilityAnims.CLIMB),
+    NinjaMonkeybars(
+        AgilityAnims.MONKEYBARS_MOVE,
+        AgilityAnims.MONKEYBARS_MOVE,
+        AgilityAnims.MONKEYBARS_JUMP_UP,
+        AgilityAnims.MONKEYBARS_JUMP_DOWN,
+    ),
+    MonkeySlope(AgilityAnims.MONKEY_CLIMB_SLOPE, AgilityAnims.MONKEY_CLIMB_SLOPE),
 }
 
 /** Client cycles (20ms) in one server tick; `exactmove` delays are expressed in client cycles. */

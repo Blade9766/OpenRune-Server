@@ -5,7 +5,6 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
 import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.agility.BalanceStyle
 import org.rsmod.content.skills.agility.CLIENT_CYCLES_PER_TICK
 import org.rsmod.content.skills.agility.balanceAlong
@@ -52,7 +51,7 @@ class AgilityShortcutScript : PluginScript() {
             return
         }
         val quest = shortcut.quest
-        if (quest != null && !QuestRequirements.hasCompleted(player, quest.key)) {
+        if (quest != null && !quest.isMet(player)) {
             mes("You need to complete ${quest.name} to use this shortcut.")
             return
         }

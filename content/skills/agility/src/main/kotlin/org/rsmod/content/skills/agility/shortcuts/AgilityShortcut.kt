@@ -1,6 +1,9 @@
 package org.rsmod.content.skills.agility.shortcuts
 
+import org.rsmod.content.quest.manager.Quest
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.agility.AgilityAnims
+import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
 
 /** How a player crosses a shortcut. Paths are given from side A to side B and reversed as needed. */
@@ -54,8 +57,19 @@ sealed class ShortcutMove {
     }
 }
 
-/** A quest that unlocks a shortcut: its dbrow [key] and the [name] shown to the player. */
-data class ShortcutQuest(val key: String, val name: String)
+/**
+ * A quest that unlocks a shortcut: its dbrow [key] and the [name] shown to the player. With
+ * [minStage] the quest only has to have reached that stage.
+ */
+data class ShortcutQuest(val key: String, val name: String, val minStage: Int? = null) {
+    fun isMet(player: Player): Boolean {
+        if (QuestRequirements.hasCompleted(player, key)) {
+            return true
+        }
+        val stage = minStage ?: return false
+        return (Quest.get(key)?.getQuestStage(player) ?: 0) >= stage
+    }
+}
 
 /**
  * A two-way agility shortcut between [sideA] and [sideB]. The player is taken to whichever side is
