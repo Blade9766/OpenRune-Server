@@ -181,14 +181,6 @@ npc = "npc.icewarrior"
 coords = "0_46_61_8_9"
 
 [[spawn]]
-npc = "npc.skeleton_armed"
-coords = "0_46_61_48_38"
-
-[[spawn]]
-npc = "npc.skeleton_armed3"
-coords = "0_46_61_45_40"
-
-[[spawn]]
 npc = "npc.skeleton_armed5"
 coords = "0_46_61_38_43"
 
@@ -3378,3 +3370,66 @@ coords = "0_50_56_49_27"
 
 ## Wilderness areas with lava in them End
 
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_1"
+coords = "0_46_61_54_48"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_2"
+coords = "0_46_61_49_51"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_3"
+coords = "0_46_61_52_54"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_4"
+coords = "0_46_61_51_55"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_5"
+coords = "0_46_61_51_57"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_1"
+coords = "0_46_61_60_56"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_2"
+coords = "0_46_61_62_55"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_3"
+coords = "0_46_61_59_47"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_4"
+coords = "0_46_61_62_47"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_5"
+coords = "0_46_61_50_42"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_1"
+coords = "0_46_61_50_40"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_2"
+coords = "0_46_61_46_36"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_3"
+coords = "0_46_61_53_35"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_4"
+coords = "0_46_61_49_28"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_5"
+coords = "0_46_61_51_29"
+
+[[spawn]]
+npc = "npc.wildy_agility_skeleton_1"
+coords = "0_46_61_52_28"

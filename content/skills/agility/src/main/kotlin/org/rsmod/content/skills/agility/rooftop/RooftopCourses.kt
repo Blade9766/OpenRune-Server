@@ -31,6 +31,7 @@ object RooftopCourses {
             varrock(),
             barbarian(),
             canifis(),
+            wilderness(),
             falador(),
             seers(),
             pollnivneach(),
@@ -544,6 +545,101 @@ object RooftopCourses {
                     tile(3511, 3479, 2),
                 ),
         )
+
+    /**
+     * The Wilderness course. Its failure odds and damage are the game's: the ropeswing and log drop
+     * the player into the spiked dungeon below (the log only right at its start), and the stepping
+     * stones throw them back to the start from the third stone. All of a lap's experience beyond
+     * the obstacles is paid by the rocks, and only for a full lap. It rewards no marks of grace.
+     */
+    private fun wilderness(): CourseLayout =
+        CourseLayout(
+            course = RooftopCourse.Wilderness,
+            obstacles =
+                listOf(
+                    RooftopObstacle(
+                        locs = listOf("loc.obstical_pipe2"),
+                        name = "Obstacle pipe",
+                        xp = 12.5,
+                        start = tile(3004, 3937, 0),
+                        move = ObstacleMove.Pipe(tile(3004, 3950, 0)),
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.obstical_ropeswing2"),
+                        name = "Ropeswing",
+                        xp = 20.0,
+                        start = tile(3005, 3953, 0),
+                        move = Leap(tile(3005, 3958, 0), seq = AgilityAnims.ROPE_SWING),
+                        failure =
+                            ObstacleFailure(
+                                noFailLevel = WILDERNESS_NO_FAIL,
+                                landing = tile(3005, 10357, 0),
+                                minDamage = 1,
+                                maxDamage = 1,
+                                chance = 200..250,
+                                seq = "seq.human_ropeswing_long_miss",
+                                message = "You slip and fall into the pit below.",
+                                currentHpPercent = 15,
+                            ),
+                        locSeq = "seq.ropeswing_long",
+                        messages = null to "You skillfully swing across.",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.steppingstone1"),
+                        name = "Stepping stone",
+                        xp = 20.0,
+                        start = tile(3002, 3960, 0),
+                        move = ObstacleMove.Hop(line(tile(3002, 3960, 0), tile(2996, 3960, 0))),
+                        failure =
+                            ObstacleFailure(
+                                noFailLevel = WILDERNESS_NO_FAIL,
+                                landing = tile(3002, 3960, 0),
+                                minDamage = 1,
+                                maxDamage = 1,
+                                chance = 180..250,
+                                message = "...You lose your footing and fall into the lava.",
+                                failAt = 2,
+                                currentHpPercent = 20,
+                            ),
+                        messages =
+                            "You carefully start crossing the stepping stones." to
+                                "...You safely cross to the other side.",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.wilderness_log_balance1"),
+                        name = "Log balance",
+                        xp = 20.0,
+                        start = tile(3002, 3945, 0),
+                        move = Balance(line(tile(3002, 3945, 0), tile(2994, 3945, 0))),
+                        failure =
+                            ObstacleFailure(
+                                noFailLevel = WILDERNESS_NO_FAIL,
+                                landing = tile(2999, 10345, 0),
+                                minDamage = 1,
+                                maxDamage = 1,
+                                chance = 200..250,
+                                message = "You slip and fall onto the spikes below.",
+                                failAt = 1,
+                                currentHpPercent = 15,
+                            ),
+                        messages =
+                            "You walk carefully across the slippery log..." to
+                                "You skillfully edge across the gap.",
+                    ),
+                    RooftopObstacle(
+                        locs = listOf("loc.wildclimbingrock"),
+                        name = "Rocks",
+                        xp = 0.0,
+                        start = tile(2994, 3937, 0),
+                        move = Climb(tile(2994, 3933, 0), seq = AgilityAnims.CLIMB, ticks = 3),
+                        lapBonusXp = 498.9,
+                    ),
+                ),
+            markTiles = emptyList(),
+        )
+
+    /** Above the level cap: every Wilderness obstacle that can be failed stays failable at 99. */
+    private const val WILDERNESS_NO_FAIL = 100
 
     private fun falador(): CourseLayout =
         CourseLayout(

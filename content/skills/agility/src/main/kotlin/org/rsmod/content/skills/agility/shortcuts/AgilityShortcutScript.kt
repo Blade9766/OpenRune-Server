@@ -6,12 +6,12 @@ import org.rsmod.api.player.stat.agilityLvl
 import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.content.quest.manager.QuestRequirements
-import org.rsmod.content.skills.agility.AgilityAnims
 import org.rsmod.content.skills.agility.BalanceStyle
 import org.rsmod.content.skills.agility.CLIENT_CYCLES_PER_TICK
 import org.rsmod.content.skills.agility.balanceAlong
 import org.rsmod.content.skills.agility.climbTo
 import org.rsmod.content.skills.agility.emFaceTowards
+import org.rsmod.content.skills.agility.hopTo
 import org.rsmod.content.skills.agility.leapTo
 import org.rsmod.content.skills.agility.line
 import org.rsmod.content.skills.agility.pipeThrough
@@ -125,27 +125,8 @@ class AgilityShortcutScript : PluginScript() {
         }
     }
 
-    private suspend fun ProtectedAccess.hopTo(stone: CoordGrid) {
-        val start = coords
-        anim(AgilityAnims.STEPPING_STONE, delay = HOP_ANIM_DELAY)
-        exactMove(
-            start = start,
-            end = stone,
-            delay1 = HOP_TAKEOFF_CYCLE,
-            delay2 = HOP_LANDING_CYCLE,
-            dir = emFaceTowards(start, stone),
-            teleportType = TeleportType.Exempt,
-        )
-        delay(HOP_TICKS)
-    }
-
     private companion object {
         const val CLIMB_OVER_LANDING_CYCLE = 100
         const val CLIMB_OVER_TICKS = 3
-
-        const val HOP_ANIM_DELAY = 20
-        const val HOP_TAKEOFF_CYCLE = 48
-        const val HOP_LANDING_CYCLE = 60
-        const val HOP_TICKS = 3
     }
 }

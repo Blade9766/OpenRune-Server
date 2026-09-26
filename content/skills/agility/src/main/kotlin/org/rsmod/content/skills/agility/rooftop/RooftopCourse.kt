@@ -30,6 +30,7 @@ enum class RooftopCourse(
         ShortcutQuest("miniquest_barcrawl", "Alfred Grimhand's Barcrawl"),
     ),
     Canifis("Canifis", 40, 2, 3),
+    Wilderness("Wilderness", 49, 0, 1),
     Falador("Falador", 50, 1, 5),
     Seers("Seers' Village", 60, 1, 3),
     Pollnivneach("Pollnivneach", 70, 1, 3),
@@ -97,6 +98,15 @@ sealed class ObstacleMove {
         override val destination: CoordGrid get() = dest
     }
 
+    /** Jump from stone to stone along [stones]. */
+    data class Hop(val stones: List<CoordGrid>) : ObstacleMove() {
+        init {
+            require(stones.isNotEmpty()) { "Stepping stones must not be empty." }
+        }
+
+        override val destination: CoordGrid get() = stones.last()
+    }
+
     /** Squeeze through a long pipe to [dest]. */
     data class Pipe(val dest: CoordGrid) : ObstacleMove() {
         override val destination: CoordGrid get() = dest
@@ -110,6 +120,9 @@ sealed class ObstacleMove {
  * When [chance] is given the pass roll is the game's skill-success roll between its low and high
  * values out of 256; otherwise the chance rises linearly to certainty at [noFailLevel]. [seq] and
  * [message] replace the obstacle's own animation and the default fall message.
+ *
+ * A balance or hop fails at step [failAt] when given (halfway otherwise). With [currentHpPercent]
+ * the fall deals that share of the player's current hitpoints plus one instead of a random amount.
  */
 data class ObstacleFailure(
     val noFailLevel: Int,
@@ -119,6 +132,8 @@ data class ObstacleFailure(
     val chance: IntRange? = null,
     val seq: String? = null,
     val message: String = DEFAULT_FALL_MESSAGE,
+    val failAt: Int? = null,
+    val currentHpPercent: Int? = null,
 ) {
     companion object {
         const val DEFAULT_FALL_MESSAGE = "You lose your footing and fall to the ground below."

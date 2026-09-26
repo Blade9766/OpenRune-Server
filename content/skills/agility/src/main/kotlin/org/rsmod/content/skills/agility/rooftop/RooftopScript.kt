@@ -4,6 +4,7 @@ import jakarta.inject.Inject
 import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
+import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onApLoc1
@@ -14,11 +15,13 @@ import org.rsmod.content.skills.agility.balanceAlong
 import org.rsmod.content.skills.agility.climbTo
 import org.rsmod.content.skills.agility.dropTo
 import org.rsmod.content.skills.agility.fallTo
+import org.rsmod.content.skills.agility.hopTo
 import org.rsmod.content.skills.agility.leapTo
 import org.rsmod.content.skills.agility.pipeThrough
 import org.rsmod.content.skills.agility.seqGlideTicks
 import org.rsmod.content.skills.agility.stepOnto
 import org.rsmod.content.skills.agility.successChance
+import org.rsmod.content.skills.agility.wilderness.WildernessLaps
 import org.rsmod.content.skills.agility.zipTo
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
@@ -42,6 +45,7 @@ constructor(
     private val marks: MarksOfGrace,
     private val worldRepo: WorldRepository,
     private val npcRepo: NpcRepository,
+    private val wilderness: WildernessLaps,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         val byLoc = LinkedHashMap<String, MutableList<CourseStep>>()
@@ -96,6 +100,9 @@ constructor(
             mes("You can't $verb the ${obstacle.name.lowercase()} from this side.")
             return
         }
+        if (course == RooftopCourse.Wilderness && layout.steps[index] == 0 && !wilderness.beforeLap(this)) {
+            return
+        }
         stepOnto(obstacle.start)
 
         obstacle.shout?.let { shout -> layout.nearestTrainer(coords)?.say(shout) }
@@ -123,6 +130,9 @@ constructor(
                 statAdvance(STRENGTH, obstacle.lapBonusStrengthXp)
             }
             marks.roll(player, random, layout)
+            if (course == RooftopCourse.Wilderness) {
+                wilderness.lapCompleted(this)
+            }
         }
     }
 
@@ -176,8 +186,18 @@ constructor(
                 zipTo(move.dest, move.ticks)
             }
             is ObstacleMove.Pipe -> pipeThrough(move.dest)
+            is ObstacleMove.Hop -> {
+                val stopAt = if (failure != null) failure.failAt ?: (move.stones.size / 2) else -1
+                for ((index, stone) in move.stones.withIndex()) {
+                    if (index == stopAt && failure != null) {
+                        fall(failure, AgilityAnims.JUMP_DOWN)
+                        return false
+                    }
+                    hopTo(stone)
+                }
+            }
             is ObstacleMove.Balance -> {
-                val stopAt = if (failure != null) move.path.size / 2 else -1
+                val stopAt = if (failure != null) failure.failAt ?: (move.path.size / 2) else -1
                 val crossed = balanceAlong(move.path, move.style, stopAt)
                 if (!crossed && failure != null) {
                     fall(failure, AgilityAnims.BALANCE_STUMBLE)
@@ -189,11 +209,13 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.fall(failure: ObstacleFailure, seq: String) {
+        val share = failure.currentHpPercent
+        val fixed = share?.let { player.hitpoints * it / 100 + 1 }
         fallTo(
             failure.landing,
             failure.seq ?: seq,
-            failure.minDamage,
-            failure.maxDamage,
+            fixed ?: failure.minDamage,
+            fixed ?: failure.maxDamage,
             failure.message,
         )
     }

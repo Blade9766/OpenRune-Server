@@ -192,6 +192,26 @@ internal suspend fun ProtectedAccess.pipeThrough(dest: CoordGrid) {
     }
 }
 
+/** Jumps from the current tile onto the stepping stone at [stone]. */
+internal suspend fun ProtectedAccess.hopTo(stone: CoordGrid) {
+    val start = coords
+    anim(AgilityAnims.STEPPING_STONE, delay = HOP_ANIM_DELAY)
+    exactMove(
+        start = start,
+        end = stone,
+        delay1 = HOP_TAKEOFF_CYCLE,
+        delay2 = HOP_LANDING_CYCLE,
+        dir = emFaceTowards(start, stone),
+        teleportType = TeleportType.Exempt,
+    )
+    delay(HOP_TICKS)
+}
+
+private const val HOP_ANIM_DELAY = 20
+private const val HOP_TAKEOFF_CYCLE = 48
+private const val HOP_LANDING_CYCLE = 60
+private const val HOP_TICKS = 3
+
 private const val PIPE_STRETCH = 3
 private const val PIPE_EXIT_CYCLE = 126
 private const val PIPE_TICKS = 5

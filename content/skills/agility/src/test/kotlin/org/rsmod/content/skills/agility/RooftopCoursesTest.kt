@@ -15,13 +15,15 @@ class RooftopCoursesTest {
     fun `every course has a layout and every layout ends with its only finish step`() {
         for (course in RooftopCourse.entries) {
             val layout = RooftopCourses.layout(course)
-            assertTrue(layout.obstacles.size >= 6, "$course has too few obstacles")
+            assertTrue(layout.obstacles.size >= 5, "$course has too few obstacles")
             val lastStep = layout.steps.last()
             for ((index, obstacle) in layout.obstacles.withIndex()) {
                 val onLastStep = layout.steps[index] == lastStep
                 assertEquals(onLastStep, obstacle.isFinish, "$course ${obstacle.name} finish flag")
             }
-            assertTrue(layout.markTiles.isNotEmpty(), "$course needs mark of grace tiles")
+            if (course.markNumerator > 0) {
+                assertTrue(layout.markTiles.isNotEmpty(), "$course needs mark of grace tiles")
+            }
         }
     }
 
@@ -59,6 +61,7 @@ class RooftopCoursesTest {
                 RooftopCourse.Varrock to 269.7,
                 RooftopCourse.Barbarian to 153.3,
                 RooftopCourse.Gnome to 110.5,
+                RooftopCourse.Wilderness to 571.4,
                 RooftopCourse.Canifis to 240.0,
                 RooftopCourse.Falador to 586.0,
                 RooftopCourse.Seers to 570.0,
@@ -136,7 +139,7 @@ class RooftopCoursesTest {
         }
         val rooftopLocs =
             RooftopCourses.layouts
-                .filter { it.course != RooftopCourse.Barbarian && it.course != RooftopCourse.Gnome }
+                .filter { it.course.name !in GROUND_COURSES }
                 .flatMap { it.obstacles }
                 .flatMap { it.locs }
         assertTrue(rooftopLocs.all { it.startsWith("loc.rooftops_") })
@@ -173,5 +176,9 @@ class RooftopCoursesTest {
         assertEquals(100, successChance(level = 30, requiredLevel = 20, noFailLevel = 30))
         assertEquals(100, successChance(level = 99, requiredLevel = 20, noFailLevel = 30))
         assertEquals(60, successChance(level = 1, requiredLevel = 20, noFailLevel = 30))
+    }
+
+    private companion object {
+        val GROUND_COURSES = setOf("Gnome", "Barbarian", "Wilderness")
     }
 }
