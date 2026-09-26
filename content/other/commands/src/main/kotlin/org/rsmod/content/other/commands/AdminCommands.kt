@@ -8,6 +8,7 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import dev.openrune.types.NpcMode
+import dev.openrune.types.StatType
 import jakarta.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
@@ -99,6 +100,9 @@ constructor(
     override fun ScriptContext.startup() {
         onCommand("master", "Max out all stats", ::master)
         onCommand("reset", "Reset all stats", ::reset)
+        onCommand("setlevel", "Set one stat's level (ex: ::setlevel agility 35)", ::setLevel) {
+            invalidArgs = "Use as ::setlevel stat level (ex: ::setlevel agility 35)"
+        }
         onCommand("mypos", "Get current coordinates", ::mypos)
         onCommand("tele", "Teleport to coordgrid", ::tele) {
             invalidArgs = "Usage: ::tele mx mz [level](e.g. ::tele 3200 3200 0)"
@@ -355,6 +359,31 @@ constructor(
     private fun master(cheat: Cheat) = with(cheat) { player.setStatLevels(level = 99) }
 
     private fun reset(cheat: Cheat) = with(cheat) { player.setStatLevels(level = 1) }
+
+    private fun setLevel(cheat: Cheat) =
+        with(cheat) {
+            val stat = resolveStat(args[0])
+            if (stat == null) {
+                player.mes("There is no stat called '${args[0]}'.")
+                return
+            }
+            val level = args[1].toIntOrNull()
+            if (level == null || level !in stat.minLevel..stat.maxLevel) {
+                player.mes("The level must be between ${stat.minLevel} and ${stat.maxLevel}.")
+                return
+            }
+            val internal = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
+            player.setStatLevel(internal, level)
+            player.mes("Set ${stat.displayName.replaceFirstChar { it.uppercase() }} to level $level.")
+        }
+
+    private fun resolveStat(input: String): StatType? {
+        val query = input.lowercase().removePrefix("stat.")
+        val wanted = STAT_ALIASES[query] ?: query
+        val stats = ServerCacheManager.getStats().values
+        val named = stats.associateBy { RSCM.getReverseMapping(RSCMType.STAT, it.id).removePrefix("stat.") }
+        return named[wanted] ?: named.entries.singleOrNull { it.key.startsWith(wanted) }?.value
+    }
 
     private fun mypos(cheat: Cheat) =
         with(cheat) {
@@ -707,22 +736,25 @@ constructor(
             player.mes("Varbit '${args[0]}' (id=$typeId) = ${player.vars[type]}")
         }
 
-    @OptIn(InternalApi::class)
     private fun Player.setStatLevels(level: Int) {
-        val xp = PlayerSkillXPTable.getXPFromLevel(level)
         for (stat in ServerCacheManager.getStats().values) {
-            val statInternal = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
-
-            val baseLevel = statMap.getBaseLevel(statInternal)
-            val targetLevel = max(stat.minLevel, level)
-            if (baseLevel > targetLevel) {
-                statRevert(statInternal, targetLevel, xp)
-                continue
-            }
-            val xpDelta = xp - statMap.getXP(statInternal)
-            statMap.setCurrentLevel(statInternal, targetLevel.toByte())
-            statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0)
+            setStatLevel(RSCM.getReverseMapping(RSCMType.STAT, stat.id), level)
         }
+    }
+
+    @OptIn(InternalApi::class)
+    private fun Player.setStatLevel(statInternal: String, level: Int) {
+        val stat = ServerCacheManager.getStats(statInternal.asRSCM(RSCMType.STAT)) ?: return
+        val targetLevel = max(stat.minLevel, level)
+        val xp = PlayerSkillXPTable.getXPFromLevel(targetLevel)
+        val baseLevel = statMap.getBaseLevel(statInternal)
+        if (baseLevel > targetLevel) {
+            statRevert(statInternal, targetLevel, xp)
+            return
+        }
+        val xpDelta = xp - statMap.getXP(statInternal)
+        statMap.setCurrentLevel(statInternal, targetLevel.toByte())
+        statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0)
     }
 
     // There is, by design, no helper function to decrease stat xp, as xp reduction is not a
@@ -1088,3 +1120,28 @@ constructor(
         return if (bestMatchScore >= 0.5) bestMatchName else null
     }
 }
+
+private val STAT_ALIASES =
+    mapOf(
+        "atk" to "attack",
+        "att" to "attack",
+        "def" to "defence",
+        "defense" to "defence",
+        "str" to "strength",
+        "hp" to "hitpoints",
+        "range" to "ranged",
+        "pray" to "prayer",
+        "mage" to "magic",
+        "wc" to "woodcutting",
+        "fm" to "firemaking",
+        "fletch" to "fletching",
+        "herb" to "herblore",
+        "agil" to "agility",
+        "thief" to "thieving",
+        "farm" to "farming",
+        "rc" to "runecrafting",
+        "runecraft" to "runecrafting",
+        "hunt" to "hunter",
+        "con" to "construction",
+        "cons" to "construction",
+    )
