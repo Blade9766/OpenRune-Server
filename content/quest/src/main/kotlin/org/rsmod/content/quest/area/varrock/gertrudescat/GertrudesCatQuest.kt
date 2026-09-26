@@ -3,7 +3,7 @@ package org.rsmod.content.quest.area.varrock.gertrudescat
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.content.other.pets.PetFollowers
+import org.rsmod.content.other.pets.cats.CatCare
 import org.rsmod.content.other.pets.cats.CatColour
 import org.rsmod.content.other.pets.cats.CatForm
 import org.rsmod.content.other.pets.cats.CatStage
@@ -28,7 +28,7 @@ import org.rsmod.plugin.scripts.ScriptContext
  * - [STAGE_COMPLETE]: Gertrude handed over a kitten of her own.
  */
 @Singleton
-class GertrudesCatQuest @Inject constructor(private val followers: PetFollowers) : QuestScript(
+class GertrudesCatQuest @Inject constructor(private val care: CatCare) : QuestScript(
     "quest_gertrudescat",
     "varp.fluffs",
     rewards {
@@ -137,7 +137,7 @@ class GertrudesCatQuest @Inject constructor(private val followers: PetFollowers)
 
     /** Whether the player already has any cat: following them, in their pack or in their bank. */
     fun ProtectedAccess.hasAnyCat(): Boolean {
-        if (followers.hasFollower(player)) {
+        if (care.following(player) != null) {
             return true
         }
         return player.storesAnyObj(Cats.all.map { it.obj })
