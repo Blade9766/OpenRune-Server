@@ -4,12 +4,14 @@ import com.github.michaelbull.logging.InlineLogger
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
+import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlin.random.Random
 import org.rsmod.api.combat.weapon.types.AttackTypes
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
+import org.rsmod.api.player.interact.NpcInteractions
 import org.rsmod.api.player.interact.PlayerInteractions
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
@@ -17,16 +19,23 @@ import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.basePrayerLvl
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.prayerLvl
+import org.rsmod.api.player.ui.IfModalButton
+import org.rsmod.api.player.ui.ifClose
+import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.registry.loc.LocRegistry
 import org.rsmod.content.interfaces.prayer.tab.Prayer
 import org.rsmod.content.interfaces.prayer.tab.PrayerRepository
+import org.rsmod.content.other.castlewars.CastleWars
 import org.rsmod.content.other.castlewars.CastleWarsGame
+import org.rsmod.content.other.castlewars.CatapultState
 import org.rsmod.content.other.castlewars.FlagState
 import org.rsmod.content.other.castlewars.Team
 import org.rsmod.events.EventBus
+import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.HeldOp
 import org.rsmod.game.interact.InteractionLocOp
+import org.rsmod.game.interact.InteractionNpcOp
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.game.interact.InteractionPlayerOp
 import org.rsmod.game.loc.BoundLocInfo
@@ -41,6 +50,12 @@ internal sealed interface BotOrder {
     data class UseLoc(val loc: String, val coords: CoordGrid, val op: Int) : BotOrder
 
     data class Attack(val target: Player) : BotOrder
+
+    data class AttackNpc(val target: Npc) : BotOrder
+
+    data object SetUpBarricade : BotOrder
+
+    data class Fire(val target: CoordGrid) : BotOrder
 }
 
 /**
@@ -58,6 +73,7 @@ constructor(
     private val eventBus: EventBus,
     private val locRegistry: LocRegistry,
     private val locInteractions: LocInteractions,
+    private val npcInteractions: NpcInteractions,
     private val playerInteractions: PlayerInteractions,
     private val heldInteractions: HeldInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
@@ -69,6 +85,9 @@ constructor(
     fun think(bot: Bot, cycle: Int) {
         val player = bot.player
         val team = game.playingTeamOf(player) ?: return
+        if (player.ui.modals.isNotEmpty() && !player.isDelayed) {
+            player.ifClose(eventBus)
+        }
         if (player.isDelayed || player.isAccessProtected || player.hitpoints <= 0) {
             return
         }
@@ -76,6 +95,7 @@ constructor(
             return
         }
         pray(bot, team, cycle)
+        trackProgress(bot)
         val order = decide(bot, team) ?: return
         perform(bot, order, cycle)
     }
@@ -186,6 +206,7 @@ constructor(
             val (table, coords) = BotMap.bandageTable(team)
             return BotOrder.UseLoc(table, coords, TAKE_FIVE_OP)
         }
+        blockingBarricade(bot, team)?.let { return BotOrder.AttackNpc(it) }
         if (bot.role == BotRole.Attacker) {
             return raid(bot, team)
         }
@@ -196,9 +217,87 @@ constructor(
         nearestEnemy(bot, enemy, engageRadius(bot.role))?.let { return BotOrder.Attack(it) }
         return when (bot.role) {
             BotRole.Attacker -> raid(bot, team)
-            BotRole.Defender -> reach(player, team, BotMap.guardPost(team), null)
-            BotRole.Hunter -> hunt(bot, team)
+            BotRole.Defender -> barricade(bot, team) ?: reach(player, team, BotMap.guardPost(team), null)
+            BotRole.Hunter -> siege(bot, team) ?: hunt(bot, team)
         }
+    }
+
+    private fun trackProgress(bot: Bot) {
+        val coords = bot.player.coords
+        bot.stillFor = if (coords == bot.lastCoords) bot.stillFor + 1 else 0
+        bot.lastCoords = coords
+    }
+
+    /** An enemy barricade next to a bot that has been trying and failing to move past it. */
+    private fun blockingBarricade(bot: Bot, team: Team): Npc? {
+        val moving = bot.order is BotOrder.Walk || bot.order is BotOrder.UseLoc
+        if (!moving || bot.stillFor < STUCK_TICKS) {
+            return null
+        }
+        val coords = bot.player.coords
+        return game.state(team.opponent).barricades.firstOrNull {
+            it.coords.level == coords.level && it.coords.chebyshevDistance(coords) <= BLOCKED_RADIUS
+        }
+    }
+
+    /**
+     * Keeps the team's catapult firing: fetch rocks from the supply room, climb onto the wall,
+     * work the catapult and lob a rock at the thickest knot of enemies in the field that has no
+     * team-mate close enough to be caught in the blast. Null when the catapult is out of action.
+     */
+    private fun siege(bot: Bot, team: Team): BotOrder? {
+        val player = bot.player
+        if (game.catapultState(team) != CatapultState.Operational) {
+            return null
+        }
+        if (!player.inv.contains(ROCK)) {
+            val (table, coords) = BotMap.rockTable(team)
+            return reach(player, team, coords, BotOrder.UseLoc(table, coords, TAKE_FIVE_OP))
+        }
+        val post = BotMap.catapultPost(team)
+        if (BotMap.placeOf(player.coords) != Place.Wall(team)) {
+            return reach(player, team, post, null)
+        }
+        val target = catapultTarget(team) ?: return reach(player, team, post, null)
+        val centre = team.catapultCoords.translate(1, 1)
+        if (player.coords.chebyshevDistance(centre) > CATAPULT_REACH) {
+            return BotOrder.UseLoc(team.catapultLoc, team.catapultCoords, 1)
+        }
+        return BotOrder.Fire(target)
+    }
+
+    private fun catapultTarget(team: Team): CoordGrid? {
+        val allies = game.state(team).playing
+        val enemies =
+            game.state(team.opponent).playing.filter {
+                it.hitpoints > 0 && BotMap.placeOf(it.coords) == Place.Field &&
+                    it.coords.chebyshevDistance(team.catapultCoords) >= CATAPULT_MIN_RANGE
+            }
+        return enemies
+            .filter { enemy -> allies.none { it.coords.chebyshevDistance(enemy.coords) <= BLAST_SAFETY } }
+            .maxByOrNull { enemy -> enemies.count { it.coords.chebyshevDistance(enemy.coords) <= BLAST_RADIUS } }
+            ?.coords
+    }
+
+    /**
+     * Sets barricades up on the spots flanking the team's gate: fetch them from the supply room,
+     * stand on a free spot and put one down. Null once the spots are filled or the team is at its
+     * barricade limit.
+     */
+    private fun barricade(bot: Bot, team: Team): BotOrder? {
+        val player = bot.player
+        if (!game.canPlaceBarricade(team)) {
+            return null
+        }
+        val spot = BotMap.barricadeSpots(team).firstOrNull { game.barricadeAt(it) == null } ?: return null
+        if (!player.inv.contains(BARRICADE)) {
+            val (table, coords) = BotMap.barricadeTable(team)
+            return reach(player, team, coords, BotOrder.UseLoc(table, coords, TAKE_FIVE_OP))
+        }
+        if (player.coords == spot) {
+            return BotOrder.SetUpBarricade
+        }
+        return reach(player, team, spot, BotOrder.Walk(spot))
     }
 
     /**
@@ -302,6 +401,25 @@ constructor(
                 }
                 walk(player, order.coords)
             }
+            is BotOrder.AttackNpc -> {
+                if ((player.interaction as? InteractionNpcOp)?.target === order.target) {
+                    return
+                }
+                attackNpc(player, order.target)
+            }
+            BotOrder.SetUpBarricade -> {
+                val slot = player.inv.indices.firstOrNull { player.inv[it]?.id == BARRICADE_ID } ?: return
+                if (!protectedAccess.launch(player) { heldInteractions.interact(this, player.inv, slot, HeldOp.Op1) }) {
+                    return
+                }
+            }
+            is BotOrder.Fire -> {
+                if (cycle - bot.firedAt < FIRE_DELAY) {
+                    return
+                }
+                fire(player, order.target)
+                bot.firedAt = cycle
+            }
             is BotOrder.UseLoc -> {
                 if (repeated && cycle - bot.orderedAt < REISSUE_DELAY && player.interaction != null) {
                     return
@@ -336,6 +454,32 @@ constructor(
                 hasApTrigger = playerInteractions.hasApTrigger(target, op),
             )
         player.routeRequest = RouteRequestPathingEntity(target.avatar, clientRequest = true)
+    }
+
+    private fun attackNpc(player: Player, target: Npc) {
+        val op = InteractionOp.Op2
+        player.clearPendingAction(eventBus)
+        player.faceNpc(target)
+        player.interaction =
+            InteractionNpcOp(
+                target = target,
+                op = op,
+                hasOpTrigger = npcInteractions.hasOpTrigger(player, target, op),
+                hasApTrigger = npcInteractions.hasApTrigger(player, target, op),
+            )
+        player.routeRequest = RouteRequestPathingEntity(target.avatar, clientRequest = true)
+    }
+
+    /** Aims the catapult at [target] and presses Fire, the same button a player clicks. */
+    private fun fire(player: Player, target: CoordGrid) {
+        val arena = CastleWars.ARENA
+        val aimX = ((target.x - arena.x0) * AIM_MAX + (arena.x1 - arena.x0) / 2) / (arena.x1 - arena.x0)
+        val aimZ = ((target.z - arena.z0) * AIM_MAX + (arena.z1 - arena.z0) / 2) / (arena.z1 - arena.z0)
+        VarPlayerIntMapSetter.set(player, AIM_X, aimX.coerceIn(0, AIM_MAX))
+        VarPlayerIntMapSetter.set(player, AIM_Z, aimZ.coerceIn(0, AIM_MAX))
+        val button = ServerCacheManager.fromComponent(FIRE_BUTTON.asRSCM(RSCMType.COMPONENT))
+        val event = IfModalButton(button, -1, null, IfButtonOp.Op1)
+        protectedAccess.launch(player) { eventBus.publish(this, event) }
     }
 
     private fun useLoc(player: Player, order: BotOrder.UseLoc): Boolean {
@@ -380,6 +524,20 @@ constructor(
 
         fun foodCount(player: Player): Int = player.inv.objs.count { it != null && it.id in FOOD_IDS }
 
+        private const val ROCK = "obj.castlewars_catapult_rock"
+        private const val BARRICADE = "obj.castlewars_barricade"
+        private val BARRICADE_ID: Int by lazy { BARRICADE.asRSCM(RSCMType.OBJ) }
+        private const val FIRE_BUTTON = "component.castlewars_catapult:fire_catapult_button"
+        private const val AIM_X = "varbit.castlewars_catapultx"
+        private const val AIM_Z = "varbit.castlewars_catapultz"
+        private const val AIM_MAX = 30
+        private const val CATAPULT_REACH = 2
+        private const val CATAPULT_MIN_RANGE = 6
+        private const val BLAST_RADIUS = 2
+        private const val BLAST_SAFETY = 3
+        private const val FIRE_DELAY = 6
+        private const val STUCK_TICKS = 6
+        private const val BLOCKED_RADIUS = 2
         private const val PRAYER_TOGGLE_QUEUE = "queue.prayer_toggle"
         private const val THREAT_RADIUS = 10
         private const val PRAYER_REACTION = 3

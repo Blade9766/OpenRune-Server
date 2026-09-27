@@ -334,11 +334,15 @@ internal object CastleWars {
             CoordGrid(2425, 3074, 2) to CoordGrid(2427, 3075, 3),
         )
 
-    /** The battlement stairs that stay on one level: the two ends a player is moved between. */
+    /**
+     * The stairs from the castle floor up onto the wall walkway that leads to the catapult: the
+     * tile inside the castle and the tile on the wall a player is moved between. Both stay on the
+     * same level, the walkway's raised tiles being bridged down onto it.
+     */
     val LINKED_STAIRS: Map<CoordGrid, Pair<CoordGrid, CoordGrid>> =
         mapOf(
-            CoordGrid(2417, 3074, 0) to (CoordGrid(2417, 3073, 0) to CoordGrid(2417, 3077, 0)),
-            CoordGrid(2382, 3131, 0) to (CoordGrid(2382, 3130, 0) to CoordGrid(2382, 3134, 0)),
+            CoordGrid(2417, 3074, 0) to (CoordGrid(2417, 3077, 0) to CoordGrid(2416, 3074, 0)),
+            CoordGrid(2382, 3131, 0) to (CoordGrid(2382, 3130, 0) to CoordGrid(2383, 3133, 0)),
         )
 
     /** Energy barriers: the tile just inside the spawn room and the one outside it. */

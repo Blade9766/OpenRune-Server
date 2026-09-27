@@ -91,7 +91,8 @@ class CastleWarsCacheTest {
             Team.entries.flatMap { listOf(it.spawnRoom, it.waitingRoom) } +
                 CastleWars.LOBBY +
                 CastleWars.SPAWN_BARRIERS.values.flatMap { listOf(it.first, it.second) } +
-                CastleWars.LINKED_STAIRS.values.flatMap { listOf(it.first, it.second) }
+                CastleWars.LINKED_STAIRS.values.flatMap { listOf(it.first, it.second) } +
+                CastleWars.CASTLE_STAIRS.values
         for (tile in tiles) {
             assertTrue(isOpenFloor(tile), "$tile is blocked")
         }

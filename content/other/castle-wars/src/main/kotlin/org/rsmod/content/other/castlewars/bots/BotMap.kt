@@ -12,6 +12,9 @@ internal sealed interface Place {
 
     data class Spawn(val team: Team) : Place
 
+    /** The raised walkway along the castle walls that leads to the catapult. */
+    data class Wall(val team: Team) : Place
+
     data object Field : Place
 
     data object Tunnels : Place
@@ -29,8 +32,13 @@ internal sealed interface Hop {
 /** A flight of stairs, a ladder or a barrier: the loc to operate and the places it joins. */
 private data class Link(val from: Place, val to: Place, val loc: String, val coords: CoordGrid, val owner: Team? = null)
 
-/** One castle's ground-floor interior and gate, tile for tile. */
-private data class Keep(val interior: Region, val gateInside: CoordGrid, val gateOutside: CoordGrid)
+/** One castle's ground-floor interior and gate, tile for tile, and its wall walkway. */
+private data class Keep(
+    val interior: Region,
+    val gateInside: CoordGrid,
+    val gateOutside: CoordGrid,
+    val wall: List<Region>,
+)
 
 internal object BotMap {
     private val keeps =
@@ -40,12 +48,24 @@ internal object BotMap {
                     interior = Region(2415, 3072, 2431, 3087, 0..0),
                     gateInside = CoordGrid(2426, 3087, 0),
                     gateOutside = CoordGrid(2426, 3089, 0),
+                    wall =
+                        listOf(
+                            Region(2416, 3087, 2424, 3089, 0..0),
+                            Region(2412, 3087, 2416, 3091, 0..0),
+                            Region(2414, 3073, 2416, 3086, 0..0),
+                        ),
                 ),
             Team.Zamorak to
                 Keep(
                     interior = Region(2368, 3120, 2384, 3135, 0..0),
                     gateInside = CoordGrid(2373, 3120, 0),
                     gateOutside = CoordGrid(2373, 3118, 0),
+                    wall =
+                        listOf(
+                            Region(2375, 3118, 2383, 3120, 0..0),
+                            Region(2383, 3116, 2387, 3120, 0..0),
+                            Region(2383, 3121, 2385, 3134, 0..0),
+                        ),
                 ),
         )
 
@@ -84,7 +104,15 @@ internal object BotMap {
                     owner = Team.Zamorak,
                 ),
                 Link(Place.Tunnels, Place.Field, "loc.ladder_from_cellar_directional", CoordGrid(2399, 9499, 0)),
-            )
+            ) +
+            Team.entries.flatMap { team ->
+                val stairs = CastleWars.LINKED_STAIRS.keys.first { it in team.castle }
+                val loc = "loc.castlewars_outsidestairs_${team.name.lowercase()}_linked"
+                listOf(
+                    Link(Place.Floor(team, 0), Place.Wall(team), loc, stairs),
+                    Link(Place.Wall(team), Place.Floor(team, 0), loc, stairs),
+                )
+            }
 
     private fun stairs(team: Team, ladder: CoordGrid, up: List<CoordGrid>, down: List<CoordGrid>): List<Link> {
         val upLoc = "loc.castlewars_outsidestairs_${team.name.lowercase()}"
@@ -113,6 +141,9 @@ internal object BotMap {
         for (team in Team.entries) {
             if (coords in team.spawnArea) {
                 return Place.Spawn(team)
+            }
+            if (keeps.getValue(team).wall.any { coords in it }) {
+                return Place.Wall(team)
             }
             if (coords.level == 0 && coords in keeps.getValue(team).interior) {
                 return Place.Floor(team, 0)
@@ -182,6 +213,37 @@ internal object BotMap {
         }
         return result
     }
+
+    /** The tile beside [team]'s catapult a bot works it from. */
+    fun catapultPost(team: Team): CoordGrid =
+        when (team) {
+            Team.Saradomin -> CoordGrid(2416, 3089, 0)
+            Team.Zamorak -> CoordGrid(2383, 3118, 0)
+        }
+
+    /** [team]'s rock table and barricade table in its castle's supply room. */
+    fun rockTable(team: Team): Pair<String, CoordGrid> =
+        "loc.castlewars_table_rocks" to
+            when (team) {
+                Team.Saradomin -> CoordGrid(2423, 3075, 0)
+                Team.Zamorak -> CoordGrid(2376, 3131, 0)
+            }
+
+    fun barricadeTable(team: Team): Pair<String, CoordGrid> =
+        "loc.castlewars_table_barricades" to
+            when (team) {
+                Team.Saradomin -> CoordGrid(2429, 3073, 0)
+                Team.Zamorak -> CoordGrid(2370, 3133, 0)
+            }
+
+    /** Field tiles either side of the lane out of [team]'s gate, left open so the gate stays usable. */
+    fun barricadeSpots(team: Team): List<CoordGrid> =
+        when (team) {
+            Team.Saradomin ->
+                listOf(CoordGrid(2429, 3091, 0), CoordGrid(2428, 3091, 0), CoordGrid(2424, 3091, 0), CoordGrid(2423, 3091, 0))
+            Team.Zamorak ->
+                listOf(CoordGrid(2370, 3116, 0), CoordGrid(2371, 3116, 0), CoordGrid(2375, 3116, 0), CoordGrid(2376, 3116, 0))
+        }
 
     /** [team]'s bandage table in its respawn room. */
     fun bandageTable(team: Team): Pair<String, CoordGrid> =

@@ -20,6 +20,7 @@ import org.rsmod.content.other.castlewars.Team
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.stat.PlayerSkillXPTable
+import org.rsmod.map.CoordGrid
 
 internal enum class BotRole {
     Attacker,
@@ -34,6 +35,9 @@ internal class Bot(val player: Player, val role: BotRole, val style: BotStyle) {
     var prayedAt: Int = 0
     var threatenedAt: Int = 0
     var restoredAt: Int = 0
+    var firedAt: Int = 0
+    var lastCoords: CoordGrid = CoordGrid.NULL
+    var stillFor: Int = 0
 
     /** Targets this bot gave up on as unreachable, until the cycle each maps to. */
     val ignored: MutableMap<Player, Int> = HashMap()
@@ -188,10 +192,13 @@ constructor(
                     is BotOrder.Attack -> "attack ${current.target.displayName}"
                     is BotOrder.Walk -> "walk ${current.coords.x},${current.coords.z}"
                     is BotOrder.UseLoc -> "use ${current.loc.removePrefix("loc.castlewars_")}"
+                    is BotOrder.AttackNpc -> "attack barricade"
+                    BotOrder.SetUpBarricade -> "set up barricade"
+                    is BotOrder.Fire -> "fire at ${current.target.x},${current.target.z}"
                     null -> "idle"
                 }
             "${player.displayName} $team ${bot.role}/${bot.style} ${player.coords.x},${player.coords.z},${player.coords.level} " +
-                "hp=${player.hitpoints} pray=${player.prayerLvl}/${player.overheadIcon ?: "-"} food=${BotBrain.foodCount(player)} $order " +
+                "hp=${player.hitpoints} pray=${player.prayerLvl}/${player.overheadIcon ?: "-"} food=${BotBrain.foodCount(player)} rocks=${player.inv.count("obj.castlewars_catapult_rock")} $order " +
                 "busy=${player.isDelayed || player.isAccessProtected} since=${player.currentMapClock - player.actionDelay}"
         }
 
