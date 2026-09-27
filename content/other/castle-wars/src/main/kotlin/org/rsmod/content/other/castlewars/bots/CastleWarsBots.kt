@@ -8,6 +8,7 @@ import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.net.rsprot.BotSessions
 import org.rsmod.api.player.stat.PlayerSkillXP
 import org.rsmod.api.player.stat.hitpoints
+import org.rsmod.api.player.stat.prayerLvl
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.worn.HeldEquipOp
 import org.rsmod.api.registry.player.PlayerRegistry
@@ -30,6 +31,9 @@ internal class Bot(val player: Player, val role: BotRole, val style: BotStyle) {
     var order: BotOrder? = null
     var orderedAt: Int = 0
     var ateAt: Int = 0
+    var prayedAt: Int = 0
+    var threatenedAt: Int = 0
+    var restoredAt: Int = 0
 
     /** Targets this bot gave up on as unreachable, until the cycle each maps to. */
     val ignored: MutableMap<Player, Int> = HashMap()
@@ -157,6 +161,10 @@ constructor(
             val slot = player.inv.indices.firstOrNull { player.inv[it] == null } ?: return
             player.inv[slot] = InvObj(food)
         }
+        repeat(BotLoadout.PRAYER_POTIONS) {
+            val slot = player.inv.indices.firstOrNull { player.inv[it] == null } ?: return
+            player.inv[slot] = InvObj(BotLoadout.PRAYER_POTION)
+        }
     }
 
     private fun autocastBestFireSpell(player: Player, magic: Int) {
@@ -183,7 +191,7 @@ constructor(
                     null -> "idle"
                 }
             "${player.displayName} $team ${bot.role}/${bot.style} ${player.coords.x},${player.coords.z},${player.coords.level} " +
-                "hp=${player.hitpoints} food=${BotBrain.foodCount(player)} $order " +
+                "hp=${player.hitpoints} pray=${player.prayerLvl}/${player.overheadIcon ?: "-"} food=${BotBrain.foodCount(player)} $order " +
                 "busy=${player.isDelayed || player.isAccessProtected} since=${player.currentMapClock - player.actionDelay}"
         }
 

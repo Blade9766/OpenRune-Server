@@ -6,14 +6,20 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlin.random.Random
+import org.rsmod.api.combat.weapon.types.AttackTypes
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.PlayerInteractions
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.player.stat.baseHitpointsLvl
+import org.rsmod.api.player.stat.basePrayerLvl
 import org.rsmod.api.player.stat.hitpoints
+import org.rsmod.api.player.stat.prayerLvl
 import org.rsmod.api.registry.loc.LocRegistry
+import org.rsmod.content.interfaces.prayer.tab.Prayer
+import org.rsmod.content.interfaces.prayer.tab.PrayerRepository
 import org.rsmod.content.other.castlewars.CastleWarsGame
 import org.rsmod.content.other.castlewars.FlagState
 import org.rsmod.content.other.castlewars.Team
@@ -55,6 +61,8 @@ constructor(
     private val playerInteractions: PlayerInteractions,
     private val heldInteractions: HeldInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
+    private val attackTypes: AttackTypes,
+    private val prayers: PrayerRepository,
 ) {
     private val logger = InlineLogger()
 
@@ -64,9 +72,10 @@ constructor(
         if (player.isDelayed || player.isAccessProtected || player.hitpoints <= 0) {
             return
         }
-        if (eatIfHurt(bot, cycle)) {
+        if (eatIfHurt(bot, cycle) || restorePrayer(bot, cycle)) {
             return
         }
+        pray(bot, team, cycle)
         val order = decide(bot, team) ?: return
         perform(bot, order, cycle)
     }
@@ -79,6 +88,76 @@ constructor(
         val slot = player.inv.indices.firstOrNull { player.inv[it]?.id in FOOD_IDS } ?: return false
         bot.ateAt = cycle
         return protectedAccess.launch(player) { heldInteractions.interact(this, player.inv, slot, HeldOp.Op1) }
+    }
+
+    private fun restorePrayer(bot: Bot, cycle: Int): Boolean {
+        val player = bot.player
+        if (player.prayerLvl * 100 >= player.basePrayerLvl * RESTORE_BELOW_PERCENT || cycle - bot.restoredAt < EAT_DELAY) {
+            return false
+        }
+        val slot = player.inv.indices.firstOrNull { player.inv[it]?.id in PRAYER_POTION_IDS } ?: return false
+        bot.restoredAt = cycle
+        return protectedAccess.launch(player) { heldInteractions.interact(this, player.inv, slot, HeldOp.Op1) }
+    }
+
+    /**
+     * Keeps the right protection prayer up against the nearest enemy attacking this bot, reading
+     * their style the way combat does. Switches come a few cycles late and are sometimes missed,
+     * and the prayer is dropped once nobody has attacked for a while to spare prayer points.
+     */
+    private fun pray(bot: Bot, team: Team, cycle: Int) {
+        val player = bot.player
+        val threat =
+            game.state(team.opponent).playing
+                .filter { (it.interaction as? InteractionPlayerOp)?.target === player }
+                .filter { it.coords.chebyshevDistance(player.coords) <= THREAT_RADIUS }
+                .minByOrNull { it.coords.chebyshevDistance(player.coords) }
+        val active = protections.entries.firstOrNull { player.vars[it.value.enabled] == 1 }
+        if (threat == null) {
+            if (active != null && cycle - bot.threatenedAt > DROP_PRAYER_AFTER) {
+                togglePrayer(player, active.value)
+            }
+            return
+        }
+        bot.threatenedAt = cycle
+        val wanted = styleOf(threat)
+        if (active?.key == wanted || cycle - bot.prayedAt < PRAYER_REACTION || player.prayerLvl == 0) {
+            return
+        }
+        if (Random.nextInt(100) < PRAYER_MISS_PERCENT) {
+            bot.prayedAt = cycle
+            return
+        }
+        val prayer = protections[wanted] ?: return
+        togglePrayer(player, prayer)
+        bot.prayedAt = cycle
+    }
+
+    private fun togglePrayer(player: Player, prayer: Prayer) {
+        if (PRAYER_TOGGLE_QUEUE !in player.queueList) {
+            player.strongQueue(PRAYER_TOGGLE_QUEUE, 1, args = prayer)
+        }
+    }
+
+    private fun styleOf(attacker: Player): BotStyle {
+        if (attacker.vars["varbit.autocast_set"] == 1) {
+            return BotStyle.Magic
+        }
+        val type = attackTypes.get(attacker)
+        return when {
+            type?.isRanged == true -> BotStyle.Ranged
+            type?.isMagic == true -> BotStyle.Magic
+            else -> BotStyle.Melee
+        }
+    }
+
+    private val protections: Map<BotStyle, Prayer> by lazy {
+        val byVarbit = prayers.prayerList.associateBy { it.enabled }
+        mapOf(
+            BotStyle.Melee to "varbit.prayer_protectfrommelee",
+            BotStyle.Ranged to "varbit.prayer_protectfrommissiles",
+            BotStyle.Magic to "varbit.prayer_protectfrommagic",
+        ).mapNotNull { (style, varbit) -> byVarbit[varbit]?.let { style to it } }.toMap()
     }
 
     private fun decide(bot: Bot, team: Team): BotOrder? {
@@ -295,7 +374,18 @@ constructor(
                 .toSet()
         }
 
+        private val PRAYER_POTION_IDS: Set<Int> by lazy {
+            (1..4).map { "obj.${it}doseprayerrestore".asRSCM(RSCMType.OBJ) }.toSet()
+        }
+
         fun foodCount(player: Player): Int = player.inv.objs.count { it != null && it.id in FOOD_IDS }
+
+        private const val PRAYER_TOGGLE_QUEUE = "queue.prayer_toggle"
+        private const val THREAT_RADIUS = 10
+        private const val PRAYER_REACTION = 3
+        private const val PRAYER_MISS_PERCENT = 20
+        private const val DROP_PRAYER_AFTER = 16
+        private const val RESTORE_BELOW_PERCENT = 25
 
         private const val RESTOCK_BELOW = 3
         private const val TAKE_FIVE_OP = 2

@@ -154,5 +154,7 @@ internal object BotLoadout {
         }
 
     const val FOOD_COUNT: Int = 10
+    const val PRAYER_POTIONS: Int = 2
+    const val PRAYER_POTION: String = "obj.4doseprayerrestore"
     private const val ARROWS = 500
 }
