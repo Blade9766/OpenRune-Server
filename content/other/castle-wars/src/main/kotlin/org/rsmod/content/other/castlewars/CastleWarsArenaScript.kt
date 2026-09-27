@@ -44,6 +44,8 @@ constructor(private val game: CastleWarsGame, private val locRepo: LocRepository
 
         onOpLoc1("loc.castlewars_outsidestairs_saradomin_linked") { climbLinkedStairs(it.loc) }
         onOpLoc1("loc.castlewars_outsidestairs_zamorak_linked") { climbLinkedStairs(it.loc) }
+        onOpLoc1("loc.castlewars_outsidestairs_saradomin") { climbCastleStairs(it.loc) }
+        onOpLoc1("loc.castlewars_outsidestairs_zamorak") { climbCastleStairs(it.loc) }
 
         onOpLoc1("loc.castlewars_altar_saradomin") { prayAtAltar(Team.Saradomin) }
         onOpLoc1("loc.castlewars_altar_zamorak") { prayAtAltar(Team.Zamorak) }
@@ -156,6 +158,12 @@ constructor(private val game: CastleWarsGame, private val locRepo: LocRepository
         }
         mes("You leave the game.")
         player.strongQueue(CastleWarsQueues.LEAVE_GAME, 1)
+    }
+
+    private suspend fun ProtectedAccess.climbCastleStairs(loc: BoundLocInfo) {
+        val dest = CastleWars.CASTLE_STAIRS[loc.coords] ?: return
+        delay(1)
+        telejump(dest, TeleportType.Exempt)
     }
 
     private suspend fun ProtectedAccess.climbLinkedStairs(loc: BoundLocInfo) {

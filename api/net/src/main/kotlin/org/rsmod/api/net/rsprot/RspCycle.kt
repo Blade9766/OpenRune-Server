@@ -37,8 +37,13 @@ import org.rsmod.game.type.getInvObj
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
 
+/**
+ * Keeps a player's info avatar in step with the game each cycle and ships the result to their
+ * client. A null [session] is a server-driven player (see [BotSessions]): other clients still see
+ * the avatar, and the info packets computed for it are released unsent.
+ */
 class RspCycle(
-    private val session: Session<Player>,
+    private val session: Session<Player>?,
     private val infos: Infos,
     private val regions: RegionRegistry,
 ) : ClientCycle {
@@ -70,7 +75,7 @@ class RspCycle(
 
     private fun Player.queueRebuildLogin() {
         val rebuild = RebuildLoginV2(x shr 3, z shr 3, worldId, playerInfo)
-        session.queue(rebuild)
+        session?.queue(rebuild)
     }
 
     override fun update(player: Player) {
@@ -90,6 +95,10 @@ class RspCycle(
     }
 
     override fun flush(player: Player) {
+        if (session == null) {
+            release()
+            return
+        }
         val infoPackets = infos.getPackets()
         val rootPackets = infoPackets.rootWorldInfoPackets
 
@@ -199,7 +208,7 @@ class RspCycle(
             knownBuildArea = buildArea
             knownRegionUid = null
             cachedRegionZoneProvider = null
-            session.queue(rebuild)
+            session?.queue(rebuild)
             return
         }
 
@@ -222,7 +231,7 @@ class RspCycle(
         val rebuild = RebuildRegionV2(x shr 3, z shr 3, true, zoneProvider)
         knownBuildArea = buildArea
         cachedRegionZoneProvider = zoneProvider
-        session.queue(rebuild)
+        session?.queue(rebuild)
     }
 
     private fun createRegionZoneProvider(region: Region): RebuildRegionV2.RebuildRegionZoneProvider {

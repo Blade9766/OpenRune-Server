@@ -318,6 +318,22 @@ internal object CastleWars {
             CoordGrid(2409, 9503, 0) to LocAngle.North,
         )
 
+    /**
+     * Where each castle staircase going up lets out. The first-floor flight meets the roof beside
+     * a walled walkway, and the generic stair landing picks whichever side is nearest the climber,
+     * which could strand them on the walkway; the top flight has the same trouble with the roof
+     * beside the standard room.
+     */
+    val CASTLE_STAIRS: Map<CoordGrid, CoordGrid> =
+        mapOf(
+            CoordGrid(2380, 3127, 0) to CoordGrid(2380, 3126, 1),
+            CoordGrid(2369, 3126, 1) to CoordGrid(2369, 3127, 2),
+            CoordGrid(2374, 3131, 2) to CoordGrid(2372, 3132, 3),
+            CoordGrid(2419, 3078, 0) to CoordGrid(2419, 3081, 1),
+            CoordGrid(2428, 3081, 1) to CoordGrid(2430, 3080, 2),
+            CoordGrid(2425, 3074, 2) to CoordGrid(2427, 3075, 3),
+        )
+
     /** The battlement stairs that stay on one level: the two ends a player is moved between. */
     val LINKED_STAIRS: Map<CoordGrid, Pair<CoordGrid, CoordGrid>> =
         mapOf(

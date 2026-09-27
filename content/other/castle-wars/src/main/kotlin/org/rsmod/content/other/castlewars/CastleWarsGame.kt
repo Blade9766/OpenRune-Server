@@ -100,6 +100,9 @@ constructor(
     private var countdown = CastleWars.BREAK_TICKS
     private var dirty = true
 
+    /** Server-driven players from `::cwbots`; they play like anyone else but earn nothing. */
+    val botPlayers: MutableSet<Player> = HashSet()
+
     /** Wins since the server started, for the lobby scoreboards. */
     val seasonWins: MutableMap<Team, Int> = Team.entries.associateWith { 0 }.toMutableMap()
 
@@ -169,6 +172,11 @@ constructor(
         dropCarriedFlag(player, dropAt)
         state(team).playing -= player
         joinedAt -= player
+        dirty = true
+    }
+
+    fun joinRunningGame(player: Player, team: Team) {
+        moveIntoGame(player, team)
         dirty = true
     }
 
@@ -272,6 +280,9 @@ constructor(
     }
 
     private fun reward(player: Player, team: Team, winner: Team?, earned: Boolean) {
+        if (player in botPlayers) {
+            return
+        }
         val own = state(team).score
         val other = state(team.opponent).score
         VarPlayerIntMapSetter.set(player, "varp.castlewars_games_played", player.vars["varp.castlewars_games_played"] + 1)
