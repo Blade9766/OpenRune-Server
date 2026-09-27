@@ -232,6 +232,22 @@ constructor(private val equipOp: HeldEquipOp, private val charges: ObjChargeMana
                                 "obj.osmumtens_fang",
                             )
                     ),
+                "magelvl1" to
+                    Preset(
+                        worn =
+                            listOf(
+                                "obj.wgs_dark_squall_hood",
+                                "obj.amulet_of_glory_inf",
+                                "obj.wgs_dark_squall_robe_top",
+                                "obj.wgs_dark_squall_robe_bottom",
+                                "obj.secret_ghost_gloves",
+                                "obj.secret_ghost_boots",
+                                "obj.secret_ghost_cloak",
+                                "obj.magus_ring",
+                                "obj.deadman_starter_staff",
+                                "obj.zarosbook_complete",
+                            )
+                    ),
             )
     }
 }
