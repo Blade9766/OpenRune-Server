@@ -252,10 +252,10 @@ public class LocUInteractions @Inject private constructor(private val eventBus: 
     }
 
     private fun ObjectServerType.multiVarValue(vars: VarPlayerIntMap): Int? {
-        if (multiVarp > 0) {
+        if (multiVarp >= 0) {
             val varp = ServerCacheManager.getVarp(multiVarp) ?: return null
             return vars[varp]
-        } else if (multiVarBit > 0) {
+        } else if (multiVarBit >= 0) {
             val varBit = ServerCacheManager.getVarbit(multiVarBit) ?: return null
             val packed = vars[varBit.baseVar]
             return packed.getBits(varBit.bits)
