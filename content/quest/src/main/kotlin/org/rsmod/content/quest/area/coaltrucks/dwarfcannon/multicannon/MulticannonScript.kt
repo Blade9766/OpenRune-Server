@@ -66,6 +66,7 @@ constructor(
     private val locRepo: LocRepository,
     private val collision: CollisionFlagMap,
     private val playerList: PlayerList,
+    private val restrictions: CannonRestrictions,
 ) : PluginScript() {
 
     private val rayCast by lazy { RayCastValidator(collision) }
@@ -177,8 +178,7 @@ constructor(
         }
     }
 
-    private fun restrictionMessage(centre: CoordGrid): String? =
-        RESTRICTED_ZONES.firstOrNull { it.contains(centre) }?.message
+    private fun restrictionMessage(centre: CoordGrid): String? = restrictions.message(centre)
 
     private fun hasRoom(centre: CoordGrid): Boolean {
         val origin = centre.translate(-1, -1)
@@ -414,10 +414,6 @@ constructor(
             else -> "You need $parts free inventory spaces to pick that up."
         }
 
-    private class Zone(val minX: Int, val minZ: Int, val maxX: Int, val maxZ: Int, val message: String) {
-        fun contains(coords: CoordGrid): Boolean = coords.x in minX..maxX && coords.z in minZ..maxZ
-    }
-
     private companion object {
         const val ASSEMBLE_ANIM = "seq.human_pickupfloor"
         const val SETUP_SOUND = "synth.mcannon_setup"
@@ -449,20 +445,6 @@ constructor(
                 -2 to 2, -1 to 2, 0 to 2, 1 to 2, 2 to 2,
                 2 to -2, 1 to -2, 0 to -2, -1 to -2, -2 to -2,
                 -2 to -1, -2 to 0, -2 to 1, 2 to 1, 2 to 0, 2 to -1,
-            )
-
-        val RESTRICTED_ZONES =
-            listOf(
-                Zone(2979, 3417, 3071, 3519, "The dwarves won't be happy if you set up a cannon here."),
-                Zone(2944, 9740, 3071, 9855, "The dwarves won't be happy if you set up a cannon here."),
-                Zone(
-                    3136,
-                    3464,
-                    3191,
-                    3519,
-                    "The Grand Exchange staff prefer not to have heavy artillery operated around their " +
-                        "premises.",
-                ),
             )
     }
 }

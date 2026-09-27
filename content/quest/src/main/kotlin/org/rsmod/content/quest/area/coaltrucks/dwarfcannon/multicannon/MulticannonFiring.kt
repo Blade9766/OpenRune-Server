@@ -1,6 +1,7 @@
 package org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon
 
 import dev.openrune.rscm.RSCM
+import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
 import kotlin.math.abs
 import org.rsmod.api.area.checker.AreaChecker
@@ -77,6 +78,7 @@ constructor(
 
     private val rayCast = RayCastValidator(collision)
     private val cannonId by lazy { RSCM.getRSCM(CANNON_LOC) }
+    private val destroyerIds by lazy { CANNON_DESTROYERS.map(RSCM::getRSCM).toSet() }
 
     override fun ScriptContext.startup() {
         onPlayerSoftTimer(ROTATE_TIMER) { rotate(player) }
@@ -197,6 +199,22 @@ constructor(
         if (dealt > 0) {
             player.statAdvance("stat.ranged", dealt * XP_PER_DAMAGE)
         }
+        if (destroysCannons(target) && random.of(DESTROY_ODDS) == 0) {
+            destroy(player, cannon)
+        }
+    }
+
+    /** Bosses that smash a cannon firing at them, as the King Black Dragon and Kalphite Queen do. */
+    private fun destroysCannons(npc: Npc): Boolean =
+        npc.type.id in destroyerIds || areaChecker.inArea(GOD_WARS, npc.coords)
+
+    private fun destroy(player: Player, cannon: Cannon) {
+        val loc = locRepo.findExact(cannon.origin, LocShape.CentrepieceStraight) ?: return
+        worldRepo.spotanimMap(SpotanimType(RSCM.getRSCM(DESTROY_SPOTANIM)), cannon.centre, DESTROY_SPOTANIM_HEIGHT)
+        locRepo.del(loc, Int.MAX_VALUE)
+        stop(player, cannon)
+        cannons.remove(cannon)
+        player.markCannonLost("Your cannon has been destroyed!")
     }
 
     private fun rollAccuracy(player: Player, target: Npc): Boolean {
@@ -275,5 +293,18 @@ constructor(
         const val PROJ_LENGTH = 35
         const val PROJ_STEP = 5
         const val CLIENT_CYCLES_PER_TICK = 30
+
+        const val DESTROY_ODDS = 4
+        const val DESTROY_SPOTANIM = "spotanim.smokepuff_huge"
+        const val DESTROY_SPOTANIM_HEIGHT = 200
+        const val GOD_WARS = "area.godwars_dungeon"
+        val CANNON_DESTROYERS =
+            listOf(
+                "npc.king_dragon",
+                "npc.kalphite_queen",
+                "npc.kalphite_flyingqueen",
+                "npc.smoke_devil_boss",
+                "npc.myarm_giant_roc",
+            )
     }
 }

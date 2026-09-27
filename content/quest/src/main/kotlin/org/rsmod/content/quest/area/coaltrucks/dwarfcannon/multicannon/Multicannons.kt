@@ -115,12 +115,14 @@ internal fun Player.clearCannonVars() {
     cannonDecayed = false
 }
 
-/** The cannon fell apart or the world forgot it: leave the vars so Nulodion can replace it. */
-internal fun Player.markCannonLost() {
+/** The cannon fell apart or was destroyed: leave the vars so Nulodion can replace it. */
+internal fun Player.markCannonLost(
+    message: String = "Your cannon has decayed. Speak to Nulodion to obtain a new one.",
+) {
     if (cannonStage == Multicannons.STAGE_NONE || cannonDecayed) {
         return
     }
     cannonDecayed = true
     ownedCannonHud = 0
-    mes("Your cannon has decayed. Speak to Nulodion to obtain a new one.")
+    mes(message)
 }
