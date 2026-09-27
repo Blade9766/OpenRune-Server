@@ -106,6 +106,7 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
         telejump(game.scatter(team.spawnRoom), TeleportType.Exempt)
         ifOpenOverlay(team.overlay)
         MiscOutput.setPlayerOp(player, ATTACK_SLOT, "Attack", priority = true)
+        MiscOutput.setPlayerOp(player, CastleWars.TAKE_FROM_SLOT, CastleWars.TAKE_FROM_OP)
         if (!inv.contains(CastleWars.RUNE_POUCH)) {
             invAdd(inv, CastleWars.RUNE_POUCH, strict = false)
         }
@@ -154,6 +155,9 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
         resetTransmog()
         rebuildAppearance()
         MiscOutput.clearPlayerOp(player, ATTACK_SLOT, "Attack")
+        if (MiscOutput.findPlayerOption(player, CastleWars.TAKE_FROM_OP) == CastleWars.TAKE_FROM_SLOT) {
+            MiscOutput.setPlayerOp(player, CastleWars.TAKE_FROM_SLOT, FOLLOW_OP)
+        }
         player.disablePrayers()
         player.cureAllToxins()
         player.statRestoreAll(allStats)
@@ -191,5 +195,6 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
     companion object {
         const val WAITING_OVERLAY: String = "interface.castlewars_waitingroom"
         const val ATTACK_SLOT: Int = 1
+        const val FOLLOW_OP: String = "Follow"
     }
 }

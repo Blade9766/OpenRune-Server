@@ -4,18 +4,21 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
+import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.worn.HeldEquipOp
 import org.rsmod.api.player.worn.HeldEquipResult
+import org.rsmod.api.script.advanced.onOpPlayer3
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpWorn1
+import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
  * The team standards: taking the enemy's from its stand, capturing it on your own, dropping it,
- * and picking a dropped one back up - including holding your own standard to keep it from the
- * enemy until you walk it home.
+ * picking a dropped one back up - including holding your own standard to keep it from the enemy
+ * until you walk it home - and taking the enemy's from a team-mate who has held it long enough.
  */
 internal class CastleWarsFlagScript
 @Inject
@@ -27,6 +30,7 @@ constructor(private val game: CastleWarsGame, private val equipOp: HeldEquipOp) 
             onOpLoc1(team.droppedBannerLoc) { takeDropped(team) }
             onOpWorn1(team.banner) { dropBanner(team) }
         }
+        onOpPlayer3 { takeFrom(it.target) }
     }
 
     private suspend fun ProtectedAccess.captureAtStand(standTeam: Team) {
@@ -91,6 +95,34 @@ constructor(private val game: CastleWarsGame, private val equipOp: HeldEquipOp) 
                 "You pick up the ${flagTeam.displayName} standard!"
             },
         )
+    }
+
+    private suspend fun ProtectedAccess.takeFrom(target: Player) {
+        val team = game.playingTeamOf(player) ?: return
+        if (game.playingTeamOf(target) != team) {
+            mes("You can only take a standard from a member of your own team.")
+            return
+        }
+        val flagTeam = game.carriedFlag(target)
+        if (flagTeam != team.opponent) {
+            mes("${target.displayName} isn't carrying the enemy standard.")
+            return
+        }
+        if (game.carriedFlag(player) != null) {
+            mes("You can only carry one standard at a time.")
+            return
+        }
+        if (!game.canTakeFrom(target)) {
+            mes("${target.displayName} has only just taken the standard. Let them keep it for now.")
+            return
+        }
+        if (!holdBanner(flagTeam)) {
+            return
+        }
+        game.removeBanner(target)
+        game.passFlag(flagTeam, player)
+        mes("You take the ${flagTeam.displayName} standard from ${target.displayName}.")
+        target.mes("${player.displayName} takes the standard from you.")
     }
 
     private fun ProtectedAccess.dropBanner(flagTeam: Team) {

@@ -211,6 +211,10 @@ internal object CastleWars {
     const val JINGLE_DEFEAT: Int = 81
     const val JINGLE_DRAW: Int = 80
 
+    const val TAKE_FROM_SLOT: Int = 3
+    const val TAKE_FROM_OP: String = "Take from"
+    const val TAKE_FROM_DELAY: Int = 300
+
     const val TICKET: String = "obj.castlewars_ticket"
     const val RUNE_POUCH: String = "obj.castlewars_rune_replacement"
 

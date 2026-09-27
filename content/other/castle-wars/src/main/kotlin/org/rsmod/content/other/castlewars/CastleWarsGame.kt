@@ -403,6 +403,18 @@ constructor(
         dirty = true
     }
 
+    fun canTakeFrom(carrier: Player): Boolean {
+        val state = teams.values.firstOrNull { it.carrier == carrier } ?: return false
+        return mapClock.cycle - state.carriedSince >= CastleWars.TAKE_FROM_DELAY
+    }
+
+    fun passFlag(flagTeam: Team, to: Player) {
+        val state = state(flagTeam)
+        state.carrier = to
+        state.carriedSince = mapClock.cycle
+        dirty = true
+    }
+
     /** Puts [flagTeam]'s standard back on its stand, wherever it was. */
     fun returnFlag(flagTeam: Team) {
         val state = state(flagTeam)
