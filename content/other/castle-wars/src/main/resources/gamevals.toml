@@ -1,0 +1,12 @@
+[gamevals.varp]
+castlewars_lanthus = 65412
+
+[gamevals.varbit]
+castlewars_xp_disabled = 65447
+castlewars_bracelet_charges = 65448
+castlewars_bracelet_paused = 65769
+castlewars_bracelet_active = 65770
+
+[gamevals.queue]
+castlewars_enter_game = 65437
+castlewars_leave_game = 65438

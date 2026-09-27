@@ -7,6 +7,7 @@ import org.rsmod.api.death.PlayerDeathHook
 import org.rsmod.api.death.PlayerDeathItemHook
 import org.rsmod.api.death.PlayerRespawnHook
 import org.rsmod.api.death.PvPAttackValidateHook
+import org.rsmod.api.death.PvPCombatXpHook
 import org.rsmod.api.death.PvPPlayerHitHook
 import org.rsmod.api.death.PvPSkullHook
 import org.rsmod.api.death.PvPSpecialAttackHook
@@ -23,6 +24,7 @@ public class DeathDropHooksModule : PluginModule() {
         newSetBinding<PvPAttackValidateHook>()
         newSetBinding<PvPSkullHook>()
         newSetBinding<PvPPlayerHitHook>()
+        newSetBinding<PvPCombatXpHook>()
         newSetBinding<PvPSpecialAttackHook>()
         addSetBinding<PlayerDeathHook>(UimPlayerDeathHook::class.java)
         addSetBinding<PlayerDeathHook>(StandardPvmDeathHook::class.java)

@@ -29,6 +29,7 @@ import org.rsmod.api.combat.commons.types.RangedAttackType
 import org.rsmod.api.combat.formulas.AccuracyFormulae
 import org.rsmod.api.combat.formulas.MaxHitFormulae
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.death.PvPCombatXpHook
 import org.rsmod.api.death.PvPPlayerHitHook
 import org.rsmod.api.npc.hit.isStyleImmuneTo
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
@@ -78,6 +79,7 @@ constructor(
     private val playerInteractions: PlayerInteractions,
     private val playerTInteractions: PlayerTInteractions,
     private val pvpPlayerHitHooks: Set<PvPPlayerHitHook>,
+    private val pvpCombatXpHooks: Set<PvPCombatXpHook>,
 ) {
     /**
      * Determines if the player is still under an active attack delay.
@@ -303,6 +305,9 @@ constructor(
         attack: CombatAttack.Melee,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveCombatXp(player, attack, cappedDamage, multiplier)
@@ -374,6 +379,9 @@ constructor(
         attack: CombatAttack.Ranged,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveCombatXp(player, attack, cappedDamage, multiplier)
@@ -436,6 +444,9 @@ constructor(
         attack: CombatAttack.Spell,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveCombatXp(player, attack, cappedDamage, multiplier)
@@ -491,6 +502,9 @@ constructor(
         attack: CombatAttack.Staff,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveStaffCombatXp(player, cappedDamage, multiplier)

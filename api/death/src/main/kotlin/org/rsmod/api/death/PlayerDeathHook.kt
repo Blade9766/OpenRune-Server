@@ -47,5 +47,19 @@ public enum class UntradeableHandling {
 public const val RECENT_PVP_HIT_TICKS: Int = 600
 
 public interface PlayerDeathHook {
+    /**
+     * Hooks are asked in descending priority and the first non-null handling wins. Activities
+     * with their own death rules (safe minigames) sit above [PRIORITY_DEFAULT]; the catch-all
+     * standard handling sits at [PRIORITY_FALLBACK] so it can never shadow them.
+     */
+    public val priority: Int
+        get() = PRIORITY_DEFAULT
+
     public fun handleDeath(context: PlayerDeathContext): PlayerDeathHandling?
+
+    public companion object {
+        public const val PRIORITY_SAFE_ACTIVITY: Int = 100
+        public const val PRIORITY_DEFAULT: Int = 0
+        public const val PRIORITY_FALLBACK: Int = -100
+    }
 }

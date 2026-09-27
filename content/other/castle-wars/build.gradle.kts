@@ -1,0 +1,11 @@
+plugins {
+    id("base-conventions")
+    id("game-cache-test-conventions")
+}
+
+dependencies {
+    implementation(projects.api.pluginCommons)
+    implementation(projects.api.attr)
+    implementation(projects.content.interfaces.omnishop)
+    testImplementation(libs.fastutil)
+}

@@ -12,6 +12,9 @@ import org.rsmod.api.death.PlayerDeathHook
 import org.rsmod.api.death.UntradeableHandling
 
 public class StandardPvmDeathHook @Inject constructor() : PlayerDeathHook {
+    override val priority: Int
+        get() = PlayerDeathHook.PRIORITY_FALLBACK
+
     override fun handleDeath(context: PlayerDeathContext): PlayerDeathHandling? {
         if (context.inWilderness) return null
         if (context.recentPvpDamage) return pvpOutsideWilderness(context)

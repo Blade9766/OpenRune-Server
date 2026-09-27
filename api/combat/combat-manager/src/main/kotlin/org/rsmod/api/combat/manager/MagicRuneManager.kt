@@ -187,7 +187,7 @@ constructor(
         // Admin "infinite runes" cheat: treat every obj requirement as an unlimited source so
         // nothing is consumed. Level and spellbook requirements are handled by `validateAccess`
         // and remain in effect.
-        if (player.adminInfiniteRunes) {
+        if (player.adminInfiniteRunes || player.hasCastleWarsRunePouch()) {
             return listOf(MagicRunes.Validation.Valid.Unlimited)
         }
         val runePack = validateRunePack(player, spell.obj)
@@ -247,6 +247,10 @@ constructor(
         }
         return null
     }
+
+    /** The pouch handed out inside a Castle Wars game supplies every rune for free. */
+    private fun Player.hasCastleWarsRunePouch(): Boolean =
+        inv.contains("obj.castlewars_rune_replacement")
 
     private fun Player.useFakeRunes(): Boolean {
         return vars["varbit.barbassault_areaexit_pending"] == 1 || vars["varbit.br_ingame"] == 1

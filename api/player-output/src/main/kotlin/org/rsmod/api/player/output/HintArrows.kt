@@ -22,6 +22,10 @@ public object HintArrows {
         player.client.write(HintArrow(HintArrow.NpcHintArrow(npc.slotId)))
     }
 
+    public fun hintPlayer(player: Player, target: Player) {
+        player.client.write(HintArrow(HintArrow.PlayerHintArrow(target.slotId)))
+    }
+
     public fun hintStop(player: Player) {
         player.client.write(HintArrow(HintArrow.ResetHintArrow))
     }

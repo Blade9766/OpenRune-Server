@@ -159,6 +159,9 @@ constructor(private val manager: DuelManager, private val areaChecker: AreaCheck
         return "You can't teleport out of a duel!"
     }
 
+    override val priority: Int
+        get() = PlayerDeathHook.PRIORITY_SAFE_ACTIVITY
+
     override fun handleDeath(context: PlayerDeathContext): PlayerDeathHandling? {
         val duel = manager.duelOf(context.player) ?: return null
         if (!duel.isActive) {

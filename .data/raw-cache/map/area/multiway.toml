@@ -3741,7 +3741,7 @@ vertices = [
 [[area]]
 name = "Castle Wars"
 area_id = "area.multiway"
-levels = [0]
+levels = [0, 1, 2, 3]
 
 [[area.polygons]]
 vertices = [
@@ -3749,6 +3749,27 @@ vertices = [
     [2431, 3072],
     [2431, 3135],
     [2368, 3135],
+]
+
+[[area]]
+name = "Castle Wars Tunnels"
+area_id = "area.multiway"
+levels = [0]
+
+[[area.polygons]]
+vertices = [
+    [2368, 9498],
+    [2416, 9498],
+    [2416, 9535],
+    [2368, 9535],
+]
+
+[[area.polygons]]
+vertices = [
+    [2398, 9472],
+    [2431, 9472],
+    [2431, 9514],
+    [2398, 9514],
 ]
 
 [[area]]
