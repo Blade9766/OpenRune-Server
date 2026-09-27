@@ -1,0 +1,8 @@
+# Dwarf multicannon: remembers an ornamented cannon so Nulodion can replace it in kind. It sits in
+# a bit of mcannon_data that the client's ball-type varbits leave unused.
+[[varbit]]
+isServerOnly = true
+id = "varbit.mcannon_ornate"
+varp = "varp.mcannon_data"
+startBit = 10
+endBit = 10

@@ -53,6 +53,8 @@ misthalin_puzzle_state = 63702
 [gamevals.varbit]
 misthalin_reflections = 63700
 misthalin_gem_row_slot = 63701
+# Dwarf multicannon: whether the player's cannon is the Shattered Relics ornamented one.
+mcannon_ornate = 65768
 
 [gamevals.models]
 misthalin_gem_diamond = 32333

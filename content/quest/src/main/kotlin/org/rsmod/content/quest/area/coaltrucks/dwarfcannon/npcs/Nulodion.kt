@@ -24,6 +24,7 @@ import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.DwarfCannonQuest.Comp
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.DwarfCannonQuest.Companion.STAGE_SEE_NULODION
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.cannonStage
+import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.cannonStyle
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.clearCannonVars
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Npc
@@ -166,7 +167,8 @@ constructor(
             chatPlayer(neutral, "...")
             return
         }
-        if (player.inv.freeSpace() < Multicannons.PARTS.size) {
+        val parts = player.cannonStyle.parts
+        if (player.inv.freeSpace() < parts.size) {
             chatNpc(
                 neutral,
                 "That's unfortunate! But don't worry, I can sort you out if you free up some " +
@@ -175,11 +177,11 @@ constructor(
             return
         }
         chatNpc(neutral, "That's unfortunate! But don't worry, I can sort you out...")
-        for (part in Multicannons.PARTS) {
+        for (part in parts) {
             access.invAdd(player.inv, part)
         }
         player.clearCannonVars()
-        doubleobjbox(CANNON_BARRELS, CANNON_FURNACE, "The dwarf gives you a new cannon.")
+        doubleobjbox(parts[2], parts[3], "The dwarf gives you a new cannon.")
         chatNpc(shifty, "Keep that quiet or I'll be in real trouble!")
         chatPlayer(happy, "Thanks a lot.")
     }

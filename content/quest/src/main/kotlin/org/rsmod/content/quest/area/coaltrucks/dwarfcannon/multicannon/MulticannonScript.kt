@@ -17,27 +17,15 @@ import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.DwarfCannonQuest
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Cannon
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.BARRELS
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.BARRELS_LOC
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.BASE
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.BASE_LOC
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.BREAK_TICKS
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.BROKEN_LOC
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.CANNON_LOC
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.CAPACITY
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.DECAY_TICKS
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.FURNACE
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.GRANITE_BALL
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.PARTS
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.ROTATE_TIMER
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_BARRELS
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_BASE
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_FULL
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_LOCS
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_NONE
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_STAND
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAND
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAND_LOC
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STEEL_BALL
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
@@ -70,35 +58,43 @@ constructor(
 ) : PluginScript() {
 
     private val rayCast by lazy { RayCastValidator(collision) }
-    private val cannonId by lazy { RSCM.getRSCM(CANNON_LOC) }
+    private val cannonIds by lazy { CannonStyle.entries.map { RSCM.getRSCM(it.cannonLoc) }.toSet() }
 
     override fun ScriptContext.startup() {
-        onOpHeld1(BASE) { setUp() }
-
-        onOpLoc1(BASE_LOC) { pickUp(it.loc) }
-        onOpLoc1(STAND_LOC) { pickUp(it.loc) }
-        onOpLoc1(BARRELS_LOC) { pickUp(it.loc) }
-        onOpLocU(BASE_LOC, STAND) { addPart(it.loc, STAGE_STAND) }
-        onOpLocU(STAND_LOC, BARRELS) { addPart(it.loc, STAGE_BARRELS) }
-        onOpLocU(BARRELS_LOC, FURNACE) { addPart(it.loc, STAGE_FULL) }
-
-        onOpLoc1(CANNON_LOC) { fire(it.loc) }
-        onOpLoc2(CANNON_LOC) { pickUp(it.loc) }
-        onOpLoc3(CANNON_LOC) { empty(it.loc) }
-        onOpLoc4(CANNON_LOC) { loadX(it.loc) }
-        onOpLocU(CANNON_LOC, STEEL_BALL) { loadFrom(it.loc) }
-        onOpLocU(CANNON_LOC, GRANITE_BALL) { loadFrom(it.loc) }
-
-        onOpLoc1(BROKEN_LOC) { repair(it.loc) }
-        onOpLoc2(BROKEN_LOC) { pickUp(it.loc) }
+        for (style in CannonStyle.entries) {
+            register(style)
+        }
 
         onPlayerLogin { checkCannonOnLogin(player) }
         onPlayerLogout { cannons.of(player)?.firing = false }
     }
 
+    private fun ScriptContext.register(style: CannonStyle) {
+        val (base, stand, barrels) = style.stageLocs
+        val cannon = style.cannonLoc
+        onOpHeld1(style.base) { setUp(style) }
+
+        onOpLoc1(base) { pickUp(it.loc) }
+        onOpLoc1(stand) { pickUp(it.loc) }
+        onOpLoc1(barrels) { pickUp(it.loc) }
+        onOpLocU(base, style.parts[STAGE_STAND - 1]) { addPart(it.loc, STAGE_STAND) }
+        onOpLocU(stand, style.parts[STAGE_BARRELS - 1]) { addPart(it.loc, STAGE_BARRELS) }
+        onOpLocU(barrels, style.parts[STAGE_FULL - 1]) { addPart(it.loc, STAGE_FULL) }
+
+        onOpLoc1(cannon) { fire(it.loc) }
+        onOpLoc2(cannon) { pickUp(it.loc) }
+        onOpLoc3(cannon) { empty(it.loc) }
+        onOpLoc4(cannon) { loadX(it.loc) }
+        onOpLocU(cannon, STEEL_BALL) { loadFrom(it.loc, BALL_STEEL) }
+        onOpLocU(cannon, GRANITE_BALL) { loadFrom(it.loc, BALL_GRANITE) }
+
+        onOpLoc1(style.brokenLoc) { repair(it.loc) }
+        onOpLoc2(style.brokenLoc) { pickUp(it.loc) }
+    }
+
     /* Setting up */
 
-    private suspend fun ProtectedAccess.setUp() {
+    private suspend fun ProtectedAccess.setUp(style: CannonStyle) {
         if (!QuestRequirements.hasCompleted(player, DwarfCannonQuest.QUEST_KEY)) {
             mes("You can't set up this cannon.")
             mes("You need to complete the Dwarf Cannon quest.")
@@ -126,19 +122,20 @@ constructor(
         playerWalk(standOff)
         faceSquare(centre)
         delay(1)
-        if (player.cannonStage != STAGE_NONE || BASE !in inv || !hasRoom(centre)) {
+        if (player.cannonStage != STAGE_NONE || style.base !in inv || !hasRoom(centre)) {
             mes("There isn't enough space to set up here.")
             return
         }
         val origin = centre.translate(-1, -1)
-        val cannon = cannons.place(player, origin)
+        val cannon = cannons.place(player, origin, style)
         player.cannonOrigin = origin
+        player.cannonStyle = style
         player.cannonDecayed = false
         if (!assemble(cannon, STAGE_BASE)) {
             return
         }
         for (stage in STAGE_STAND..STAGE_FULL) {
-            if (PARTS[stage - 1] !in inv) {
+            if (style.parts[stage - 1] !in inv) {
                 return
             }
             delay(ASSEMBLE_TICKS)
@@ -150,14 +147,14 @@ constructor(
     }
 
     private fun ProtectedAccess.assemble(cannon: Cannon, stage: Int): Boolean {
-        if (invDel(inv, PARTS[stage - 1]).failure) {
+        if (invDel(inv, cannon.style.parts[stage - 1]).failure) {
             return false
         }
         anim(ASSEMBLE_ANIM)
         soundSynth(SETUP_SOUND)
         cannon.stage = stage
         player.cannonStage = stage
-        spawn(cannon, STAGE_LOCS[stage - 1])
+        spawn(cannon, cannon.style.stageLocs[stage - 1])
         mes(ASSEMBLE_MESSAGES[stage - 1])
         return true
     }
@@ -224,7 +221,7 @@ constructor(
             mes("That isn't your cannon!")
             return
         }
-        val loaded = load(CAPACITY)
+        val loaded = load(player.cannonCapacity)
         if (player.cannonBalls < 1) {
             mes("Your cannon is out of ammo!")
             return
@@ -239,18 +236,18 @@ constructor(
         player.softTimer(ROTATE_TIMER, 1)
     }
 
-    private suspend fun ProtectedAccess.loadFrom(loc: BoundLocInfo) {
+    private suspend fun ProtectedAccess.loadFrom(loc: BoundLocInfo, ball: Int) {
         arriveDelay()
         val cannon = cannons.ownedBy(player, loc.coords)
         if (cannon == null) {
             mes("This is not your cannon.")
             return
         }
-        if (player.cannonBalls >= CAPACITY) {
+        if (player.cannonBalls >= player.cannonCapacity) {
             mes("Your cannon is already full.")
             return
         }
-        load(CAPACITY)
+        load(player.cannonCapacity, ball)
     }
 
     private suspend fun ProtectedAccess.loadX(loc: BoundLocInfo) {
@@ -267,19 +264,21 @@ constructor(
     }
 
     /**
-     * Loads up to [limit] balls from the inventory, granite first. Steel and granite are never
-     * mixed: a cannon still holding one kind only takes more of the same.
+     * Loads up to [limit] balls from the inventory: the [preferred] kind when a ball was used on the
+     * cannon, otherwise granite first. Steel and granite are never mixed: a cannon still holding one
+     * kind only takes more of the same.
      * @return the number of balls loaded.
      */
-    private fun ProtectedAccess.load(limit: Int): Int {
+    private fun ProtectedAccess.load(limit: Int, preferred: Int? = null): Int {
         val current = player.cannonBalls
-        val space = minOf(CAPACITY - current, limit)
+        val space = minOf(player.cannonCapacity - current, limit)
         if (space <= 0) {
             return 0
         }
         val type =
             when {
                 current > 0 -> player.cannonBallType
+                preferred != null -> preferred
                 GRANITE_BALL in inv -> BALL_GRANITE
                 else -> BALL_STEEL
             }
@@ -327,7 +326,7 @@ constructor(
         arriveDelay()
         val cannon = cannons.ownedBy(player, loc.coords)
         if (cannon == null) {
-            mes(if (loc.id == cannonId) "This is not your cannon." else "That isn't your cannon!")
+            mes(if (loc.id in cannonIds) "This is not your cannon." else "That isn't your cannon!")
             return
         }
         val parts = cannon.stage
@@ -340,7 +339,7 @@ constructor(
         cannons.remove(cannon)
         locRepo.del(loc, Int.MAX_VALUE)
         anim(ASSEMBLE_ANIM)
-        for (part in PARTS.take(parts)) {
+        for (part in cannon.style.parts.take(parts)) {
             invAdd(inv, part)
         }
         returnBalls()
@@ -369,7 +368,7 @@ constructor(
         anim(ASSEMBLE_ANIM)
         soundSynth(SETUP_SOUND)
         cannon.broken = false
-        spawn(cannon, CANNON_LOC)
+        spawn(cannon, cannon.style.cannonLoc)
         mes("You repair your cannon, restoring it to working order.")
     }
 
@@ -383,7 +382,7 @@ constructor(
         }
         cannon.broken = true
         cannon.firing = false
-        locRepo.add(cannon.origin, BROKEN_LOC, DECAY_TICKS, LocAngle.West, LocShape.CentrepieceStraight) {
+        locRepo.add(cannon.origin, cannon.style.brokenLoc, DECAY_TICKS, LocAngle.West, LocShape.CentrepieceStraight) {
             if (cannons.isCurrent(cannon) && cannon.broken) {
                 lose(cannon)
             }
@@ -448,6 +447,3 @@ constructor(
             )
     }
 }
-
-internal fun ballObj(type: Int): String =
-    if (type == BALL_GRANITE) Multicannons.GRANITE_BALL else Multicannons.STEEL_BALL

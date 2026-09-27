@@ -31,7 +31,6 @@ import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.route.RayCastValidator
 import org.rsmod.api.script.onPlayerSoftTimer
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Cannon
-import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.CANNON_LOC
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.ROTATE_TIMER
 import org.rsmod.content.quest.area.coaltrucks.dwarfcannon.multicannon.Multicannons.Companion.STAGE_FULL
 import org.rsmod.game.entity.Npc
@@ -77,7 +76,7 @@ constructor(
 ) : PluginScript() {
 
     private val rayCast = RayCastValidator(collision)
-    private val cannonId by lazy { RSCM.getRSCM(CANNON_LOC) }
+    private val cannonIds by lazy { CannonStyle.entries.associateWith { RSCM.getRSCM(it.cannonLoc) } }
     private val destroyerIds by lazy { CANNON_DESTROYERS.map(RSCM::getRSCM).toSet() }
 
     override fun ScriptContext.startup() {
@@ -91,7 +90,7 @@ constructor(
             return
         }
         val loc = locRepo.findExact(cannon.origin, LocShape.CentrepieceStraight)
-        if (loc == null || loc.id != cannonId) {
+        if (loc == null || loc.id != cannonIds.getValue(cannon.style)) {
             stop(player, cannon)
             return
         }
@@ -176,7 +175,7 @@ constructor(
         val distance = centre.chebyshev(target.coords)
         val proj =
             ProjAnim(
-                spotanim = RSCM.getRSCM(if (granite) GRANITE_SPOTANIM else STEEL_SPOTANIM),
+                spotanim = RSCM.getRSCM(if (granite) cannon.style.graniteSpotanim else cannon.style.steelSpotanim),
                 startHeight = PROJ_START_HEIGHT,
                 endHeight = PROJ_END_HEIGHT,
                 startTime = 0,
@@ -281,8 +280,6 @@ constructor(
         const val GRANITE_MAX_HIT = 35
         const val XP_PER_DAMAGE = 2.0
 
-        const val STEEL_SPOTANIM = "spotanim.cannonball_travel"
-        const val GRANITE_SPOTANIM = "spotanim.cannonball_travel_granite"
         const val FIRE_SOUND = "synth.mcannon_fire"
         const val SOUND_RADIUS = 10
 

@@ -26,16 +26,14 @@ class Multicannons {
 
     fun all(): Collection<Cannon> = cannons.values
 
-    fun place(player: Player, origin: CoordGrid): Cannon {
-        val cannon = Cannon(player.accountHash, origin, ++nextSerial)
+    fun place(player: Player, origin: CoordGrid, style: CannonStyle): Cannon {
+        val cannon = Cannon(player.accountHash, origin, style, ++nextSerial)
         cannons[player.accountHash] = cannon
         return cannon
     }
 
     fun ownedBy(player: Player, origin: CoordGrid): Cannon? =
         of(player)?.takeIf { it.origin == origin }
-
-    fun ownerAt(origin: CoordGrid): Long? = cannons.values.firstOrNull { it.origin == origin }?.owner
 
     fun remove(cannon: Cannon) {
         if (cannons[cannon.owner] === cannon) {
@@ -45,7 +43,7 @@ class Multicannons {
 
     fun isCurrent(cannon: Cannon): Boolean = cannons[cannon.owner] === cannon
 
-    class Cannon(val owner: Long, val origin: CoordGrid, val serial: Int) {
+    class Cannon(val owner: Long, val origin: CoordGrid, val style: CannonStyle, val serial: Int) {
         var stage: Int = STAGE_NONE
         var broken: Boolean = false
         var direction: Int = 0
@@ -62,24 +60,8 @@ class Multicannons {
         const val STAGE_BARRELS = 3
         const val STAGE_FULL = 4
 
-        const val BASE = "obj.twpart1"
-        const val STAND = "obj.twpart2"
-        const val BARRELS = "obj.twpart3"
-        const val FURNACE = "obj.twpart4"
-        val PARTS = listOf(BASE, STAND, BARRELS, FURNACE)
-
         const val STEEL_BALL = "obj.mcannonball"
         const val GRANITE_BALL = "obj.granite_cannonball"
-
-        const val BASE_LOC = "loc.multicannon_base"
-        const val STAND_LOC = "loc.multicannon_stand"
-        const val BARRELS_LOC = "loc.multicannon_barrels"
-        const val CANNON_LOC = "loc.dwarf_multicannon1"
-        const val BROKEN_LOC = "loc.dwarf_multicannon1_broken"
-
-        val STAGE_LOCS = listOf(BASE_LOC, STAND_LOC, BARRELS_LOC, CANNON_LOC)
-
-        const val CAPACITY = 30
 
         /** A cannon runs for 25 minutes before it breaks down. */
         const val BREAK_TICKS = 2500
@@ -91,10 +73,62 @@ class Multicannons {
     }
 }
 
+/**
+ * The plain dwarf multicannon and its Shattered Relics ornamented twin. Each part and each stage
+ * of the standing cannon has its own item and loc; the two sets cannot be mixed.
+ */
+enum class CannonStyle(
+    val parts: List<String>,
+    val stageLocs: List<String>,
+    val brokenLoc: String,
+    val steelSpotanim: String,
+    val graniteSpotanim: String,
+) {
+    Normal(
+        parts = listOf("obj.twpart1", "obj.twpart2", "obj.twpart3", "obj.twpart4"),
+        stageLocs =
+            listOf(
+                "loc.multicannon_base",
+                "loc.multicannon_stand",
+                "loc.multicannon_barrels",
+                "loc.dwarf_multicannon1",
+            ),
+        brokenLoc = "loc.dwarf_multicannon1_broken",
+        steelSpotanim = "spotanim.cannonball_travel",
+        graniteSpotanim = "spotanim.cannonball_travel_granite",
+    ),
+    Ornate(
+        parts =
+            listOf(
+                "obj.league_3_multicannon_base",
+                "obj.league_3_multicannon_stand",
+                "obj.league_3_multicannon_barrels",
+                "obj.league_3_multicannon_furnace",
+            ),
+        stageLocs =
+            listOf(
+                "loc.league03_multicannon_base",
+                "loc.league03_multicannon_stand",
+                "loc.league03_multicannon_barrels",
+                "loc.league03_multicannon_active",
+            ),
+        brokenLoc = "loc.league03_multicannon_broken",
+        steelSpotanim = "spotanim.cannonball_travel_league",
+        graniteSpotanim = "spotanim.cannonball_travel_granite_league",
+    );
+
+    val base: String
+        get() = parts[0]
+
+    val cannonLoc: String
+        get() = stageLocs.last()
+}
+
 internal var Player.cannonStage by intVarp("varp.dropcannon")
 internal var Player.cannonBalls by intVarp("varp.rockthrower")
 internal var Player.cannonBallType by intVarBit("varbit.mcannon_balltype")
 internal var Player.cannonDecayed by boolVarBit("varbit.mcannon_decayed")
+private var Player.cannonOrnate by boolVarBit("varbit.mcannon_ornate")
 private var Player.ownedCannonCoord by intVarp("varp.ownedmcannon")
 private var Player.ownedCannonHud by intVarp("varp.ownedmcannon_temp")
 
@@ -108,6 +142,23 @@ internal var Player.cannonOrigin: CoordGrid?
         ownedCannonCoord = packed
         ownedCannonHud = packed
     }
+
+/** The style of the cannon the player owns, kept so Nulodion returns the right parts. */
+internal var Player.cannonStyle: CannonStyle
+    get() = if (cannonOrnate) CannonStyle.Ornate else CannonStyle.Normal
+    set(value) {
+        cannonOrnate = value == CannonStyle.Ornate
+    }
+
+/** 30 balls, raised to 35, 45 and 60 by the medium, hard and elite Combat Achievement tiers. */
+internal val Player.cannonCapacity: Int
+    get() =
+        when {
+            vars["varbit.ca_tier_status_elite"] != 0 -> 60
+            vars["varbit.ca_tier_status_hard"] != 0 -> 45
+            vars["varbit.ca_tier_status_medium"] != 0 -> 35
+            else -> 30
+        }
 
 internal fun Player.clearCannonVars() {
     cannonOrigin = null
@@ -126,3 +177,6 @@ internal fun Player.markCannonLost(
     ownedCannonHud = 0
     mes(message)
 }
+
+internal fun ballObj(type: Int): String =
+    if (type == BALL_GRANITE) Multicannons.GRANITE_BALL else Multicannons.STEEL_BALL
