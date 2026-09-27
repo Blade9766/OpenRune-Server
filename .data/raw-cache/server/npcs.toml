@@ -5646,3 +5646,9 @@ respawnRate = 30
 "param.killcount_varp"="varp.total_whisperer_kills"
 "param.boss_hp_bar_mode"=1
 "param.death_anim"="seq.npc_whisperer_01_death_01"
+
+# Captain Lawgof barks orders at his troops between visitors (see CaptainLawgof).
+[[npc]]
+id = "npc.lawgof2"
+inherit = "npc.lawgof2"
+timer = 1

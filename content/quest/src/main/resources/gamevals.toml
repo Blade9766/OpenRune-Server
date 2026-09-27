@@ -330,6 +330,16 @@ fire_bolt_all = 2340
 thrown = 2708
 # Alfred Grimhand's Barcrawl: the Black Skull Ale's hiccups.
 hiccup = 1903
+# Dwarf Cannon: hammering the stockade railings back in and the toolkit repair of the multicannon.
+tbcu_repair_fence = 1275
+hammering_1 = 1143
+rogue_gear_select = 1232
+mousetrap_spring = 1221
+rogue_placegear = 1237
+mcannon_turn = 2877
+# Dwarf multicannon: assembling a part, and the firing heard around the cannon.
+mcannon_setup = 2876
+mcannon_fire = 1667
 
 [gamevals.clientscript]
 quest_available_set = 45550
@@ -587,6 +597,8 @@ upass_temple = 136
 # Death to the Dorgeshuun: Zanik following the player, and Zanik riding in her crate.
 dttd_zanik = 137
 dttd_crate = 138
+# Dwarf multicannon: the barrel stepping round and firing, one direction a tick.
+mcannon_rotate = 139
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.

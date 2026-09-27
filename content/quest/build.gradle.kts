@@ -29,6 +29,8 @@ dependencies {
     implementation(projects.api.death)
     implementation(projects.api.route)
     implementation(projects.api.combat.combatManager)
+    implementation(projects.api.combat.combatCommons)
+    implementation(projects.api.combat.combatWeapon)
     implementation(projects.api.weapons)
     implementation(projects.api.invWeight)
     implementation(projects.api.hunt)
