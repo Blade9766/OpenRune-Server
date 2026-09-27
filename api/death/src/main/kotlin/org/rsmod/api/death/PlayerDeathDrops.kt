@@ -136,6 +136,9 @@ constructor(
         handling: PlayerDeathHandling,
         coords: CoordGrid,
     ) {
+        if (keepsEverything(player, result)) {
+            return
+        }
         player.inv.fillNulls()
         player.worn.fillNulls()
 
@@ -211,6 +214,14 @@ constructor(
             player.inv[freeSlot] = item
         }
     }
+
+    /** A death that costs nothing (safe minigames) leaves worn items worn and the inventory as it was. */
+    private fun keepsEverything(player: Player, result: DeathDropResult): Boolean =
+        result.supplyPile.isEmpty() &&
+            result.lostTradeable.isEmpty() &&
+            result.lostUntradeable.isEmpty() &&
+            result.coinsForKiller == 0L &&
+            result.kept.size == player.inv.objs.count { it != null } + player.worn.objs.count { it != null }
 
     private fun sortedCarriedObjs(player: Player): List<InvObj> =
         (player.inv.filterNotNull { true } + player.worn.filterNotNull { true })

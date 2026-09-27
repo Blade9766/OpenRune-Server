@@ -236,6 +236,33 @@ internal object BotMap {
                 Team.Zamorak -> CoordGrid(2370, 3133, 0)
             }
 
+    fun toolboxTable(team: Team): Pair<String, CoordGrid> =
+        "loc.castlewars_table_toolbox" to
+            when (team) {
+                Team.Saradomin -> CoordGrid(2429, 3075, 0)
+                Team.Zamorak -> CoordGrid(2370, 3131, 0)
+            }
+
+    fun bucketTable(team: Team): Pair<String, CoordGrid> =
+        "loc.castlewars_table_buckets" to
+            when (team) {
+                Team.Saradomin -> CoordGrid(2428, 3079, 0)
+                Team.Zamorak -> CoordGrid(2371, 3127, 0)
+            }
+
+    fun tap(team: Team): CoordGrid =
+        when (team) {
+            Team.Saradomin -> CoordGrid(2431, 3077, 0)
+            Team.Zamorak -> CoordGrid(2368, 3130, 0)
+        }
+
+    /** Where [team]'s respawn room tinderbox lies when nobody has taken it. */
+    fun tinderboxSpawn(team: Team): CoordGrid =
+        when (team) {
+            Team.Saradomin -> CoordGrid(2423, 3080, 1)
+            Team.Zamorak -> CoordGrid(2376, 3127, 1)
+        }
+
     /** Field tiles either side of the lane out of [team]'s gate, left open so the gate stays usable. */
     fun barricadeSpots(team: Team): List<CoordGrid> =
         when (team) {

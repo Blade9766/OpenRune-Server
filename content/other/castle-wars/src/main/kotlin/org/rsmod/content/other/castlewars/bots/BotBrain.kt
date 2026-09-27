@@ -5,13 +5,16 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.aconverted.interf.IfButtonOp
+import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlin.random.Random
 import org.rsmod.api.combat.weapon.types.AttackTypes
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
+import org.rsmod.api.player.interact.LocTInteractions
 import org.rsmod.api.player.interact.NpcInteractions
+import org.rsmod.api.player.interact.ObjInteractions
 import org.rsmod.api.player.interact.PlayerInteractions
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
@@ -22,7 +25,10 @@ import org.rsmod.api.player.stat.prayerLvl
 import org.rsmod.api.player.ui.IfModalButton
 import org.rsmod.api.player.ui.ifClose
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
+import org.rsmod.api.player.vars.setActiveMoveSpeed
+import org.rsmod.api.player.vars.varMoveSpeed
 import org.rsmod.api.registry.loc.LocRegistry
+import org.rsmod.api.registry.obj.ObjRegistry
 import org.rsmod.content.interfaces.prayer.tab.Prayer
 import org.rsmod.content.interfaces.prayer.tab.PrayerRepository
 import org.rsmod.content.other.castlewars.CastleWars
@@ -35,10 +41,14 @@ import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.HeldOp
 import org.rsmod.game.interact.InteractionLocOp
+import org.rsmod.game.interact.InteractionLocT
 import org.rsmod.game.interact.InteractionNpcOp
+import org.rsmod.game.interact.InteractionObj
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.game.interact.InteractionPlayerOp
+import org.rsmod.game.inv.InvObj
 import org.rsmod.game.loc.BoundLocInfo
+import org.rsmod.game.movement.MoveSpeed
 import org.rsmod.game.movement.RouteRequestCoord
 import org.rsmod.game.movement.RouteRequestLoc
 import org.rsmod.game.movement.RouteRequestPathingEntity
@@ -51,7 +61,11 @@ internal sealed interface BotOrder {
 
     data class Attack(val target: Player) : BotOrder
 
-    data class AttackNpc(val target: Npc) : BotOrder
+    data class NpcOp(val target: Npc, val op: Int) : BotOrder
+
+    data class Take(val obj: String, val coords: CoordGrid) : BotOrder
+
+    data class UseItemOnLoc(val item: String, val loc: String, val coords: CoordGrid) : BotOrder
 
     data object SetUpBarricade : BotOrder
 
@@ -74,6 +88,9 @@ constructor(
     private val locRegistry: LocRegistry,
     private val locInteractions: LocInteractions,
     private val npcInteractions: NpcInteractions,
+    private val locTInteractions: LocTInteractions,
+    private val objInteractions: ObjInteractions,
+    private val objRegistry: ObjRegistry,
     private val playerInteractions: PlayerInteractions,
     private val heldInteractions: HeldInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
@@ -91,13 +108,22 @@ constructor(
         if (player.isDelayed || player.isAccessProtected || player.hitpoints <= 0) {
             return
         }
-        if (eatIfHurt(bot, cycle) || restorePrayer(bot, cycle)) {
+        wearCloak(player, team)
+        if (eatIfHurt(bot, cycle) || restorePrayer(bot, cycle) || keepRunning(bot, cycle)) {
             return
         }
         pray(bot, team, cycle)
         trackProgress(bot)
         val order = decide(bot, team) ?: return
         perform(bot, order, cycle)
+    }
+
+    private fun wearCloak(player: Player, team: Team) {
+        if (player.worn[Wearpos.Back.slot]?.id == team.cloak.asRSCM(RSCMType.OBJ)) {
+            return
+        }
+        player.worn[Wearpos.Back.slot] = InvObj(team.cloak)
+        player.rebuildAppearance()
     }
 
     private fun eatIfHurt(bot: Bot, cycle: Int): Boolean {
@@ -108,6 +134,27 @@ constructor(
         val slot = player.inv.indices.firstOrNull { player.inv[it]?.id in FOOD_IDS } ?: return false
         bot.ateAt = cycle
         return protectedAccess.launch(player) { heldInteractions.interact(this, player.inv, slot, HeldOp.Op1) }
+    }
+
+    /**
+     * Turns run back on once energy has recovered (the game switches it off at empty); a bot
+     * carrying a standard runs on any energy and bandages itself when it is running low.
+     */
+    private fun keepRunning(bot: Bot, cycle: Int): Boolean {
+        val player = bot.player
+        val carrying = game.carriedFlag(player) != null
+        if (carrying && player.runEnergy < CARRIER_BANDAGE_ENERGY && cycle - bot.ateAt >= EAT_DELAY) {
+            val slot = player.inv.indices.firstOrNull { player.inv[it]?.id == BANDAGES_ID }
+            if (slot != null) {
+                bot.ateAt = cycle
+                return protectedAccess.launch(player) { heldInteractions.interact(this, player.inv, slot, HeldOp.Op1) }
+            }
+        }
+        val resume = if (carrying) MIN_RUN_ENERGY else RESUME_RUN_ENERGY
+        if (player.varMoveSpeed != MoveSpeed.Run && player.runEnergy >= resume) {
+            player.setActiveMoveSpeed(MoveSpeed.Run)
+        }
+        return false
     }
 
     private fun restorePrayer(bot: Bot, cycle: Int): Boolean {
@@ -189,8 +236,13 @@ constructor(
         }
         bot.ignored.values.removeIf { it <= player.currentMapClock }
         val thief = game.carrierOf(team)
-        if (thief != null && canFight(bot, thief, CHASE_RADIUS)) {
-            return BotOrder.Attack(thief)
+        if (thief != null) {
+            if (canFight(bot, thief, CHASE_RADIUS)) {
+                return BotOrder.Attack(thief)
+            }
+            if (bot.role != BotRole.Attacker || player.coords.chebyshevDistance(thief.coords) <= CHASE_RADIUS) {
+                reach(player, team, thief.coords, null)?.let { return it }
+            }
         }
         game.state(team).droppedAt?.let { dropped ->
             if (bot.role != BotRole.Attacker || player.coords.chebyshevDistance(dropped) <= RECOVER_RADIUS) {
@@ -202,11 +254,12 @@ constructor(
                 return reach(player, team, dropped, BotOrder.UseLoc(enemy.droppedBannerLoc, dropped, 1))
             }
         }
-        if (BotMap.placeOf(player.coords) == Place.Spawn(team) && foodCount(player) < RESTOCK_BELOW) {
+        if (BotMap.placeOf(player.coords) == Place.Spawn(team) && needsBandages(bot)) {
             val (table, coords) = BotMap.bandageTable(team)
             return BotOrder.UseLoc(table, coords, TAKE_FIVE_OP)
         }
-        blockingBarricade(bot, team)?.let { return BotOrder.AttackNpc(it) }
+        grabTinderbox(bot, team)?.let { return it }
+        blockingBarricade(bot, team)?.let { return clearBarricade(bot, it) }
         if (bot.role == BotRole.Attacker) {
             return raid(bot, team)
         }
@@ -215,10 +268,54 @@ constructor(
             return BotOrder.Attack(current)
         }
         nearestEnemy(bot, enemy, engageRadius(bot.role))?.let { return BotOrder.Attack(it) }
+        burnableBarricade(bot, team)?.let { return BotOrder.NpcOp(it, BURN_OP) }
         return when (bot.role) {
             BotRole.Attacker -> raid(bot, team)
             BotRole.Defender -> barricade(bot, team) ?: reach(player, team, BotMap.guardPost(team), null)
             BotRole.Hunter -> siege(bot, team) ?: hunt(bot, team)
+        }
+    }
+
+    /** Attackers always carry bandages to keep running with a standard; everyone restocks when low on food. */
+    private fun needsBandages(bot: Bot): Boolean {
+        val player = bot.player
+        if (player.inv.freeSpace() == 0) {
+            return false
+        }
+        return foodCount(player) < RESTOCK_BELOW || (bot.role == BotRole.Attacker && !player.inv.contains(BANDAGES))
+    }
+
+    /** A bot in its respawn room without a tinderbox picks up the one lying there. */
+    private fun grabTinderbox(bot: Bot, team: Team): BotOrder? {
+        val player = bot.player
+        if (BotMap.placeOf(player.coords) != Place.Spawn(team) || player.inv.contains(TINDERBOX)) {
+            return null
+        }
+        val spawn = BotMap.tinderboxSpawn(team)
+        if (objRegistry.findAll(spawn).none { it.type == TINDERBOX_ID }) {
+            return null
+        }
+        return BotOrder.Take(TINDERBOX, spawn)
+    }
+
+    /** Burns a barricade in the way when the bot has a tinderbox, and hacks at it otherwise. */
+    private fun clearBarricade(bot: Bot, barricade: Npc): BotOrder =
+        if (bot.player.inv.contains(TINDERBOX) && !game.isBurning(barricade)) {
+            BotOrder.NpcOp(barricade, BURN_OP)
+        } else {
+            BotOrder.NpcOp(barricade, ATTACK_OP)
+        }
+
+    /** An enemy barricade close by that a bot carrying a tinderbox can set alight. */
+    private fun burnableBarricade(bot: Bot, team: Team): Npc? {
+        val player = bot.player
+        if (!player.inv.contains(TINDERBOX)) {
+            return null
+        }
+        val place = BotMap.placeOf(player.coords)
+        return game.state(team.opponent).barricades.firstOrNull {
+            !game.isBurning(it) && BotMap.placeOf(it.coords) == place &&
+                it.coords.chebyshevDistance(player.coords) <= BURN_RADIUS
         }
     }
 
@@ -247,9 +344,12 @@ constructor(
      */
     private fun siege(bot: Bot, team: Team): BotOrder? {
         val player = bot.player
-        if (game.catapultState(team) != CatapultState.Operational) {
-            return null
+        when (game.catapultState(team)) {
+            CatapultState.Broken -> return repairCatapult(player, team)
+            CatapultState.Burning -> return extinguishCatapult(player, team)
+            CatapultState.Operational -> Unit
         }
+        fetchWater(player, team)?.let { return it }
         if (!player.inv.contains(ROCK)) {
             val (table, coords) = BotMap.rockTable(team)
             return reach(player, team, coords, BotOrder.UseLoc(table, coords, TAKE_FIVE_OP))
@@ -258,12 +358,52 @@ constructor(
         if (BotMap.placeOf(player.coords) != Place.Wall(team)) {
             return reach(player, team, post, null)
         }
-        val target = catapultTarget(team) ?: return reach(player, team, post, null)
+        val target = catapultTarget(team) ?: return burnEnemyCatapult(player, team) ?: reach(player, team, post, null)
         val centre = team.catapultCoords.translate(1, 1)
         if (player.coords.chebyshevDistance(centre) > CATAPULT_REACH) {
             return BotOrder.UseLoc(team.catapultLoc, team.catapultCoords, 1)
         }
         return BotOrder.Fire(target)
+    }
+
+    /** Fetches a toolkit from the supply room and repairs the team's broken catapult. */
+    private fun repairCatapult(player: Player, team: Team): BotOrder? {
+        if (!player.inv.contains(TOOLKIT)) {
+            val (table, coords) = BotMap.toolboxTable(team)
+            return reach(player, team, coords, BotOrder.UseLoc(table, coords, TAKE_ONE_OP))
+        }
+        val repair = BotOrder.UseLoc(team.brokenCatapultLoc, team.catapultCoords, 1)
+        return reach(player, team, BotMap.catapultPost(team), repair)
+    }
+
+    /** Pours a bucket of water over the team's burning catapult. */
+    private fun extinguishCatapult(player: Player, team: Team): BotOrder? {
+        fetchWater(player, team)?.let { return it }
+        val douse = BotOrder.UseItemOnLoc(WATER, team.burningCatapultLoc, team.catapultCoords)
+        return reach(player, team, BotMap.catapultPost(team), douse)
+    }
+
+    /** Hunters keep a bucket of water on hand: a fire burns out long before a round trip to the tap. */
+    private fun fetchWater(player: Player, team: Team): BotOrder? {
+        if (player.inv.contains(WATER)) {
+            return null
+        }
+        if (player.inv.contains(BUCKET)) {
+            val tap = BotMap.tap(team)
+            return reach(player, team, tap, BotOrder.UseItemOnLoc(BUCKET, TAP, tap))
+        }
+        val (table, coords) = BotMap.bucketTable(team)
+        return reach(player, team, coords, BotOrder.UseLoc(table, coords, TAKE_ONE_OP))
+    }
+
+    /** With nothing to shoot at, a hunter carrying a tinderbox sets the enemy catapult on fire. */
+    private fun burnEnemyCatapult(player: Player, team: Team): BotOrder? {
+        val enemy = team.opponent
+        if (!player.inv.contains(TINDERBOX) || game.catapultState(enemy) != CatapultState.Operational) {
+            return null
+        }
+        val burn = BotOrder.UseItemOnLoc(TINDERBOX, enemy.catapultLoc, enemy.catapultCoords)
+        return reach(player, team, BotMap.catapultPost(enemy), burn)
     }
 
     private fun catapultTarget(team: Team): CoordGrid? {
@@ -401,11 +541,28 @@ constructor(
                 }
                 walk(player, order.coords)
             }
-            is BotOrder.AttackNpc -> {
-                if ((player.interaction as? InteractionNpcOp)?.target === order.target) {
+            is BotOrder.NpcOp -> {
+                val current = player.interaction as? InteractionNpcOp
+                if (current?.target === order.target && current.op.slot == order.op) {
                     return
                 }
-                attackNpc(player, order.target)
+                opNpc(player, order.target, order.op)
+            }
+            is BotOrder.Take -> {
+                if (repeated && cycle - bot.orderedAt < REISSUE_DELAY && player.interaction != null) {
+                    return
+                }
+                if (!takeObj(player, order)) {
+                    return
+                }
+            }
+            is BotOrder.UseItemOnLoc -> {
+                if (repeated && cycle - bot.orderedAt < REISSUE_DELAY && player.interaction != null) {
+                    return
+                }
+                if (!useItemOnLoc(player, order)) {
+                    return
+                }
             }
             BotOrder.SetUpBarricade -> {
                 val slot = player.inv.indices.firstOrNull { player.inv[it]?.id == BARRICADE_ID } ?: return
@@ -456,8 +613,8 @@ constructor(
         player.routeRequest = RouteRequestPathingEntity(target.avatar, clientRequest = true)
     }
 
-    private fun attackNpc(player: Player, target: Npc) {
-        val op = InteractionOp.Op2
+    private fun opNpc(player: Player, target: Npc, slot: Int) {
+        val op = InteractionOp.entries[slot - 1]
         player.clearPendingAction(eventBus)
         player.faceNpc(target)
         player.interaction =
@@ -468,6 +625,58 @@ constructor(
                 hasApTrigger = npcInteractions.hasApTrigger(player, target, op),
             )
         player.routeRequest = RouteRequestPathingEntity(target.avatar, clientRequest = true)
+    }
+
+    private fun takeObj(player: Player, order: BotOrder.Take): Boolean {
+        val id = order.obj.asRSCM(RSCMType.OBJ)
+        val obj = objRegistry.findAll(order.coords).firstOrNull { it.type == id } ?: return false
+        val op = InteractionOp.Op3
+        player.clearPendingAction(eventBus)
+        player.resetFaceEntity()
+        player.interaction =
+            InteractionObj(
+                target = obj,
+                op = op,
+                hasOpTrigger = objInteractions.hasOpTrigger(obj, op),
+                hasApTrigger = objInteractions.hasApTrigger(obj, op),
+            )
+        player.routeRequest = RouteRequestCoord(order.coords, clientRequest = true)
+        return true
+    }
+
+    /** Uses an inventory item on a loc: the same interaction as selecting the item and clicking. */
+    private fun useItemOnLoc(player: Player, order: BotOrder.UseItemOnLoc): Boolean {
+        val itemId = order.item.asRSCM(RSCMType.OBJ)
+        val slot = player.inv.indices.firstOrNull { player.inv[it]?.id == itemId } ?: return false
+        val objType = ServerCacheManager.getItem(itemId) ?: return false
+        val locId = order.loc.asRSCM(RSCMType.LOC)
+        val loc = locRegistry.findType(order.coords, locId) ?: return false
+        val type = ServerCacheManager.getObject(locId) ?: return false
+        val bound = BoundLocInfo(loc, type)
+        val component = ServerCacheManager.fromComponent(INVENTORY_ITEMS.asRSCM(RSCMType.COMPONENT))
+        player.clearPendingAction(eventBus)
+        player.resetFaceEntity()
+        player.faceLoc(loc, type.width, type.length)
+        player.interaction =
+            InteractionLocT(
+                target = bound,
+                comsub = slot,
+                objType = objType,
+                component = component,
+                hasOpTrigger = locTInteractions.hasOpTrigger(player, bound, type, objType, component, slot),
+                hasApTrigger = locTInteractions.hasApTrigger(player, bound, type, objType, component, slot),
+            )
+        player.routeRequest =
+            RouteRequestLoc(
+                destination = order.coords,
+                width = type.width,
+                length = type.length,
+                shape = loc.entity.shape,
+                angle = loc.entity.angle,
+                forceApproachFlags = type.forceApproachFlags,
+                clientRequest = true,
+            )
+        return true
     }
 
     /** Aims the catapult at [target] and presses Fire, the same button a player clicks. */
@@ -524,6 +733,22 @@ constructor(
 
         fun foodCount(player: Player): Int = player.inv.objs.count { it != null && it.id in FOOD_IDS }
 
+        private const val BANDAGES = "obj.castlewars_bandages"
+        private val BANDAGES_ID: Int by lazy { BANDAGES.asRSCM(RSCMType.OBJ) }
+        private const val RESUME_RUN_ENERGY = 3000
+        private const val MIN_RUN_ENERGY = 100
+        private const val CARRIER_BANDAGE_ENERGY = 2500
+        private const val TINDERBOX = "obj.tinderbox"
+        private val TINDERBOX_ID: Int by lazy { TINDERBOX.asRSCM(RSCMType.OBJ) }
+        private const val TOOLKIT = "obj.castlewars_toolkit"
+        private const val BUCKET = "obj.bucket_empty"
+        private const val WATER = "obj.bucket_water"
+        private const val TAP = "loc.castlewars_tap"
+        private const val INVENTORY_ITEMS = "component.inventory:items"
+        private const val ATTACK_OP = 2
+        private const val BURN_OP = 3
+        private const val TAKE_ONE_OP = 1
+        private const val BURN_RADIUS = 8
         private const val ROCK = "obj.castlewars_catapult_rock"
         private const val BARRICADE = "obj.castlewars_barricade"
         private val BARRICADE_ID: Int by lazy { BARRICADE.asRSCM(RSCMType.OBJ) }

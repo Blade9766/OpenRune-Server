@@ -6,10 +6,14 @@ import kotlin.math.max
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.manager.MagicRuneManager
 import org.rsmod.api.combat.manager.MagicRuneManager.Companion.isFailure
+import org.rsmod.api.death.PvPAttackValidateHook
+import org.rsmod.api.death.PvPAttackValidateResult
 import org.rsmod.api.hunt.NpcSearch
+import org.rsmod.api.hunt.PlayerSearch
 import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.stat
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.stat.statHeal
@@ -28,23 +32,55 @@ import org.rsmod.game.entity.Player
  *
  * Every spell is a magic attack with the book's own casting animation, projectile and impact
  * graphics. Bursts and barrages are area spells: in a multi-combat area they also hit every
- * attackable npc standing next to the target, up to nine targets in all. The element decides the
- * effect of a hit that lands:
+ * attackable npc and every player the caster may fight standing next to the target, up to nine
+ * targets in all. The element decides the effect of a hit that lands:
  * - **Smoke** poisons the target (2 damage from a rush or burst, 4 from a blitz or barrage).
  * - **Shadow** lowers the target's Attack (10% from a rush or burst, 15% from a blitz or barrage).
  * - **Blood** heals the caster for a quarter of the damage dealt.
  * - **Ice** freezes the target in place (5, 10, 15 or 20 seconds by tier).
  */
-class AncientSpells @Inject constructor(private val npcSearch: NpcSearch) : SpellAttackMap {
+class AncientSpells
+@Inject
+constructor(
+    private val npcSearch: NpcSearch,
+    private val playerSearch: PlayerSearch,
+    private val pvpHooks: Set<PvPAttackValidateHook>,
+) : SpellAttackMap {
     override fun SpellAttackRepository.register(manager: SpellAttackManager) {
+        val splash = AreaTargets(npcSearch, playerSearch, pvpHooks)
         for (tier in Tier.entries) {
             for (element in Element.entries) {
                 register(
                     spell = "obj.${element.spellObj(tier)}",
-                    attack = AncientSpellAttack(manager, npcSearch, element, tier),
+                    attack = AncientSpellAttack(manager, splash, element, tier),
                 )
             }
         }
+    }
+
+    /**
+     * Who else a burst or barrage lands on: npcs that can be attacked and players the caster is
+     * allowed to fight (the same checks as attacking them directly), next to the target.
+     */
+    private class AreaTargets(
+        private val npcSearch: NpcSearch,
+        private val playerSearch: PlayerSearch,
+        private val pvpHooks: Set<PvPAttackValidateHook>,
+    ) {
+        fun around(caster: Player, target: PathingEntity): List<PathingEntity> {
+            val npcs =
+                npcSearch
+                    .findAllAny(target.coords, distance = 1, vis = HuntVis.Off)
+                    .filter { it != target && it.isValidTarget() && it.type.hasOp(2) }
+            val players =
+                playerSearch
+                    .findAll(target.coords, maxDistance = 1, vis = HuntVis.Off)
+                    .filter { it != target && it != caster && it.hitpoints > 0 && mayFight(caster, it) }
+            return (npcs + players).take(MAX_AREA_TARGETS - 1).toList()
+        }
+
+        private fun mayFight(caster: Player, other: Player): Boolean =
+            pvpHooks.all { it.validate(caster, other) is PvPAttackValidateResult.Pass }
     }
 
     private enum class Tier(
@@ -97,7 +133,7 @@ class AncientSpells @Inject constructor(private val npcSearch: NpcSearch) : Spel
 
     private class AncientSpellAttack(
         private val manager: SpellAttackManager,
-        private val npcSearch: NpcSearch,
+        private val areaTargets: AreaTargets,
         private val element: Element,
         private val tier: Tier,
     ) : SpellAttack {
@@ -131,13 +167,8 @@ class AncientSpells @Inject constructor(private val npcSearch: NpcSearch) : Spel
             strike(target, attack, castResult, clientDelay, serverDelay, primary = true)
 
             if (tier.area && mapMultiway()) {
-                val others =
-                    npcSearch
-                        .findAllAny(target.coords, distance = 1, vis = HuntVis.Off)
-                        .filter { it != target && it.isValidTarget() && it.type.hasOp(2) }
-                        .take(MAX_AREA_TARGETS - 1)
-                for (npc in others) {
-                    strike(npc, attack, castResult, clientDelay, serverDelay, primary = false)
+                for (other in areaTargets.around(player, target)) {
+                    strike(other, attack, castResult, clientDelay, serverDelay, primary = false)
                 }
             }
             manager.continueCombatIfAutocast(this, target)

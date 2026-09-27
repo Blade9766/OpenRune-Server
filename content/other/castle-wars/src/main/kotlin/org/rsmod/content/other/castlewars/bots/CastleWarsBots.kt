@@ -6,21 +6,27 @@ import jakarta.inject.Singleton
 import kotlin.random.Random
 import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.net.rsprot.BotSessions
+import org.rsmod.api.player.events.interact.HeldEquipEvents
 import org.rsmod.api.player.stat.PlayerSkillXP
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.prayerLvl
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.worn.HeldEquipOp
+import org.rsmod.api.player.worn.HeldEquipResult
 import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.registry.player.isSuccess
 import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.content.other.castlewars.CastleWars
 import org.rsmod.content.other.castlewars.CastleWarsGame
 import org.rsmod.content.other.castlewars.Team
+import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.stat.PlayerSkillXPTable
+import org.rsmod.game.type.getInvObj
 import org.rsmod.map.CoordGrid
+
+private const val BURN_OP = 3
 
 internal enum class BotRole {
     Attacker,
@@ -58,6 +64,7 @@ constructor(
     private val equipOp: HeldEquipOp,
     private val brain: BotBrain,
     private val spells: MagicSpellRegistry,
+    private val eventBus: EventBus,
 ) {
     private val bots = LinkedHashMap<Player, Bot>()
     private var nextId = 1
@@ -158,7 +165,9 @@ constructor(
             val slot = player.inv.indices.firstOrNull { player.inv[it] == null } ?: return
             val count = if (obj.endsWith("_arrow")) BotLoadout.arrowCount() else 1
             player.inv[slot] = InvObj(obj, count)
-            equipOp.equip(player, slot, player.inv)
+            if (equipOp.equip(player, slot, player.inv) !is HeldEquipResult.Success) {
+                wearDirectly(player, slot)
+            }
         }
         val food = BotLoadout.food(levels)
         repeat(BotLoadout.FOOD_COUNT) {
@@ -169,6 +178,20 @@ constructor(
             val slot = player.inv.indices.firstOrNull { player.inv[it] == null } ?: return
             player.inv[slot] = InvObj(BotLoadout.PRAYER_POTION)
         }
+    }
+
+    /** Bots skip quest locks on gear (a rune platebody needs Dragon Slayer), so they still wear it. */
+    private fun wearDirectly(player: Player, slot: Int) {
+        val obj = player.inv[slot] ?: return
+        val type = getInvObj(obj)
+        val wearpos = Wearpos[type.wearpos1] ?: return
+        if (player.worn[wearpos.slot] != null) {
+            return
+        }
+        player.worn[wearpos.slot] = obj
+        player.inv[slot] = null
+        eventBus.publish(HeldEquipEvents.WearposChange(player, wearpos, type))
+        eventBus.publish(HeldEquipEvents.Equip(player, slot, wearpos, type))
     }
 
     private fun autocastBestFireSpell(player: Player, magic: Int) {
@@ -192,13 +215,16 @@ constructor(
                     is BotOrder.Attack -> "attack ${current.target.displayName}"
                     is BotOrder.Walk -> "walk ${current.coords.x},${current.coords.z}"
                     is BotOrder.UseLoc -> "use ${current.loc.removePrefix("loc.castlewars_")}"
-                    is BotOrder.AttackNpc -> "attack barricade"
+                    is BotOrder.NpcOp -> if (current.op == BURN_OP) "burn barricade" else "attack barricade"
+                    is BotOrder.Take -> "take ${current.obj.removePrefix("obj.")}"
+                    is BotOrder.UseItemOnLoc ->
+                        "use ${current.item.removePrefix("obj.")} on ${current.loc.removePrefix("loc.castlewars_")}"
                     BotOrder.SetUpBarricade -> "set up barricade"
                     is BotOrder.Fire -> "fire at ${current.target.x},${current.target.z}"
                     null -> "idle"
                 }
             "${player.displayName} $team ${bot.role}/${bot.style} ${player.coords.x},${player.coords.z},${player.coords.level} " +
-                "hp=${player.hitpoints} pray=${player.prayerLvl}/${player.overheadIcon ?: "-"} food=${BotBrain.foodCount(player)} rocks=${player.inv.count("obj.castlewars_catapult_rock")} $order " +
+                "hp=${player.hitpoints} pray=${player.prayerLvl}/${player.overheadIcon ?: "-"} food=${BotBrain.foodCount(player)} rocks=${player.inv.count("obj.castlewars_catapult_rock")} tb=${player.inv.count("obj.tinderbox")} $order " +
                 "busy=${player.isDelayed || player.isAccessProtected} since=${player.currentMapClock - player.actionDelay}"
         }
 
@@ -230,12 +256,24 @@ constructor(
     }
 
     private companion object {
-        const val TEAM_SIZE = 4
+        const val TEAM_SIZE = 20
         const val RUN_ENERGY = 10000
         const val BOT_ID_BASE = -1_000_000L
 
-        val ROLES = listOf(BotRole.Attacker, BotRole.Defender, BotRole.Hunter, BotRole.Attacker)
-        val STYLES = listOf(BotStyle.Melee, BotStyle.Ranged, BotStyle.Magic, BotStyle.Melee)
+        val ROLES =
+            listOf(
+                BotRole.Attacker,
+                BotRole.Defender,
+                BotRole.Hunter,
+                BotRole.Attacker,
+                BotRole.Defender,
+                BotRole.Attacker,
+                BotRole.Defender,
+                BotRole.Attacker,
+                BotRole.Defender,
+                BotRole.Attacker,
+            )
+        val STYLES = listOf(BotStyle.Melee, BotStyle.Ranged, BotStyle.Magic, BotStyle.Melee, BotStyle.Ranged)
 
         val NAMES =
             listOf(
@@ -247,6 +285,38 @@ constructor(
                 "Bot Freya",
                 "Bot Gareth",
                 "Bot Hilda",
+                "Bot Ingrid",
+                "Bot Jorah",
+                "Bot Kaspar",
+                "Bot Linnea",
+                "Bot Magnus",
+                "Bot Nessa",
+                "Bot Osric",
+                "Bot Petra",
+                "Bot Quentin",
+                "Bot Rowena",
+                "Bot Sigurd",
+                "Bot Thora",
+                "Bot Ulric",
+                "Bot Vesna",
+                "Bot Wystan",
+                "Bot Xenia",
+                "Bot Yorick",
+                "Bot Zelda",
+                "Bot Anselm",
+                "Bot Bryony",
+                "Bot Conrad",
+                "Bot Delia",
+                "Bot Eamon",
+                "Bot Fenella",
+                "Bot Godric",
+                "Bot Helga",
+                "Bot Ivor",
+                "Bot Juno",
+                "Bot Leofric",
+                "Bot Mirela",
+                "Bot Norbert",
+                "Bot Odile",
             )
     }
 }

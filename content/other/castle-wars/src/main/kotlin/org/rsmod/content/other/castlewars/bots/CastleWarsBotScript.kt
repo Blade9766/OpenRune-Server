@@ -7,6 +7,7 @@ import org.rsmod.api.player.output.mes
 import org.rsmod.api.script.onCommand
 import org.rsmod.api.script.onEvent
 import org.rsmod.content.other.castlewars.CastleWarsGame
+import org.rsmod.content.other.castlewars.CatapultState
 import org.rsmod.content.other.castlewars.Team
 import org.rsmod.game.MapClock
 import org.rsmod.plugin.scripts.PluginScript
@@ -36,9 +37,23 @@ constructor(private val bots: CastleWarsBots, private val game: CastleWarsGame, 
             cheat {
                 for (team in Team.entries) {
                     val state = game.state(team)
-                    player.mes("${team.displayName}: score=${state.score} flag=${state.flag} door=${state.mainDoor}")
+                    player.mes("${team.displayName}: score=${state.score} flag=${state.flag} door=${state.mainDoor} catapult=${state.catapult}")
                 }
                 bots.describe().forEach { player.mes(it) }
+            }
+        }
+        onCommand("cwcatapult") {
+            desc = "Set a Castle Wars catapult's state (::cwcatapult saradomin|zamorak operational|burning|broken)"
+            requiredRights = Rights.ADMINISTRATOR
+            cheat {
+                val team = Team.entries.firstOrNull { it.displayName.equals(args.getOrNull(0), ignoreCase = true) }
+                val next = CatapultState.entries.firstOrNull { it.name.equals(args.getOrNull(1), ignoreCase = true) }
+                if (team == null || next == null || !game.running) {
+                    player.mes("Usage: ::cwcatapult saradomin|zamorak operational|burning|broken (during a game)")
+                    return@cheat
+                }
+                game.setCatapult(team, next)
+                player.mes("${team.displayName} catapult is now $next.")
             }
         }
         onCommand("cwbotsoff") {
@@ -53,6 +68,6 @@ constructor(private val bots: CastleWarsBots, private val game: CastleWarsGame, 
     }
 
     private companion object {
-        const val MAX_BOTS = 7
+        const val MAX_BOTS = 40
     }
 }
