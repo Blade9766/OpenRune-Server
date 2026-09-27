@@ -7,6 +7,7 @@ import dev.openrune.types.ItemServerType
 import dev.openrune.types.aconverted.interf.IfButtonOp
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.ui.IfScriptArgs
+import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onIfScriptTrigger
 import org.rsmod.plugin.scripts.PluginScript
@@ -89,10 +90,17 @@ class OmnishopScript : PluginScript() {
         }
     }
 
-    private fun ProtectedAccess.currencyCount(currency: OmnishopCurrency): Int =
-        currency.objs.sumOf { inv.count(it.internalName) }
+    private fun ProtectedAccess.currencyCount(currency: OmnishopCurrency): Int {
+        val varp = currency.varp ?: return currency.objs.sumOf { inv.count(it.internalName) }
+        return player.vars[varp]
+    }
 
     private fun ProtectedAccess.removeCurrency(currency: OmnishopCurrency, amount: Int) {
+        val varp = currency.varp
+        if (varp != null) {
+            VarPlayerIntMapSetter.set(player, varp, player.vars[varp] - amount)
+            return
+        }
         var remaining = amount
         for (obj in currency.objs) {
             if (remaining == 0) return

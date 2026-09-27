@@ -78,6 +78,9 @@ internal class OmnishopCurrency(val row: Int) {
     val objs: List<ItemServerType>
         get() = raw.ints(CURRENCY_OBJ).mapNotNull { ServerCacheManager.getItem(it) }
 
+    val varp: String?
+        get() = VAR_CURRENCIES.entries.firstOrNull { it.key.asRSCM(RSCMType.DBROW) == row }?.value
+
     val pluralName: String
         get() = runCatching { DbHelper.row(row).getColumn(CURRENCY_PLURAL).column.values }
             .getOrNull()
@@ -129,6 +132,13 @@ internal class OmnishopStock(private val shop: RawDbRow, private val stock: RawD
         }
     }
 }
+
+/**
+ * Currencies with no obj, kept in a varp instead. The client reads the same varps through
+ * `omnishop_var_getter` (clientscript 7257) to draw each balance.
+ */
+private val VAR_CURRENCIES =
+    mapOf("dbrow.omnishop_currency_cw_plaudits" to "varp.castlewars_plaudits")
 
 private const val LIST_SLOTS = 288
 private const val SIDE_SLOTS = 28

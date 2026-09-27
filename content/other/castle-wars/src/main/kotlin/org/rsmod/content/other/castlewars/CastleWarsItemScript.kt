@@ -15,6 +15,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.statHeal
+import org.rsmod.api.random.GameRandom
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld5
 import org.rsmod.api.script.onOpPlayerU
@@ -32,6 +33,7 @@ internal class CastleWarsItemScript
 constructor(
     private val game: CastleWarsGame,
     private val potions: PotionEffectService,
+    private val random: GameRandom,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpHeld1(BANDAGES) { bandage(player, self = true) }
@@ -47,6 +49,7 @@ constructor(
             onOpWorn2(team.cloak) { surrender() }
         }
         onOpHeld1(MANUAL) { readManual() }
+        onOpHeld1(CRATE) { openCrate(it.slot) }
     }
 
     /* Bandages */
@@ -171,6 +174,21 @@ constructor(
         mes("You surrender and are returned to your team's respawn room.")
     }
 
+    /* Supply crate */
+
+    /** Three equally weighted rolls on the crate table; every reward stacks. */
+    private fun ProtectedAccess.openCrate(slot: Int) {
+        if (inv.freeSpace() < CRATE_ROLLS - 1) {
+            mes("You need at least ${CRATE_ROLLS - 1} free inventory spaces to open the crate.")
+            return
+        }
+        invDel(inv, CRATE, 1, slot = slot)
+        repeat(CRATE_ROLLS) {
+            val (obj, amount) = CRATE_LOOT[random.of(maxExclusive = CRATE_LOOT.size)]
+            invAdd(inv, obj, random.of(amount), strict = false)
+        }
+    }
+
     /* Manual */
 
     private suspend fun ProtectedAccess.readManual() {
@@ -183,6 +201,8 @@ constructor(
         const val BANDAGES = "obj.castlewars_bandages"
         const val EXPLOSIVE = "obj.castlewars_explosives_potion"
         const val MANUAL = "obj.castlewars_manual"
+        const val CRATE = "obj.castlewars_crate"
+        const val CRATE_ROLLS = 3
         const val EAT_SOUND = 2393
 
         const val BASE_PERCENT = 10
@@ -201,6 +221,21 @@ constructor(
         const val BOOST_PERCENT = 10
         const val BREW_DELAY = 2
         const val STAMINA_DURATION = 200
+
+        val CRATE_LOOT =
+            listOf(
+                "obj.cert_blighted_mantaray" to 15..25,
+                "obj.cert_blighted_anglerfish" to 25..35,
+                "obj.cert_blighted_karambwan" to 35..45,
+                "obj.cert_blighted_4dose2restore" to 4..4,
+                "obj.blighted_sack_icebarrage" to 10..15,
+                "obj.blighted_sack_vengeance" to 20..30,
+                "obj.castlewars_arrow" to 75..105,
+                "obj.castlewars_bolt" to 75..105,
+                "obj.rune_arrow" to 175..225,
+                "obj.rune_javelin" to 100..120,
+                CastleWars.TICKET to 2..2,
+            )
 
         val RESTORABLE =
             listOf(

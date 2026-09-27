@@ -174,6 +174,17 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
         } else {
             mes("You have no room for your Castle wars tickets.")
         }
+        awardPlaudits(tickets)
+    }
+
+    /** Members earn one plaudit for every ticket won, to spend on supply crates with Lanthus. */
+    private fun ProtectedAccess.awardPlaudits(tickets: Int) {
+        if (!player.members) {
+            return
+        }
+        val total = (player.vars[PLAUDITS].toLong() + tickets).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        VarPlayerIntMapSetter.set(player, PLAUDITS, total)
+        mes("You receive $tickets ${if (tickets == 1) "plaudit" else "plaudits"}. You now have $total.")
     }
 
     private fun ProtectedAccess.stripGameItems() {
@@ -196,5 +207,6 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
         const val WAITING_OVERLAY: String = "interface.castlewars_waitingroom"
         const val ATTACK_SLOT: Int = 1
         const val FOLLOW_OP: String = "Follow"
+        const val PLAUDITS: String = "varp.castlewars_plaudits"
     }
 }
