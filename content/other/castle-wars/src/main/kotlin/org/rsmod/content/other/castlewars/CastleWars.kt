@@ -326,10 +326,10 @@ internal object CastleWars {
      */
     val CASTLE_STAIRS: Map<CoordGrid, CoordGrid> =
         mapOf(
-            CoordGrid(2380, 3127, 0) to CoordGrid(2380, 3126, 1),
+            CoordGrid(2380, 3127, 0) to CoordGrid(2379, 3126, 1),
             CoordGrid(2369, 3126, 1) to CoordGrid(2369, 3127, 2),
             CoordGrid(2374, 3131, 2) to CoordGrid(2372, 3132, 3),
-            CoordGrid(2419, 3078, 0) to CoordGrid(2419, 3081, 1),
+            CoordGrid(2419, 3078, 0) to CoordGrid(2420, 3081, 1),
             CoordGrid(2428, 3081, 1) to CoordGrid(2430, 3080, 2),
             CoordGrid(2425, 3074, 2) to CoordGrid(2427, 3075, 3),
         )
