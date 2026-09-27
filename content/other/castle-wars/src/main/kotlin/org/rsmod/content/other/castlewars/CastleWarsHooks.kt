@@ -14,6 +14,7 @@ import org.rsmod.api.death.PlayerRespawnHook
 import org.rsmod.api.death.PvPAttackValidateHook
 import org.rsmod.api.death.PvPAttackValidateResult
 import org.rsmod.api.death.PvPCombatXpHook
+import org.rsmod.api.death.PvPMaxHitHook
 import org.rsmod.api.death.UntradeableHandling
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
@@ -27,13 +28,14 @@ import org.rsmod.map.CoordGrid
 
 /**
  * What the engine asks Castle Wars while a game runs: only opposing teams may fight, nobody
- * teleports out, dying costs nothing and wakes you in your team's respawn room, a carried standard
+ * teleports out, an empowered bracelet hits standard bearers harder, dying costs nothing and wakes you in your team's respawn room, a carried standard
  * falls where its bearer died, and animals in the waiting rooms can't gear up.
  */
 internal class CastleWarsHooks @Inject constructor(private val game: CastleWarsGame) :
     PvPAttackValidateHook,
     NpcAttackValidateHook,
     PvPCombatXpHook,
+    PvPMaxHitHook,
     PlayerRestrictionHook,
     PlayerTeleportValidateHook,
     PlayerDeathHook,
@@ -66,6 +68,14 @@ internal class CastleWarsHooks @Inject constructor(private val game: CastleWarsG
             return false
         }
         return attacker.isAnyIronman || attacker.vars["varbit.castlewars_xp_disabled"] == 1
+    }
+
+    override fun maxHitBonusPercent(attacker: Player, target: Player): Int {
+        if (attacker.vars["varbit.castlewars_bracelet_active"] == 0 || game.carriedFlag(target) == null) {
+            return 0
+        }
+        val attackerTeam = game.playingTeamOf(attacker) ?: return 0
+        return if (attackerTeam != game.playingTeamOf(target)) BRACELET_BONUS_PERCENT else 0
     }
 
     override fun restriction(player: Player, action: RestrictedAction): String? {
@@ -144,5 +154,6 @@ internal class CastleWarsHooks @Inject constructor(private val game: CastleWarsG
 
     private companion object {
         const val MAX_COUNTER = 2047
+        const val BRACELET_BONUS_PERCENT = 20
     }
 }

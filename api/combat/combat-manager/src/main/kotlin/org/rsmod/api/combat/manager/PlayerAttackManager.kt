@@ -30,6 +30,7 @@ import org.rsmod.api.combat.formulas.AccuracyFormulae
 import org.rsmod.api.combat.formulas.MaxHitFormulae
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.death.PvPCombatXpHook
+import org.rsmod.api.death.PvPMaxHitHook
 import org.rsmod.api.death.PvPPlayerHitHook
 import org.rsmod.api.npc.hit.isStyleImmuneTo
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
@@ -80,6 +81,7 @@ constructor(
     private val playerTInteractions: PlayerTInteractions,
     private val pvpPlayerHitHooks: Set<PvPPlayerHitHook>,
     private val pvpCombatXpHooks: Set<PvPCombatXpHook>,
+    private val pvpMaxHitHooks: Set<PvPMaxHitHook>,
 ) {
     /**
      * Determines if the player is still under an active attack delay.
@@ -735,8 +737,11 @@ constructor(
         attackStyle: MeleeAttackStyle?,
         specMultiplier: Double,
         roundUp: Boolean,
-    ): Int =
-        maxHits.getMeleeMaxHit(source, target, attackType, attackStyle, specMultiplier, roundUp)
+    ): Int {
+        val maxHit =
+            maxHits.getMeleeMaxHit(source, target, attackType, attackStyle, specMultiplier, roundUp)
+        return applyPvPMaxHitBonus(source, target, maxHit)
+    }
 
     /**
      * Queues a melee hit on [target], applying damage after the specified [delay].
@@ -1035,15 +1040,18 @@ constructor(
         attackStyle: RangedAttackStyle?,
         specMultiplier: Double,
         boltSpecDamage: Int,
-    ): Int =
-        maxHits.getRangedMaxHit(
-            player = source,
-            target = target,
-            attackType = attackType,
-            attackStyle = attackStyle,
-            specMultiplier = specMultiplier,
-            boltSpecDamage = boltSpecDamage,
-        )
+    ): Int {
+        val maxHit =
+            maxHits.getRangedMaxHit(
+                player = source,
+                target = target,
+                attackType = attackType,
+                attackStyle = attackStyle,
+                specMultiplier = specMultiplier,
+                boltSpecDamage = boltSpecDamage,
+            )
+        return applyPvPMaxHitBonus(source, target, maxHit)
+    }
 
     /**
      * Queues a ranged hit on [target], applying damage after the specified [hitDelay].
@@ -1399,15 +1407,18 @@ constructor(
         spellbook: Spellbook?,
         baseMaxHit: Int,
         sunfireRune: Boolean,
-    ): IntRange =
-        maxHits.getSpellMaxHitRange(
-            player = source,
-            target = target,
-            spell = spell,
-            spellbook = spellbook,
-            baseMaxHit = baseMaxHit,
-            usedSunfireRune = sunfireRune,
-        )
+    ): IntRange {
+        val range =
+            maxHits.getSpellMaxHitRange(
+                player = source,
+                target = target,
+                spell = spell,
+                spellbook = spellbook,
+                baseMaxHit = baseMaxHit,
+                usedSunfireRune = sunfireRune,
+            )
+        return range.first..applyPvPMaxHitBonus(source, target, range.last)
+    }
 
     /**
      * Determines whether the **built-in spell** from a **powered staff** used by [source] will
@@ -1534,13 +1545,24 @@ constructor(
         target: Player,
         baseMaxHit: Int,
         specMultiplier: Double,
-    ): Int =
-        maxHits.getStaffMaxHit(
-            player = source,
-            target = target,
-            baseMaxHit = baseMaxHit,
-            specialMultiplier = specMultiplier,
-        )
+    ): Int {
+        val maxHit =
+            maxHits.getStaffMaxHit(
+                player = source,
+                target = target,
+                baseMaxHit = baseMaxHit,
+                specialMultiplier = specMultiplier,
+            )
+        return applyPvPMaxHitBonus(source, target, maxHit)
+    }
+
+    private fun applyPvPMaxHitBonus(source: Player, target: Player, maxHit: Int): Int {
+        val percent = pvpMaxHitHooks.sumOf { it.maxHitBonusPercent(source, target) }
+        if (percent == 0) {
+            return maxHit
+        }
+        return (maxHit * (100 + percent) / 100).coerceAtLeast(0)
+    }
 
     /**
      * Queues a magic hit on [target], applying damage after the specified [hitDelay].
