@@ -20,13 +20,19 @@ import org.rsmod.api.script.onOpHeld5
 import org.rsmod.api.script.onOpPlayerU
 import org.rsmod.api.script.onOpWorn1
 import org.rsmod.api.script.onOpWorn2
+import org.rsmod.content.other.consumables.potion.PotionEffectService
 import org.rsmod.game.entity.Player
 import org.rsmod.game.hit.HitType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /** Bandages, explosive potions, Castlewars brews, the team cloaks and Lanthus's manual. */
-internal class CastleWarsItemScript @Inject constructor(private val game: CastleWarsGame) : PluginScript() {
+internal class CastleWarsItemScript
+@Inject
+constructor(
+    private val game: CastleWarsGame,
+    private val potions: PotionEffectService,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpHeld1(BANDAGES) { bandage(player, self = true) }
         onOpPlayerU(checkNotNull(ServerCacheManager.getItem(BANDAGES.asRSCM(RSCMType.OBJ)))) {
@@ -99,7 +105,8 @@ internal class CastleWarsItemScript @Inject constructor(private val game: Castle
 
     /**
      * One dose gives the boosts of a super combat potion, a ranging potion and an imbued heart,
-     * a super restore, and a fifth of the player's run energy back.
+     * a super restore, a fifth of the player's run energy back and a stamina potion's reduced run
+     * energy drain.
      */
     private suspend fun ProtectedAccess.drinkBrew(slot: Int, next: String?) {
         invReplace(inv, CastleWars.BREWS.first { inv[slot]?.id == it.asRSCM(RSCMType.OBJ) }, 1, next ?: "obj.vial_empty", slot)
@@ -115,6 +122,7 @@ internal class CastleWarsItemScript @Inject constructor(private val game: Castle
         statBoost("stat.magic", MAGIC_CONSTANT, BOOST_PERCENT)
         player.runEnergy = (player.runEnergy + constants.run_max_energy / 5).coerceAtMost(constants.run_max_energy)
         UpdateRun.energy(player, player.runEnergy)
+        potions.grantStamina(this, STAMINA_DURATION)
         mes(
             if (next == null) {
                 "You drink the last of your Castlewars brew."
@@ -192,6 +200,7 @@ internal class CastleWarsItemScript @Inject constructor(private val game: Castle
         const val MAGIC_CONSTANT = 1
         const val BOOST_PERCENT = 10
         const val BREW_DELAY = 2
+        const val STAMINA_DURATION = 200
 
         val RESTORABLE =
             listOf(

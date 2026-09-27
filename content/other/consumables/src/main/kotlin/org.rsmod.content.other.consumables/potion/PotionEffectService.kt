@@ -68,6 +68,13 @@ constructor(
         applyEffect(access, effect)
     }
 
+    fun grantStamina(
+        access: ProtectedAccess,
+        duration: Int,
+    ) {
+        access.applyStamina(duration)
+    }
+
     fun healMix(
         access: ProtectedAccess,
         amount: Int,
