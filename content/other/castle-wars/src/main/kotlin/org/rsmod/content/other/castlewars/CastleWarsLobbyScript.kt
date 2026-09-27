@@ -144,7 +144,7 @@ internal class CastleWarsLobbyScript @Inject constructor(private val game: Castl
         chatNpc(happy, "Good day, how may I help you?")
         val bracelets = CastleWars.BRACELETS.any { player.inv.contains(it) }
         val stored = player.vars["varbit.castlewars_bracelet_charges"]
-        val ava = AVAS_DEVICES.keys.any { player.inv.contains(it) }
+        val ava = CastleWars.AVAS_DEVICES.keys.any { player.inv.contains(it) }
         val options =
             buildList {
                 add("What is this place?" to Topic.Place)
@@ -316,7 +316,7 @@ internal class CastleWarsLobbyScript @Inject constructor(private val game: Castl
     }
 
     private suspend fun Dialogue.showAva() {
-        val device = AVAS_DEVICES.entries.filter { player.inv.contains(it.key) }.maxBy { it.value }
+        val device = CastleWars.AVAS_DEVICES.entries.filter { player.inv.contains(it.key) }.maxBy { it.value }
         val tier = device.value
         val shownTier = player.vars["varbit.castlewars_ava_reward_tier"]
         chatPlayer(neutral, "Take a look at this dead chicken I've got.")
@@ -411,7 +411,7 @@ internal class CastleWarsLobbyScript @Inject constructor(private val game: Castl
             )
             return
         }
-        if (obj.internalName in AVAS_DEVICES) {
+        if (obj.internalName in CastleWars.AVAS_DEVICES) {
             startDialogue(npc) { showAva() }
             return
         }
@@ -437,13 +437,5 @@ internal class CastleWarsLobbyScript @Inject constructor(private val game: Castl
         const val MAX_STORED_CHARGES = 1023
 
         val ALWAYS_ALLOWED = setOf(CastleWars.TICKET, "obj.castlewars_manual")
-
-        val AVAS_DEVICES =
-            mapOf(
-                "obj.anma_30_reward" to 1,
-                "obj.anma_50_reward" to 2,
-                "obj.avas_assembler" to 3,
-                "obj.avas_assembler_masori" to 4,
-            )
     }
 }

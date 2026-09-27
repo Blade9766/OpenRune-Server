@@ -214,6 +214,15 @@ internal object CastleWars {
     const val TICKET: String = "obj.castlewars_ticket"
     const val RUNE_POUCH: String = "obj.castlewars_rune_replacement"
 
+    /** Ava's devices by the tier Lanthus remembers in `varbit.castlewars_ava_reward_tier`. */
+    val AVAS_DEVICES: Map<String, Int> =
+        mapOf(
+            "obj.anma_30_reward" to 1,
+            "obj.anma_50_reward" to 2,
+            "obj.avas_assembler" to 3,
+            "obj.avas_assembler_masori" to 4,
+        )
+
     val BRACELETS: List<String> =
         listOf(
             "obj.jewl_castlewars_bracelet3",

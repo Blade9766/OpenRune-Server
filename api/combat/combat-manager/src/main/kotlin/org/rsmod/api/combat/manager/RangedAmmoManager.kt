@@ -4,6 +4,7 @@ import dev.openrune.types.ItemServerType
 import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.ranged.RangedAmmunition
+import org.rsmod.api.death.RangedAmmoSaveHook
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.events.EventBus
@@ -21,6 +22,7 @@ constructor(
     private val collision: CollisionFlagMap,
     private val worldQueues: WorldQueueList,
     private val objRepo: ObjRepository,
+    private val ammoSaveHooks: Set<RangedAmmoSaveHook>,
 ) {
     /**
      * Resolves the ammunition [player] would fire from [weapon]: the ammo slot obj, or the
@@ -142,7 +144,7 @@ constructor(
         dropChance: Int,
         dropDuration: Int,
     ) {
-        val conserve = RangedAmmunition.conserveAmmo(player, random)
+        val conserve = conserveAmmo(player)
         if (!conserve) {
             RangedAmmunition.detractAmmo(player, ammoWearpos, ammoType, ammoCount, eventBus)
         }
@@ -160,5 +162,13 @@ constructor(
                 objRepo = objRepo,
             )
         }
+    }
+
+    private fun conserveAmmo(player: Player): Boolean {
+        val percent = ammoSaveHooks.maxOfOrNull { it.ammoSavePercent(player) } ?: 0
+        if (percent > 0) {
+            return percent > random.of(maxExclusive = 100)
+        }
+        return RangedAmmunition.conserveAmmo(player, random)
     }
 }

@@ -12,6 +12,7 @@ import org.rsmod.api.death.PvPMaxHitHook
 import org.rsmod.api.death.PvPPlayerHitHook
 import org.rsmod.api.death.PvPSkullHook
 import org.rsmod.api.death.PvPSpecialAttackHook
+import org.rsmod.api.death.RangedAmmoSaveHook
 import org.rsmod.plugin.module.PluginModule
 
 public class DeathDropHooksModule : PluginModule() {
@@ -28,6 +29,7 @@ public class DeathDropHooksModule : PluginModule() {
         newSetBinding<PvPCombatXpHook>()
         newSetBinding<PvPMaxHitHook>()
         newSetBinding<PvPSpecialAttackHook>()
+        newSetBinding<RangedAmmoSaveHook>()
         addSetBinding<PlayerDeathHook>(UimPlayerDeathHook::class.java)
         addSetBinding<PlayerDeathHook>(StandardPvmDeathHook::class.java)
     }

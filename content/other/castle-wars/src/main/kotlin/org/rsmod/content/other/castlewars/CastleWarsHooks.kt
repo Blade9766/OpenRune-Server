@@ -1,8 +1,12 @@
 package org.rsmod.content.other.castlewars
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
 import org.rsmod.api.area.checker.AreaChecker
+import org.rsmod.api.config.refs.params
 import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcAttackValidateResult
 import org.rsmod.api.death.PlayerDeathCleanupHook
@@ -15,6 +19,7 @@ import org.rsmod.api.death.PvPAttackValidateHook
 import org.rsmod.api.death.PvPAttackValidateResult
 import org.rsmod.api.death.PvPCombatXpHook
 import org.rsmod.api.death.PvPMaxHitHook
+import org.rsmod.api.death.RangedAmmoSaveHook
 import org.rsmod.api.death.UntradeableHandling
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
@@ -24,11 +29,13 @@ import org.rsmod.api.player.ironman.isAnyIronman
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
+import org.rsmod.game.type.getInvObj
 import org.rsmod.map.CoordGrid
 
 /**
  * What the engine asks Castle Wars while a game runs: only opposing teams may fight, nobody
- * teleports out, an empowered bracelet hits standard bearers harder, dying costs nothing and wakes you in your team's respawn room, a carried standard
+ * teleports out, an empowered bracelet hits standard bearers harder, a device shown to Lanthus
+ * saves ammunition without being worn, dying costs nothing and wakes you in your team's respawn room, a carried standard
  * falls where its bearer died, and animals in the waiting rooms can't gear up.
  */
 internal class CastleWarsHooks @Inject constructor(private val game: CastleWarsGame) :
@@ -36,6 +43,7 @@ internal class CastleWarsHooks @Inject constructor(private val game: CastleWarsG
     NpcAttackValidateHook,
     PvPCombatXpHook,
     PvPMaxHitHook,
+    RangedAmmoSaveHook,
     PlayerRestrictionHook,
     PlayerTeleportValidateHook,
     PlayerDeathHook,
@@ -77,6 +85,19 @@ internal class CastleWarsHooks @Inject constructor(private val game: CastleWarsG
         val attackerTeam = game.playingTeamOf(attacker) ?: return 0
         return if (attackerTeam != game.playingTeamOf(target)) BRACELET_BONUS_PERCENT else 0
     }
+
+    override fun ammoSavePercent(player: Player): Int {
+        val tier = player.vars["varbit.castlewars_ava_reward_tier"]
+        if (tier == 0 || !game.isPlaying(player)) {
+            return 0
+        }
+        val shown = CastleWars.AVAS_DEVICES.entries.firstOrNull { it.value == tier }?.let { ammoRecoveryRate(it.key) } ?: 0
+        val worn = player.worn[Wearpos.Back.slot]?.let(::getInvObj)?.paramOrNull(params.ammo_recovery_rate) ?: 0
+        return maxOf(shown, worn)
+    }
+
+    private fun ammoRecoveryRate(device: String): Int =
+        ServerCacheManager.getItem(device.asRSCM(RSCMType.OBJ))?.paramOrNull(params.ammo_recovery_rate) ?: 0
 
     override fun restriction(player: Player, action: RestrictedAction): String? {
         if (player.transmog != null && game.waitingTeamOf(player) != null) {
