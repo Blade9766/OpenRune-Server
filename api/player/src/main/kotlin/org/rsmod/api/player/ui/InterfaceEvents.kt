@@ -5,12 +5,10 @@ import dev.openrune.definition.type.widget.ComponentType
 import dev.openrune.types.ItemServerType
 import dev.openrune.types.aconverted.interf.IfButtonOp
 import dev.openrune.types.aconverted.interf.IfSubType
-import dev.openrune.util.Coord
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.events.EventBus
 import org.rsmod.events.KeyedEvent
 import org.rsmod.events.SuspendEvent
-import org.rsmod.events.UnboundEvent
 import org.rsmod.game.entity.Player
 import org.rsmod.game.ui.Component
 import org.rsmod.game.ui.UserInterface
@@ -47,6 +45,14 @@ public data class IfModalButton(
     override val id: Long = component.packed.toLong()
 }
 
+/**
+ * A pause button pressed on an open modal while no script was waiting for one, such as a list
+ * whose entries call `cc_resume_pausebutton` to pick an entry.
+ */
+public data class IfModalPauseButton(val component: ComponentType, val comsub: Int) :
+    SuspendEvent<ProtectedAccess> {
+    override val id: Long = component.packed.toLong()
+}
 
 public data class IfOverlayScriptTrigger(
     val component: ComponentType,
@@ -57,7 +63,6 @@ public data class IfOverlayScriptTrigger(
 ) : SuspendEvent<ProtectedAccess> {
     override val id: Long = component.packed.toLong()
 }
-
 
 public data class IfOverlayButton(
     val component: ComponentType,

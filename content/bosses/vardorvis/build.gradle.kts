@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(libs.guice)
     implementation(projects.api.bosses)
+    implementation(projects.api.combatAchievementTasks)
     implementation(projects.api.combat.combatCommons)
     implementation(projects.api.combat.combatFormulas)
     implementation(projects.api.config)
