@@ -110,11 +110,9 @@ internal object PorcineCoords {
     /** Where Spria walks in from once the pig has wandered off. */
     val AMBUSH_SPRIA = CoordGrid(3160, 9679, 0)
 
-    /** The whole cave, used to keep the quest's checks off the rest of the world. */
-    fun inSourhogCave(coords: CoordGrid): Boolean =
-        coords.level == 0 && coords.x in 3136..3199 && coords.z in 9664..9727
+    /** Where the quest's sourhog waits for the player's return, and where its carcass lies. */
+    val SOURHOG_LAIR = AMBUSH_PIG
 
-    /** The chamber the rope drops into, north of the blockage. */
-    fun inEntranceChamber(coords: CoordGrid): Boolean =
-        inSourhogCave(coords) && coords.z >= 9704
+    /** The bronze scimitar left beside the skeleton for players without a blade. */
+    val SCIMITAR = CoordGrid(3163, 9677, 0)
 }

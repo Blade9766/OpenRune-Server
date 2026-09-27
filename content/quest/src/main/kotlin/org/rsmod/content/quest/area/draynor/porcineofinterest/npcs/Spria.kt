@@ -125,6 +125,8 @@ class Spria @Inject constructor(private val porcine: PorcineOfInterestQuest) : P
         )
         chatNpc(neutral, "In the case of our Sourhog, you'll be needing these.")
         access.invAdd(access.inv, REINFORCED_GOGGLES)
+        porcine.spriaBriefed.set(player, true)
+        porcine.advanceTo(access, PorcineOfInterestQuest.STAGE_GOGGLES)
         objbox(REINFORCED_GOGGLES, "Spria hands you a pair of Reinforced Goggles.")
         chatNpc(
             neutral,
@@ -147,8 +149,6 @@ class Spria @Inject constructor(private val porcine: PorcineOfInterestQuest) : P
             "If you make it out alive, collect your bounty and then come see me so that we can " +
                 "speak further.",
         )
-        porcine.spriaBriefed.set(player, true)
-        porcine.advanceTo(access, PorcineOfInterestQuest.STAGE_GOGGLES)
         followUp()
     }
 

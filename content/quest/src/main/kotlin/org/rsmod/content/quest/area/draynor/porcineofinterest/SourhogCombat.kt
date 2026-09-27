@@ -44,8 +44,6 @@ import org.rsmod.game.entity.npc.NpcUid
 import org.rsmod.game.entity.player.PlayerUid
 import org.rsmod.game.hit.HitType
 import org.rsmod.game.inv.isType
-import org.rsmod.game.loc.LocAngle
-import org.rsmod.game.loc.LocShape
 import org.rsmod.game.proj.ProjAnim
 import org.rsmod.game.queue.WorldQueueList
 import org.rsmod.plugin.scripts.PluginScript
@@ -240,6 +238,7 @@ constructor(
     private val launcher: ProtectedAccessLauncher,
 ) : NpcDeathKillHook {
     private val sourhogIds = SourhogCombat.SOURHOGS.map { it.asRSCM(RSCMType.NPC) }.toSet()
+    private val questSourhogId = QUEST_SOURHOG.asRSCM(RSCMType.NPC)
 
     override fun onKill(context: NpcDeathKillContext) {
         if (context.npc.id !in sourhogIds) {
@@ -249,17 +248,11 @@ constructor(
         if (hero.righthand?.isType(KATANA) == true) {
             hero.say("Nothing personal, pig.")
         }
-        if (porcine.stage(hero) != STAGE_GOGGLES) {
+        if (context.npc.id != questSourhogId || porcine.stage(hero) != STAGE_GOGGLES) {
             return
         }
         hero.porcineFootCut = CORPSE_WITH_FOOT
-        locRepo.add(
-            context.npc.coords,
-            CARCASS,
-            CARCASS_LIFETIME,
-            LocAngle.West,
-            LocShape.CentrepieceStraight,
-        )
+        locRepo.addSourhogCarcass(context.npc.coords)
         launchWhenFree(hero.uid, LAUNCH_ATTEMPTS) {
             if (porcine.stage(player) != STAGE_GOGGLES) {
                 return@launchWhenFree
@@ -288,11 +281,7 @@ constructor(
     }
 
     private companion object {
-        const val CARCASS = "loc.porcine_dead_sourhog"
         const val KATANA = "obj.katana"
-
-        /** Long enough to come back for the foot after a trip to the bank. */
-        const val CARCASS_LIFETIME = 3000
         const val LAUNCH_ATTEMPTS = 20
     }
 }

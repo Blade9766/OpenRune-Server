@@ -44,6 +44,7 @@ constructor(
     private val npcRepo: NpcRepository,
     private val worldRepo: WorldRepository,
     private val routeFactory: RouteFactory,
+    private val cave: SourhogCaveCopy,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -82,13 +83,15 @@ constructor(
      * `finally` - a disconnect mid-scene must not leave a Pig Thing standing in the cave.
      */
     private suspend fun ProtectedAccess.playAmbush() {
-        val pig = spawn(PIG_THING, PorcineCoords.AMBUSH_PIG, Direction.West)
+        val skeleton = local(PorcineCoords.SKELETON)
+        val cameraFrom = local(CAMERA_FROM)
+        val pig = spawn(PIG_THING, local(PorcineCoords.AMBUSH_PIG), Direction.West)
         var spria: Npc? = null
         try {
             beginAmbush()
             faceSquare(pig.coords)
-            camMoveTo(CAMERA_FROM, CAMERA_HEIGHT, CAMERA_RATE, CAMERA_RATE)
-            camLookAt(PorcineCoords.SKELETON, LOOK_HEIGHT, CAMERA_RATE, CAMERA_RATE)
+            camMoveTo(cameraFrom, CAMERA_HEIGHT, CAMERA_RATE, CAMERA_RATE)
+            camLookAt(skeleton, LOOK_HEIGHT, CAMERA_RATE, CAMERA_RATE)
             delay(1)
 
             startDialogue { chatPlayer(shocked, "Uhh... Nice piggy?") }
@@ -106,8 +109,8 @@ constructor(
             fadeToBlack()
             mesbox("Some time passes...")
 
-            anim(UNCONSCIOUS_SEQ)
-            camMoveTo(CAMERA_FROM, CAMERA_HEIGHT, CAMERA_RATE, CAMERA_RATE)
+            replaceAnim(UNCONSCIOUS_SEQ)
+            camMoveTo(cameraFrom, CAMERA_HEIGHT, CAMERA_RATE, CAMERA_RATE)
             camLookAt(player.coords, LOOK_HEIGHT, CAMERA_RATE, CAMERA_RATE)
             fadeFromBlack()
 
@@ -115,16 +118,16 @@ constructor(
             delay(3)
             pig.say("*Snort*")
             delay(3)
-            pig.walkTo(routeFactory, PIG_EXIT, speed = MoveSpeed.Walk)
+            pig.walkTo(routeFactory, local(PIG_EXIT), speed = MoveSpeed.Walk)
             delay(PIG_EXIT_TICKS)
             npcRepo.del(pig, Int.MAX_VALUE)
 
             startDialogue { chatPlayer(sad, "...") }
 
-            spria = spawn(SPRIA_CUTSCENE, PorcineCoords.AMBUSH_SPRIA, Direction.South)
+            spria = spawn(SPRIA_CUTSCENE, local(PorcineCoords.AMBUSH_SPRIA), Direction.South)
             spria.say("Well then, what do we have here?")
             delay(3)
-            spria.walkTo(routeFactory, PorcineCoords.SKELETON.translateX(-1))
+            spria.walkTo(routeFactory, skeleton.translateX(-1))
             delay(4)
             spria.say("Still breathing, eh...?")
             delay(3)
@@ -142,12 +145,25 @@ constructor(
             }
             spria?.let { if (it.isSlotAssigned) npcRepo.del(it, Int.MAX_VALUE) }
             porcine.advanceTo(this, STAGE_AMBUSHED)
+            with(cave) { leave() }
             telejump(PorcineCoords.SPRIA_BEDSIDE, TeleportType.Exempt)
             endAmbush()
-            delay(1)
+            replaceAnim(GET_UP_SEQ)
             fadeFromBlack()
             startDialogue { chatPlayer(confused, "W-what happened? Where am I?") }
         }
+    }
+
+    private fun ProtectedAccess.local(world: CoordGrid): CoordGrid = with(cave) { local(world) }
+
+    /**
+     * The client holds the knocked-down pose and ignores any lower-priority sequence sent over it,
+     * so it is stopped a tick before the next one is played.
+     */
+    private suspend fun ProtectedAccess.replaceAnim(seq: String) {
+        resetAnim()
+        delay(1)
+        anim(seq)
     }
 
     /** Actors stand where they are put and do nothing but what the scene tells them to. */
@@ -247,6 +263,7 @@ constructor(
         const val SPIT_IMPACT = "spotanim.sourhog_spit_impact"
         const val KNOCKED_DOWN_SEQ = "seq.human_death_backwards"
         const val UNCONSCIOUS_SEQ = "seq.human_unconscious"
+        const val GET_UP_SEQ = "seq.human_getup"
         const val CUT_SEQ = "seq.human_pickuptable"
         const val CUT_TICKS = 2
 

@@ -188,8 +188,8 @@ constructor(private val porcine: PorcineOfInterestQuest, private val shops: Shop
         chatNpc(happy, "Anyway, thank you so much! Here's your reward.")
         access.invDel(access.inv, SOURHOG_FOOT)
         access.invAdd(access.inv, COINS, BOUNTY_COINS)
-        objbox(COINS, "Sarah hands you a heavy pouch of $BOUNTY_COINS coins.")
         porcine.advanceTo(access, STAGE_BOUNTY)
+        objbox(COINS, "Sarah hands you a heavy pouch of $BOUNTY_COINS coins.")
         chatPlayer(
             neutral,
             "Perhaps I should speak with Spria and tell her that the monster's been dealt with.",

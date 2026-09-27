@@ -23,9 +23,13 @@ import org.rsmod.plugin.scripts.ScriptContext
  *
  * `loc.porcine_hole` is a `varbit.porcine` multiloc that only offers "Climb-down" from
  * [STAGE_ROPE_TIED] onwards, so tying the rope is what opens the hole rather than any state of
- * our own.
+ * our own. Until the quest is complete the hole drops into the player's own copy of the cave; see
+ * [SourhogCaveCopy].
  */
-class StrangeHole @Inject constructor(private val porcine: PorcineOfInterestQuest) : PluginScript() {
+class StrangeHole
+@Inject
+constructor(private val porcine: PorcineOfInterestQuest, private val cave: SourhogCaveCopy) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLoc1(HOLE_NO_ROPE) { investigateHole() }
@@ -110,7 +114,11 @@ class StrangeHole @Inject constructor(private val porcine: PorcineOfInterestQues
         anim(CLIMB_DOWN_SEQ)
         soundSynth(CLIMB_SOUND)
         delay(CLIMB_TICKS)
-        telejump(PorcineCoords.CAVE_ENTRANCE, TeleportType.Exempt)
+        if (porcine.isComplete(player)) {
+            telejump(PorcineCoords.CAVE_ENTRANCE, TeleportType.Exempt)
+        } else if (!with(cave) { enter() }) {
+            return
+        }
         if (stage == STAGE_ROPE_TIED) {
             porcine.advanceTo(this, STAGE_IN_CAVE)
         }
@@ -131,6 +139,7 @@ class StrangeHole @Inject constructor(private val porcine: PorcineOfInterestQues
         anim(CLIMB_UP_SEQ)
         soundSynth(CLIMB_SOUND)
         delay(CLIMB_TICKS)
+        with(cave) { leave() }
         telejump(PorcineCoords.HOLE_SIDE, TeleportType.Exempt)
     }
 
@@ -140,11 +149,13 @@ class StrangeHole @Inject constructor(private val porcine: PorcineOfInterestQues
      * player once, and only until they tell the game to stop asking.
      */
     private suspend fun ProtectedAccess.climbBlockage() {
-        val goingSouth = player.coords.z >= PorcineCoords.BLOCKAGE_NORTH.z
+        val north = with(cave) { local(PorcineCoords.BLOCKAGE_NORTH) }
+        val south = with(cave) { local(PorcineCoords.BLOCKAGE_SOUTH) }
+        val goingSouth = player.coords.z >= north.z
         if (goingSouth && shouldWarn() && !confirmClimb()) {
             return
         }
-        val landing = if (goingSouth) PorcineCoords.BLOCKAGE_SOUTH else PorcineCoords.BLOCKAGE_NORTH
+        val landing = if (goingSouth) south else north
         val column = player.coords.x.coerceIn(landing.x, landing.x + 1)
         val destination = landing.translateX(column - landing.x)
         arriveDelay()
@@ -187,8 +198,8 @@ class StrangeHole @Inject constructor(private val porcine: PorcineOfInterestQues
         const val TIE_SOUND = "synth.cf_tierope"
         const val TIE_TICKS = 3
 
-        const val CLIMB_DOWN_SEQ = "seq.human_climbing_down"
-        const val CLIMB_UP_SEQ = "seq.human_climbing"
+        const val CLIMB_DOWN_SEQ = "seq.human_pickupfloor"
+        const val CLIMB_UP_SEQ = "seq.human_reachforladder"
         const val CLIMB_SOUND = "synth.ropeclimb"
         const val CLIMB_TICKS = 2
 

@@ -68,6 +68,7 @@ import org.rsmod.content.quest.area.desert.touristtrap.npcs.MercenaryCaptainKill
 import org.rsmod.content.quest.area.draynor.porcineofinterest.NoticeBoard
 import org.rsmod.content.quest.area.draynor.porcineofinterest.PorcineOfInterestQuest
 import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCave
+import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCaveCopy
 import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogCombat
 import org.rsmod.content.quest.area.draynor.porcineofinterest.SourhogKillHook
 import org.rsmod.content.quest.area.draynor.porcineofinterest.StrangeHole
@@ -268,6 +269,7 @@ public class QuestModule : PluginModule() {
         bindInstance<StrangeHole>()
         bindInstance<SourhogCave>()
         bindInstance<SourhogCombat>()
+        bindInstance<SourhogCaveCopy>()
         bindInstance<Sarah>()
         bindInstance<Rosie>()
         bindInstance<Spria>()

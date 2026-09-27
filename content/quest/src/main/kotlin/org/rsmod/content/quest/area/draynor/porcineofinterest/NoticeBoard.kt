@@ -47,8 +47,8 @@ class NoticeBoard @Inject constructor(private val porcine: PorcineOfInterestQues
         if (!start) {
             return
         }
-        chatPlayer(happy, "Right, let's go and see what Sarah has in mind.")
         porcine.advanceTo(access, STAGE_STARTED)
+        chatPlayer(happy, "Right, let's go and see what Sarah has in mind.")
     }
 
     private companion object {
