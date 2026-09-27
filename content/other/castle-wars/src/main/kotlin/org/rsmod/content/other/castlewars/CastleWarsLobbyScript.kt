@@ -17,6 +17,7 @@ import org.rsmod.content.interfaces.omnishop.openOmnishop
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.type.getInvObj
+import org.rsmod.game.type.uncert
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -51,7 +52,7 @@ internal class CastleWarsLobbyScript @Inject constructor(private val game: Castl
         val banned = (player.inv.objs.asSequence() + player.worn.objs.asSequence()).filterNotNull().map(::getInvObj)
             .firstOrNull { !it.isAllowedInArena() }
         if (banned != null) {
-            mesbox("You may not take non-combat items into the arena. Please bank your ${banned.name}.")
+            mesbox("You may not take non-combat items into the arena. Please bank your ${uncert(banned).name}.")
             return
         }
         val team =
