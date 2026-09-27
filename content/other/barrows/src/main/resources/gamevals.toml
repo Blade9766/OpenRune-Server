@@ -1,0 +1,13 @@
+[gamevals.varp]
+barrows_run = 65413
+
+[gamevals.varbit]
+barrows_tunnel_brother = 65300
+barrows_puzzle_type = 65301
+barrows_puzzle_answer = 65302
+barrows_puzzle_solved = 65303
+barrows_chest_looted = 65304
+
+[gamevals.timer]
+barrows_prayer_drain = 140
+barrows_collapse = 141

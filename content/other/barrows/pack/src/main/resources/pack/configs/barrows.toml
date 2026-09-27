@@ -1,0 +1,34 @@
+[[varp]]
+id = "varp.barrows_run"
+scope = "Perm"
+transmit = "Never"
+
+[[varbit]]
+id = "varbit.barrows_tunnel_brother"
+varp = "varp.barrows_run"
+startBit = 0
+endBit = 2
+
+[[varbit]]
+id = "varbit.barrows_puzzle_type"
+varp = "varp.barrows_run"
+startBit = 3
+endBit = 4
+
+[[varbit]]
+id = "varbit.barrows_puzzle_answer"
+varp = "varp.barrows_run"
+startBit = 5
+endBit = 6
+
+[[varbit]]
+id = "varbit.barrows_puzzle_solved"
+varp = "varp.barrows_run"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+id = "varbit.barrows_chest_looted"
+varp = "varp.barrows_run"
+startBit = 8
+endBit = 8

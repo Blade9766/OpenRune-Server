@@ -28,6 +28,10 @@ npc = [
     # Barrows brothers whose animation sets do not follow a family the generator understands.
     { id = "npc.barrows_guthan", attack_anim = "seq.barrow_guthan_crush", attack_type = "category.attacktype_crush", attack_sound = 2562, defend_anim = "seq.barrow_guthan_defend" },
     { id = "npc.barrows_torag", attack_anim = "seq.barrow_torag_crush", attack_type = "category.attacktype_crush", attack_sound = 2567, defend_anim = "seq.human_blunt_block" },
+    # Karil fires his repeating crossbow (the generator gives him no attack at all) and Verac's
+    # flail stabs, per the OSRS wiki.
+    { id = "npc.barrows_karil", attack_anim = "seq.barrows_repeating_crossbow_fire", attack_type = "category.attacktype_standard", proj_travel = "spotanim.crossbowbolt_travel", proj_type = "projanim.bolt", attack_range = 8 },
+    { id = "npc.barrows_verac", attack_anim = "seq.barrow_guthan_crush", attack_type = "category.attacktype_stab", defend_anim = "seq.barrow_guthan_defend" },
     # The Dragon Slayer II ghosts share the ghost animation family but have their own voice
     # (dragonslayer_ghost_attack/hit/death on the OSRS wiki sound id list).
     { id = "npc.dragonslayer_ghost_1_key", attack_sound = 3755, defend_sound = 3757, death_sound = 3756 },
