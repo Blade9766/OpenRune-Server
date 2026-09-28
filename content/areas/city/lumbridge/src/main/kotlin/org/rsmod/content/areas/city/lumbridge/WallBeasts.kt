@@ -199,7 +199,7 @@ constructor(
         const val SOUND_SWIPE = "synth.wall_beast_swipe"
 
         const val GRAB_MAX_HIT = 18
-        const val GRAB_HOLD_TICKS = 2
+        const val GRAB_HOLD_TICKS = 3
         const val RETREAT_CHECK_INTERVAL = 5
         const val RETREAT_IDLE_TICKS = 16
 
