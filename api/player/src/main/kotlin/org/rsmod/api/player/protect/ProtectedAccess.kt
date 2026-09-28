@@ -2694,7 +2694,7 @@ public class ProtectedAccess(
         player.facePathingEntitySquare(npc)
         player.ifChatNpcSpecific(
             title,
-            RSCM.getReverseMapping(RSCMType.NPC, npc.type.id),
+            RSCM.getReverseMapping(RSCMType.NPC, npc.visType.id),
             text,
             chatanim,
             pauseText,
@@ -2747,7 +2747,7 @@ public class ProtectedAccess(
         player.facePathingEntitySquare(npc)
         player.ifChatNpcSpecific(
             title,
-            RSCM.getReverseMapping(RSCMType.NPC, npc.type.id),
+            RSCM.getReverseMapping(RSCMType.NPC, npc.visType.id),
             text,
             chatanim,
             pauseText,
@@ -3700,13 +3700,7 @@ public class ProtectedAccess(
         }
     }
 
-    private fun Npc.resolveVisName(): String {
-        if (!type.isMultiNpc) {
-            return type.name
-        }
-        val visType = npcVisType(this)
-        return visType.name
-    }
+    private fun Npc.resolveVisName(): String = npcVisType(this).name
 
     // The player should not be able to trigger a manual logout (e.g., by clicking the logout
     // button) if the server has already initiated a logout through other means.
