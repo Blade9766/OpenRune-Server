@@ -139,7 +139,7 @@ object SlayerTaskManager {
                         next
                     }
 
-                val basePoints = master.pointsPerTask
+                val basePoints = diaryBasePoints(player, master)
                 val multiplier = streakPointMultiplier(streak)
                 if (totalTasksDone <= TOTAL_TASKS_NO_POINTS_THRESHOLD || basePoints <= 0) {
                     0
@@ -165,6 +165,15 @@ object SlayerTaskManager {
 
         clearAssignedTask(player)
     }
+
+    private fun diaryBasePoints(player: Player, master: SlayerMastersRow): Int =
+        when {
+            master.masterId == NIEVE_MASTER_ID &&
+                player.vars["varbit.western_diary_elite_complete"] != 0 -> NIEVE_DIARY_POINTS
+            master.masterId == KONAR_MASTER_ID &&
+                player.vars["varbit.kourend_diary_elite_complete"] != 0 -> KONAR_DIARY_POINTS
+            else -> master.pointsPerTask
+        }
 
     private fun streakForMilestoneMultiplier(streak: Int): Int =
         if (streak > STREAK_MILESTONE_WRAP_THRESHOLD) {
@@ -708,6 +717,9 @@ object SlayerTaskManager {
 
     private const val TURAEL_MASTER_ID = 1
     private const val KONAR_MASTER_ID = 8
+    private const val NIEVE_MASTER_ID = 6
+    private const val NIEVE_DIARY_POINTS = 15
+    private const val KONAR_DIARY_POINTS = 20
     private const val TOTAL_TASKS_NO_POINTS_THRESHOLD = 4
     private const val STREAK_MILESTONE_WRAP_THRESHOLD = 16_000
     private const val MILESTONE_CYCLE = 1_000
