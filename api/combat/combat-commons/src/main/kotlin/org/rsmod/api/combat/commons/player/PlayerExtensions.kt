@@ -35,12 +35,20 @@ public fun ProtectedAccess.combatRetaliate(uid: NpcUid, flinchDelay: Int) {
         return
     }
     val source = findUid(uid) ?: return
+    if (!hasAttackOp(source)) {
+        return
+    }
 
     if (actionDelay < mapClock) {
         actionDelay = mapClock + flinchDelay
     }
 
     opNpc2(source)
+}
+
+private fun ProtectedAccess.hasAttackOp(npc: Npc): Boolean {
+    val vis = npcVisType(npc)
+    return vis.hasOp(2) || (0 until 5).any { vis.actions.getOpOrNull(it) == "Attack" }
 }
 
 public fun Player.queueCombatRetaliate(source: Player, delay: Int = 1) {
