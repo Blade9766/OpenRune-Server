@@ -6,14 +6,19 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.npc.interact.AiPlayerInteractions
+import org.rsmod.api.npc.isInCombat
 import org.rsmod.api.npc.opPlayer2
+import org.rsmod.api.npc.owner.assignSpawnOwner
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.obj.ObjRepository
+import org.rsmod.api.script.onAiTimer
 import org.rsmod.api.script.onOpLoc1
+import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Npc
+import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -32,6 +37,8 @@ constructor(
     private val objRepo: ObjRepository,
     private val npcRepo: NpcRepository,
     private val aiInteractions: AiPlayerInteractions,
+    private val playerList: PlayerList,
+    private val clock: MapClock,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -39,6 +46,9 @@ constructor(
             for (trim in ShadeTrim.entries) {
                 onOpLoc1(chest(metal, trim)) { open(it.loc, metal, trim) }
             }
+        }
+        for (zealot in ZEALOTS) {
+            onAiTimer(zealot) { npc.pursueOwner() }
         }
     }
 
@@ -87,8 +97,23 @@ constructor(
         val type = requireNotNull(ServerCacheManager.getNpc(random.pick(ZEALOTS).asRSCM(RSCMType.NPC)))
         val zealot = Npc(type, random.of(coords, 1))
         npcRepo.add(zealot, ZEALOT_TICKS)
+        zealot.respawns = false
+        zealot.assignSpawnOwner(player, clock.cycle)
         zealot.opPlayer2(player, aiInteractions)
+        zealot.aiTimer(PURSUE_INTERVAL)
         mes("An Undead Zealot rises to defend the chest!")
+    }
+
+    /** In single-way combat the zealot waits out a fight the opener is already in, then joins. */
+    private fun Npc.pursueOwner() {
+        aiTimer(PURSUE_INTERVAL)
+        if (isInCombat()) {
+            return
+        }
+        val owner = spawnOwner.resolve(playerList) ?: return
+        if (owner.coords.chebyshevDistance(coords) <= PURSUE_RANGE) {
+            opPlayer2(owner, aiInteractions)
+        }
     }
 
     private fun pick(rolls: List<Loot>): Loot {
@@ -120,6 +145,8 @@ constructor(
         const val ZEALOT_PIECE_CHANCE = 32
         const val ZEALOT_CHANCE = 20
         const val ZEALOT_TICKS = 200
+        const val PURSUE_INTERVAL = 2
+        const val PURSUE_RANGE = 10
         const val OPEN_TICKS = 5
         const val GROUND_TICKS = 200
 
