@@ -2,9 +2,15 @@
 raft_climb = 2454
 raft_jump = 2465
 swamp_cave_insects = 1582
+wall_beast_attack = 893
+wall_beast_death = 894
+wall_beast_foiled = 895
+wall_beast_hit = 896
+wall_beast_swipe = 897
 
 [gamevals.timer]
 swamp_cave_insects = 401
+wall_beast_retreat = 402
 
 [gamevals.varp]
 lumbridge_tutor_claim = 63630
