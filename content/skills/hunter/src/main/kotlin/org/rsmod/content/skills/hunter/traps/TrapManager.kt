@@ -18,7 +18,9 @@ import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.player.PlayerUid
+import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocAngle
+import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocShape
 import org.rsmod.game.map.Direction
 import org.rsmod.map.CoordGrid
@@ -37,12 +39,16 @@ constructor(
     private val areaChecker: AreaChecker,
     private val invisibleLevels: InvisibleLevels,
 ) {
-    private val traps = LinkedHashMap<CoordGrid, Trap>()
+    private val traps = LinkedHashSet<Trap>()
+    private val byTile = HashMap<CoordGrid, Trap>()
     private val engagedNpcs = HashSet<Int>()
 
-    fun at(coords: CoordGrid): Trap? = traps[coords]
+    fun at(coords: CoordGrid): Trap? = byTile[coords]
 
-    fun countOwnedBy(player: Player): Int = traps.values.count { it.owner == player.uid }
+    fun countOwnedBy(player: Player): Int = traps.count { it.owner == player.uid }
+
+    fun countOwnedBy(player: Player, kind: TrapKind): Int =
+        traps.count { it.owner == player.uid && it.kind.family == kind.family }
 
     fun maxTraps(player: Player, coords: CoordGrid): Int {
         val level = player.hunterLvl
@@ -56,15 +62,90 @@ constructor(
         return if (coords.isInWilderness(areaChecker)) base + 1 else base
     }
 
+    fun limitFor(player: Player, kind: TrapKind, coords: CoordGrid): Int {
+        val max = maxTraps(player, coords)
+        return kind.maxTraps?.let { minOf(it, max) } ?: max
+    }
+
+    fun hasRoomFor(player: Player, kind: TrapKind, coords: CoordGrid): Boolean {
+        if (countOwnedBy(player) >= maxTraps(player, coords)) {
+            return false
+        }
+        val familyMax = kind.maxTraps ?: return true
+        return countOwnedBy(player, kind) < familyMax
+    }
+
     fun isTileFree(coords: CoordGrid): Boolean =
-        coords !in traps &&
+        coords !in byTile &&
             locRepo.findExact(coords, LocShape.CentrepieceStraight) == null &&
             locRepo.findExact(coords, LocShape.CentrepieceDiagonal) == null
 
     fun lay(player: Player, kind: TrapKind, coords: CoordGrid): Trap {
-        val loc = spawnLoc(coords, kind.setLoc)
-        val trap = Trap(kind, player.uid, player.displayName, coords, loc)
-        traps[coords] = trap
+        val trap =
+            Trap(
+                kind = kind,
+                owner = player.uid,
+                ownerName = player.displayName,
+                coords = coords,
+                angle = LocAngle.West,
+                shape = LocShape.CentrepieceStraight,
+                baseLoc = null,
+                footprint = listOf(coords),
+                netCoords = null,
+            )
+        register(trap)
+        show(trap, kind.setLoc)
+        enterState(trap, TrapState.Set)
+        trap.nextHuntCycle = mapClock + HUNT_INTERVAL
+        return trap
+    }
+
+    fun isBaseFree(base: BoundLocInfo): Boolean = footprintOf(base).none { it in byTile }
+
+    fun showSetting(base: BoundLocInfo, kind: TrapKind) {
+        val setting = kind.settingLoc ?: return
+        locRepo.change(base, setting, SETTING_CYCLES)
+    }
+
+    fun place(player: Player, kind: TrapKind, base: BoundLocInfo): Trap {
+        val baseLoc = LocInfo(base.layer, base.coords, base.entity)
+        val angle = base.angle
+        val shape = base.shape
+        val net = if (kind.family == TrapFamily.Net) netTile(base.coords, angle) else null
+        val trap =
+            Trap(
+                kind = kind,
+                owner = player.uid,
+                ownerName = player.displayName,
+                coords = base.coords,
+                angle = angle,
+                shape = shape,
+                baseLoc = baseLoc,
+                footprint = footprintOf(base),
+                netCoords = net,
+            )
+        register(trap)
+        show(trap, kind.setLoc)
+        enterState(trap, TrapState.Set)
+        trap.nextHuntCycle = mapClock + HUNT_INTERVAL
+        return trap
+    }
+
+    fun relay(player: Player, old: Trap): Trap {
+        val trap =
+            Trap(
+                kind = old.kind,
+                owner = player.uid,
+                ownerName = player.displayName,
+                coords = old.coords,
+                angle = old.angle,
+                shape = old.shape,
+                baseLoc = old.baseLoc,
+                footprint = old.footprint,
+                netCoords = old.netCoords,
+            )
+        register(trap)
+        show(trap, trap.kind.setLoc)
         enterState(trap, TrapState.Set)
         trap.nextHuntCycle = mapClock + HUNT_INTERVAL
         return trap
@@ -72,24 +153,53 @@ constructor(
 
     fun remove(trap: Trap) {
         releaseTarget(trap)
-        traps.remove(trap.coords)
-        locRepo.del(trap.loc, Int.MAX_VALUE)
+        traps.remove(trap)
+        trap.tiles.forEach { if (byTile[it] === trap) byTile.remove(it) }
+        byTile.entries.removeIf { it.value === trap }
+        clearLocs(trap)
+        val base = trap.baseLoc
+        if (trap.baseHidden && base != null) {
+            locRepo.add(base, Int.MAX_VALUE)
+            trap.baseHidden = false
+        }
     }
 
     fun collapseAll(owner: PlayerUid) {
-        traps.values.filter { it.owner == owner }.forEach { collapse(it, owner = null) }
+        traps.filter { it.owner == owner }.forEach { collapse(it, owner = null) }
+    }
+
+    fun flush(player: Player, hole: CoordGrid): Trap? {
+        val snare =
+            traps
+                .filter {
+                    it.owner == player.uid &&
+                        it.kind == TrapKind.RabbitSnare &&
+                        it.state == TrapState.Set &&
+                        it.coords.level == hole.level &&
+                        it.coords.chebyshevDistance(hole) <= RABBIT_RANGE
+                }
+                .minByOrNull { it.coords.chebyshevDistance(hole) } ?: return null
+        snare.prey = TrapPrey.WhiteRabbit
+        show(snare, TrapPrey.WhiteRabbit.fullLoc)
+        enterState(snare, TrapState.Full)
+        return snare
     }
 
     fun tick() {
         if (traps.isEmpty()) {
             return
         }
-        for (trap in traps.values.toList()) {
-            if (traps[trap.coords] !== trap) {
-                continue
+        for (trap in traps.toList()) {
+            if (trap in traps) {
+                process(trap)
             }
-            process(trap)
         }
+    }
+
+    private fun register(trap: Trap) {
+        traps += trap
+        trap.tiles.forEach { byTile[it] = trap }
+        byTile[trap.wideAnchor] = trap
     }
 
     private fun process(trap: Trap) {
@@ -98,8 +208,9 @@ constructor(
             collapse(trap, owner = null)
             return
         }
-        if (owner.coords.level != trap.coords.level ||
-            owner.coords.chebyshevDistance(trap.coords) > MAX_OWNER_DISTANCE
+        if (
+            owner.coords.level != trap.coords.level ||
+                owner.coords.chebyshevDistance(trap.coords) > MAX_OWNER_DISTANCE
         ) {
             collapse(trap, owner)
             return
@@ -108,7 +219,7 @@ constructor(
             TrapState.Set -> processSet(trap, owner)
             TrapState.Luring -> processLuring(trap, owner)
             TrapState.Trapping -> advance(trap, TrapState.Full, trap.prey?.fullLoc)
-            TrapState.Failing -> advance(trap, TrapState.Failed, trap.kind.failedLoc)
+            TrapState.Failing -> processFailing(trap)
             TrapState.Full,
             TrapState.Failed -> if (mapClock >= trap.expireCycle) collapse(trap, owner)
         }
@@ -119,11 +230,11 @@ constructor(
             collapse(trap, owner)
             return
         }
-        if (mapClock < trap.nextHuntCycle) {
+        if (!trap.kind.hunts || mapClock < trap.nextHuntCycle) {
             return
         }
         trap.nextHuntCycle = mapClock + HUNT_INTERVAL
-        if (isPlayerOnTile(trap.coords)) {
+        if (isBlockedByPlayer(trap)) {
             return
         }
         val target = findPrey(trap) ?: return
@@ -131,17 +242,33 @@ constructor(
         lure(trap, target, prey)
     }
 
+    private fun processFailing(trap: Trap) {
+        if (mapClock < trap.stateCycle + TRANSITION_CYCLES) {
+            return
+        }
+        val failed = trap.kind.failedLoc
+        if (failed == null) {
+            remove(trap)
+            return
+        }
+        show(trap, failed)
+        enterState(trap, TrapState.Failed)
+    }
+
     private fun findPrey(trap: Trap): Npc? {
-        val preyTypes = TrapPrey.forKind(trap.kind).map { it.npc }
+        val preyTypes = TrapPrey.forKind(trap.kind).mapNotNull { it.npc }
         val candidates =
-            npcRepo.findAll(ZoneKey.from(trap.coords), zoneRadius = 1).filter { npc ->
-                npc.isSlotAssigned &&
-                    npc.isVisible &&
-                    npc.coords.level == trap.coords.level &&
-                    npc.coords.chebyshevDistance(trap.coords) <= PREY_RANGE &&
-                    npc.uid.packed !in engagedNpcs &&
-                    preyTypes.any { npc.isType(it) }
-            }.toList()
+            npcRepo
+                .findAll(ZoneKey.from(trap.coords), zoneRadius = 1)
+                .filter { npc ->
+                    npc.isSlotAssigned &&
+                        npc.isVisible &&
+                        npc.coords.level == trap.coords.level &&
+                        distanceTo(trap, npc.coords) <= PREY_RANGE &&
+                        npc.uid.packed !in engagedNpcs &&
+                        preyTypes.any { npc.isType(it) }
+                }
+                .toList()
         if (candidates.isEmpty()) {
             return null
         }
@@ -161,10 +288,18 @@ constructor(
 
     private fun approachTile(trap: Trap, target: Npc): CoordGrid {
         if (trap.kind.catchRange == 0) {
-            return trap.coords
+            return trap.catchCoords
         }
-        val dir = sideOf(trap.coords, target.coords)
-        return trap.coords.translate(dir.xOff, dir.zOff)
+        val nearest = trap.footprint.minBy { it.chebyshevDistance(target.coords) }
+        val dir = sideOf(nearest, target.coords)
+        return nearest.translate(dir.xOff, dir.zOff)
+    }
+
+    private fun distanceTo(trap: Trap, coords: CoordGrid): Int {
+        if (trap.kind.catchRange == 0) {
+            return trap.catchCoords.chebyshevDistance(coords)
+        }
+        return trap.footprint.minOf { it.chebyshevDistance(coords) }
     }
 
     private fun processLuring(trap: Trap, owner: Player) {
@@ -174,12 +309,12 @@ constructor(
             cancelLure(trap)
             return
         }
-        val distance = target.coords.chebyshevDistance(trap.coords)
+        val distance = distanceTo(trap, target.coords)
         val arrived = distance <= trap.kind.catchRange && target.routeDestination.isEmpty()
         if (!arrived && mapClock < trap.lureDeadline) {
             return
         }
-        if (distance > trap.kind.catchRange + 1 || isPlayerOnTile(trap.coords)) {
+        if (distance > trap.kind.catchRange + 1 || isBlockedByPlayer(trap)) {
             cancelLure(trap)
             return
         }
@@ -204,17 +339,22 @@ constructor(
 
     private fun catch(trap: Trap, target: Npc, prey: TrapPrey) {
         val side = sideOf(trap.coords, target.coords)
-        val trappingLoc = prey.trappingLocs.getValue(side)
+        val trappingLoc = prey.trappingLocs[side] ?: prey.fullLoc
         releaseTarget(trap)
         npcRepo.despawn(target, PREY_RESPAWN)
-        trap.loc = spawnLoc(trap.coords, trappingLoc)
+        show(trap, trappingLoc)
         enterState(trap, TrapState.Trapping)
     }
 
     private fun escape(trap: Trap, target: Npc, prey: TrapPrey) {
         releaseTarget(trap)
         prey.escapeAnim?.let { target.anim(it, delay = 0, priority = 0) }
-        trap.loc = spawnLoc(trap.coords, trap.kind.failingLoc)
+        val failing = trap.kind.failingLoc ?: trap.kind.failedLoc
+        if (failing == null) {
+            remove(trap)
+            return
+        }
+        show(trap, failing)
         enterState(trap, TrapState.Failing)
     }
 
@@ -228,15 +368,58 @@ constructor(
         if (mapClock < trap.stateCycle + TRANSITION_CYCLES || loc == null) {
             return
         }
-        trap.loc = spawnLoc(trap.coords, loc)
+        show(trap, loc)
         enterState(trap, next)
     }
 
     private fun collapse(trap: Trap, owner: Player?) {
         remove(trap)
         val receiver = owner?.takeIf { it.isSlotAssigned }
-        objRepo.add(trap.kind.item, trap.coords, GROUND_DURATION, receiver = receiver)
+        for (obj in collapseDrops(trap.kind)) {
+            objRepo.add(obj, trap.catchCoords, GROUND_DURATION, receiver = receiver)
+        }
         owner?.mes("Your ${trap.kind.trapName} has collapsed.")
+    }
+
+    private fun collapseDrops(kind: TrapKind): List<String> =
+        when (kind.family) {
+            TrapFamily.Laid -> listOfNotNull(kind.item)
+            TrapFamily.Net -> NET_MATERIALS
+            TrapFamily.Deadfall -> emptyList()
+        }
+
+    /**
+     * Shows [loc] for the trap's current state. Net traps use a one-tile tree plus a separate net
+     * loc while set, and a two-tile loc spanning tree and net afterwards; when that loc anchors
+     * west or south of the tree, the map tree is hidden so it does not show through.
+     */
+    private fun show(trap: Trap, loc: String) {
+        clearLocs(trap)
+        val wide = trap.kind.family == TrapFamily.Net && loc != trap.kind.setLoc
+        if (!wide) {
+            trap.loc = spawnLoc(trap, trap.coords, loc)
+            val netLoc = trap.kind.netLoc
+            val net = trap.netCoords
+            if (netLoc != null && net != null && loc == trap.kind.setLoc) {
+                trap.netLoc =
+                    locRepo.add(net, netLoc, Int.MAX_VALUE, trap.angle, LocShape.GroundDecor)
+            }
+            return
+        }
+        val anchor = trap.wideAnchor
+        val base = trap.baseLoc
+        if (anchor != trap.coords && base != null && !trap.baseHidden) {
+            locRepo.del(base, Int.MAX_VALUE)
+            trap.baseHidden = true
+        }
+        trap.loc = spawnLoc(trap, anchor, loc)
+    }
+
+    private fun clearLocs(trap: Trap) {
+        trap.loc?.let { locRepo.del(it, Int.MAX_VALUE) }
+        trap.netLoc?.let { locRepo.del(it, Int.MAX_VALUE) }
+        trap.loc = null
+        trap.netLoc = null
     }
 
     private fun enterState(trap: Trap, state: TrapState) {
@@ -257,11 +440,28 @@ constructor(
     private fun isTargetValid(trap: Trap, target: Npc): Boolean =
         target.isSlotAssigned && target.isVisible && target.uid == trap.targetUid
 
-    private fun isPlayerOnTile(coords: CoordGrid): Boolean =
-        playerList.any { it.coords == coords }
+    private fun isBlockedByPlayer(trap: Trap): Boolean {
+        if (trap.kind.family == TrapFamily.Deadfall) {
+            return false
+        }
+        return playerList.any { it.coords == trap.catchCoords }
+    }
 
-    private fun spawnLoc(coords: CoordGrid, loc: String) =
-        locRepo.add(coords, loc, Int.MAX_VALUE, LocAngle.West, LocShape.CentrepieceStraight)
+    private fun spawnLoc(trap: Trap, coords: CoordGrid, loc: String): LocInfo =
+        locRepo.add(coords, loc, Int.MAX_VALUE, trap.angle, trap.shape)
+
+    private fun footprintOf(base: BoundLocInfo): List<CoordGrid> =
+        (0 until base.adjustedWidth).flatMap { x ->
+            (0 until base.adjustedLength).map { z -> base.coords.translate(x, z) }
+        }
+
+    private fun netTile(tree: CoordGrid, angle: LocAngle): CoordGrid =
+        when (angle) {
+            LocAngle.West -> tree.translate(0, 1)
+            LocAngle.North -> tree.translate(1, 0)
+            LocAngle.East -> tree.translate(0, -1)
+            LocAngle.South -> tree.translate(-1, 0)
+        }
 
     private fun sideOf(trap: CoordGrid, from: CoordGrid): Direction {
         val dx = from.x - trap.x
@@ -283,10 +483,14 @@ constructor(
         const val PREY_RANGE = 2
         const val LURE_TIMEOUT = 6
         const val TRANSITION_CYCLES = 2
+        const val SETTING_CYCLES = 2
         const val TRAP_LIFETIME = 100
         const val PREY_RESPAWN = 10
         const val GROUND_DURATION = 300
         const val MAX_OWNER_DISTANCE = 32
+        const val RABBIT_RANGE = 5
         const val SMOKE_BONUS = 0.02
+
+        val NET_MATERIALS: List<String> = listOf("obj.rope", "obj.net")
     }
 }

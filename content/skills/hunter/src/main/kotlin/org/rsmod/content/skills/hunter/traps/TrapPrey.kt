@@ -2,14 +2,20 @@ package org.rsmod.content.skills.hunter.traps
 
 import org.rsmod.game.map.Direction
 
-data class TrapLoot(val obj: String, val min: Int, val max: Int = min)
+data class TrapLoot(
+    val obj: String,
+    val min: Int,
+    val max: Int = min,
+    val rareObj: String? = null,
+    val rareChance: Int = 0,
+)
 
 /**
  * A creature that can be caught in a [TrapKind]. [low]/[high] are the catch-rate endpoints out of
  * 256 at level 1 and 99, as published by Jagex for each creature.
  */
 enum class TrapPrey(
-    val npc: String,
+    val npc: String?,
     val kind: TrapKind,
     val displayName: String,
     val level: Int,
@@ -20,6 +26,7 @@ enum class TrapPrey(
     val fullLoc: String,
     val loot: List<TrapLoot>,
     val escapeAnim: String? = null,
+    val rareMessage: String? = null,
 ) {
     CrimsonSwift(
         npc = "npc.hunting_bird_jungle",
@@ -133,10 +140,177 @@ enum class TrapPrey(
         loot = listOf(TrapLoot("obj.chinchompa_black", 1)),
         escapeAnim = "seq.hunting_chinchompa_backoff",
     ),
+    SwampLizard(
+        npc = "npc.salamander_green",
+        kind = TrapKind.NetSwamp,
+        displayName = "swamp lizard",
+        level = 29,
+        xp = 152.0,
+        low = 52,
+        high = 360,
+        trappingLocs = single("loc.hunting_sapling_catching_green"),
+        fullLoc = "loc.hunting_sapling_full_green",
+        loot = listOf(TrapLoot("obj.green_salamander", 1)),
+    ),
+    OrangeSalamander(
+        npc = "npc.salamander_orange",
+        kind = TrapKind.NetOrange,
+        displayName = "orange salamander",
+        level = 47,
+        xp = 224.0,
+        low = 16,
+        high = 288,
+        trappingLocs = single("loc.hunting_sapling_catching_orange"),
+        fullLoc = "loc.hunting_sapling_full_orange",
+        loot = listOf(TrapLoot("obj.orange_salamander", 1)),
+    ),
+    RedSalamander(
+        npc = "npc.salamander_red",
+        kind = TrapKind.NetRed,
+        displayName = "red salamander",
+        level = 59,
+        xp = 272.0,
+        low = 0,
+        high = 240,
+        trappingLocs = single("loc.hunting_sapling_catching_red"),
+        fullLoc = "loc.hunting_sapling_full_red",
+        loot = listOf(TrapLoot("obj.red_salamander", 1)),
+    ),
+    BlackSalamander(
+        npc = "npc.salamander_black",
+        kind = TrapKind.NetBlack,
+        displayName = "black salamander",
+        level = 67,
+        xp = 319.2,
+        low = 0,
+        high = 212,
+        trappingLocs = single("loc.hunting_sapling_catching_black"),
+        fullLoc = "loc.hunting_sapling_full_black",
+        loot = listOf(TrapLoot("obj.black_salamander", 1)),
+    ),
+    TecuSalamander(
+        npc = "npc.salamander_mountain",
+        kind = TrapKind.NetMountain,
+        displayName = "tecu salamander",
+        level = 79,
+        xp = 344.0,
+        low = 1,
+        high = 212,
+        trappingLocs = single("loc.hunting_sapling_catching_mountain"),
+        fullLoc = "loc.hunting_sapling_full_mountain",
+        loot =
+            listOf(
+                TrapLoot(
+                    "obj.immature_mountain_salamander",
+                    1,
+                    rareObj = "obj.mountain_salamander",
+                    rareChance = 1000,
+                ),
+            ),
+        rareMessage = "The salamander is fully grown, you could use this as a weapon",
+    ),
+    WildKebbit(
+        npc = "npc.huntingbeast_claws",
+        kind = TrapKind.Deadfall,
+        displayName = "wild kebbit",
+        level = 23,
+        xp = 102.4,
+        low = 29,
+        high = 385,
+        trappingLocs = deadfall("loc.hunting_deadfall_trapping_claw"),
+        fullLoc = "loc.hunting_deadfall_full_claw",
+        loot =
+            listOf(
+                TrapLoot("obj.bones", 1),
+                TrapLoot("obj.huntingbeast_claws", 1),
+                TrapLoot("obj.huntingbeast_wild_meat", 1),
+            ),
+        escapeAnim = "seq.huntingbeast_backoff",
+    ),
+    BarbTailedKebbit(
+        npc = "npc.huntingbeast_barbedtail",
+        kind = TrapKind.Deadfall,
+        displayName = "barb-tailed kebbit",
+        level = 33,
+        xp = 134.4,
+        low = -220,
+        high = 1037,
+        trappingLocs = deadfall("loc.hunting_deadfall_trapping_barbed"),
+        fullLoc = "loc.hunting_deadfall_full_barbed",
+        loot =
+            listOf(
+                TrapLoot("obj.bones", 1),
+                TrapLoot("obj.hunting_barbed_harpoon", 1),
+                TrapLoot("obj.huntingbeast_barbed_meat", 1),
+            ),
+        escapeAnim = "seq.huntingbeast_backoff",
+    ),
+    PricklyKebbit(
+        npc = "npc.huntingbeast_spiky",
+        kind = TrapKind.Deadfall,
+        displayName = "prickly kebbit",
+        level = 37,
+        xp = 147.2,
+        low = -70,
+        high = 331,
+        trappingLocs = deadfall("loc.hunting_deadfall_trapping_spike"),
+        fullLoc = "loc.hunting_deadfall_full_spike",
+        loot = listOf(TrapLoot("obj.bones", 1), TrapLoot("obj.huntingbeast_spike", 1)),
+        escapeAnim = "seq.huntingbeast_backoff",
+    ),
+    SabreToothedKebbit(
+        npc = "npc.huntingbeast_sabreteeth",
+        kind = TrapKind.Deadfall,
+        displayName = "sabre-toothed kebbit",
+        level = 51,
+        xp = 160.0,
+        low = -434,
+        high = 820,
+        trappingLocs = deadfall("loc.hunting_deadfall_trapping_sabre"),
+        fullLoc = "loc.hunting_deadfall_full_sabre",
+        loot = listOf(TrapLoot("obj.bones", 1), TrapLoot("obj.huntingbeast_sabreteeth", 1)),
+        escapeAnim = "seq.huntingbeast_backoff",
+    ),
+    PyreFox(
+        npc = "npc.varlamore_hunterfox01",
+        kind = TrapKind.Deadfall,
+        displayName = "pyre fox",
+        level = 57,
+        xp = 177.6,
+        low = -475,
+        high = 750,
+        trappingLocs = deadfall("loc.hunting_deadfall_trapping_fennec"),
+        fullLoc = "loc.hunting_deadfall_full_fennec",
+        loot =
+            listOf(
+                TrapLoot("obj.bones", 1),
+                TrapLoot("obj.hunting_fennecfox_fur", 1),
+                TrapLoot("obj.hunting_fennecfox_meat", 1),
+            ),
+        escapeAnim = "seq.huntingfox_backoff",
+    ),
+    WhiteRabbit(
+        npc = null,
+        kind = TrapKind.RabbitSnare,
+        displayName = "white rabbit",
+        level = 27,
+        xp = 144.0,
+        low = 256,
+        high = 256,
+        trappingLocs = emptyMap(),
+        fullLoc = "loc.hunting_snare_rabbit",
+        loot =
+            listOf(
+                TrapLoot("obj.bones", 1),
+                TrapLoot("obj.raw_rabbit", 1),
+                TrapLoot("obj.hunting_rabbit_foot", 1),
+            ),
+    ),
     ;
 
     companion object {
-        val byNpc: Map<String, TrapPrey> = entries.associateBy { it.npc }
+        val byNpc: Map<String, TrapPrey> =
+            entries.mapNotNull { prey -> prey.npc?.let { it to prey } }.toMap()
 
         val byFullLoc: Map<String, TrapPrey> = entries.associateBy { it.fullLoc }
 
@@ -144,8 +318,17 @@ enum class TrapPrey(
     }
 }
 
-private fun bird(loc: String): Map<Direction, String> =
-    CARDINALS.associateWith { loc }
+private fun bird(loc: String): Map<Direction, String> = single(loc)
+
+private fun single(loc: String): Map<Direction, String> = CARDINALS.associateWith { loc }
+
+private fun deadfall(loc: String): Map<Direction, String> =
+    mapOf(
+        Direction.North to loc,
+        Direction.East to loc,
+        Direction.South to "${loc}_m",
+        Direction.West to "${loc}_m",
+    )
 
 private fun box(prefix: String): Map<Direction, String> =
     mapOf(
