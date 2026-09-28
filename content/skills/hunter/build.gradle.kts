@@ -9,4 +9,5 @@ dependencies {
     implementation(projects.api.registry)
     implementation(projects.api.utils.utilsSkills)
     implementation(projects.content.drops)
+    implementation(projects.content.other.pets)
 }

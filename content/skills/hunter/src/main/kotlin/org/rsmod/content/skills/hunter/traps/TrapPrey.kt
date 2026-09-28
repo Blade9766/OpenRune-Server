@@ -27,6 +27,7 @@ enum class TrapPrey(
     val loot: List<TrapLoot>,
     val escapeAnim: String? = null,
     val rareMessage: String? = null,
+    val petChance: Int = 0,
 ) {
     CrimsonSwift(
         npc = "npc.hunting_bird_jungle",
@@ -113,6 +114,7 @@ enum class TrapPrey(
         fullLoc = "loc.hunting_boxtrap_full_chinchompa",
         loot = listOf(TrapLoot("obj.chinchompa_captured", 1)),
         escapeAnim = "seq.hunting_chinchompa_backoff",
+        petChance = 131395,
     ),
     CarnivorousChinchompa(
         npc = "npc.hunting_chinchompa_big",
@@ -126,6 +128,7 @@ enum class TrapPrey(
         fullLoc = "loc.hunting_boxtrap_full_chinchompa_big",
         loot = listOf(TrapLoot("obj.chinchompa_big_captured", 1)),
         escapeAnim = "seq.hunting_chinchompa_backoff",
+        petChance = 98373,
     ),
     BlackChinchompa(
         npc = "npc.hunting_chinchompa_black",
@@ -139,6 +142,7 @@ enum class TrapPrey(
         fullLoc = "loc.hunting_boxtrap_full_chinchompa_black",
         loot = listOf(TrapLoot("obj.chinchompa_black", 1)),
         escapeAnim = "seq.hunting_chinchompa_backoff",
+        petChance = 82758,
     ),
     SwampLizard(
         npc = "npc.salamander_green",

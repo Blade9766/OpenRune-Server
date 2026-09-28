@@ -20,6 +20,7 @@ import org.rsmod.api.script.onOpObj4
 import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.other.pets.PetRewards
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.map.Direction
 import org.rsmod.game.map.collision.firstStepDestination
@@ -37,6 +38,7 @@ constructor(
     private val worldRepo: WorldRepository,
     private val xpMods: XpModifiers,
     private val invisibleLevels: InvisibleLevels,
+    private val pets: PetRewards,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onEvent<GameLifecycle.LateCycle> { traps.tick() }
@@ -278,6 +280,9 @@ constructor(
         }
         statAdvance(TrapManager.STAT, prey.xp * xpMods.get(player, TrapManager.STAT))
         mes("You've caught a ${prey.displayName}.")
+        if (prey.petChance > 0) {
+            pets.rollSkillingPet(player, CHINCHOMPA_PET, TrapManager.STAT, prey.petChance)
+        }
         if (relay) {
             relay(trap)
         } else {
@@ -382,6 +387,7 @@ constructor(
     }
 
     private companion object {
+        const val CHINCHOMPA_PET = "obj.skillpethunter_grey"
         const val LAY_CYCLES = 3
         const val LOG_KEEP_ROLL = 4
         const val FERRET_KEEP_LOW = 190
