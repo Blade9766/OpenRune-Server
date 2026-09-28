@@ -15,6 +15,7 @@ import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceLock
 import org.rsmod.api.table.QuestRow
+import org.rsmod.content.quest.area.mortton.shades.catacombs.ShadeCatacombs
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.square.MapSquareKey
 
@@ -91,6 +92,29 @@ class ShadesOfMorttonCacheTest {
         for (varp in listOf("varp.temple_repaired_p", "varp.temple_resources_p", "varp.temple_sanctity_p")) {
             assertTrue(watched.contains(varp.asRSCM(RSCMType.VARP).toString()), "$varp is not watched")
         }
+    }
+
+    @Test
+    fun everyCatacombDoorIsWhereTheDoorListSays() {
+        val doors = listOf("bronze", "steel", "black", "silver", "gold").map { "loc.shadelair_${it}door" }
+        val ids = doors.map { it.asRSCM(RSCMType.LOC) }.toSet()
+        val square = MapSquareKey.from(ShadeCatacombs.CATACOMB_ENTRY)
+        val data = checkNotNull(cache.data(MAPS, square.id, 1))
+        val placed =
+            MapLocListDecoder.decode(InlineByteBuf(data)).spawns.map(::MapLocDefinition)
+                .filter { it.id in ids }
+                .map { square.toCoords(it.level).translate(it.localX, it.localZ) }
+                .toSet()
+        assertEquals(placed, ShadeCatacombs.DOORS.toSet())
+        assertTrue(ShadeCatacombs.DOORS.size <= 32, "door bits must fit one varp")
+        assertTrue(ShadeCatacombs.EXIT_DOOR in ShadeCatacombs.DOORS)
+    }
+
+    @Test
+    fun catacombEntranceAndAltarStandWhereTheScriptExpects() {
+        assertLocAt("loc.shadelairentrancel", ShadeCatacombs.ENTRANCE_LEFT_COORDS)
+        assertLocAt("loc.shadelairentrancer", ShadeCatacombs.ENTRANCE_RIGHT_COORDS)
+        assertLocAt("loc.shade_lair_temple_altar", CoordGrid(3492, 9694, 0))
     }
 
     private fun assertLocAt(loc: String, coords: CoordGrid) {

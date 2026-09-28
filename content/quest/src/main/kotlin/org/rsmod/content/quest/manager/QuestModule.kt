@@ -145,6 +145,7 @@ import org.rsmod.content.quest.area.mortton.shades.LoarShadeKillHook
 import org.rsmod.content.quest.area.mortton.shades.SerumCures
 import org.rsmod.content.quest.area.mortton.shades.Shades
 import org.rsmod.content.quest.area.mortton.shades.ShadesOfMorttonQuest
+import org.rsmod.content.quest.area.mortton.shades.catacombs.ShadeCoffins
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHook
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
@@ -263,6 +264,7 @@ public class QuestModule : PluginModule() {
         bindInstance<SerumCures>()
         bindInstance<Shades>()
         bindInstance<FlamtaerTemple>()
+        bindInstance<ShadeCoffins>()
         addSetBinding<NpcDeathKillHook>(LoarShadeKillHook::class.java)
         bindInstance<JunglePotionQuest>()
         bindInstance<TrufitusJunglePotion>()
