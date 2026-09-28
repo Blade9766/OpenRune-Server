@@ -141,7 +141,8 @@ public suspend fun StandardNpcAccess.death(npcRepo: NpcRepository, players: Play
     if (aggressivePlayer != null) {
         val player = aggressivePlayer.resolve(players)
 
-        val deathSound = paramOrNull(params.death_sound)
+        val deathSound =
+            npc.visType.paramOrNull(params.death_sound) ?: paramOrNull(params.death_sound)
         if (deathSound != null && player != null) {
             player.soundSynth(deathSound)
         }
@@ -154,7 +155,8 @@ public suspend fun StandardNpcAccess.death(npcRepo: NpcRepository, players: Play
         }
     }
 
-    val deathAnim = param(params.death_anim)
+    // A transformed npc (a varbit multinpc, a wall beast out of its hole) dies as the form it shows.
+    val deathAnim = npc.visType.paramOrNull(params.death_anim) ?: param(params.death_anim)
     anim(RSCM.getReverseMapping(RSCMType.SEQ, deathAnim.id))
     delay(deathAnim)
 

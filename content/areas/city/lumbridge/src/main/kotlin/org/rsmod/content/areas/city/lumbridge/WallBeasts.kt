@@ -8,6 +8,7 @@ import dev.openrune.types.MoveRestrict
 import dev.openrune.types.NpcMode
 import dev.openrune.types.NpcServerType
 import jakarta.inject.Inject
+import org.rsmod.api.combat.commons.npc.queueCombatRetaliate
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.npc.interact.AiPlayerInteractions
 import org.rsmod.api.npc.isAliveInWorld
@@ -118,7 +119,7 @@ constructor(
         player.soundSynth(SOUND_FOILED)
         hole.transmog(beastType, Int.MAX_VALUE)
         hole.anim(BEAST_FAIL)
-        hole.lastCombat = hole.currentMapClock
+        hole.queueCombatRetaliate(player)
         hole.timer(RETREAT_TIMER, RETREAT_CHECK_INTERVAL)
         hole.opPlayer2(player, aiInteractions)
     }
