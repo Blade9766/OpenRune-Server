@@ -11,9 +11,10 @@ object NpcCombatAnimToml {
 # Regenerate with:  ./gradlew :tools:combat-anims:dumpNpcCombatAnims
 # Hand corrections:  npc-combat-anims-overrides.toml (same format; those always win).
 #
-# Each entry names the npc, where its animations came from (a held weapon, a spell caster, or the
-# animation family of its ready animation) and the values the plugin sets at boot. Only fields
-# present are applied, and only where the npc's own data does not already declare them.
+# Each entry names the npc, where its animations and sounds came from (a held weapon, a spell
+# caster, the animation family of its ready animation, LostCity's 2004 configs, npcs sharing its
+# ready animation, its skeleton, or the synth jukebox by name) and the values the plugin sets at
+# boot. Only fields present are applied, and only where the npc's own data does not declare them.
 """
 
     fun render(entries: List<NpcCombatAnims>): String =

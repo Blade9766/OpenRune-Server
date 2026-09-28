@@ -185,4 +185,16 @@ npc = [
     # Nezikchened casts his flamestrike from up to ten tiles away (content/quest legendsquest
     # NezikchenedCombat) and only claws a player standing beside him.
     { id = "npc.nezikchened", attack_range = 10 },
+    # Thrower trolls (Death Plateau, Trollheim) throw rocks from range, per the OSRS wiki and
+    # LostCity's configs (troll_rock_throw, troll_rock_travel, troll_with_rock_attack).
+    { id = "npc.death_troll_thrower1", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.death_troll_thrower2", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.death_troll_thrower3", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.death_troll_thrower4", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.death_troll_thrower5", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.troll_thrower1", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.troll_thrower2", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.troll_thrower3", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.troll_thrower4", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
+    { id = "npc.troll_thrower5", attack_anim = "seq.troll_rock_throw", attack_type = "category.attacktype_standard", attack_sound = 871, proj_travel = "spotanim.troll_rock_travel", proj_type = "projanim.thrown", attack_range = 7 },
 ]

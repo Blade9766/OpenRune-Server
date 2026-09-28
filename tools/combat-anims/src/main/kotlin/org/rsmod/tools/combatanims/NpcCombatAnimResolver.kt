@@ -11,8 +11,6 @@ data class NpcFacts(
     val ranged: Int,
     val magic: Int,
     val attackable: Boolean,
-    /** The npc already declares `param.attack_anim`; the cache data wins and it is left alone. */
-    val hasAttackAnim: Boolean,
 )
 
 /** The weapon an npc is holding, identified by its wear model, with the weapon's own combat data. */
@@ -54,7 +52,10 @@ data class NpcCombatAnims(
                 attackType == null &&
                 defendAnim == null &&
                 deathAnim == null &&
-                projTravel == null
+                projTravel == null &&
+                attackSound == null &&
+                defendSound == null &&
+                deathSound == null
 }
 
 /**
@@ -250,7 +251,7 @@ object NpcCombatAnimResolver {
         shield: ShieldFacts?,
         sequences: Set<String>,
     ): NpcCombatAnims? {
-        if (!npc.attackable || npc.hasAttackAnim) {
+        if (!npc.attackable) {
             return null
         }
         val result =

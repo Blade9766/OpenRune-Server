@@ -311,9 +311,7 @@ class NpcCombatAnimResolverTest {
     }
 
     @Test
-    fun `npcs with their own attack animation or no attack option are skipped`() {
-        val done = human("Man").copy(hasAttackAnim = true)
-        assertNull(NpcCombatAnimResolver.resolve(done, sword, null, sequences))
+    fun `npcs with no attack option are skipped`() {
         val peaceful = human("Banker").copy(attackable = false)
         assertNull(NpcCombatAnimResolver.resolve(peaceful, sword, null, sequences))
     }
@@ -327,6 +325,5 @@ class NpcCombatAnimResolverTest {
             ranged = ranged,
             magic = magic,
             attackable = true,
-            hasAttackAnim = false,
         )
 }
