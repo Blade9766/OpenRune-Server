@@ -11,10 +11,10 @@ import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpHeld4
 import org.rsmod.api.script.onOpObj3
-import org.rsmod.api.script.onOpWorn1
 import org.rsmod.api.script.onOpWorn2
 import org.rsmod.api.script.onOpWorn3
 import org.rsmod.api.script.onOpWorn4
+import org.rsmod.api.script.onOpWorn5
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.Inventory
 import org.rsmod.game.inv.isType
@@ -39,10 +39,10 @@ class ShadeCoffins @Inject constructor(private val objRepo: ObjRepository) : Plu
                 onOpHeld1(coffin) { fill(metal) }
                 onOpHeld3(coffin) { configure(metal, open, inv) }
                 onOpHeld4(coffin) { empty() }
-                onOpWorn1(coffin) { fill(metal) }
-                onOpWorn2(coffin) { configure(metal, open, player.worn) }
-                onOpWorn3(coffin) { toggle(metal, open, player.worn) }
-                onOpWorn4(coffin) { empty() }
+                onOpWorn2(coffin) { fill(metal) }
+                onOpWorn3(coffin) { configure(metal, open, player.worn) }
+                onOpWorn4(coffin) { toggle(metal, open, player.worn) }
+                onOpWorn5(coffin) { empty() }
             }
         }
         for (remains in REMAINS) {
