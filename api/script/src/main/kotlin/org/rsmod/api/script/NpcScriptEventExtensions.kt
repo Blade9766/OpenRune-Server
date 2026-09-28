@@ -117,6 +117,16 @@ public fun ScriptContext.onOpNpcU(
     action: suspend ProtectedAccess.(NpcUEvents.Op) -> Unit,
 ): Unit = onProtectedEvent(EventBus.composeLongKey(npcType.id, objType.id), action)
 
+public fun ScriptContext.onOpNpcU(
+    npcType: String,
+    objType: String,
+    action: suspend ProtectedAccess.(NpcUEvents.Op) -> Unit,
+): Unit =
+    onProtectedEvent(
+        EventBus.composeLongKey(npcType.asRSCM(RSCMType.NPC), objType.asRSCM(RSCMType.OBJ)),
+        action,
+    )
+
 public fun ScriptContext.onOpContentNpcU(
     content: String,
     objType: String,

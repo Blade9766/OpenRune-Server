@@ -140,6 +140,11 @@ import org.rsmod.content.quest.area.mortmyre.naturespirit.Ghasts
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritDrezel
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest
 import org.rsmod.content.quest.area.mortmyre.naturespirit.SpiritSpawns
+import org.rsmod.content.quest.area.mortton.shades.FlamtaerTemple
+import org.rsmod.content.quest.area.mortton.shades.LoarShadeKillHook
+import org.rsmod.content.quest.area.mortton.shades.SerumCures
+import org.rsmod.content.quest.area.mortton.shades.Shades
+import org.rsmod.content.quest.area.mortton.shades.ShadesOfMorttonQuest
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHook
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
@@ -254,6 +259,11 @@ public class QuestModule : PluginModule() {
         bindInstance<NatureSpiritDrezel>()
         bindInstance<SpiritSpawns>()
         bindInstance<Ghasts>()
+        bindInstance<ShadesOfMorttonQuest>()
+        bindInstance<SerumCures>()
+        bindInstance<Shades>()
+        bindInstance<FlamtaerTemple>()
+        addSetBinding<NpcDeathKillHook>(LoarShadeKillHook::class.java)
         bindInstance<JunglePotionQuest>()
         bindInstance<TrufitusJunglePotion>()
         bindInstance<ShiloVillageQuest>()

@@ -340,6 +340,14 @@ mcannon_turn = 2877
 # Dwarf multicannon: assembling a part, and the firing heard around the cannon.
 mcannon_setup = 2876
 mcannon_fire = 1667
+# Shades of Mort'ton: shades rising and falling, the sacred flame, and the funeral pyres.
+shade_appear = 744
+shade_attack = 745
+shade_death = 746
+shade_hit = 747
+shade_sigh = 748
+tinderbox_strike = 2599
+oil_pour = 1772
 
 [gamevals.clientscript]
 quest_available_set = 45550
