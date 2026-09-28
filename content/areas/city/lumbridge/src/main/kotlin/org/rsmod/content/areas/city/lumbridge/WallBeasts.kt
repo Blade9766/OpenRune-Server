@@ -134,15 +134,19 @@ constructor(
             anim(PLAYER_GRAB_START)
             soundSynth(SOUND_ATTACK)
             delay(1)
-            hole.anim(GRAB_HOLD)
+            // The hold pose is a short loop that the client drops while the start still plays, so
+            // it is kept up as the idle pose for the whole hold.
+            hole.setIdleAnim(GRAB_HOLD)
             anim(PLAYER_GRAB_HOLD)
             queueHit(hole, delay = 1, type = HitType.Typeless, damage = random.of(0..GRAB_MAX_HIT))
             delay(GRAB_HOLD_TICKS)
+            hole.clearIdleAnim()
             hole.anim(GRAB_END)
             anim(PLAYER_GRAB_END)
             delay(1)
         } finally {
             grabbing -= hole
+            hole.clearIdleAnim()
             hole.resetFaceEntity()
         }
     }
