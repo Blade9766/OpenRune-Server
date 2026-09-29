@@ -60,6 +60,15 @@ object PickableObjects {
             column(FORCES_WALK, true)
         }
 
+        row("dbrow.pickable_draynor_cabbage") {
+            columnRSCM(LOCS, "loc.draynor_magic_cabbage")
+            columnRSCM(COL_ITEM_GIVEN, "obj.magic_cabbage")
+            column(COL_ITEM_GIVEN_AMOUNT, 1)
+            column(RESPAWN_TICK_TIME, 30)
+            column(OBJECT_CYCLE, false)
+            column(FORCES_WALK, true)
+        }
+
         row("dbrow.pickable_cadava_bush") {
             columnRSCM(LOCS, "loc.fai_varrock_cadavabush_2","loc.fai_varrock_cadavabush_1")
             columnRSCM(REPLACEMENT_LOC, "loc.fai_varrock_cadavabush_0")
