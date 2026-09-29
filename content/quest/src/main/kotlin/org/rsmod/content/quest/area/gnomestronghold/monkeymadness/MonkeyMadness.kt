@@ -103,7 +103,7 @@ object MonkeyMadness {
     const val SOUND_OOKS = "synth.ooks"
     const val SOUND_GORILLA_PUNCH = "synth.gorilla_bigpunch"
     const val SOUND_WING_UNFOLD = "synth.wing_unfold"
-    const val SOUND_RUMBLING = "synth.rumbling"
+    const val SOUND_RUMBLING = "synth.leviathan_rockfall_rumble"
     const val SOUND_RUMBLING_FADE = "synth.rumbling_fade"
     const val SOUND_FIRE = "synth.fire_loop"
     const val SOUND_SNORE = "synth.snore"

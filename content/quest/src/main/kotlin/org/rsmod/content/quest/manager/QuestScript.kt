@@ -90,6 +90,8 @@ abstract class QuestScript(
     val completionJingle: Int = Quest.DEFAULT_COMPLETION_JINGLE,
     /** Stage varbit for quests whose varp is shared with unrelated flags; see [Quest.questVarbit]. */
     val questVarbit: String? = null,
+    val closeDialogue: QuestClose = QuestClose.OnFinished,
+    val closeScroll: QuestClose = QuestClose.Never,
 ) : PluginScript() {
 
     val quest =
@@ -100,6 +102,8 @@ abstract class QuestScript(
             rewards,
             completionJingle,
             questVarbit,
+            closeDialogue,
+            closeScroll,
         )
 
     abstract fun subTitle(): String

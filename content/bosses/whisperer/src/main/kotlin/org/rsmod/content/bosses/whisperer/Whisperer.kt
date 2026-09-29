@@ -796,7 +796,7 @@ constructor(
                 EngineHitType.Melee,
                 damage,
                 deps.playerHitModifier,
-                MELEE_PRAYER_PENETRATION,
+                penetration = MELEE_PRAYER_PENETRATION,
             )
         }
     }

@@ -17,13 +17,11 @@ import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onIfOverlayButton
-import org.rsmod.api.script.onNpcTimer
 import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.api.spells.attack.SpellAttack
 import org.rsmod.api.spells.attack.SpellAttackManager
 import org.rsmod.api.spells.attack.SpellAttackMap
 import org.rsmod.api.spells.attack.SpellAttackRepository
-import org.rsmod.content.skills.magic.spell.attacks.NpcFreeze
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.NpcList
 import org.rsmod.game.entity.Player
@@ -56,7 +54,6 @@ constructor(
             onIfOverlayButton(vengeance.component) { castVengeance() }
         }
         onEvent<PlayerHitEvents.Impact> { onHit(player, hit) }
-        onNpcTimer(NpcFreeze.TIMER) { NpcFreeze.release(npc) }
     }
 
     private suspend fun ProtectedAccess.castVengeance() {

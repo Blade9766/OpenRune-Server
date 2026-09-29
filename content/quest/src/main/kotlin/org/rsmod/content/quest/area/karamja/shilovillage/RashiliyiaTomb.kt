@@ -397,6 +397,6 @@ constructor(
         const val GATE_CLOSE_SOUND = "synth.grate_close"
         const val COFFIN_OPEN_SOUND = "synth.coffin_open"
         const val SKELETON_SOUND = "synth.skeleton_resurrect"
-        const val RUMBLE_SOUND = "synth.rumbling"
+        const val RUMBLE_SOUND = "synth.leviathan_rockfall_rumble"
     }
 }

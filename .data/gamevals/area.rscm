@@ -82,6 +82,8 @@ west_ardougne=81
 ardougne_sewers=82
 south_ardougne=83
 legends_guild=84
+barrows=32202
+barrows_crypt=32201
 
 minor_wilderness_bosses_dungeons=32757
 ferox_enclave=32758
@@ -646,3 +648,7 @@ zealot=32206
 zogre_dance=32205
 zombiism=32204
 biohazard_varrock_watch=32203
+
+gemstone_crab_spot_1=30001
+gemstone_crab_spot_2=30002
+gemstone_crab_spot_3=30003

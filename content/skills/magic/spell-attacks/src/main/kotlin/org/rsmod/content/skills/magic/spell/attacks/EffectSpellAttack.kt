@@ -181,11 +181,11 @@ object SpellEffects {
         }
     }
 
-    /** Holds the target in place: players via the combat freeze, npcs via their movement lock. */
+    /** Holds the target in place through the combat freeze, which respects freeze immunity. */
     fun freeze(target: PathingEntity, ticks: Int) {
         when (target) {
             is Player -> CombatEffects.freeze(target, ticks)
-            is Npc -> NpcFreeze.freeze(target, ticks)
+            is Npc -> CombatEffects.freeze(target, ticks)
         }
     }
 
@@ -223,26 +223,5 @@ object SpellEffects {
             DEFENCE -> npc.defenceLvl = value
             MAGIC -> npc.magicLvl = value
         }
-    }
-}
-
-/**
- * Npcs have no freeze mechanic of their own; a frozen npc has its movement locked until the
- * combat freeze timer, handled in [SpellEffectsScript], releases it.
- */
-object NpcFreeze {
-    const val TIMER: String = "timer.combat_freeze"
-
-    fun freeze(npc: Npc, ticks: Int) {
-        if (npc.movementLocked) {
-            return
-        }
-        npc.movementLocked = true
-        npc.timer(TIMER, ticks)
-    }
-
-    fun release(npc: Npc) {
-        npc.movementLocked = false
-        npc.clearTimer(TIMER)
     }
 }

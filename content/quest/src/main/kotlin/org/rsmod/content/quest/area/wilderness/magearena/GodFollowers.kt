@@ -98,11 +98,26 @@ constructor(
         }
 
     override fun ScriptContext.startup() {
-        deps.extensionRegistry.register(GOD_SPELL_HANDLER) { access, npc, target, _ -> castGodSpell(access, npc, target) }
-        deps.extensionRegistry.register(MELEE_HANDLER) { access, npc, target, _ -> melee(access, npc, target) }
-        deps.extensionRegistry.register(BARRAGE_HANDLER) { access, npc, target, _ -> iceBarrage(access, npc, target) }
-        deps.extensionRegistry.register(TELEBLOCK_HANDLER) { access, npc, target, _ -> teleBlock(access, npc, target) }
-        deps.extensionRegistry.register(SPECIAL_HANDLER) { access, npc, target, _ -> special(access, npc, target) }
+        deps.extensionRegistry.register(GOD_SPELL_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            castGodSpell(access, npc, target)
+        }
+        deps.extensionRegistry.register(MELEE_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            melee(access, npc, target)
+        }
+        deps.extensionRegistry.register(BARRAGE_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            iceBarrage(access, npc, target)
+        }
+        deps.extensionRegistry.register(TELEBLOCK_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            teleBlock(access, npc, target)
+        }
+        deps.extensionRegistry.register(SPECIAL_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            special(access, npc, target)
+        }
         BossCombat.register(
             this,
             spec,

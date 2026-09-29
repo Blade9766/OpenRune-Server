@@ -112,6 +112,10 @@ constructor(private val musicPlayer: MusicPlayer, private val eventBus: EventBus
         }
 
         onIfOverlayButton("component.settings_side:settings_open") {
+            if (player.isAccessProtected) {
+                mes("Please finish what you are doing before opening the settings menu.")
+                return@onIfOverlayButton
+            }
             ifOpenOverlay("interface.settings")
             player.selectedCategory = 0
             player.settingsCategory = 0

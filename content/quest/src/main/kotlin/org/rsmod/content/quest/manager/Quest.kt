@@ -15,6 +15,19 @@ import org.rsmod.api.table.QuestRow
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
 
+internal const val QUEST_DIALOGUE_CLOSE_TIMER = "timer.quest_dialogue_close"
+internal const val QUEST_SCROLL_CLOSE_TIMER = "timer.quest_scroll_close"
+
+private fun scheduleClose(
+    access: ProtectedAccess,
+    behaviour: QuestClose,
+    timer: String,
+    closeNow: ProtectedAccess.() -> Unit,
+) {
+    val delay = behaviour.delayCycles ?: return
+    if (delay <= 0) access.closeNow() else access.softTimer(timer, delay)
+}
+
 val QUEST_STAGE_MAP_ATTR = AttributeKey<MutableMap<String, Int>>("quest_stages")
 
 data class ItemRewardDisplay(val item: String, val zoom: Int = 10)
@@ -39,6 +52,8 @@ data class Quest(
      * the same varp as the Wilderness warning toggles), so writing the full varp would wipe them.
      */
     val questVarbit: String? = null,
+    val closeDialogue: QuestClose = QuestClose.OnFinished,
+    val closeScroll: QuestClose = QuestClose.Never,
 ) {
 
     private var Player.questVarpState by intVarp(questVarp)
@@ -91,6 +106,8 @@ data class Quest(
             rewards: QuestReward,
             completionJingle: Int = DEFAULT_COMPLETION_JINGLE,
             varbit: String? = null,
+            closeDialogue: QuestClose = QuestClose.OnFinished,
+            closeScroll: QuestClose = QuestClose.Never,
         ): Quest {
 
             val rowKeyID = "dbrow.${rowKey}".asRSCM()
@@ -109,6 +126,8 @@ data class Quest(
                 rewards = rewards,
                 completionJingle = completionJingle,
                 questVarbit = varbit,
+                closeDialogue = closeDialogue,
+                closeScroll = closeScroll,
             )
             questsByKey[rowKey.normalizedQuestKey()] = quest
             return quest
@@ -291,7 +310,11 @@ data class Quest(
         access.player.questsCompleted++
         access.player.midiJingle(completionJingle)
 
+        scheduleClose(access, closeDialogue, QUEST_DIALOGUE_CLOSE_TIMER) { ifCloseChat() }
         access.ifOpenMain("interface.questscroll")
+        scheduleClose(access, closeScroll, QUEST_SCROLL_CLOSE_TIMER) {
+            ifCloseSub("interface.questscroll")
+        }
         access.ifSetText("component.questscroll:quest_title", "You have completed ${displayName}!")
         val pointsLabel = if (questPoints == 1) "Quest Point" else "Quest Points"
         access.ifSetText("component.questscroll:quest_reward1", "$questPoints $pointsLabel")

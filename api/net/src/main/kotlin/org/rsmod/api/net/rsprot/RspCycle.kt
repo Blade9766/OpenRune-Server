@@ -89,6 +89,7 @@ class RspCycle(
         player.applyAnim()
         player.applySpotanims()
         player.applySay()
+        player.applyTinting()
         player.applyHeadbars()
         player.applyHitmarks()
         player.syncAppearance()
@@ -298,6 +299,18 @@ class RspCycle(
     private fun Player.applySay() {
         val text = pendingSay ?: return
         playerExtendedInfo.setSay(text)
+    }
+
+    private fun Player.applyTinting() {
+        val tint = pendingTinting ?: return
+        playerExtendedInfo.setTinting(
+            startTime = tint.startCycle,
+            endTime = tint.endCycle,
+            hue = tint.hue,
+            saturation = tint.saturation,
+            lightness = tint.lightness,
+            weight = tint.weight,
+        )
     }
 
     private fun Player.applyExactMove() {

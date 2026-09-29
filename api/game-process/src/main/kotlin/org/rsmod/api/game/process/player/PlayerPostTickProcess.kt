@@ -134,6 +134,7 @@ constructor(
 
     private fun Player.cleanUpPendingUpdates() {
         pendingSay = null
+        pendingTinting = null
         pendingStepCount = 0
         pendingTeleport = false
         pendingTelejump = false

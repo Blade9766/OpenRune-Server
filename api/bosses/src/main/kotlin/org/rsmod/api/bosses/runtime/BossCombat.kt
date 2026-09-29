@@ -12,6 +12,7 @@ import org.rsmod.api.script.onAiApPlayer2
 import org.rsmod.api.script.onAiOpPlayer2
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onModifyNpcHit
+import org.rsmod.api.script.onNpcHit
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.npc.NpcStateEvents
@@ -26,6 +27,7 @@ object BossCombat {
         onLethal: ((Npc) -> Unit)? = null,
         onModifyHit: (NpcHitEvents.Modify.() -> Unit)? = null,
         onCombatTick: (suspend StandardNpcAccess.(Player) -> Unit)? = null,
+        onHit: (NpcHitEvents.Impact.() -> Unit)? = null,
     ) {
         val errors = SpecValidator.validate(spec)
         if (errors.isNotEmpty()) {
@@ -43,8 +45,18 @@ object BossCombat {
             deps.encounterRegistry.register(npcType.id, spec)
         }
 
+        val hitRules = HitRules(spec, deps)
+
         with(ctx) {
             for (npcType in npcTypes) {
+                // Only one script may own a npc type's hit event, so bosses that handle it
+                // themselves must not declare hit reactions or pass onHit.
+                if (hitRules.hasReactions || onHit != null) {
+                    onNpcHit(npcType) {
+                        hitRules.react(this)
+                        onHit?.invoke(this)
+                    }
+                }
                 onAiOpPlayer2(npcType) { runCombatTick(it.target, spec, deps, onCombatTick) }
                 onAiApPlayer2(npcType) { runCombatTick(it.target, spec, deps, onCombatTick) }
                 onModifyNpcHit(npcType) {
@@ -52,6 +64,7 @@ object BossCombat {
                     hit.damage =
                         if (encounter.invulnerable) 0
                         else (hit.damage * encounter.damageScale).toInt()
+                    hitRules.applyIncoming(this, encounter)
                     onModifyHit?.invoke(this)
                     if (
                         onLethal != null &&
@@ -70,7 +83,9 @@ object BossCombat {
                 if (npc.type.id in bossIds) resetBoss(npc, deps)
             }
             onEvent<NpcStateEvents.Delete> {
-                if (npc.type.id in bossIds) deps.encounterRegistry.remove(npc)
+                if (npc.type.id in bossIds) {
+                    deps.encounterRegistry.remove(npc)?.let(deps::disposeOwned)
+                }
             }
         }
     }
@@ -81,7 +96,7 @@ object BossCombat {
      * lazily on the next combat tick.
      */
     private fun resetBoss(npc: Npc, deps: BossDeps) {
-        deps.encounterRegistry.remove(npc)
+        deps.encounterRegistry.remove(npc)?.let(deps::disposeOwned)
         npc.movementLocked = false
         npc.apRangeOverride = null
         npc.apRequiresLineOfSight = true
@@ -124,6 +139,7 @@ object BossCombat {
             val effect = spec.abilities[priority] ?: return
             encounter.usedAbilities += priority
             encounter.lastAbilityTick = tick
+            encounter.lastAbilityName = priority
             EffectInterpreter(npc, target, spec, encounter, deps).run(this, effect)
             return
         }
@@ -133,6 +149,7 @@ object BossCombat {
         val effect = spec.abilities[abilityName] ?: return
 
         encounter.lastAbilityTick = tick
+        encounter.lastAbilityName = abilityName
         encounter.usedAbilities += abilityName
 
         val interpreter = EffectInterpreter(npc, target, spec, encounter, deps)

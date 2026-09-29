@@ -2,6 +2,7 @@ package org.rsmod.api.mechanics.toxins.impl
 
 import kotlin.math.min
 import org.rsmod.api.config.refs.done.hitmark_groups
+import org.rsmod.api.config.refs.params
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.queueHit
 import org.rsmod.game.entity.Npc
@@ -23,12 +24,15 @@ public object NpcPoison {
 
     public fun isPoisoned(npc: Npc): Boolean = npc.vars[SEVERITY_VARN] > 0
 
+    public fun isImmune(npc: Npc): Boolean =
+        (npc.visType.paramOrNull(params.poison_immunity) ?: 0) > 0
+
     /**
      * Poisons [npc] with a poison whose first hit deals [initialDamage]. A stronger poison already
      * running is left alone, as it is for players; a weaker one is replaced.
      */
     public fun tryPoison(npc: Npc, initialDamage: Int): Boolean {
-        if (initialDamage <= 0 || npc.hitpoints <= 0) {
+        if (initialDamage <= 0 || npc.hitpoints <= 0 || isImmune(npc)) {
             return false
         }
         val severity = PlayerPoison.severityForInitialDamage(initialDamage)
@@ -36,6 +40,31 @@ public object NpcPoison {
             return false
         }
         queuePoisonHit(npc, initialDamage)
+        npc.vars[SEVERITY_VARN] = severity - 1
+        npc.timer(TIMER, TICK_INTERVAL)
+        return true
+    }
+
+    /**
+     * Poisons [npc] at [severity], for sources defined by severity rather than first-hit damage
+     * (the Ancient smoke spells). Replaces a running poison only if it hits at least as hard.
+     */
+    public fun tryPoisonSeverity(npc: Npc, severity: Int): Boolean {
+        if (severity <= 0 || npc.hitpoints <= 0 || isImmune(npc)) {
+            return false
+        }
+        val current = npc.vars[SEVERITY_VARN]
+        if (current > 0) {
+            val currentDamage = PlayerPoison.damageForSeverity(current)
+            val incomingDamage = PlayerPoison.damageForSeverity(severity)
+            if (incomingDamage < currentDamage) return false
+            if (incomingDamage == currentDamage && severity <= current) return false
+        }
+        queuePoisonHit(npc, PlayerPoison.damageForSeverity(severity))
+        if (severity - 1 <= 0) {
+            clear(npc)
+            return true
+        }
         npc.vars[SEVERITY_VARN] = severity - 1
         npc.timer(TIMER, TICK_INTERVAL)
         return true

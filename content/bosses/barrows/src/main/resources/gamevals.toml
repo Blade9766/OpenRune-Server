@@ -1,0 +1,7 @@
+[gamevals.varp]
+barrows_layout = 65413
+
+[gamevals.varbit]
+barrows_locked_doors = 65300
+barrows_puzzle_type = 65301
+barrows_puzzle_answer = 65302

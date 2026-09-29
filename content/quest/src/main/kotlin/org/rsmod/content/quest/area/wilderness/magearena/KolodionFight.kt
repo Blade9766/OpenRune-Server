@@ -112,7 +112,10 @@ constructor(
         }
 
     override fun ScriptContext.startup() {
-        deps.extensionRegistry.register(CAST_HANDLER) { access, npc, target, _ -> castGodSpell(access, npc, target) }
+        deps.extensionRegistry.register(CAST_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            castGodSpell(access, npc, target)
+        }
         BossCombat.register(
             this,
             spec,

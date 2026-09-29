@@ -1,5 +1,6 @@
 package org.rsmod.content.quest.manager
 
+import org.rsmod.api.combat.commons.magic.SpellQuestRequirement
 import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.death.PlayerDeathCleanupHook
@@ -126,7 +127,6 @@ import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.TreatySigning
-import org.rsmod.content.quest.area.lumbridge.restlessghost.RestlessGhostQuest
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarHooks
@@ -213,7 +213,6 @@ public class QuestModule : PluginModule() {
         bindInstance<RuneMysteriesQuest>()
         bindInstance<DemonSlayerQuest>()
         bindInstance<GertrudesCatQuest>()
-        bindInstance<RestlessGhostQuest>()
         bindInstance<WitchsPotionQuest>()
         bindInstance<SheepShearerQuest>()
         bindInstance<LostCityQuest>()
@@ -414,5 +413,6 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(NezikchenedKillHook::class.java)
         addSetBinding<PlayerObjTakeValidateHook>(CarvedRockGemTakeHook::class.java)
         addSetBinding<WeaponMap>(HolyWaterWeapon::class.java)
+        addSetBinding<SpellQuestRequirement>(PolicySpellQuestRequirement::class.java)
     }
 }

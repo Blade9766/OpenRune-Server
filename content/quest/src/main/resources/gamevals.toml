@@ -80,7 +80,6 @@ human_into_zombiemonkey = 1680
 monkeycalls = 1682
 monkey_into_human = 1681
 ooks = 1679
-rumbling = 1678
 rumbling_fade = 1685
 smallmonkey_into_human = 1683
 snore = 1688
@@ -579,6 +578,9 @@ legends_heroes_slain = 65766
 legends_soaked_ungadulu = 65767
 
 [gamevals.timer]
+# Quest manager: closing the completion scroll and dialogue after their delay.
+quest_scroll_close = 404
+quest_dialogue_close = 405
 # Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
 mortmyre_swamp_decay = 124
 # Shilo Village: balance checks while crossing the bridge to Cairn Isle.

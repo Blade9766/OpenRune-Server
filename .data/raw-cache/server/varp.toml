@@ -1043,3 +1043,14 @@ isServerOnly = true
 id = "varp.hunter_birdhouse_time_4"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+id = "varp.wilderness_boss_fee_nowarn"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.barrows_state"
+scope = "Perm"
+transmit = "Never"

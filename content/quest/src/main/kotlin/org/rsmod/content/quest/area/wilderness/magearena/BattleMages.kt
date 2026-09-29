@@ -37,7 +37,10 @@ class BattleMages @Inject constructor(private val deps: BossDeps) : PluginScript
         }
 
     override fun ScriptContext.startup() {
-        deps.extensionRegistry.register(CAST_HANDLER) { access, npc, target, _ -> cast(access, npc, target) }
+        deps.extensionRegistry.register(CAST_HANDLER) { access, npc, target, _ ->
+            access ?: return@register
+            cast(access, npc, target)
+        }
         BossCombat.register(this, spec, deps)
     }
 

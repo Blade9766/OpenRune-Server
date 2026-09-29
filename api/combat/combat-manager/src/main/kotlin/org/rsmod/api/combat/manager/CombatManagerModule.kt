@@ -1,5 +1,6 @@
 package org.rsmod.api.combat.manager
 
+import org.rsmod.api.combat.commons.magic.SpellQuestRequirement
 import org.rsmod.plugin.module.PluginModule
 
 public class CombatManagerModule : PluginModule() {
@@ -9,5 +10,7 @@ public class CombatManagerModule : PluginModule() {
         bindInstance<MagicRuneManager>()
         bindInstance<PlayerAttackManager>()
         bindInstance<RangedAmmoManager>()
+
+        newSetBinding<SpellQuestRequirement>()
     }
 }
