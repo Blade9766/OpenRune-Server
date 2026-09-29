@@ -162,7 +162,8 @@ class BlackKnightsFortressQuest :
         const val WITCH = "npc.fortwitch"
         const val GRELDO = "npc.greldo"
         const val CAT = "npc.bkf_cat"
-        const val BLACK_KNIGHT = "npc.black_knight"
+
+        val BLACK_KNIGHTS = listOf("npc.aggressive_black_knight", "npc.aggressive_black_knight_f")
 
         val GUARDS =
             listOf(

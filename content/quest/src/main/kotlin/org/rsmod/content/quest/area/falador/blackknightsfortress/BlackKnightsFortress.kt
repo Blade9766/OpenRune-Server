@@ -18,7 +18,7 @@ import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.content.generic.locs.passages.GenericPassageScript
-import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.BLACK_KNIGHT
+import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.BLACK_KNIGHTS
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.CABBAGE
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.CAPTAIN
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.CAT
@@ -122,10 +122,9 @@ constructor(
 
     private fun ProtectedAccess.knightsAttack(center: CoordGrid) {
         val knights =
-            search
-                .findAll(center, BLACK_KNIGHT, KNIGHT_RADIUS, HuntVis.Off)
-                .filter { it.coords.level == center.level }
-                .toList()
+            BLACK_KNIGHTS.flatMap { type ->
+                search.findAll(center, type, KNIGHT_RADIUS, HuntVis.Off).filter { it.coords.level == center.level }
+            }
         knights.firstOrNull()?.say("Die, intruder!")
         for (knight in knights) {
             knight.opPlayer2(player, aiInteractions)

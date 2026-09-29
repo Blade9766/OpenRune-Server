@@ -4,6 +4,8 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.cache.MAPS
 import dev.openrune.map.loc.MapLocDefinition
 import dev.openrune.map.loc.MapLocListDecoder
+import dev.openrune.map.npc.MapNpcDefinition
+import dev.openrune.map.npc.MapNpcListDecoder
 import dev.openrune.map.util.InlineByteBuf
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
@@ -17,6 +19,9 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceLock
 import org.rsmod.api.table.QuestRow
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortress.Companion.CAULDRON
+import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortress.Companion.KNIGHT_RADIUS
+import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortress.Companion.MEETING_ROOM
+import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.BLACK_KNIGHTS
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.CAULDRON_BREWING
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.CAULDRON_SABOTAGED
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.REQUIRED_QUEST_POINTS
@@ -68,6 +73,20 @@ class BlackKnightsFortressCacheTest {
     }
 
     @Test
+    fun blackKnightsMeetInTheMeetingRoom() {
+        val ids = BLACK_KNIGHTS.map { it.asRSCM(RSCMType.NPC) }.toSet()
+        val square = MapSquareKey.from(MEETING_ROOM)
+        val data = checkNotNull(cache.data(MAPS, square.id, 5)) { "no npcs in ${square.id}" }
+        val knights =
+            MapNpcListDecoder.decode(InlineByteBuf(data)).packedSpawns.map(::MapNpcDefinition).count {
+                val coords = square.toCoords(it.level).translate(it.localX, it.localZ)
+                it.id in ids && coords.level == MEETING_ROOM.level &&
+                    coords.chebyshevDistance(MEETING_ROOM) <= KNIGHT_RADIUS
+            }
+        assertTrue(knights > 0, "no black knights within $KNIGHT_RADIUS of $MEETING_ROOM")
+    }
+
+    @Test
     fun theDraynorManorPatchIsPickable() {
         assertEquals("Pick", loc("loc.draynor_magic_cabbage").actions.getOpOrNull(0))
         assertEquals("Read", item(BlackKnightsFortressQuest.DOSSIER).interfaceOptions.getOrNull(0))
@@ -112,6 +131,9 @@ class BlackKnightsFortressCacheTest {
             }
         assertTrue(match, "$loc is not at $coords (angle=$angle)")
     }
+
+    private fun CoordGrid.chebyshevDistance(other: CoordGrid): Int =
+        maxOf(kotlin.math.abs(x - other.x), kotlin.math.abs(z - other.z))
 
     private companion object {
         const val WEST = 0
