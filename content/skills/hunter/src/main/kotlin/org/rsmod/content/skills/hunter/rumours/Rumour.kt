@@ -37,12 +37,13 @@ enum class RumourMethod(val rate: Int, val pity: Int, val outfitPity: Int) {
     Tracking(15, 30, 28),
     Herbiboar(7, 14, 12),
     Falconry(10, 20, 18),
+    GoatPit(48, 96, 90),
 }
 
 /**
  * Hunters' Rumour creatures. [catchKey] is the enum name of the creature in its hunting method
  * (trap prey, butterfly, pitfall creature, tracking area or `Herbiboar`) reported on each catch.
- * Wyrmscraig goat rumours are left out until those methods exist. New rumours are
+ * New rumours are
  * appended so the ids stored in the assignment varbits stay stable.
  */
 enum class Rumour(
@@ -209,6 +210,13 @@ enum class Rumour(
         RumourMethod.BoxTrap,
         "obj.hg_jerboatail_large",
         setOf(Gilman, Ornus),
+    ),
+    WyrmscraigGoat(
+        "Wyrmscraig goat",
+        60,
+        RumourMethod.GoatPit,
+        "obj.hg_goat_pit_hoof",
+        setOf(Gilman, Cervus, Teco),
     );
 
     val key: String
