@@ -29,6 +29,7 @@ import org.rsmod.api.script.onOpNpcT
 import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.other.pets.PetRewards
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.content.skills.hunter.traps.TrapManager
 import org.rsmod.game.entity.Npc
@@ -111,6 +112,18 @@ constructor(
             )
         }
 
+    private fun ProtectedAccess.canHunt(): Boolean {
+        if (player.statBase(TrapManager.STAT) < LEVEL) {
+            mes("You need a Hunter level of $LEVEL to hunt goats.")
+            return false
+        }
+        if (!QuestRequirements.hasCompleted(player, SHEEP_HERDER)) {
+            mes("You need to complete Sheep Herder to hunt goats.")
+            return false
+        }
+        return true
+    }
+
     private fun ProtectedAccess.takeProd() {
         if (CATTLEPROD in player.inv || player.righthand?.isType(CATTLEPROD) == true) {
             mes("You already have a cattleprod.")
@@ -136,8 +149,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.line() {
-        if (player.statBase(TrapManager.STAT) < LEVEL) {
-            mes("You need a Hunter level of $LEVEL to hunt goats.")
+        if (!canHunt()) {
             return
         }
         if (SPIKES !in player.inv) {
@@ -193,8 +205,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.prod(goat: Npc) {
-        if (player.statBase(TrapManager.STAT) < LEVEL) {
-            mes("You need a Hunter level of $LEVEL to hunt goats.")
+        if (!canHunt()) {
             return
         }
         val weapon = player.righthand
@@ -219,8 +230,7 @@ constructor(
      * on the far side of the pit to drop it in.
      */
     private suspend fun ProtectedAccess.lure(goat: Npc, spell: MagicSpell, lure: LureSpell) {
-        if (player.statBase(TrapManager.STAT) < LEVEL) {
-            mes("You need a Hunter level of $LEVEL to hunt goats.")
+        if (!canHunt()) {
             return
         }
         if (!runes.canCastSpell(player, spell) || runes.attemptCast(player, spell).isFailure()) {
@@ -357,6 +367,7 @@ constructor(
         const val CLEAR_SEQ = "seq.human_pickupfloor"
 
         const val LEVEL = 60
+        const val SHEEP_HERDER = "quest_sheepherder"
         const val PIT_X = 2572
         const val PIT_Z = 2195
         const val PIT_SIZE = 3

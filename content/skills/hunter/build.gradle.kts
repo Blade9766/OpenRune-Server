@@ -14,5 +14,6 @@ dependencies {
     implementation(projects.api.utils.utilsSkills)
     implementation(projects.content.drops)
     implementation(projects.content.other.pets)
+    implementation(projects.content.quest)
     implementation(projects.engine.utilsBits)
 }
