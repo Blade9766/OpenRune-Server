@@ -25,6 +25,7 @@ import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.other.pets.PetRewards
+import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.content.skills.hunter.traps.TrapManager
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Npc
@@ -52,6 +53,7 @@ constructor(
     private val xpMods: XpModifiers,
     private val pets: PetRewards,
     private val objRepo: ObjRepository,
+    private val rumours: RumourTracker,
 ) : PluginScript() {
     private class Trail(val path: List<HerbiboarSegment>, val spots: List<Int>) {
         var revealed: Int = 0
@@ -270,6 +272,7 @@ constructor(
         VarPlayerIntMapSetter.set(player, COUNT_VARP, caught)
         mes("You harvest herbs from the herbiboar, whereupon it escapes.")
         mes("Your herbiboar harvest count is: <col=ff0000>$caught</col>.")
+        rumours.onCatch(player, RUMOUR_KEY)
         repeat(herbs.size) {
             if (random.of(PET_CHANCE) == 0) {
                 pets.give(player, PET)
@@ -444,6 +447,7 @@ constructor(
         const val HERBLORE = "stat.herblore"
         const val MAGIC_SECATEURS = "obj.fairy_enchanted_secateurs"
         const val PET = "obj.herbiboarpet"
+        const val RUMOUR_KEY = "Herbiboar"
         const val COUNT_VARP = "varp.kc_herbiboar"
         const val WARNING_VARBIT = "varbit.fossil_herbiboar_already_caught_ignore_warning"
         const val HERBIBOAR_VISIBLE_VARBIT = "varbit.fossil_herbiboar_visible"

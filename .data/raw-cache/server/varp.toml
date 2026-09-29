@@ -977,3 +977,21 @@ isServerOnly = true
 id = "varp.drop_rate_multiplier"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_rumours"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_rumour_assignments"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_rumours_completed"
+scope = "Perm"
+transmit = "Never"

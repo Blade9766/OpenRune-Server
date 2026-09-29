@@ -1,0 +1,18 @@
+[gamevals.varp]
+hunter_rumours = 65414
+hunter_rumour_assignments = 65415
+hunter_rumours_completed = 65416
+
+[gamevals.varbit]
+hunter_rumour_active = 65714
+hunter_rumour_unlocked = 65715
+hunter_rumour_back_to_back = 65716
+hunter_rumour_pity = 65717
+hunter_rumour_last = 65718
+hunter_rumour_outfit = 65719
+hunter_rumour_gilman = 65720
+hunter_rumour_cervus = 65721
+hunter_rumour_ornus = 65722
+hunter_rumour_aco = 65723
+hunter_rumour_teco = 65724
+hunter_rumour_wolf = 65725

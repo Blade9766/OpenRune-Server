@@ -24,6 +24,7 @@ import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.utils.skills.SkillingSuccessRate
+import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.content.skills.hunter.traps.TrapManager
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Npc
@@ -53,6 +54,7 @@ constructor(
     private val aiInteractions: AiPlayerInteractions,
     private val xpMods: XpModifiers,
     private val invisibleLevels: InvisibleLevels,
+    private val rumours: RumourTracker,
 ) : PluginScript() {
     private class Hunt {
         val pitCycles = HashMap<Int, Int>()
@@ -308,6 +310,7 @@ constructor(
         creature.splinters?.let { invAdd(inv, it, random.of(2, 6)) }
         statAdvance(TrapManager.STAT, creature.xp * xpMods.get(player, TrapManager.STAT))
         mes("You've caught a ${creature.displayName}.")
+        rumours.onCatch(player, creature.name)
     }
 
     private val PitfallCreature.splinters: String?

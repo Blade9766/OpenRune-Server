@@ -21,6 +21,7 @@ import org.rsmod.api.script.onOpHeld4
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.npc.NpcUid
 import org.rsmod.game.inv.isType
@@ -35,6 +36,7 @@ constructor(
     private val spawner: ImplingSpawner,
     private val xpMods: XpModifiers,
     private val invisibleLevels: InvisibleLevels,
+    private val rumours: RumourTracker,
 ) : PluginScript() {
     private enum class CatchTool {
         Net,
@@ -80,6 +82,7 @@ constructor(
             applyEffect(butterfly.effect)
             mes("You catch the ${butterfly.displayName} and it flutters away.")
         }
+        rumours.onCatch(player, butterfly.name)
     }
 
     private suspend fun ProtectedAccess.catchImpling(npc: Npc, impling: Impling, maze: Boolean) {

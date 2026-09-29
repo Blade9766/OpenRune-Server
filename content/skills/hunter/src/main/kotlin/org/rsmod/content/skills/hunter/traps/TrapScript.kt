@@ -21,6 +21,7 @@ import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.other.pets.PetRewards
+import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.map.Direction
 import org.rsmod.game.map.collision.firstStepDestination
@@ -39,6 +40,7 @@ constructor(
     private val xpMods: XpModifiers,
     private val invisibleLevels: InvisibleLevels,
     private val pets: PetRewards,
+    private val rumours: RumourTracker,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onEvent<GameLifecycle.LateCycle> { traps.tick() }
@@ -280,6 +282,7 @@ constructor(
         }
         statAdvance(TrapManager.STAT, prey.xp * xpMods.get(player, TrapManager.STAT))
         mes("You've caught a ${prey.displayName}.")
+        rumours.onCatch(player, prey.name)
         if (prey.petChance > 0) {
             pets.rollSkillingPet(player, CHINCHOMPA_PET, TrapManager.STAT, prey.petChance)
         }

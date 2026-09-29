@@ -14,6 +14,7 @@ import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.content.skills.hunter.traps.TrapManager
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Player
@@ -38,6 +39,7 @@ constructor(
     private val mapClock: MapClock,
     private val random: GameRandom,
     private val xpMods: XpModifiers,
+    private val rumours: RumourTracker,
 ) : PluginScript() {
     private class Trail(val area: TrackingArea, val path: List<TrackSegment>, val nodes: List<Int>) {
         var revealed: Int = 0
@@ -168,6 +170,7 @@ constructor(
         area.loot.forEach { invAdd(inv, it) }
         statAdvance(TrapManager.STAT, area.xp * xpMods.get(player, TrapManager.STAT))
         mes("You've caught a ${area.displayName}.")
+        rumours.onCatch(player, area.name)
     }
 
     private fun ProtectedAccess.catchChance(area: TrackingArea): Double =
