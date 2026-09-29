@@ -1747,3 +1747,10 @@ id = "varbit.hunter_rumour_wolf"
 varp = "varp.hunter_rumour_assignments"
 startBit = 25
 endBit = 29
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.hunter_whistle_blueprint_claimed"
+varp = "varp.hunter_rumours"
+startBit = 20
+endBit = 20
