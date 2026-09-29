@@ -1,7 +1,14 @@
 package org.rsmod.content.skills.hunter.goatpit
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
+import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
 import kotlin.math.sign
+import org.rsmod.api.combat.commons.magic.MagicSpell
+import org.rsmod.api.combat.manager.MagicRuneManager
+import org.rsmod.api.combat.manager.MagicRuneManager.Companion.isFailure
 import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -11,11 +18,15 @@ import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.npc.NpcRepository
+import org.rsmod.api.repo.world.WorldRepository
+import org.rsmod.api.script.onApNpcT
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.script.onOpLoc3
 import org.rsmod.api.script.onOpLoc4
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.api.script.onOpNpcT
+import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.other.pets.PetRewards
 import org.rsmod.content.skills.hunter.rumours.RumourTracker
@@ -44,6 +55,9 @@ constructor(
     private val npcRepo: NpcRepository,
     private val collision: CollisionFlagMap,
     private val worldQueues: WorldQueueList,
+    private val worldRepo: WorldRepository,
+    private val spells: MagicSpellRegistry,
+    private val runes: MagicRuneManager,
     private val random: GameRandom,
     private val xpMods: XpModifiers,
     private val rumours: RumourTracker,
@@ -52,6 +66,12 @@ constructor(
     override fun ScriptContext.startup() {
         blockPitForNpcs()
         onOpNpc1(GOAT) { prod(it.npc) }
+        val goatType = requireNotNull(ServerCacheManager.getNpc(GOAT.asRSCM(RSCMType.NPC)))
+        for (lure in LureSpell.entries) {
+            val spell = spells.allSpells().firstOrNull { it.component.packed == lure.component.asRSCM(RSCMType.COMPONENT) } ?: continue
+            onApNpcT(goatType, spell.component) { lure(it.npc, spell, lure) }
+            onOpNpcT(goatType, lure.component) { lure(it.npc, spell, lure) }
+        }
         onOpNpc1(GEOFF) { talkToGeoff(it.npc) }
         onOpLoc1(PROD_SUPPLY) { takeProd() }
         onOpLoc1(SPIKES_SUPPLY) { takeSpikes(1) }
@@ -191,10 +211,42 @@ constructor(
         delay(1)
         val dx = (goat.coords.x - player.coords.x).sign
         val dz = (goat.coords.z - player.coords.z).sign
-        if (dx == 0 && dz == 0) {
+        drive(goat, dx, dz, PROD_DISTANCE, PROD_XP)
+    }
+
+    /**
+     * Telekinetic Grab and Dark Lure pull a goat straight towards the caster, so the caster stands
+     * on the far side of the pit to drop it in.
+     */
+    private suspend fun ProtectedAccess.lure(goat: Npc, spell: MagicSpell, lure: LureSpell) {
+        if (player.statBase(TrapManager.STAT) < LEVEL) {
+            mes("You need a Hunter level of $LEVEL to hunt goats.")
             return
         }
-        val path = (1..PROD_DISTANCE).map { goat.coords.translate(dx * it, dz * it) }
+        if (!runes.canCastSpell(player, spell) || runes.attemptCast(player, spell).isFailure()) {
+            return
+        }
+        faceEntitySquare(goat)
+        anim(lure.castSeq)
+        spotanim(lure.castSpot, height = CAST_HEIGHT)
+        worldRepo.projAnimSourced(player, goat, SpotanimType(lure.travelSpot.asRSCM(RSCMType.SPOTANIM)), LURE_PROJANIM)
+        statAdvance(MAGIC, spell.castXp)
+        delay(LURE_TRAVEL_TICKS)
+        if (!goat.isAliveInWorld()) {
+            return
+        }
+        goat.spotanim(lure.impactSpot)
+        val dx = (player.coords.x - goat.coords.x).sign
+        val dz = (player.coords.z - goat.coords.z).sign
+        val reach = maxOf(kotlin.math.abs(player.coords.x - goat.coords.x), kotlin.math.abs(player.coords.z - goat.coords.z)) - 1
+        drive(goat, dx, dz, reach.coerceIn(0, LURE_DISTANCE), LURE_XP)
+    }
+
+    private fun ProtectedAccess.drive(goat: Npc, dx: Int, dz: Int, distance: Int, xp: Double) {
+        if ((dx == 0 && dz == 0) || distance <= 0) {
+            return
+        }
+        val path = (1..distance).map { goat.coords.translate(dx * it, dz * it) }
         val pitTile = path.firstOrNull { it.inPit() }
         val open = player.vars[STATE] != State.Empty.value && player.vars[IN_PIT] < capacity(player)
         val edge = path.takeWhile { !it.inPit() }
@@ -204,11 +256,11 @@ constructor(
             worldQueues.add(edge.size + 1) { if (goat.isAliveInWorld()) goat.defaultMode() }
             return
         }
-        val prodder = player
-        worldQueues.add(edge.size + 1) { fallIn(prodder, goat) }
+        val hunter = player
+        worldQueues.add(edge.size + 1) { fallIn(hunter, goat, xp) }
     }
 
-    private fun fallIn(player: Player, goat: Npc) {
+    private fun fallIn(player: Player, goat: Npc, xp: Double) {
         if (!goat.isAliveInWorld()) {
             return
         }
@@ -219,7 +271,7 @@ constructor(
         }
         npcRepo.despawn(goat, GOAT_RESPAWN)
         setState(player, count + 1)
-        player.statAdvance(TrapManager.STAT, PROD_XP * xpMods.get(player, TrapManager.STAT))
+        player.statAdvance(TrapManager.STAT, xp * xpMods.get(player, TrapManager.STAT))
         if (count + 1 >= capacity(player)) {
             player.mes("The pit is now filled with goats.")
         }
@@ -253,6 +305,29 @@ constructor(
 
     private fun CoordGrid.inPit(): Boolean =
         x in PIT_X until PIT_X + PIT_SIZE && z in PIT_Z until PIT_Z + PIT_SIZE
+
+    private enum class LureSpell(
+        val component: String,
+        val castSeq: String,
+        val castSpot: String,
+        val travelSpot: String,
+        val impactSpot: String,
+    ) {
+        TelekineticGrab(
+            "component.magic_spellbook:telegrab",
+            "seq.human_casttelegrab",
+            "spotanim.telegrab_casting",
+            "spotanim.telegrab_travel",
+            "spotanim.telegrab_impact",
+        ),
+        DarkLure(
+            "component.magic_spellbook:dark_lure",
+            "seq.human_castentangle",
+            "spotanim.dark_lure_cast_spotanim",
+            "spotanim.dark_lure_travel_projanim",
+            "spotanim.dark_lure_hit_spotanim",
+        ),
+    }
 
     private enum class State(val value: Int) {
         Empty(0),
@@ -288,6 +363,12 @@ constructor(
         const val PROD_DISTANCE = 6
         const val GOAT_RESPAWN = 15
         const val PROD_XP = 20.0
+        const val LURE_XP = 10.0
+        const val LURE_DISTANCE = 10
+        const val LURE_TRAVEL_TICKS = 2
+        const val CAST_HEIGHT = 92
+        const val LURE_PROJANIM = "projanim.magic_spell"
+        const val MAGIC = "stat.magic"
         const val BASE_XP = 100.0
         const val LOW_XP_PER_LEVEL = 3.0
         const val XP_STEP_LEVEL = 80
