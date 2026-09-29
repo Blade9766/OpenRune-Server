@@ -281,7 +281,7 @@ constructor(
             }
         }
         statAdvance(TrapManager.STAT, prey.xp * xpMods.get(player, TrapManager.STAT))
-        mes("You've caught a ${prey.displayName}.")
+        mes(prey.catchMessage ?: "You've caught a ${prey.displayName}.")
         rumours.onCatch(player, prey.name)
         if (prey.petChance > 0) {
             pets.rollSkillingPet(player, CHINCHOMPA_PET, TrapManager.STAT, prey.petChance)

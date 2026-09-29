@@ -28,6 +28,7 @@ enum class TrapPrey(
     val escapeAnim: String? = null,
     val rareMessage: String? = null,
     val petChance: Int = 0,
+    val catchMessage: String? = null,
 ) {
     CrimsonSwift(
         npc = "npc.hunting_bird_jungle",
@@ -101,6 +102,20 @@ enum class TrapPrey(
         fullLoc = "loc.hunting_boxtrap_full_ferret",
         loot = listOf(TrapLoot("obj.hunting_ferret", 1)),
         escapeAnim = "seq.hunting_ferret_backoff",
+    ),
+    EmbertailedJerboa(
+        npc = "npc.varlamore_hunterjerboa01",
+        kind = TrapKind.BoxTrap,
+        displayName = "embertailed jerboa",
+        level = 39,
+        xp = 137.0,
+        low = 40,
+        high = 280,
+        trappingLocs = box("loc.hunting_boxtrap_trapping_jerboa"),
+        fullLoc = "loc.hunting_boxtrap_full_jerboa",
+        loot = listOf(TrapLoot("obj.hunting_jerboa_tail", 1)),
+        escapeAnim = "seq.jerboa_backoff",
+        catchMessage = "You've caught an embertailed jerboa... or maybe not.",
     ),
     Chinchompa(
         npc = "npc.hunting_chinchompa",
