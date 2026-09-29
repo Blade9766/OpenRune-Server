@@ -71,8 +71,13 @@ class NpcCombatAnimsFileTest {
         assertEquals("seq.human_bow", ids.getValue("npc.ardougne_archer").attackAnim)
         assertEquals("seq.human_caststrike", ids.getValue("npc.wizard").attackAnim)
         assertEquals("seq.giant_update_basic_attack", ids.getValue("npc.giant").attackAnim)
-        // Villagers with every stat equal are not casters.
-        assertNull(ids["npc.al_kharid_man"])
+        // Villagers with every stat equal are not casters: they punch, with the human voice.
+        val villager = ids.getValue("npc.al_kharid_man")
+        assertNull(villager.attackAnim)
+        assertNull(villager.projTravel)
+        assertEquals(2566, villager.attackSound)
+        assertEquals(513, villager.defendSound)
+        assertEquals(512, villager.deathSound)
     }
 
     @Test
@@ -90,7 +95,20 @@ class NpcCombatAnimsFileTest {
         assertEquals(3604, cryptSpider.attackSound)
         assertEquals(3609, cryptSpider.defendSound)
         assertEquals(3608, cryptSpider.deathSound)
-        // A family without a known voice stays silent rather than borrowing one.
-        assertNull(ids.getValue("npc.giant").attackSound)
+        // Giants have no family voice; LostCity's configs give them giant_attack/hit/death.
+        val giant = ids.getValue("npc.giant")
+        assertEquals(448, giant.attackSound)
+        assertEquals(451, giant.defendSound)
+        assertEquals(450, giant.deathSound)
+    }
+
+    @Test
+    fun `an npc's own voice override does not spread to its family`() {
+        val ids = NpcCombatAnimsFile.loadResource(NpcCombatAnimsFile.GENERATED_RESOURCE).npc.associateBy { it.id }
+        // The Dragon Slayer II ghosts and greater demons carry their own voices in the overrides.
+        assertEquals(436, ids.getValue("npc.ghost2").attackSound)
+        val lesserDemon = ids.getValue("npc.lesser_demon")
+        assertEquals(400, lesserDemon.attackSound)
+        assertEquals("seq.demon_death", lesserDemon.deathAnim)
     }
 }

@@ -85,6 +85,22 @@ class NpcCombatCompletionTest {
     }
 
     @Test
+    fun `an override's voice does not outrank a sibling's own family sounds`() {
+        val overrides = mapOf("npc.cow_special" to CombatValues(deathSound = 999))
+        val special = npc("npc.cow_special", "Special cow", "cow_update_ready")
+        val cow = npc("npc.cow", "Cow", "cow_update_ready")
+        val calf = npc("npc.cow_beef", "Beef", "cow_update_ready")
+        val generated =
+            mapOf("npc.cow" to NpcCombatAnims("npc.cow", source = "family", deathSound = 370))
+        val results =
+            NpcCombatCompletion(sequences, synths, overrides)
+                .complete(listOf(special, cow, calf), generated)
+                .associateBy { it.npc }
+        assertEquals(370, results.getValue("npc.cow").deathSound)
+        assertEquals(999, results.getValue("npc.cow_beef").deathSound)
+    }
+
+    @Test
     fun `humans punch block and die with the voice of their gender`() {
         val woman = npc("npc.woman", "Woman", "human_ready", female = true)
         val result = completion.complete(listOf(woman), emptyMap()).single()

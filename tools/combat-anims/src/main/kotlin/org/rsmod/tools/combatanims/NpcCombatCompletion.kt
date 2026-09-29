@@ -66,7 +66,8 @@ data class CompletionNpc(
  * Fills in the combat anims and sounds [NpcCombatAnimResolver] leaves out, so that every attackable
  * npc attacks, blocks and dies with an animation made for its own skeleton, and is heard doing so.
  *
- * Each missing field is taken from the first source that has it:
+ * Each missing field is taken from the first source that has it (after the cache params of siblings
+ * sharing the ready animation, which are Jagex's own values for the same rig):
  * 1. LostCity's 2004 configs ([LostCityReference]) - Jagex's own values, used for an anim only when
  *    it animates the npc's skeleton (many monsters have since been remodelled).
  * 2. The resolver's weapon or family result, unless it animates another skeleton.
@@ -245,12 +246,15 @@ class NpcCombatCompletion(
             Slot.Death -> deathSound
         }
 
-    /** Hand overrides, then cache params: the values siblings copy first. */
-    private fun known(npc: CompletionNpc): CombatValues =
-        (overrides[npc.rscm] ?: CombatValues()).or(npc.declared)
+    /**
+     * Cache params: the values siblings copy first. Hand overrides are left out because most give
+     * one npc a voice or set its family does not share (the Dragon Slayer II ghosts, greater demons).
+     */
+    private fun known(npc: CompletionNpc): CombatValues = npc.declared
 
-    /** [known] values, then LostCity's: the values siblings copy when no sibling is known. */
-    private fun trusted(npc: CompletionNpc): CombatValues = known(npc).or(validReference(npc))
+    /** Hand overrides, cache params, then LostCity's: the values siblings copy as a last resort. */
+    private fun trusted(npc: CompletionNpc): CombatValues =
+        (overrides[npc.rscm] ?: CombatValues()).or(known(npc)).or(validReference(npc))
 
     /** The npc's LostCity values that exist in the OSRS cache and fit its skeleton. */
     private fun validReference(npc: CompletionNpc): CombatValues? {
