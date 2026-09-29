@@ -17,6 +17,7 @@ hunter_rumour_aco = 65723
 hunter_rumour_teco = 65724
 hunter_rumour_wolf = 65725
 hunter_whistle_blueprint_claimed = 65726
+hunter_falconry_invested = 65727
 
 [gamevals.varobj]
 quetzal_whistle_charges = 65525

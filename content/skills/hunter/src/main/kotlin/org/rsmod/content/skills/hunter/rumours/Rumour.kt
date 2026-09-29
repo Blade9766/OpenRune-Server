@@ -36,12 +36,14 @@ enum class RumourMethod(val rate: Int, val pity: Int, val outfitPity: Int) {
     SpikedPit(15, 30, 28),
     Tracking(15, 30, 28),
     Herbiboar(7, 14, 12),
+    Falconry(10, 20, 18),
 }
 
 /**
  * Hunters' Rumour creatures. [catchKey] is the enum name of the creature in its hunting method
  * (trap prey, butterfly, pitfall creature, tracking area or `Herbiboar`) reported on each catch.
- * Falconry, jerboa and Wyrmscraig goat rumours are left out until those methods exist.
+ * Jerboa and Wyrmscraig goat rumours are left out until those methods exist. New rumours are
+ * appended so the ids stored in the assignment varbits stay stable.
  */
 enum class Rumour(
     val displayName: String,
@@ -179,6 +181,27 @@ enum class Rumour(
         RumourMethod.SpikedPit,
         "obj.hg_antelopehoof_moon",
         setOf(Gilman, Wolf),
+    ),
+    SpottedKebbit(
+        "spotted kebbit",
+        43,
+        RumourMethod.Falconry,
+        "obj.hg_kebbittuft",
+        setOf(Gilman, Cervus, Ornus),
+    ),
+    DarkKebbit(
+        "dark kebbit",
+        57,
+        RumourMethod.Falconry,
+        "obj.hg_kebbittuft",
+        setOf(Gilman, Cervus, Aco, Teco),
+    ),
+    DashingKebbit(
+        "dashing kebbit",
+        69,
+        RumourMethod.Falconry,
+        "obj.hg_kebbittuft",
+        setOf(Gilman, Aco, Teco, Wolf),
     );
 
     val key: String
