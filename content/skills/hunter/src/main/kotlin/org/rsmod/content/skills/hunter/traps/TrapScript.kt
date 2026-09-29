@@ -21,6 +21,7 @@ import org.rsmod.api.script.onPlayerLogout
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.other.pets.PetRewards
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.hunter.rumours.RumourTracker
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.map.Direction
@@ -126,7 +127,7 @@ constructor(
     }
 
     private fun ProtectedAccess.canLay(kind: TrapKind, tile: CoordGrid): Boolean {
-        if (!meetsLevel(kind) || !hasRoom(kind, tile)) {
+        if (!meetsRequirements(kind) || !hasRoom(kind, tile)) {
             return false
         }
         if (!traps.isTileFree(tile)) {
@@ -136,12 +137,16 @@ constructor(
         return true
     }
 
-    private fun ProtectedAccess.meetsLevel(kind: TrapKind): Boolean {
-        if (player.hunterLvl >= kind.levelReq) {
-            return true
+    private fun ProtectedAccess.meetsRequirements(kind: TrapKind): Boolean {
+        if (player.hunterLvl < kind.levelReq) {
+            mes("You need a Hunter level of ${kind.levelReq} to set up a ${kind.trapName}.")
+            return false
         }
-        mes("You need a Hunter level of ${kind.levelReq} to set up a ${kind.trapName}.")
-        return false
+        if (kind == TrapKind.BoxTrap && !QuestRequirements.hasCompleted(player, EAGLES_PEAK)) {
+            mes("You need to complete Eagles' Peak to set up a box trap.")
+            return false
+        }
+        return true
     }
 
     private fun ProtectedAccess.hasRoom(kind: TrapKind, tile: CoordGrid): Boolean {
@@ -159,7 +164,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.placeTrap(kind: TrapKind, base: BoundLocInfo) {
-        if (!meetsLevel(kind) || !hasRoom(kind, base.coords)) {
+        if (!meetsRequirements(kind) || !hasRoom(kind, base.coords)) {
             return
         }
         if (!traps.isBaseFree(base)) {
@@ -390,6 +395,7 @@ constructor(
     }
 
     private companion object {
+        const val EAGLES_PEAK = "quest_eaglespeak"
         const val CHINCHOMPA_PET = "obj.skillpethunter_grey"
         const val LAY_CYCLES = 3
         const val LOG_KEEP_ROLL = 4
