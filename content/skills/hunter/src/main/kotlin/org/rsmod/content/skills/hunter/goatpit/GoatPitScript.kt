@@ -23,10 +23,13 @@ import org.rsmod.content.skills.hunter.traps.TrapManager
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.isType
+import org.rsmod.game.map.collision.add
 import org.rsmod.game.queue.WorldQueueList
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
+import org.rsmod.routefinder.collision.CollisionFlagMap
+import org.rsmod.routefinder.flag.CollisionFlag
 
 /**
  * Goat hunting on Wyrmscraig. The goat pit is a per-player multiloc on `varbit.goat_pit_state`
@@ -39,6 +42,7 @@ class GoatPitScript
 @Inject
 constructor(
     private val npcRepo: NpcRepository,
+    private val collision: CollisionFlagMap,
     private val worldQueues: WorldQueueList,
     private val random: GameRandom,
     private val xpMods: XpModifiers,
@@ -46,6 +50,7 @@ constructor(
     private val pets: PetRewards,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
+        blockPitForNpcs()
         onOpNpc1(GOAT) { prod(it.npc) }
         onOpNpc1(GEOFF) { talkToGeoff(it.npc) }
         onOpLoc1(PROD_SUPPLY) { takeProd() }
@@ -60,6 +65,15 @@ constructor(
         for (pit in PIT_WITH_GOATS) {
             onOpLoc1(pit) { clear() }
             onOpLoc2(pit) { inspect() }
+        }
+    }
+
+    /** Goats would otherwise wander across the pit, which the map does not flag as blocked. */
+    private fun blockPitForNpcs() {
+        for (dx in 0 until PIT_SIZE) {
+            for (dz in 0 until PIT_SIZE) {
+                collision.add(CoordGrid(PIT_X + dx, PIT_Z + dz, 0), CollisionFlag.BLOCK_NPCS)
+            }
         }
     }
 
