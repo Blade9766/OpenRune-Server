@@ -1054,3 +1054,9 @@ isServerOnly = true
 id = "varp.barrows_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.knightssword_state"
+scope = "Perm"
+transmit = "Never"

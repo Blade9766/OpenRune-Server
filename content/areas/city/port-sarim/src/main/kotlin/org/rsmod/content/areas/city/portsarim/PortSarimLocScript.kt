@@ -1,25 +1,29 @@
 package org.rsmod.content.areas.city.portsarim
 
+import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpLoc1
+import org.rsmod.content.quest.area.falador.knightssword.KnightsSwordQuest
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class PortSarimLocScript : PluginScript() {
+class PortSarimLocScript @Inject constructor(private val knightsSword: KnightsSwordQuest) :
+    PluginScript() {
     override fun ScriptContext.startup() {
-        onOpLoc1("loc.fai_trapdoor") { climbDownTrapdoor() }
+        onOpLoc1("loc.fai_trapdoor") { climbDownTrapdoor(it.loc.coords) }
         onOpLoc1("loc.vc_manhole_open") { climbDownManhole() }
         onOpLoc1("loc.vc_ladder") { climbUpFromSewer() }
         onOpLoc1("loc.farming_style") { climbStile(it.loc) }
     }
 
-    private suspend fun ProtectedAccess.climbDownTrapdoor() {
+    private suspend fun ProtectedAccess.climbDownTrapdoor(trapdoor: CoordGrid) {
         arriveDelay()
         spam("You climb down through the trapdoor.")
         telejump(player.coords.translateZ(UNDERGROUND_OFFSET))
+        knightsSword.dungeonWarning(player, trapdoor)?.let { mes(it) }
     }
 
     private suspend fun ProtectedAccess.climbDownManhole() {

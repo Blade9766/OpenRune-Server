@@ -3,6 +3,7 @@ package org.rsmod.content.quest.area.varrock.shieldofarrav.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.falador.knightssword.npcs.ImcandoLore
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest.Companion.BLACKARM_SHIELD
@@ -25,8 +26,11 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class Reldo
 @Inject
-constructor(private val arrav: ShieldOfArravQuest, private val lostTribeLore: LostTribeLore) :
-    PluginScript() {
+constructor(
+    private val arrav: ShieldOfArravQuest,
+    private val lostTribeLore: LostTribeLore,
+    private val imcandoLore: ImcandoLore,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(RELDO) { startDialogue(it.npc) { reldo() } }
@@ -50,6 +54,7 @@ constructor(private val arrav: ShieldOfArravQuest, private val lostTribeLore: Lo
                 buildList {
                     quest?.let { add(it.option to it) }
                     lostTribeLore.reldoOption(player)?.let { add(it to Topic.Brooch) }
+                    imcandoLore.reldoOption(player)?.let { add(it to Topic.Imcando) }
                     add("Do you have anything to trade?" to Topic.Trade)
                     add("I'd better get going." to Topic.Leave)
                 },
@@ -67,6 +72,7 @@ constructor(private val arrav: ShieldOfArravQuest, private val lostTribeLore: Lo
             Topic.ReadBook -> readBook()
             Topic.HalfShield -> halfShield()
             Topic.Brooch -> with(lostTribeLore) { reldoBrooch() }
+            Topic.Imcando -> with(imcandoLore) { reldoImcando() }
             Topic.Trade -> trade()
             Topic.Leave -> {
                 chatPlayer(neutral, "I'd better get going.")
@@ -195,6 +201,7 @@ constructor(private val arrav: ShieldOfArravQuest, private val lostTribeLore: Lo
         ReadBook("I've read that book about the Shield of Arrav."),
         HalfShield("I've found half of the Shield of Arrav!"),
         Brooch(""),
+        Imcando(""),
         Trade(""),
         Leave(""),
     }

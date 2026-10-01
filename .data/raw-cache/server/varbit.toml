@@ -1859,3 +1859,10 @@ id = "varbit.route_met_radigad"
 varp = "varp.routequestmulti"
 startBit = 4
 endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.knightssword_sword_forged"
+varp = "varp.knightssword_state"
+startBit = 0
+endBit = 0

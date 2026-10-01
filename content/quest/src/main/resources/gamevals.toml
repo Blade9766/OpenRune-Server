@@ -411,6 +411,10 @@ merlin_state = 65453
 # `varp.murderquest` and the murderer the cache varp `varp.murdersus`; neither carries varbits.
 murder_state = 65420
 
+# The Knight's Sword: whether Thurgo has forged the replacement sword. The stage itself lives in
+# the cache varp `varp.squire`.
+knightssword_state = 65454
+
 # Legends' Quest: everything the quest remembers besides its stage, which is the whole of the
 # cache varp `varp.legendsquest`; the Radimus multinpcs index that varp directly.
 legends_state = 65409
@@ -589,6 +593,7 @@ route_met_harold = 65774
 route_met_ivan = 65775
 route_met_polmafi = 65776
 route_met_radigad = 65777
+knightssword_sword_forged = 65778
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

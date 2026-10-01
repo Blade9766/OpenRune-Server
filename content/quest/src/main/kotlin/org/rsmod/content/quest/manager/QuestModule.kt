@@ -80,6 +80,9 @@ import org.rsmod.content.quest.area.draynor.porcineofinterest.npcs.Spria
 import org.rsmod.content.quest.area.draynor.vampyreslayer.CountDraynor
 import org.rsmod.content.quest.area.draynor.vampyreslayer.GarlicAttackHook
 import org.rsmod.content.quest.area.draynor.vampyreslayer.VampyreSlayerQuest
+import org.rsmod.content.quest.area.falador.knightssword.KnightsSwordQuest
+import org.rsmod.content.quest.area.falador.knightssword.VyvinsRoom
+import org.rsmod.content.quest.area.falador.knightssword.npcs.ImcandoLore
 import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyAttackHook
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyBirds
@@ -355,6 +358,9 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(AgrithNaarKillHook::class.java)
         bindInstance<ElementalWorkshopQuest>()
         bindInstance<ElementalRocks>()
+        bindInstance<KnightsSwordQuest>()
+        bindInstance<VyvinsRoom>()
+        bindInstance<ImcandoLore>()
         bindInstance<InSearchOfTheMyrequeQuest>()
         bindInstance<Betrayal>()
         addSetBinding<NpcAttackValidateHook>(HoundAttackHook::class.java)

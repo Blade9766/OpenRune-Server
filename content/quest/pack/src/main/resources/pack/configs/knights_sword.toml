@@ -1,0 +1,14 @@
+# The Knight's Sword: Sir Vyvin keeps the routine VyvinsRoom walks him through (desk, then window)
+# instead of wandering his room, so the moments he looks away stay readable.
+[[npc]]
+isServerOnly = true
+id = "npc.sir_vyvin"
+inherit = "npc.sir_vyvin"
+wanderRange = 0
+defaultMode = "None"
+
+# The portrait gets a Look-at op so the sword it shows can be studied from the pack.
+[[item]]
+id = "obj.knights_portrait"
+inherit = "obj.knights_portrait"
+ioption1 = "Look-at"
