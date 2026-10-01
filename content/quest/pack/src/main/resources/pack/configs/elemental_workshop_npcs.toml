@@ -1,0 +1,9 @@
+# Elemental Workshop I: the elemental rocks in the western cavern are rocks until struck, so
+# they must never wander off their spawn tiles.
+[[npc]]
+isServerOnly = true
+id = "npc.elem1_qip_earth_elemental_rock_version_rock"
+inherit = "npc.elem1_qip_earth_elemental_rock_version_rock"
+wanderRange = 0
+defaultMode = "None"
+moveRestrict = "NoMove"

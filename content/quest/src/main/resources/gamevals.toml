@@ -577,6 +577,11 @@ legends_gave_dagger = 65765
 legends_heroes_slain = 65766
 legends_soaked_ungadulu = 65767
 
+# Elemental Workshop I: server-only flags on spare bits of the cache varp
+# `varp.elemental_workshop_bits`, beside the cache's own machinery varbits.
+elemental_workshop_ore_found = 65771
+elemental_workshop_metal_smelted = 65772
+
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
 quest_scroll_close = 404

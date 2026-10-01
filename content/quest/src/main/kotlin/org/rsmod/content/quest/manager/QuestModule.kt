@@ -160,6 +160,8 @@ import org.rsmod.content.quest.area.rellekka.fremenniktrials.NavigatorsTrial
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.WarriorsTrialHooks
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.npcs.RellekkaShops
 import org.rsmod.content.quest.area.rimmington.witchspotion.WitchsPotionQuest
+import org.rsmod.content.quest.area.seers.elementalworkshop.ElementalRocks
+import org.rsmod.content.quest.area.seers.elementalworkshop.ElementalWorkshopQuest
 import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperimentHooks
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperiments
@@ -348,6 +350,8 @@ public class QuestModule : PluginModule() {
         bindInstance<CultMembers>()
         bindInstance<SotsGolem>()
         addSetBinding<NpcDeathKillHook>(AgrithNaarKillHook::class.java)
+        bindInstance<ElementalWorkshopQuest>()
+        bindInstance<ElementalRocks>()
         bindInstance<LunarDiplomacyQuest>()
         bindInstance<LunarTravel>()
         bindInstance<DreamWorld>()
