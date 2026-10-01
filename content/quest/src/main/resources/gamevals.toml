@@ -582,6 +582,14 @@ legends_soaked_ungadulu = 65767
 elemental_workshop_ore_found = 65771
 elemental_workshop_metal_smelted = 65772
 
+# In Search of the Myreque: which of the five Myreque members (besides Veliaf) the player has
+# introduced themselves to, on free low bits of the cache varp `varp.routequestmulti`.
+route_met_sani = 65773
+route_met_harold = 65774
+route_met_ivan = 65775
+route_met_polmafi = 65776
+route_met_radigad = 65777
+
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
 quest_scroll_close = 404

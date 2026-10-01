@@ -1824,3 +1824,38 @@ id = "varbit.elemental_workshop_metal_smelted"
 varp = "varp.elemental_workshop_bits"
 startBit = 16
 endBit = 16
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.route_met_sani"
+varp = "varp.routequestmulti"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.route_met_harold"
+varp = "varp.routequestmulti"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.route_met_ivan"
+varp = "varp.routequestmulti"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.route_met_polmafi"
+varp = "varp.routequestmulti"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.route_met_radigad"
+varp = "varp.routequestmulti"
+startBit = 4
+endBit = 4

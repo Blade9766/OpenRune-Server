@@ -140,6 +140,9 @@ import org.rsmod.content.quest.area.mortmyre.naturespirit.Ghasts
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritDrezel
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritQuest
 import org.rsmod.content.quest.area.mortmyre.naturespirit.SpiritSpawns
+import org.rsmod.content.quest.area.mortton.myreque.Betrayal
+import org.rsmod.content.quest.area.mortton.myreque.HoundAttackHook
+import org.rsmod.content.quest.area.mortton.myreque.InSearchOfTheMyrequeQuest
 import org.rsmod.content.quest.area.mortton.shades.FlamtaerTemple
 import org.rsmod.content.quest.area.mortton.shades.LoarShadeKillHook
 import org.rsmod.content.quest.area.mortton.shades.SerumCures
@@ -352,6 +355,9 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcDeathKillHook>(AgrithNaarKillHook::class.java)
         bindInstance<ElementalWorkshopQuest>()
         bindInstance<ElementalRocks>()
+        bindInstance<InSearchOfTheMyrequeQuest>()
+        bindInstance<Betrayal>()
+        addSetBinding<NpcAttackValidateHook>(HoundAttackHook::class.java)
         bindInstance<LunarDiplomacyQuest>()
         bindInstance<LunarTravel>()
         bindInstance<DreamWorld>()

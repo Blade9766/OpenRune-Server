@@ -1,0 +1,9 @@
+# In Search of the Myreque: Vanstrom Klause (later the Stranger) keeps his seat in the Canifis
+# tavern instead of wandering the bar.
+[[npc]]
+isServerOnly = true
+id = "npc.multi_vanstrom_stranger_entity"
+inherit = "npc.multi_vanstrom_stranger_entity"
+wanderRange = 0
+defaultMode = "None"
+moveRestrict = "NoMove"

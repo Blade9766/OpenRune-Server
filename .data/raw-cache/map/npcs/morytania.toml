@@ -3649,10 +3649,6 @@ npc = "npc.canafis_man5"
 coords = "0_54_54_39_20"
 
 [[spawn]]
-npc = "npc.canafis_stranger"
-coords = "0_54_54_47_21"
-
-[[spawn]]
 npc = "npc.canafis_woman10"
 coords = "0_54_54_34_17"
 
