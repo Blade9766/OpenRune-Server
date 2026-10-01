@@ -1,3 +1,5 @@
+import javax.inject.Inject
+
 plugins {
     alias(libs.plugins.manes.versions)
     alias(libs.plugins.gradle.download)
@@ -56,11 +58,16 @@ tasks.register<JavaExec>("install") {
 
     dependsOn(":or-cache:freshCache")
 
+    val fs = objects.newInstance<InjectedFileSystem>().fs
+    val rootDir = layout.projectDirectory
+    val exampleConfig = rootDir.file("game.example.yml").asFile
+    val gameConfig = rootDir.file("game.yml").asFile
+
     doLast {
-        copy {
-            into(rootProject.projectDir)
-            from("game.example.yml") {
-                rename { "game.yml" }
+        if (!gameConfig.exists()) {
+            fs.copy {
+                into(rootDir)
+                from(exampleConfig) { rename { "game.yml" } }
             }
         }
         logger.lifecycle("Installation process completed.")
@@ -117,6 +124,10 @@ tasks.register<JavaExec>("setupLogbackAdvanced") {
 
     doFirst { logger.lifecycle("Starting logback copy for advanced configuration...") }
     doLast { logger.lifecycle("Logback advanced configuration copied successfully.") }
+}
+
+interface InjectedFileSystem {
+    @get:Inject val fs: FileSystemOperations
 }
 
 fun getArgsFromProperty(propertyName: String): List<String> {
