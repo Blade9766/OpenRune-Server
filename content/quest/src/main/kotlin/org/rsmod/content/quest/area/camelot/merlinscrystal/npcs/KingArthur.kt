@@ -3,15 +3,23 @@ package org.rsmod.content.quest.area.camelot.merlinscrystal.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.camelot.holygrail.npcs.GrailArthur
 import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest
 import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest.Companion.KING_ARTHUR
 import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest.Companion.STAGE_FREED_MERLIN
 import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest.Companion.STAGE_STARTED
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/** King Arthur, at the head of the Round Table in Camelot. He starts and ends the quest. */
-class KingArthur @Inject constructor(private val quest: MerlinsCrystalQuest) : PluginScript() {
+/**
+ * King Arthur, at the head of the Round Table in Camelot. He starts and ends Merlin's Crystal, and
+ * once Merlin is free hands over to [GrailArthur]. When the quest requirement mode only assumes
+ * Merlin's Crystal is done, a player who has started neither quest is offered both.
+ */
+class KingArthur
+@Inject
+constructor(private val quest: MerlinsCrystalQuest, private val grail: GrailArthur) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(KING_ARTHUR) { startDialogue(it.npc) { arthur() } }
@@ -19,8 +27,10 @@ class KingArthur @Inject constructor(private val quest: MerlinsCrystalQuest) : P
 
     private suspend fun Dialogue.arthur() {
         when {
-            quest.isComplete(player) -> alreadyKnighted()
             quest.stage(player) == STAGE_FREED_MERLIN -> merlinFreed()
+            quest.isStarted(player) && !quest.isComplete(player) -> firstMeeting()
+            quest.isComplete(player) || grail.isStarted(player) -> with(grail) { talk() }
+            QuestRequirements.hasCompleted(player, MerlinsCrystalQuest.QUEST_KEY) -> eitherQuest()
             else -> firstMeeting()
         }
     }
@@ -35,13 +45,20 @@ class KingArthur @Inject constructor(private val quest: MerlinsCrystalQuest) : P
         quest.complete(access)
     }
 
-    private suspend fun Dialogue.alreadyKnighted() {
-        chatNpc(happy, "Greetings, Sir Knight. Camelot is in your debt.")
-        chatPlayer(quiz, "How is Merlin?")
-        chatNpc(
-            laugh,
-            "Shut away in his workshop again, muttering about crystals. Some things never change.",
-        )
+    private suspend fun Dialogue.eitherQuest() {
+        chatNpc(neutral, "Welcome to my court. I am King Arthur.")
+        val knight =
+            choice2(
+                "I want to become a Knight of the Round Table!",
+                true,
+                "I hear you are seeking the Holy Grail.",
+                false,
+            )
+        if (knight) {
+            knighthood()
+        } else {
+            with(grail) { talk() }
+        }
     }
 
     private suspend fun Dialogue.firstMeeting() {

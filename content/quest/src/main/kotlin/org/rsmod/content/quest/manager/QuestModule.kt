@@ -39,6 +39,13 @@ import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.AchiettiesDialogu
 import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.GripAttackHook
 import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.GripKillHook
 import org.rsmod.content.quest.area.burthorpe.trollstronghold.DadAttackHook
+import org.rsmod.content.quest.area.camelot.holygrail.FisherRealm
+import org.rsmod.content.quest.area.camelot.holygrail.FisherRealmDeath
+import org.rsmod.content.quest.area.camelot.holygrail.HolyGrailQuest
+import org.rsmod.content.quest.area.camelot.holygrail.WhistleRoom
+import org.rsmod.content.quest.area.camelot.holygrail.npcs.EntranaGrailLore
+import org.rsmod.content.quest.area.camelot.holygrail.npcs.GrailArthur
+import org.rsmod.content.quest.area.camelot.holygrail.npcs.SirPercival
 import org.rsmod.content.quest.area.camelot.merlinscrystal.MerlinsCrystalQuest
 import org.rsmod.content.quest.area.desert.icthlarin.Ceremony
 import org.rsmod.content.quest.area.desert.icthlarin.FlashbackTeleportHook
@@ -361,6 +368,14 @@ public class QuestModule : PluginModule() {
         bindInstance<KnightsSwordQuest>()
         bindInstance<VyvinsRoom>()
         bindInstance<ImcandoLore>()
+        bindInstance<HolyGrailQuest>()
+        bindInstance<GrailArthur>()
+        bindInstance<EntranaGrailLore>()
+        bindInstance<WhistleRoom>()
+        bindInstance<FisherRealm>()
+        bindInstance<SirPercival>()
+        addSetBinding<PlayerDeathHook>(FisherRealmDeath::class.java)
+        addSetBinding<PlayerRespawnHook>(FisherRealmDeath::class.java)
         bindInstance<InSearchOfTheMyrequeQuest>()
         bindInstance<Betrayal>()
         addSetBinding<NpcAttackValidateHook>(HoundAttackHook::class.java)

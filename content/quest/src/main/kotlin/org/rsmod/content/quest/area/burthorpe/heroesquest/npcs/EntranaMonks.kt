@@ -5,6 +5,7 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest.Companion.STAGE_STARTED
+import org.rsmod.content.quest.area.camelot.holygrail.npcs.EntranaGrailLore
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -12,9 +13,13 @@ import org.rsmod.plugin.scripts.ScriptContext
 /**
  * The monks of Entrana and their High Priest. The monks heal the injured, and while a player is
  * just setting out on the Heroes' Quest both point them towards the Queen of the Ice's gloves for
- * the Entranan Firebird's burning feather.
+ * the Entranan Firebird's burning feather. The High Priest's Holy Grail lore is
+ * [EntranaGrailLore]'s.
  */
-class EntranaMonks @Inject constructor(private val heroes: HeroesQuest) : PluginScript() {
+class EntranaMonks
+@Inject
+constructor(private val heroes: HeroesQuest, private val grailLore: EntranaGrailLore) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1(MONK) { startDialogue(it.npc) { monk(it.npc) } }
         onOpNpc1(HIGH_PRIEST) { startDialogue(it.npc) { highPriest() } }
@@ -60,6 +65,9 @@ class EntranaMonks @Inject constructor(private val heroes: HeroesQuest) : Plugin
 
     private suspend fun Dialogue.highPriest() {
         chatNpc(happy, "Many greetings. Welcome to our fair island.")
+        if (with(grailLore) { highPriest() }) {
+            return
+        }
         if (heroes.stage(player) == STAGE_STARTED) {
             chatPlayer(neutral, "Hello, I am in search of an Entranan Firebird. Can you help me?")
             chatNpc(

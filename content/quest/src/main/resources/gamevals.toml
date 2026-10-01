@@ -415,6 +415,10 @@ murder_state = 65420
 # the cache varp `varp.squire`.
 knightssword_state = 65454
 
+# Holy Grail: the milestones the stage cannot express. The stage itself is the whole of the
+# cache varp `varp.grail`.
+holygrail_state = 65426
+
 # Legends' Quest: everything the quest remembers besides its stage, which is the whole of the
 # cache varp `varp.legendsquest`; the Radimus multinpcs index that varp directly.
 legends_state = 65409
@@ -594,6 +598,13 @@ route_met_ivan = 65775
 route_met_polmafi = 65776
 route_met_radigad = 65777
 knightssword_sword_forged = 65778
+holygrail_napkin = 65779
+holygrail_whistles_found = 65780
+holygrail_titan_defeated = 65781
+holygrail_castle_entered = 65782
+holygrail_heard_health = 65783
+holygrail_heard_son = 65784
+holygrail_percival_found = 65785
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

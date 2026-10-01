@@ -1,0 +1,6 @@
+# Holy Grail: the holy table napkin gets a Look-at op, so its part in finding the whistles can be
+# discovered from the pack.
+[[item]]
+id = "obj.holy_table_napkin"
+inherit = "obj.holy_table_napkin"
+ioption1 = "Look-at"

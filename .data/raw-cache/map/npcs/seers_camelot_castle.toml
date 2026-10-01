@@ -30,3 +30,6 @@ coords = "1_43_54_9_47"
 npc = "npc.sir_tristram"
 coords = "1_43_54_3_56"
 
+[[spawn]]
+npc = "npc.merlin2"
+coords = "1_43_54_15_44"
