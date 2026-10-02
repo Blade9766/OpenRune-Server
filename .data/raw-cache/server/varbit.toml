@@ -1950,3 +1950,66 @@ id = "varbit.rag_boil_steps"
 varp = "varp.rag_boil"
 startBit = 0
 endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_top_target"
+varp = "varp.ahoy_state"
+startBit = 0
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_bottom_target"
+varp = "varp.ahoy_state"
+startBit = 3
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_skull_target"
+varp = "varp.ahoy_state"
+startBit = 6
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_top"
+varp = "varp.ahoy_state"
+startBit = 9
+endBit = 11
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_bottom"
+varp = "varp.ahoy_state"
+startBit = 12
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_skull"
+varp = "varp.ahoy_state"
+startBit = 15
+endBit = 17
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_flag_seen"
+varp = "varp.ahoy_state"
+startBit = 18
+endBit = 20
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_petition_approved"
+varp = "varp.ahoy_state"
+startBit = 21
+endBit = 21
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.ahoy_petition_presented"
+varp = "varp.ahoy_state"
+startBit = 22
+endBit = 22

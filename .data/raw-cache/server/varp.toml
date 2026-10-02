@@ -1078,3 +1078,15 @@ isServerOnly = true
 id = "varp.rag_boil"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.ahoy_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.ahoy_last_signer"
+scope = "Perm"
+transmit = "Never"

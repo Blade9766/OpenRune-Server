@@ -379,6 +379,10 @@ deathplateau_dice = 65456
 fishingcontest_round = 65457
 # Rag and Bone Man I: the pot-boiler's boiling steps left, kept across logout.
 rag_boil = 65427
+# Ghosts Ahoy: the flag puzzle and petition (varbits below), and the ghost villager last asked
+# to sign the petition, so the same ghost cannot sign twice in a row.
+ahoy_state = 65428
+ahoy_last_signer = 65429
 
 # The Fremennik Trials: the council's votes and each trial's own progress. The stage itself lives
 # in the cache varp `varp.viking`. The Temp varp holds Koschei's form and the letters dialled into
@@ -619,6 +623,18 @@ sheepherder_clothing_bought = 65788
 sheepherder_prod_tutorial = 65789
 # Rag and Bone Man I: boiling steps left in the pot-boiler, on `varp.rag_boil`.
 rag_boil_steps = 65790
+# Ghosts Ahoy: the wreck flag's solution and the colours dyed on the model ship (three bits a
+# part), which parts the mast has shown, and the petition's approval and presentation, on
+# `varp.ahoy_state`.
+ahoy_flag_top_target = 65791
+ahoy_flag_bottom_target = 65792
+ahoy_flag_skull_target = 65793
+ahoy_flag_top = 65794
+ahoy_flag_bottom = 65795
+ahoy_flag_skull = 65796
+ahoy_flag_seen = 65797
+ahoy_petition_approved = 65798
+ahoy_petition_presented = 65799
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
@@ -661,6 +677,8 @@ sheepherder_return = 143
 sheepherder_stuck = 144
 # Rag and Bone Man I: the pot-boiler counting down to a polished specimen.
 rag_boil = 145
+# Ghosts Ahoy: the wind over the wreck's quarterdeck rising and dropping.
+ahoy_wind = 146
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.

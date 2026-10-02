@@ -744,6 +744,20 @@ object Cooking {
             column(COL_LOW, 50)
             column(COL_HIGH, 256)
         }
+        row("dbrow.cooking_nettle_tea") {
+            production {
+                input("obj.bowl_nettlewater")
+                statReq("stat.cooking", 20)
+                xp(52)
+                output("obj.bowl_nettletea")
+                category("Tea")
+            }
+            columnRSCM(COL_BURNT, "obj.bowl_empty")
+            column(COL_STOP_BURN_FIRE, 54)
+            column(COL_STOP_BURN_RANGE, 54)
+            column(COL_LOW, 128)
+            column(COL_HIGH, 256)
+        }
         row("dbrow.cooking_cake") {
             production {
                 input("obj.uncooked_cake")

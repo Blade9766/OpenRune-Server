@@ -1483,6 +1483,11 @@ inherit = "loc.range"
 contentGroup = "content.cooking_range_standard"
 
 [[object]]
+id = "loc.ahoy_range"
+inherit = "loc.ahoy_range"
+contentGroup = "content.cooking_range_standard"
+
+[[object]]
 id = "loc.lunar_pirate_cooking_range"
 inherit = "loc.lunar_pirate_cooking_range"
 contentGroup = "content.cooking_range_standard"
