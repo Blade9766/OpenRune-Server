@@ -206,7 +206,7 @@ constructor(
         player.castleEntered = true
         mesbox(
             "A grail maiden in white opens a door you are certain was not there a moment ago, " +
-                "and leads you inside without a word.",
+                "and leads you without a word up to the Fisher King's chamber.",
         )
     }
 
@@ -277,8 +277,12 @@ constructor(
         val BELL_SPOT = CoordGrid(2762, 4694, 0)
         const val BELL_REACH = 8
 
-        /** Inside the dying castle's ground floor, beside the stairs up to the Fisher King. */
-        val CASTLE_ENTRY = CoordGrid(2762, 4683, 0)
+        /**
+         * In the Fisher King's chamber on the dying castle's first floor. The stairs come up into a
+         * closed room of their own, two doors and a side passage away from him, so the maiden
+         * leads the player straight to his bedside.
+         */
+        val CASTLE_ENTRY = CoordGrid(2762, 4686, 1)
 
         const val RING_SEQ = "seq.player_town_crier_bell_ring"
         const val TAKE_SEQ = "seq.human_pickuptable"

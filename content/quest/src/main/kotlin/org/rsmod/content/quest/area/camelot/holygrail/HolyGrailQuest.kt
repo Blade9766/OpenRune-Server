@@ -246,7 +246,9 @@ class HolyGrailQuest :
                 "Defeat the Black Knight Titan on the bridge. The last blow must come from Excalibur."
             stage == STAGE_REALM_ENTERED && !player.castleEntered ->
                 "Follow the river south and ask the fisherman how to get into the castle."
-            stage == STAGE_REALM_ENTERED -> "Climb the castle stairs and talk to the Fisher King about everything."
+            stage == STAGE_REALM_ENTERED ->
+                "Talk to the Fisher King about everything. From the top of the stairs, go out the east door " +
+                    "and through the door at the end of the passage."
             stage == STAGE_HEIR_NEEDED -> "Tell King Arthur about the Fisher King's lost son."
             stage == STAGE_FEATHER && FEATHER !in player.inv -> "Ask King Arthur for another magic gold feather."
             stage == STAGE_FEATHER && !player.percivalFound ->

@@ -129,8 +129,9 @@ class HolyGrailCacheTest {
         assertFalse(walks(CoordGrid(2763, 3503, 1), MERLIN_TILE), "the workshop is open without its door")
     }
 
-    @Test fun `the castle entry reaches the stairs to the Fisher King`() {
-        assertTrue(walks(FisherRealm.CASTLE_ENTRY, CoordGrid(2762, 4682, 0)) || walks(FisherRealm.CASTLE_ENTRY, CoordGrid(2760, 4682, 0)))
+    @Test fun `the castle entry is in the Fisher King's chamber, which the stair top does not reach`() {
+        assertTrue(walks(FisherRealm.CASTLE_ENTRY, FISHER_KING_TILE.translateZ(-1)))
+        assertFalse(walks(STAIR_TOP, FISHER_KING_TILE.translateZ(-1)), "the stairs now reach the King without doors")
     }
 
     @Test fun `the whistle room box is the room behind the whistle door`() {
@@ -214,6 +215,8 @@ class HolyGrailCacheTest {
         val GRAIL_TABLE = CoordGrid(2649, 4684, 2)
         val MERLIN_TILE = CoordGrid(2767, 3500, 1)
         val FISHERMAN_TILE = CoordGrid(2802, 4706, 0)
+        val FISHER_KING_TILE = CoordGrid(2762, 4688, 1)
+        val STAIR_TOP = CoordGrid(2762, 4683, 1)
 
         val LOADED = listOf(41 to 73, 43 to 73, 42 to 50, 46 to 54, 48 to 52, 43 to 54, 44 to 52, 40 to 54)
             .map { (x, z) -> MapSquareKey(x, z) }.toSet()
