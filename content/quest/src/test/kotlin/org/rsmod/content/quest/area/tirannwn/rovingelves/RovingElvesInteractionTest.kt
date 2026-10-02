@@ -68,6 +68,9 @@ import org.rsmod.content.quest.area.baxtorianfalls.waterfall.GlarialsTomb
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallDungeon
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.npcs.Golrie
+import org.rsmod.content.quest.area.tirannwn.mourningsend.ArianwynBriefing
+import org.rsmod.content.quest.area.tirannwn.mourningsend.ElunedErrands
+import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Companion.COINS
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Companion.CRYSTAL_BOW
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Companion.CRYSTAL_CHARGES
@@ -648,7 +651,7 @@ class RovingElvesInteractionTest {
             val scripts = ScriptContext(events, CheatCommandMap(), EngineQueueCache())
             for (script in listOf(
                 roving, regicide, waterfall, consecration,
-                Islwyn(roving, singing), Eluned(roving), Ilfeen(roving, singing),
+                Islwyn(roving, singing), Eluned(roving, ElunedErrands(MourningsEndQuest(), ArianwynBriefing(MourningsEndQuest()))), Ilfeen(roving, singing),
                 GlarialsTomb(waterfall, unused<LocRepository>(), objRepo),
                 BaxtorianFalls(waterfall, unused<NpcSearch>()),
                 WaterfallDungeon(waterfall, objRepo, unused<WorldRepository>(), unused<DoorPassage>()),

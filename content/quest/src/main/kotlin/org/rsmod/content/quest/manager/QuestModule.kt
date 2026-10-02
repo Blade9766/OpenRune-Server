@@ -1,11 +1,13 @@
 package org.rsmod.content.quest.manager
 
+import org.rsmod.api.combat.commons.hook.CombatStanceSelectHook
 import org.rsmod.api.combat.commons.magic.SpellQuestRequirement
 import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.death.PlayerDeathCleanupHook
 import org.rsmod.api.death.PlayerDeathHook
 import org.rsmod.api.death.PlayerRespawnHook
+import org.rsmod.api.player.hook.PlayerObjTakeRedirectHook
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
@@ -182,6 +184,9 @@ import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperimentHooks
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperiments
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsHouseQuest
+import org.rsmod.content.quest.area.tirannwn.mourningsend.FixedDeviceStanceHook
+import org.rsmod.content.quest.area.tirannwn.mourningsend.FixedDeviceWearHook
+import org.rsmod.content.quest.area.tirannwn.mourningsend.HeadquartersAppleHook
 import org.rsmod.content.quest.area.tirannwn.rovingelves.CrystalEquipmentWearHook
 import org.rsmod.content.quest.area.tirannwn.rovingelves.MossGuardianKillHook
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
@@ -315,6 +320,9 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(TyrasGuardAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(MossGuardianKillHook::class.java)
         addSetBinding<PlayerRestrictionHook>(CrystalEquipmentWearHook::class.java)
+        addSetBinding<PlayerRestrictionHook>(FixedDeviceWearHook::class.java)
+        addSetBinding<CombatStanceSelectHook>(FixedDeviceStanceHook::class.java)
+        addSetBinding<PlayerObjTakeRedirectHook>(HeadquartersAppleHook::class.java)
         addSetBinding<NpcDeathKillHook>(GodFollowerKillHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MageArenaTeleBlockHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GreegreeAttackHook::class.java)

@@ -1,0 +1,38 @@
+id = "Mourner (Arandar) Drops"
+npcs = ["npc.mourning_overpass_mourner"]
+
+[[guaranteed]]
+obj = "obj.bones"
+count = 1
+
+[[guaranteed]]
+obj = "obj.gasmask"
+count = 1
+
+[[guaranteed]]
+obj = "obj.mourning_mourner_cloak"
+count = 1
+
+[[guaranteed]]
+obj = "obj.mourning_mourner_boots"
+count = 1
+
+[[guaranteed]]
+obj = "obj.mourning_mourner_gloves"
+count = 1
+
+[[guaranteed]]
+obj = "obj.mourning_ripped_mourner_legs"
+count = 1
+
+[[guaranteed]]
+obj = "obj.mourning_bloody_mourner_top"
+count = 1
+quest = "quest_mourningsendpart1"
+quest_mode = "during"
+
+[[guaranteed]]
+obj = "obj.mourning_mourner_message"
+count = 1
+quest = "quest_mourningsendpart1"
+quest_mode = "during"

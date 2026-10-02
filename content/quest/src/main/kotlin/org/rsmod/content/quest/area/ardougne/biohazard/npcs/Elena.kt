@@ -22,6 +22,7 @@ import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.SULPHURIC_BROLINE
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
 import org.rsmod.content.quest.area.ardougne.regicide.RegicideChemistry
+import org.rsmod.content.quest.area.tirannwn.mourningsend.ElenaResearch
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.loc.BoundLocInfo
@@ -31,7 +32,8 @@ import org.rsmod.plugin.scripts.ScriptContext
 /**
  * Elena at home in East Ardougne, where she moves once Plague City frees her (her house npc is
  * a multi on `varbit.plaguecity_elena_at_home`). She starts Biohazard, runs the tests on the
- * distillator and sends the player to Guidor, then to the king.
+ * distillator and sends the player to Guidor, then to the king. During Mourning's End Part I she
+ * helps with the toxin instead (see [ElenaResearch]).
  */
 class Elena
 @Inject
@@ -41,6 +43,7 @@ constructor(
     private val objRepo: ObjRepository,
     private val doors: QuestDoors,
     private val regicide: RegicideChemistry,
+    private val mourning: ElenaResearch,
 ) : PluginScript() {
 
     private val quest
@@ -70,6 +73,10 @@ constructor(
     }
 
     private suspend fun Dialogue.elena(npc: Npc) {
+        if (mourning.offers(player)) {
+            with(mourning) { elena() }
+            return
+        }
         when (biohazard.stage(player)) {
             0 -> notStarted()
             in STAGE_STARTED until STAGE_GOT_SAMPLES -> {

@@ -13,6 +13,7 @@ import jakarta.inject.Inject
 import java.util.Collections
 import java.util.WeakHashMap
 import org.rsmod.api.combat.commons.CombatStance
+import org.rsmod.api.combat.commons.hook.CombatStanceSelectHook
 import org.rsmod.api.combat.commons.magic.MagicSpell
 import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.combat.commons.styles.MeleeAttackStyle
@@ -70,6 +71,7 @@ constructor(
     private val energy: SpecialAttackEnergy,
     private val specialReg: SpecialAttackRegistry,
     private val protectedAccess: ProtectedAccessLauncher,
+    private val stanceHooks: Set<CombatStanceSelectHook>,
 ) : PluginScript() {
     private var Player.combatStance by enumVarp<CombatStance>("varp.com_mode")
     private var Player.meleeStyle by enumVarp<MeleeAttackStyle>("varp.com_stance")
@@ -426,6 +428,9 @@ constructor(
         setWeaponStance(stance)
         validateChangedStanceStyle(weapon)
         saveCurrentStanceStyle()
+        for (hook in stanceHooks) {
+            hook.onSelect(this, weapon, stance)
+        }
     }
 
     private fun Player.applyDinhsBulwarkDelay(weapon: ItemServerType?, stance: CombatStance) {

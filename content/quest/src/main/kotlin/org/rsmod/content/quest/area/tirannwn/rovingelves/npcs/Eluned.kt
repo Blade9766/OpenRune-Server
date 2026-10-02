@@ -3,6 +3,8 @@ package org.rsmod.content.quest.area.tirannwn.rovingelves.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.tirannwn.mourningsend.ElunedErrands
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Companion.ELUNED
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Companion.ELUNED_ENCHANT
@@ -15,6 +17,7 @@ import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Compan
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Companion.STAGE_PLANT_SEED
 import org.rsmod.content.quest.area.tirannwn.rovingelves.guardianSlain
 import org.rsmod.content.quest.area.tirannwn.rovingelves.ownsAnywhere
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -23,20 +26,25 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Eluned, who travels with Islwyn. She explains the consecration, enchants the seed the player
  * wins from the Moss Guardian, and replaces the enchanted seed if it is lost before planting. The
  * guardian must have fallen to the player themselves: a seed picked up from someone else's kill
- * is not enchanted.
+ * is not enchanted. Once Roving Elves is over she starts Mourning's End Part I and re-enchants
+ * spent teleport crystals (see [ElunedErrands]).
  */
-class Eluned @Inject constructor(private val roving: RovingElvesQuest) : PluginScript() {
+class Eluned
+@Inject
+constructor(private val roving: RovingElvesQuest, private val errands: ElunedErrands) : PluginScript() {
 
     override fun ScriptContext.startup() {
         for (type in listOf(ELUNED, ELUNED_TALK, ELUNED_ENCHANT)) {
             onOpNpc1(type) { startDialogue(it.npc) { eluned() } }
         }
+        onOpNpc3(ELUNED_ENCHANT) { startDialogue(it.npc) { with(errands) { enchant() } } }
     }
 
     private suspend fun Dialogue.eluned() {
         val stage = roving.stage(player)
         when {
             roving.isComplete(player) -> afterQuest()
+            stage == 0 && QuestRequirements.hasCompleted(player, RovingElvesQuest.QUEST_KEY) -> afterQuest()
             stage < STAGE_ACCEPTED -> {
                 chatPlayer(neutral, "Hello there.")
                 chatNpc(sad, "Hello. You will have to excuse Islwyn and me; we have had troubling news from the river. Speak to him if you wish to know more.")
@@ -119,6 +127,18 @@ class Eluned @Inject constructor(private val roving: RovingElvesQuest) : PluginS
     }
 
     private suspend fun Dialogue.afterQuest() {
+        if (errands.offersQuest(player)) {
+            with(errands) { offerQuest() }
+            return
+        }
+        if (errands.offersEnchant(player)) {
+            chatPlayer(neutral, "Hello Eluned.")
+            chatNpc(quiz, "Hello, friend. Do you need me to re-enchant your teleport crystal?")
+            if (choice2("Yes please.", true, "No thanks.", false)) {
+                with(errands) { enchant() }
+            }
+            return
+        }
         chatPlayer(neutral, "Hello Eluned.")
         chatNpc(happy, "Hello, friend. Glarial's tree grows strong, and Islwyn sleeps easier for it.")
         chatNpc(neutral, "Our people have troubles of their own in this land. Perhaps one day we will ask for your help again.")

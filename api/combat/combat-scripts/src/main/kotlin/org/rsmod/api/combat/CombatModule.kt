@@ -1,5 +1,6 @@
 package org.rsmod.api.combat
 
+import org.rsmod.api.combat.commons.hook.CombatStanceSelectHook
 import org.rsmod.api.combat.commons.hook.PvPAttackRestrictionHook
 import org.rsmod.plugin.module.PluginModule
 
@@ -9,5 +10,6 @@ internal class CombatModule : PluginModule() {
         bindInstance<PvNCombat>()
         bindInstance<PvPCombat>()
         newSetBinding<PvPAttackRestrictionHook>()
+        newSetBinding<CombatStanceSelectHook>()
     }
 }

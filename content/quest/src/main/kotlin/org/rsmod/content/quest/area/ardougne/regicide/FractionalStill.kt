@@ -17,6 +17,7 @@ import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.BA
 import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.BARREL_OF_NAPHTHA
 import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.COAL
 import org.rsmod.content.quest.area.ardougne.regicide.StillSimulation.Outcome
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.PlayerUid
 import org.rsmod.plugin.scripts.PluginScript
@@ -34,7 +35,10 @@ import org.rsmod.plugin.scripts.ScriptContext
  * interface closes or the player logs out, and the gauges start cold again on the next visit.
  * Filling the bar empties the still and hands over the barrel of naphtha in the same tick, once;
  * a full pack drops it at the player's feet. The interface stays open on the full bar until the
- * player closes it. The still keeps working after the quest, for anyone wanting more naphtha.
+ * player closes it. The still keeps working after the quest, for anyone wanting more naphtha
+ * (Mourning's End Part I needs another barrel): anyone who has done Regicide, or whom the quest
+ * policy counts as having done it, may use it without hearing the Chemist out again. A player
+ * part-way through Regicide still needs his explanation first.
  */
 @Singleton
 class FractionalStill
@@ -57,7 +61,9 @@ constructor(private val objRepo: ObjRepository) : PluginScript() {
 
     fun session(player: Player): StillSimulation? = sessions[player.uid]
 
-    private fun allowed(player: Player): Boolean = player.chemistChat == 1
+    private fun allowed(player: Player): Boolean =
+        player.chemistChat == 1 ||
+            (QuestRequirements.hasCompleted(player, RegicideQuest.QUEST_KEY) && !QuestRequirements.isOnQuest(player, RegicideQuest.QUEST_KEY))
 
     private suspend fun ProtectedAccess.pourTar() {
         arriveDelay()

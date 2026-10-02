@@ -9,6 +9,8 @@ import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companio
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companion.STAGE_HAS_GAS_MASK
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companion.STAGE_MOURNER_REFUSED
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest.Companion.STAGE_SNEAKED_IN
+import org.rsmod.content.quest.area.tirannwn.mourningsend.disguisedMournerChat
+import org.rsmod.content.quest.area.tirannwn.mourningsend.wearsDisguise
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -210,6 +212,10 @@ class Mourners @Inject constructor(private val plagueCity: PlagueCityQuest) : Pl
      * house guards, who fall back to it when the player has nothing for them.
      */
 internal suspend fun Dialogue.westArdougneMourner(plagueCity: PlagueCityQuest) {
+        if (player.wearsDisguise()) {
+            disguisedMournerChat()
+            return
+        }
         if (plagueCity.quest.isQuestCompleted(player)) {
             chatNpc(angry, "Stand back citizen, do not approach me.")
             return

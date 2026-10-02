@@ -43,6 +43,8 @@ import org.rsmod.content.quest.area.feldip.bigchompy.ChompyHunt.Companion.BAIT_R
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyHunt.Companion.BURST_ROLL
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyHunt.Companion.BURST_ROLL_LATE
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyHunt.Companion.CHOMPY_DRAWN
+import org.rsmod.content.quest.area.tirannwn.mourningsend.Flock
+import org.rsmod.content.quest.area.tirannwn.mourningsend.swap
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
@@ -58,6 +60,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * down the toad is only swelling, and the third roll bursts it over anyone standing close; once a
  * chompy has come the roll count carries [CHOMPY_DRAWN], so the same toad cannot call a second bird
  * and its burst is put off long enough for the player to take the shot.
+ *
+ * Bellows filled with dye for Mourning's End Part I (see [Flock]) inflate a toad into a coloured
+ * toad item instead, one toad per filling.
  */
 class BloatedToads
 @Inject
@@ -115,9 +120,11 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.useOnToad(toad: Npc, used: String) {
-        when (used) {
-            in FILLED_BELLOWS -> inflate(toad, used)
-            BELLOWS_EMPTY -> blowAir(toad)
+        val dye = Flock.entries.firstOrNull { it.bellows == used }
+        when {
+            used in FILLED_BELLOWS -> inflate(toad, used)
+            dye != null -> inflateWithDye(toad, dye)
+            used == BELLOWS_EMPTY -> blowAir(toad)
             else -> mes("Nothing interesting happens.")
         }
     }
@@ -126,6 +133,11 @@ constructor(
         val bellows = FILLED_BELLOWS.firstOrNull { invTotal(inv, it) > 0 }
         if (bellows != null) {
             inflate(toad, bellows)
+            return
+        }
+        val dye = Flock.entries.firstOrNull { invTotal(inv, it.bellows) > 0 }
+        if (dye != null) {
+            inflateWithDye(toad, dye)
             return
         }
         if (invTotal(inv, BELLOWS_EMPTY) > 0) {
@@ -166,6 +178,26 @@ constructor(
         }
         mes("You add the bloated toad to your inventory.")
         invAdd(inv, BLOATED_TOAD)
+        hunt.remove(toad)
+    }
+
+    /**
+     * Mourning's End Part I: dyed bellows hold one load, so the toad is swapped for the bellows'
+     * dye in one transaction that also hands back the empty bellows.
+     */
+    private suspend fun ProtectedAccess.inflateWithDye(toad: Npc, dye: Flock) {
+        arriveDelay()
+        if (inv.freeSpace() < 1) {
+            mes("You don't have space to carry that.")
+            return
+        }
+        mes("You manage to catch the toad and inflate it with ${dye.label} dye.")
+        pumpBellows(toad)
+        delay(3)
+        if (!swap(listOf(dye.bellows to 1), listOf(BELLOWS_EMPTY to 1, dye.toad to 1))) {
+            return
+        }
+        mes("You add the ${dye.label} toad to your inventory.")
         hunt.remove(toad)
     }
 

@@ -1108,3 +1108,9 @@ isServerOnly = true
 id = "varp.roving_elves_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning_end_state"
+scope = "Perm"
+transmit = "Never"

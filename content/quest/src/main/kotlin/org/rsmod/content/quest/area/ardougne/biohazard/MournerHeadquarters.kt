@@ -28,6 +28,9 @@ import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.STAGE_MOURNER_KILLED
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.STAGE_STEW_POISONED
 import org.rsmod.content.quest.area.ardougne.wearingMedicalGown
+import org.rsmod.content.quest.area.tirannwn.mourningsend.MournerHideout
+import org.rsmod.content.quest.area.tirannwn.mourningsend.disguisedMournerChat
+import org.rsmod.content.quest.area.tirannwn.mourningsend.recruitMournerChat
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.loc.BoundLocInfo
@@ -40,6 +43,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * away at the front door; the back yard, reached through a gap in the fence, has the stew pot.
  * Poisoning the stew gets a "doctor" let in, and the sickest mourner upstairs is the one with
  * the key to the caged storeroom where Elena's distillator is kept.
+ *
+ * In Mourning's End Part I a player wearing the full mourner disguise is treated as one of them:
+ * see [MournerHideout] for who that admits, and for the basement below the trapdoor.
  */
 class MournerHeadquarters
 @Inject
@@ -51,6 +57,7 @@ constructor(
     private val death: NpcDeath,
     private val playerList: PlayerList,
     private val launcher: ProtectedAccessLauncher,
+    private val hideout: MournerHideout,
 ) : PluginScript() {
 
     private val sickMournerType =
@@ -64,7 +71,7 @@ constructor(
             onOpLoc1(cauldron) { inspectCauldron() }
             onOpLocU(cauldron, ROTTEN_APPLE) { poisonStew() }
         }
-        onOpLoc1(TRAPDOOR) { mes("The trapdoor is bolted on the other side.") }
+        onOpLoc1(TRAPDOOR) { with(hideout) { trapdoor() } }
         for (mourner in SICK_MOURNERS) {
             onOpNpc1(mourner) { startDialogue(it.npc) { insideMourner() } }
         }
@@ -80,6 +87,7 @@ constructor(
     private suspend fun Dialogue.doorGuard() {
         val stage = biohazard.stage(player)
         when {
+            hideout.admits(player) && npc != null -> disguisedMournerChat()
             stage in STAGE_STEW_POISONED..STAGE_GOT_DISTILLATOR && player.wearingMedicalGown() -> {
                 guardSays(quiz, "A doctor? I didn't think there were any left around here.")
                 chatPlayer(neutral, "I heard there was some trouble with food poisoning here.")
@@ -126,7 +134,8 @@ constructor(
         }
         val inside = player.coords.z > door.coords.z
         val stage = biohazard.stage(player)
-        if (inside || (stage in STAGE_STEW_POISONED..STAGE_GOT_DISTILLATOR && player.wearingMedicalGown())) {
+        val doctor = stage in STAGE_STEW_POISONED..STAGE_GOT_DISTILLATOR && player.wearingMedicalGown()
+        if (inside || doctor || hideout.admits(player)) {
             doors.open(this, door, DOOR_OPEN)
             return
         }
@@ -168,6 +177,10 @@ constructor(
     }
 
     private suspend fun Dialogue.insideMourner() {
+        if (hideout.admits(player)) {
+            recruitMournerChat()
+            return
+        }
         val stage = biohazard.stage(player)
         if (stage !in STAGE_STEW_POISONED until STAGE_GOT_SAMPLES) {
             chatNpc(angry, "Stand back citizen, do not approach me.")

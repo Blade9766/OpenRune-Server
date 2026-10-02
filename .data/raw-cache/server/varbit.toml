@@ -2048,3 +2048,10 @@ id = "varbit.roving_reward_choice"
 varp = "varp.roving_elves_state"
 startBit = 1
 endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.mourning_hq_apple"
+varp = "varp.mourning_end_state"
+startBit = 0
+endBit = 0
