@@ -27,8 +27,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
         onOpNpc1("npc.leela") { startDialogue(it.npc) { leela() } }
         onOpNpc1("npc.wom_gossip") { startDialogue(it.npc) { missSchism() } }
         onOpNpc1("npc.wom_bankguard") { startDialogue(it.npc) { bankGuard() } }
-        onOpNpc1("npc.rag_wine_merchant") { startDialogue(it.npc) { fortunato() } }
-        onOpNpc3("npc.rag_wine_merchant") { openWineShop() }
         onOpNpc1("npc.pmod_town_crier_draynor") { startDialogue(it.npc) { townCrier() } }
         onOpNpc1("npc.seed_merchant") { startDialogue(it.npc) { olivia() } }
         onOpNpc3("npc.seed_merchant") { openSeedShop() }
@@ -387,28 +385,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
     private suspend fun Dialogue.bankGuardLeave() {
         chatPlayer(neutral, GUARD_LEAVE)
         chatNpc(neutral, "Good day, ${if (isLad()) "sir" else "ma'am"}.")
-    }
-
-    private suspend fun Dialogue.fortunato() {
-        chatNpc(neutral, "Can I help you at all?")
-        chatNpc(happy, "Ah! Good afternoon to you. I take it you have come for a refill?")
-        if (menu("Yes" to true, "Not today" to false)) {
-            chatPlayer(neutral, "Yes.")
-            access.openWineShop()
-        } else {
-            chatPlayer(neutral, "Not today.")
-        }
-    }
-
-    private fun ProtectedAccess.openWineShop() {
-        shops.open(
-            player = player,
-            title = "Wine Shop.",
-            shopInv = "inv.wine_vinegar_merchant",
-            buyPercentage = 60.0,
-            sellPercentage = 100.0,
-            changePercentage = 2.0,
-        )
     }
 
     private suspend fun Dialogue.townCrier() {

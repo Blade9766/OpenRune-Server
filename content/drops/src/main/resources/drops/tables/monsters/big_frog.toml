@@ -1,0 +1,14 @@
+id = "Big frog Drops"
+npcs = ["npc.medium_frog"]
+
+[[guaranteed]]
+obj = "obj.bones"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.rag_medium_frog_bone"
+count = 1
+quest = "quest_ragandboneman1"
+quest_mode = "during"

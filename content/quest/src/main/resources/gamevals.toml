@@ -377,6 +377,8 @@ deathplateau_state = 65455
 deathplateau_dice = 65456
 # Fishing Contest: the current contest round, cleared on logout.
 fishingcontest_round = 65457
+# Rag and Bone Man I: the pot-boiler's boiling steps left, kept across logout.
+rag_boil = 65427
 
 # The Fremennik Trials: the council's votes and each trial's own progress. The stage itself lives
 # in the cache varp `varp.viking`. The Temp varp holds Koschei's form and the letters dialled into
@@ -615,6 +617,8 @@ fishingcontest_round_left = 65787
 # on free bits of the cache varp `varp.sheepherdervar` above the four sheep varbits.
 sheepherder_clothing_bought = 65788
 sheepherder_prod_tutorial = 65789
+# Rag and Bone Man I: boiling steps left in the pot-boiler, on `varp.rag_boil`.
+rag_boil_steps = 65790
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
@@ -655,6 +659,8 @@ fishingcontest_stranger_return = 141
 sheepherder_restless = 142
 sheepherder_return = 143
 sheepherder_stuck = 144
+# Rag and Bone Man I: the pot-boiler counting down to a polished specimen.
+rag_boil = 145
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
@@ -690,3 +696,7 @@ hero_grip_attack_warning = 65435
 hero_hot_feather = 65436
 # Fishing Contest: one cast of the line at a contest fishing spot.
 fishingcontest_catch = 65439
+
+[gamevals.inv]
+# Rag and Bone Man I: Fortunato's wine shop before he agrees to sell vinegar.
+rag_wine_merchant_no_vinegar = 1103

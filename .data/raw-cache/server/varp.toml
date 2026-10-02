@@ -1072,3 +1072,9 @@ isServerOnly = true
 id = "varp.fishingcontest_round"
 scope = "Temp"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.rag_boil"
+scope = "Perm"
+transmit = "Never"

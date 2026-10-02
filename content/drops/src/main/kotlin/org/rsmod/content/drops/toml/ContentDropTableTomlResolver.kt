@@ -16,6 +16,7 @@ import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.shouldDropBrimstoneKey
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
+import org.rsmod.content.quest.manager.QuestItemDrops
 import org.rsmod.content.quest.manager.QuestRequirement
 import org.rsmod.content.quest.manager.QuestRequirementResolver
 import org.rsmod.game.entity.Player
@@ -66,7 +67,9 @@ constructor(
                                 "Use 'during', 'completed', or 'not_completed'.",
                         )
                 }
+            val obj = config.obj
             config.condition = andCondition(config.condition, questCondition)
+            config.condition = andCondition(config.condition) { player -> QuestItemDrops.isNeeded(player, obj) }
         }
         if (hooks.requireRingOfWealth) {
             config.condition = andCondition(config.condition) { player -> player.wearingRingOfWealth() }

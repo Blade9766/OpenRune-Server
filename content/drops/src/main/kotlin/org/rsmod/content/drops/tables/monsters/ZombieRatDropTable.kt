@@ -6,7 +6,7 @@ import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
-import org.rsmod.content.drops.isOnQuest
+import org.rsmod.content.drops.needsQuestDrop
 import org.rsmod.game.entity.Player
 
 /** The small zombie rat with the long tail on the ground floor of Melzar's Maze: it carries the red key. */
@@ -20,7 +20,7 @@ public val zombieRatKeyDropTable: RSDropTable<Player, DropRollItem> = RSDropTabl
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.rag_giant_rat_bone" count 1 condition {
-            player -> player.isOnQuest("quest_ragandboneman1")
+            player -> player.needsQuestDrop("quest_ragandboneman1", "obj.rag_giant_rat_bone")
         }
     },
 )
@@ -32,7 +32,7 @@ public val zombieRatDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     npcs = npcs("npc.dragonslayer_giantrat_2", "npc.dragonslayer_giantrat_3"),
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.rag_giant_rat_bone" count 1 condition {
-            player -> player.isOnQuest("quest_ragandboneman1")
+            player -> player.needsQuestDrop("quest_ragandboneman1", "obj.rag_giant_rat_bone")
         }
     },
 )

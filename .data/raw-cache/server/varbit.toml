@@ -1943,3 +1943,10 @@ id = "varbit.sheepherder_prod_tutorial"
 varp = "varp.sheepherdervar"
 startBit = 14
 endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rag_boil_steps"
+varp = "varp.rag_boil"
+startBit = 0
+endBit = 2
