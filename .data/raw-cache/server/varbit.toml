@@ -1929,3 +1929,17 @@ id = "varbit.fishingcontest_round_left"
 varp = "varp.fishingcontest_round"
 startBit = 0
 endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.sheepherder_clothing_bought"
+varp = "varp.sheepherdervar"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.sheepherder_prod_tutorial"
+varp = "varp.sheepherdervar"
+startBit = 14
+endBit = 14

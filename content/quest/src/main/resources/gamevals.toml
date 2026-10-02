@@ -611,6 +611,10 @@ holygrail_percival_found = 65785
 # `varp.garlicpipe`, and the seconds left in the current round (in five-tick steps).
 fishingcompo_round_over = 65786
 fishingcontest_round_left = 65787
+# Sheep Herder: Doctor Orbon paid for the protective clothing, and the herding tutorial shown,
+# on free bits of the cache varp `varp.sheepherdervar` above the four sheep varbits.
+sheepherder_clothing_bought = 65788
+sheepherder_prod_tutorial = 65789
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
@@ -647,6 +651,10 @@ mcannon_rotate = 139
 # Fishing Contest: the contest round countdown, and the Sinister Stranger creeping back to his spot.
 fishingcontest_round = 140
 fishingcontest_stranger_return = 141
+# Sheep Herder: a prodded sheep growing restless, setting off home, and being put back if stuck.
+sheepherder_restless = 142
+sheepherder_return = 143
+sheepherder_stuck = 144
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
