@@ -455,6 +455,12 @@ mourning2_thorgel_1 = 65469
 mourning2_thorgel_2 = 65470
 mourning2_state = 65471
 mourning2_shadow_peace = 65472
+# Recruitment Drive: the attempt (room order and the current room's puzzle answers) on
+# `varp.rd_session`, the Temp combination lock wheels and patience count on `varp.rd_lock`,
+# and the player's chosen respawn point (Gaze of Saradomin) on `varp.respawn_point_state`.
+rd_session = 65434
+rd_lock = 65435
+respawn_point_state = 65436
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -682,6 +688,22 @@ mourning2_thorgel_ticket = 65807
 mourning2_thorgel_book = 65808
 mourning2_thorgel_key = 65809
 
+# Recruitment Drive: see `varp.rd_session`, `varp.rd_lock` and `varp.respawn_point_state`.
+rd_order = 65584
+rd_statue_answer = 65585
+rd_statue_phase = 65586
+rd_riddle = 65587
+rd_riddle_clue = 65588
+rd_logic_riddle = 65589
+rd_patience_phase = 65590
+rd_lock_a = 65591
+rd_lock_b = 65592
+rd_lock_c = 65593
+rd_lock_d = 65594
+rd_patience_ticks = 65595
+respawn_point = 65596
+rd_cheevers_talks = 65597
+
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
 quest_scroll_close = 404
@@ -728,6 +750,9 @@ ahoy_wind = 146
 # Regicide: the fractionalising still's simulation step, and the King's Messenger finding the player.
 regicide_still = 147
 regicide_messenger = 148
+# Recruitment Drive: Lady Table's ten seconds, and Sir Tinley's patience count.
+rd_statues = 149
+rd_patience = 150
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
@@ -763,6 +788,8 @@ hero_grip_attack_warning = 65435
 hero_hot_feather = 65436
 # Fishing Contest: one cast of the line at a contest fishing spot.
 fishingcontest_catch = 65439
+# Recruitment Drive: a marker that any action clearing weak queues removes during Sir Tinley's test.
+rd_patience_watch = 65400
 
 [gamevals.inv]
 # Rag and Bone Man I: Fortunato's wine shop before he agrees to sell vinegar.

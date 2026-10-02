@@ -2083,3 +2083,101 @@ id = "varbit.mourning2_thorgel_key"
 varp = "varp.mourning2_state"
 startBit = 8
 endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_order"
+varp = "varp.rd_session"
+startBit = 0
+endBit = 10
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_statue_answer"
+varp = "varp.rd_session"
+startBit = 11
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_statue_phase"
+varp = "varp.rd_session"
+startBit = 15
+endBit = 16
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_riddle"
+varp = "varp.rd_session"
+startBit = 17
+endBit = 19
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_riddle_clue"
+varp = "varp.rd_session"
+startBit = 20
+endBit = 21
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_logic_riddle"
+varp = "varp.rd_session"
+startBit = 22
+endBit = 24
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_patience_phase"
+varp = "varp.rd_session"
+startBit = 25
+endBit = 26
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_lock_a"
+varp = "varp.rd_lock"
+startBit = 0
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_lock_b"
+varp = "varp.rd_lock"
+startBit = 5
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_lock_c"
+varp = "varp.rd_lock"
+startBit = 10
+endBit = 14
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_lock_d"
+varp = "varp.rd_lock"
+startBit = 15
+endBit = 19
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_patience_ticks"
+varp = "varp.rd_lock"
+startBit = 20
+endBit = 24
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.respawn_point"
+varp = "varp.respawn_point_state"
+startBit = 0
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.rd_cheevers_talks"
+varp = "varp.rd_session"
+startBit = 27
+endBit = 28

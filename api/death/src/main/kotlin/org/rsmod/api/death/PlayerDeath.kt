@@ -33,10 +33,12 @@ constructor(
     private val handlingResolver: PlayerDeathHandlingResolver,
     private val cleanupHooks: Set<PlayerDeathCleanupHook>,
     private val itemHooks: Set<PlayerDeathItemHook>,
-    private val respawnHooks: Set<PlayerRespawnHook>,
+    respawnHooks: Set<PlayerRespawnHook>,
     private val areaChecker: AreaChecker,
     private val worldRepo: WorldRepository,
 ) {
+    private val orderedRespawnHooks = respawnHooks.sortedByDescending { it.respawnPriority }
+
     private var Player.specialAttackType by intVarp("varp.sa_attack")
     private var Player.inInstance by boolVarBit("varbit.player_in_instance")
     private var Player.insideWilderness by boolVarBit("varbit.inside_wilderness")
@@ -46,7 +48,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.deathSequence() {
-        val respawn = respawnHooks.firstNotNullOfOrNull { it.respawn(player) } ?: DEFAULT_RESPAWN
+        val respawn = orderedRespawnHooks.firstNotNullOfOrNull { it.respawn(player) } ?: DEFAULT_RESPAWN
         val randomRespawn = mapFindSquareLineOfWalk(respawn, minRadius = 0, maxRadius = 2)
 
         stopAction()

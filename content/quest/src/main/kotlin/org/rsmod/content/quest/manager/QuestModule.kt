@@ -96,6 +96,21 @@ import org.rsmod.content.quest.area.draynor.vampyreslayer.VampyreSlayerQuest
 import org.rsmod.content.quest.area.falador.knightssword.KnightsSwordQuest
 import org.rsmod.content.quest.area.falador.knightssword.VyvinsRoom
 import org.rsmod.content.quest.area.falador.knightssword.npcs.ImcandoLore
+import org.rsmod.content.quest.area.falador.recruitmentdrive.GazeOfSaradomin
+import org.rsmod.content.quest.area.falador.recruitmentdrive.InitiateArmourWearHook
+import org.rsmod.content.quest.area.falador.recruitmentdrive.RecruitmentDriveQuest
+import org.rsmod.content.quest.area.falador.recruitmentdrive.RecruitmentTesting
+import org.rsmod.content.quest.area.falador.recruitmentdrive.TestingGrounds
+import org.rsmod.content.quest.area.falador.recruitmentdrive.TrainingGroundsHooks
+import org.rsmod.content.quest.area.falador.recruitmentdrive.npcs.SirAmikRecruitment
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.AcrosticRoom
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.CombatRoom
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.CrossingRoom
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.ImprovisationRoom
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.LogicRoom
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.PatienceRoom
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.SirLeyeAttackHook
+import org.rsmod.content.quest.area.falador.recruitmentdrive.rooms.StatueRoom
 import org.rsmod.content.quest.area.feldip.bigchompy.BigChompyBirdHuntingQuest
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyAttackHook
 import org.rsmod.content.quest.area.feldip.bigchompy.ChompyBirds
@@ -418,6 +433,22 @@ public class QuestModule : PluginModule() {
         bindInstance<GauntletEnchanting>()
         bindInstance<WitchavenDungeon>()
         bindInstance<PerfectGold>()
+        bindInstance<RecruitmentDriveQuest>()
+        bindInstance<TestingGrounds>()
+        bindInstance<RecruitmentTesting>()
+        bindInstance<SirAmikRecruitment>()
+        bindInstance<CombatRoom>()
+        bindInstance<CrossingRoom>()
+        bindInstance<StatueRoom>()
+        bindInstance<PatienceRoom>()
+        bindInstance<AcrosticRoom>()
+        bindInstance<ImprovisationRoom>()
+        bindInstance<LogicRoom>()
+        addSetBinding<NpcAttackValidateHook>(SirLeyeAttackHook::class.java)
+        addSetBinding<PlayerDeathCleanupHook>(TrainingGroundsHooks::class.java)
+        addSetBinding<PlayerTeleportValidateHook>(TrainingGroundsHooks::class.java)
+        addSetBinding<PlayerRespawnHook>(GazeOfSaradomin::class.java)
+        addSetBinding<PlayerRestrictionHook>(InitiateArmourWearHook::class.java)
         bindInstance<Chronozon>()
         addSetBinding<NpcDeathKillHook>(ChronozonKillHook::class.java)
         bindInstance<BigChompyBirdHuntingQuest>()

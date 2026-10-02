@@ -1168,3 +1168,21 @@ isServerOnly = true
 id = "varp.mourning2_shadow_peace"
 scope = "Temp"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.rd_session"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.rd_lock"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.respawn_point_state"
+scope = "Perm"
+transmit = "Never"

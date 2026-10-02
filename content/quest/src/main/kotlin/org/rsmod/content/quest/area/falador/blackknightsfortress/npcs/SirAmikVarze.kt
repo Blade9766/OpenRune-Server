@@ -12,12 +12,22 @@ import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFor
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.STAGE_SABOTAGED
 import org.rsmod.content.quest.area.falador.blackknightsfortress.BlackKnightsFortressQuest.Companion.STAGE_STARTED
 import org.rsmod.content.quest.area.falador.blackknightsfortress.dossierCountdown
+import org.rsmod.content.quest.area.falador.recruitmentdrive.npcs.SirAmikRecruitment
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.startQuestPrompt
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/** Sir Amik Varze, leader of the White Knights. Starts and finishes Black Knights' Fortress. */
-class SirAmikVarze @Inject constructor(private val bkf: BlackKnightsFortressQuest) : PluginScript() {
+/**
+ * Sir Amik Varze, leader of the White Knights. Starts and finishes Black Knights' Fortress, and then
+ * puts the player forward to the Temple Knights for Recruitment Drive.
+ */
+class SirAmikVarze
+@Inject
+constructor(
+    private val bkf: BlackKnightsFortressQuest,
+    private val recruitment: SirAmikRecruitment,
+) : PluginScript() {
 
     private val quest
         get() = bkf.quest
@@ -38,7 +48,14 @@ class SirAmikVarze @Inject constructor(private val bkf: BlackKnightsFortressQues
 
     private suspend fun Dialogue.beforeQuest() {
         chatNpc(quiz, "I am the leader of the White Knights of Falador. Why do you seek my audience?")
-        when (choice2("I seek a quest!", 1, "I don't, I'm just looking around.", 2)) {
+        val choice =
+            if (QuestRequirements.hasCompleted(player, BlackKnightsFortressQuest.QUEST_KEY) && recruitment.hasSomethingToSay(player)) {
+                choice3("I seek a quest!", 1, "I don't, I'm just looking around.", 2, "Do you have any other quests for me to do?", 3)
+            } else {
+                choice2("I seek a quest!", 1, "I don't, I'm just looking around.", 2)
+            }
+        when (choice) {
+            3 -> with(recruitment) { otherQuests() }
             1 -> {
                 chatPlayer(neutral, "I seek a quest.")
                 if (!bkf.hasQuestPoints(player)) {
@@ -158,5 +175,8 @@ class SirAmikVarze @Inject constructor(private val bkf: BlackKnightsFortressQues
     private suspend fun Dialogue.afterQuest() {
         chatPlayer(happy, "Hello Sir Amik.")
         chatNpc(happy, "Hello, friend!")
+        if (recruitment.hasSomethingToSay(player)) {
+            with(recruitment) { otherQuests() }
+        }
     }
 }

@@ -1,7 +1,6 @@
 package org.rsmod.content.areas.city.falador.npcs
 
 import jakarta.inject.Inject
-import org.rsmod.api.config.Constants
 import org.rsmod.api.invtx.invAddOrDrop
 import org.rsmod.api.invtx.invTakeFee
 import org.rsmod.api.player.dialogue.Dialogue
@@ -15,7 +14,6 @@ import org.rsmod.plugin.scripts.ScriptContext
 class FaladorTownsfolkScript @Inject constructor(private val objRepo: ObjRepository) :
     PluginScript() {
     override fun ScriptContext.startup() {
-        onOpNpc1("npc.rd_teleporter_guy") { startDialogue(it.npc) { sirTiffy() } }
         onOpNpc1("npc.partyroom_pete") { startDialogue(it.npc) { partyPete(it.npc) } }
         onOpNpc1("npc.sir_vyvin") { startDialogue(it.npc) { sirVyvin() } }
         onOpNpc1("npc.white_knight_diary") { startDialogue(it.npc) { sirRebral() } }
@@ -29,19 +27,6 @@ class FaladorTownsfolkScript @Inject constructor(private val objRepo: ObjReposit
         for (client in MAHOGANY_HOMES_CLIENTS) {
             onOpNpc1(client) { startDialogue(it.npc) { mahoganyHomesClient() } }
         }
-    }
-
-    private suspend fun Dialogue.sirTiffy() {
-        val greeting =
-            if (player.appearance.bodyType == Constants.bodytype_a) "What ho, sir." else "What ho, milady."
-        chatPlayer(happy, "Hello.")
-        chatNpc(happy, "$greeting Spiffing day for a walk in the park, what?")
-        chatPlayer(confused, "...spiffing?")
-        chatNpc(
-            laugh,
-            "Absolutely, top-hole! Well, can't stay and chat all day, dontchaknow! Ta-ta for now!",
-        )
-        chatPlayer(confused, "Erm... goodbye.")
     }
 
     private suspend fun Dialogue.partyPete(npc: Npc) {
