@@ -14,6 +14,9 @@ import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.ardougne.regicide.DragonHalberdWearHook
+import org.rsmod.content.quest.area.ardougne.regicide.TyrasGuardAttackHook
+import org.rsmod.content.quest.area.ardougne.regicide.TyrasGuardKillHook
 import org.rsmod.content.quest.area.ardougne.undergroundpass.DollOfIban
 import org.rsmod.content.quest.area.ardougne.undergroundpass.DwarvenCamp
 import org.rsmod.content.quest.area.ardougne.undergroundpass.IbanTemple
@@ -305,6 +308,9 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(KolodionAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(WormbrainAttackHook::class.java)
         addSetBinding<PlayerRestrictionHook>(DragonSlayerWearHook::class.java)
+        addSetBinding<PlayerRestrictionHook>(DragonHalberdWearHook::class.java)
+        addSetBinding<NpcDeathKillHook>(TyrasGuardKillHook::class.java)
+        addSetBinding<NpcAttackValidateHook>(TyrasGuardAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(GodFollowerKillHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MageArenaTeleBlockHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GreegreeAttackHook::class.java)

@@ -4,6 +4,7 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
+import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import org.rsmod.api.npc.interact.AiPlayerInteractions
 import org.rsmod.api.npc.opPlayer2
@@ -19,6 +20,8 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onPlayerSoftTimer
+import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest
+import org.rsmod.content.quest.area.ardougne.regicide.RestoredTemple
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.DISCIPLE
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.DOLL
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.IBAN
@@ -69,6 +72,7 @@ constructor(
     private val random: GameRandom,
     private val collision: CollisionFlagMap,
     private val aiInteractions: AiPlayerInteractions,
+    private val regicide: Provider<RegicideQuest>,
 ) : PluginScript() {
 
     private val boltSpotanim by lazy { SpotanimType(SPOT_IBAN_BOLT.asRSCM(RSCMType.SPOTANIM)) }
@@ -121,16 +125,14 @@ constructor(
             leaveTemple(door)
             return
         }
+        if (quest.stage(player) >= STAGE_COMPLETE) {
+            enterRuins(door)
+            return
+        }
         if (!dressedAsDisciple(strict = true)) {
             mes("The door refuses to open...")
             delay(1)
             mes("Only followers of Zamorak may enter.")
-            return
-        }
-        if (quest.stage(player) >= STAGE_COMPLETE) {
-            mes("The temple is in ruins...")
-            delay(2)
-            mes("...You cannot enter.")
             return
         }
         mes("You pull open the large doors...")
@@ -161,8 +163,29 @@ constructor(
         soundSynth(SOUND_DOOR_OPEN)
         delay(1)
         mes("...And walk out of the temple.")
+        if (RestoredTemple.contains(door.coords)) {
+            telejump(RestoredTemple.exitFor(door, coords.z), TeleportType.Exempt)
+            return
+        }
         climbOver(CoordGrid(door.coords.x + 2, coords.z, coords.level), SEQ_WALK, ticks = 2)
         clearSoftTimer(TEMPLE_TIMER)
+    }
+
+    /**
+     * Iban's temple came down with him. Once King Lathas has sent the player west for Regicide its
+     * doors open on the restored temple and the Well of Voyage; until then there is nothing inside.
+     */
+    private suspend fun ProtectedAccess.enterRuins(door: BoundLocInfo) {
+        if (!regicide.get().isStarted(player)) {
+            mes("The temple is in ruins...")
+            delay(2)
+            mes("...You cannot enter.")
+            return
+        }
+        mes("You pull open the large doors...")
+        soundSynth(SOUND_DOOR_OPEN)
+        delay(1)
+        telejump(RestoredTemple.entryFor(door, coords.z), TeleportType.Exempt)
     }
 
     private suspend fun ProtectedAccess.lookIntoWell() {

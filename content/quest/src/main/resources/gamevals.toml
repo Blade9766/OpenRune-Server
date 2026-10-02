@@ -431,6 +431,11 @@ holygrail_state = 65426
 # cache varp `varp.legendsquest`; the Radimus multinpcs index that varp directly.
 legends_state = 65409
 
+# Regicide: the quest's own flags (letter read, messenger seen, camp reported), and the world
+# tile a private quest scene returns the player to if they log out inside it.
+regicide_state = 65430
+regicide_scene_return = 65431
+
 [gamevals.varbit]
 digsite_answers = 65560
 digsite_asked = 65561
@@ -636,6 +641,12 @@ ahoy_flag_seen = 65797
 ahoy_petition_approved = 65798
 ahoy_petition_presented = 65799
 
+# Regicide: Iorwerth's unsealed letter read, the King's Messenger delivered his summons, and
+# the Elf Tracker told of Tyras Camp, on `varp.regicide_state`.
+regicide_read_message = 65800
+regicide_messenger_seen = 65801
+regicide_tracker_report = 65802
+
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
 quest_scroll_close = 404
@@ -679,6 +690,9 @@ sheepherder_stuck = 144
 rag_boil = 145
 # Ghosts Ahoy: the wind over the wreck's quarterdeck rising and dropping.
 ahoy_wind = 146
+# Regicide: the fractionalising still's simulation step, and the King's Messenger finding the player.
+regicide_still = 147
+regicide_messenger = 148
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.

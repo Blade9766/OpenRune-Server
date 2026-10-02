@@ -12,6 +12,7 @@ import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.STAGE_GUIDOR_TESTED
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.SULPHURIC_BROLINE
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.TOUCH_PAPER
+import org.rsmod.content.quest.area.ardougne.regicide.RegicideChemistry
 import org.rsmod.content.quest.manager.QuestAttribute
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -27,6 +28,7 @@ class Smuggling
 constructor(
     private val biohazard: BiohazardQuest,
     private val objRepo: ObjRepository,
+    private val regicide: RegicideChemistry,
 ) : PluginScript() {
 
     private class ErrandBoy(
@@ -51,6 +53,19 @@ constructor(
 
     private suspend fun Dialogue.chemist() {
         val onQuest = biohazard.stage(player) in STAGE_GOT_SAMPLES..STAGE_GUIDOR_TESTED
+        if (!onQuest && regicide.chemistOffers(player)) {
+            when (
+                choice2(
+                    "Lamps.", 1,
+                    "Your quest.", 2,
+                    title = "What do you want to talk about?",
+                )
+            ) {
+                1 -> lamps()
+                2 -> with(regicide) { chemist() }
+            }
+            return
+        }
         if (!onQuest) {
             when (
                 choice2(

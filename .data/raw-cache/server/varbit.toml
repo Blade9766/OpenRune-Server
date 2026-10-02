@@ -2013,3 +2013,24 @@ id = "varbit.ahoy_petition_presented"
 varp = "varp.ahoy_state"
 startBit = 22
 endBit = 22
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.regicide_read_message"
+varp = "varp.regicide_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.regicide_messenger_seen"
+varp = "varp.regicide_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.regicide_tracker_report"
+varp = "varp.regicide_state"
+startBit = 2
+endBit = 2

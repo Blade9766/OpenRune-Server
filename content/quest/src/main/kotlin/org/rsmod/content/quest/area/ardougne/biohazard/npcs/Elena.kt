@@ -21,6 +21,7 @@ import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.STAGE_TOLD_ELENA
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.SULPHURIC_BROLINE
 import org.rsmod.content.quest.area.ardougne.plaguecity.PlagueCityQuest
+import org.rsmod.content.quest.area.ardougne.regicide.RegicideChemistry
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.loc.BoundLocInfo
@@ -39,6 +40,7 @@ constructor(
     private val plagueCity: PlagueCityQuest,
     private val objRepo: ObjRepository,
     private val doors: QuestDoors,
+    private val regicide: RegicideChemistry,
 ) : PluginScript() {
 
     private val quest
@@ -205,6 +207,10 @@ constructor(
         item in listOf(biohazard.chancyVial.get(player), biohazard.daVinciVial.get(player), biohazard.hopsVial.get(player))
 
     private suspend fun Dialogue.afterQuest() {
+        if (regicide.elenaOffers(player)) {
+            with(regicide) { elena() }
+            return
+        }
         chatPlayer(happy, "Hello Elena.")
         chatNpc(happy, "Hey, how are you?")
         chatPlayer(happy, "Good thanks, yourself?")

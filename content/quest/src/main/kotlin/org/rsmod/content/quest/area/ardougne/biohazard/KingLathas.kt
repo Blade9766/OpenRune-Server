@@ -4,6 +4,9 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.ardougne.biohazard.BiohazardQuest.Companion.STAGE_TOLD_ELENA
+import org.rsmod.content.quest.area.ardougne.regicide.Arianwyn
+import org.rsmod.content.quest.area.ardougne.regicide.RegicideLathas
+import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.RANGED_REQ
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQuest.Companion.STAGE_COMPLETE
@@ -15,21 +18,33 @@ import org.rsmod.plugin.scripts.ScriptContext
 
 /**
  * King Lathas in the throne room of East Ardougne castle, who admits the plague is a hoax and
- * explains the wall is there to keep his corrupted brother Tyras out.
+ * explains the wall is there to keep his corrupted brother Tyras out. Once the Underground Pass
+ * is open he hands over to [RegicideLathas].
  */
 class KingLathas
 @Inject
 constructor(
     private val biohazard: BiohazardQuest,
     private val undergroundPass: UndergroundPassQuest,
+    private val regicide: RegicideQuest,
+    private val regicideLathas: RegicideLathas,
+    private val arianwyn: Arianwyn,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
-        onOpNpc1(KING) { startDialogue(it.npc) { king() } }
+        onOpNpc1(KING) {
+            if (arianwyn.isWaiting(player)) {
+                with(arianwyn) { intercept() }
+                return@onOpNpc1
+            }
+            startDialogue(it.npc) { king() }
+        }
     }
 
     private suspend fun Dialogue.king() {
         when {
+            regicide.isStarted(player) || undergroundPass.isComplete(player) ->
+                with(regicideLathas) { talk() }
             undergroundPass.stage(player) >= STAGE_IBAN_DEAD -> ibanIsDead()
             undergroundPass.isStarted(player) -> passInProgress()
             biohazard.quest.isQuestCompleted(player) -> afterQuest()
@@ -143,10 +158,6 @@ constructor(
     }
 
     private suspend fun Dialogue.ibanIsDead() {
-        if (undergroundPass.isComplete(player)) {
-            chatNpc(happy, "The pass is open, and I have my brother to thank you for. My mages are still clearing the Well of Voyage.")
-            return
-        }
         chatPlayer(happy, "It's done. Iban is dead and his temple is down on top of him.")
         chatNpc(shocked, "Dead? You are certain?")
         chatPlayer(neutral, "I threw his own likeness into the well under his throne and the hill came down. I am certain.")
