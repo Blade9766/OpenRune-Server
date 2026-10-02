@@ -80,8 +80,8 @@ constructor(
         player.whistlesFound = true
         player.mes(
             "The napkin grows warm in your pack. On the table, " +
-                (if (missing == 1) "a small tin whistle" else "$missing small tin whistles") +
-                " shimmer into view.",
+                (if (missing == 1) "a small tin whistle shimmers" else "$missing small tin whistles shimmer") +
+                " into view.",
         )
     }
 
@@ -110,7 +110,7 @@ constructor(
         const val WHISTLE_TICKS = 500
 
         fun isInRoom(coords: CoordGrid): Boolean =
-            coords.level == 2 && coords.x in 3104..3111 && coords.z in 3357..3360
+            coords.level == 2 && coords.x in 3104..3111 && coords.z in 3357..3361
     }
 }
 

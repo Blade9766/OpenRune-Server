@@ -13,7 +13,6 @@ import org.rsmod.content.quest.area.camelot.holygrail.HolyGrailQuest.Companion.M
 import org.rsmod.content.quest.area.camelot.holygrail.HolyGrailQuest.Companion.REQUIRED_ATTACK
 import org.rsmod.content.quest.area.karamja.shilovillage.readScroll
 import org.rsmod.content.quest.manager.Quest
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
@@ -68,8 +67,8 @@ constructor(private val quest: HolyGrailQuest, private val launcher: ProtectedAc
     }
 
     private fun prototype(player: Player) {
-        if (!QuestRequirements.hasCompleted(player, MERLINS_CRYSTAL)) {
-            val merlin = Quest.get(MERLINS_CRYSTAL) ?: error("Missing quest: $MERLINS_CRYSTAL")
+        val merlin = Quest.get(MERLINS_CRYSTAL) ?: error("Missing quest: $MERLINS_CRYSTAL")
+        if (!merlin.isQuestCompleted(player)) {
             launcher.launch(player) { merlin.completeQuest(this) }
         }
         if (player.baseAttackLvl < REQUIRED_ATTACK) {
@@ -109,7 +108,7 @@ constructor(private val quest: HolyGrailQuest, private val launcher: ProtectedAc
                 "merlin" to CoordGrid(2766, 3502, 1),
                 "sarim" to CoordGrid(3046, 3235, 0),
                 "entrana" to CoordGrid(2850, 3346, 0),
-                "galahad" to CoordGrid(2611, 3471, 0),
+                "galahad" to CoordGrid(2612, 3475, 0),
                 "draynor" to CoordGrid(3106, 3362, 2),
                 "tower" to HolyGrailQuest.TOWER,
                 "realm" to HolyGrailQuest.DEAD_ARRIVAL,

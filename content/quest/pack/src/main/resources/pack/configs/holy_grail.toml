@@ -4,3 +4,11 @@
 id = "obj.holy_table_napkin"
 inherit = "obj.holy_table_napkin"
 ioption1 = "Look-at"
+
+# The Black Knight Titan holds his bridge: left to wander he steps off it onto the far bank, out
+# of reach of a player arriving on the near side.
+[[npc]]
+isServerOnly = true
+id = "npc.black_knight_titan"
+inherit = "npc.black_knight_titan"
+wanderRange = 0

@@ -136,7 +136,8 @@ class HolyGrailCacheTest {
     @Test fun `the whistle room box is the room behind the whistle door`() {
         val inside = CoordGrid(3107, 3360, 2)
         assertTrue(WhistleRoom.isInRoom(inside))
-        for (x in 3104..3111) for (z in 3357..3360) {
+        assertTrue(WhistleRoom.isInRoom(CoordGrid(3106, 3361, 2)), "the tile inside the door is the room")
+        for (x in 3104..3111) for (z in 3357..3361) {
             val tile = CoordGrid(x, z, 2)
             if (open(tile)) assertTrue(walks(inside, tile), "$tile is boxed in")
         }
