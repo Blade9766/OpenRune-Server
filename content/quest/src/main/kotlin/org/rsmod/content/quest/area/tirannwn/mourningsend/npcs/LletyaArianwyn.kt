@@ -11,19 +11,23 @@ import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Comp
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.STAGE_REVEALED
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.STAGE_STARTED
 import org.rsmod.content.quest.area.tirannwn.mourningsend.wearsDisguise
-import org.rsmod.content.quest.manager.QuestRequirements
+import org.rsmod.content.quest.area.tirannwn.templeoflight.npcs.ArianwynTempleTalk
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
  * Arianwyn in his hall in Lletya: the briefing that sets the player on the mourners, advice about
  * the bloody top and ripped trousers, encouragement while the player is undercover, and the
- * debrief that completes the quest. Mourning's End Part II is not part of this server yet, so he
- * only hints at what comes next.
+ * debrief that completes the quest. Once Part I counts as done he speaks for Mourning's End
+ * Part II ([ArianwynTempleTalk]).
  */
 class LletyaArianwyn
 @Inject
-constructor(private val mourning: MourningsEndQuest, private val briefing: ArianwynBriefing) : PluginScript() {
+constructor(
+    private val mourning: MourningsEndQuest,
+    private val briefing: ArianwynBriefing,
+    private val temple: ArianwynTempleTalk,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         for (type in listOf(ARIANWYN, ARIANWYN_VIS)) {
@@ -34,8 +38,7 @@ constructor(private val mourning: MourningsEndQuest, private val briefing: Arian
     private suspend fun Dialogue.arianwyn() {
         val stage = mourning.stage(player)
         when {
-            mourning.isComplete(player) -> afterQuest()
-            stage == 0 && QuestRequirements.hasCompleted(player, MourningsEndQuest.QUEST_KEY) -> afterQuest()
+            mourning.unlocked(player) -> with(temple) { arianwyn() }
             stage == 0 -> chatNpc(angry, "How did you get in here? You must leave.")
             stage == STAGE_STARTED -> with(briefing) { brief() }
             stage == STAGE_BRIEFED -> disguiseAdvice()
@@ -69,11 +72,6 @@ constructor(private val mourning: MourningsEndQuest, private val briefing: Arian
         chatNpc(quiz, "How goes it ${player.displayName}?")
         chatPlayer(quiz, "How was I supposed to get in with the mourners again?")
         chatNpc(neutral, "I can't give you a plan, but mourners cross the Arandar mountain pass regularly. I'm sure you can make use of that.")
-    }
-
-    private suspend fun Dialogue.afterQuest() {
-        chatNpc(neutral, "Welcome back, ${player.displayName}. We are still preparing for what must come next.")
-        chatNpc(neutral, "When the time comes we will need to know how close the Iorwerth elves are to the temple. Keep your disguise safe until then.")
     }
 
     companion object {

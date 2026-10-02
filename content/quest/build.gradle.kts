@@ -35,4 +35,5 @@ dependencies {
     implementation(projects.api.invWeight)
     implementation(projects.api.hunt)
     implementation(projects.content.interfaces.emotes)
+    implementation(projects.content.travel.jewellery)
 }

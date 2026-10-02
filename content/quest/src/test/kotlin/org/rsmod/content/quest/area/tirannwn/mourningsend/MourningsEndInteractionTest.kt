@@ -121,6 +121,9 @@ import org.rsmod.content.quest.area.tirannwn.mourningsend.npcs.LletyaArianwyn
 import org.rsmod.content.quest.area.tirannwn.mourningsend.npcs.Oronwen
 import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest
 import org.rsmod.content.quest.area.tirannwn.rovingelves.npcs.Eluned
+import org.rsmod.content.quest.area.tirannwn.templeoflight.MourningsEndPart2Quest
+import org.rsmod.content.quest.area.tirannwn.templeoflight.npcs.ArianwynTempleTalk
+import org.rsmod.content.quest.area.tirannwn.templeoflight.npcs.EssylltTempleTalk
 import org.rsmod.content.quest.manager.QUEST_STAGE_MAP_ATTR
 import org.rsmod.content.quest.manager.QuestRequirementMode
 import org.rsmod.content.quest.manager.QuestRequirementPolicy
@@ -740,14 +743,15 @@ class MourningsEndInteractionTest {
             val regicide = RegicideQuest()
             val briefing = ArianwynBriefing(mourning)
             val errands = ElunedErrands(mourning, briefing)
-            hideout = MournerHideout(mourning, unused<QuestDoors>(), unused<LocRepository>())
+            val part2 = MourningsEndPart2Quest(mourning)
+            hideout = MournerHideout(mourning, unused<QuestDoors>(), unused<LocRepository>(), part2)
             device = FixedDevice(mourning, WorldRepository(ZoneUpdateMap()), npcRepo)
             val hunt = ChompyHunt(npcRepo, collision, clock, players, launcher, WorldQueueList())
             val scripts = ScriptContext(events, CheatCommandMap(), EngineQueueCache())
             for (script in listOf(
                 mourning, roving, chompy, herder, hideout, device,
-                Eluned(roving, errands), LletyaArianwyn(mourning, briefing), Lletya(mourning, validator, unused()),
-                MournerClothing(mourning), Oronwen(mourning, unused<Shops>()), Essyllt(mourning), HideoutGnome(mourning),
+                Eluned(roving, errands), LletyaArianwyn(mourning, briefing, ArianwynTempleTalk(part2)), Lletya(mourning, validator, unused()),
+                MournerClothing(mourning), Oronwen(mourning, unused<Shops>()), Essyllt(mourning, EssylltTempleTalk(part2)), HideoutGnome(mourning),
                 FoodSupply(mourning, unused<QuestDoors>()),
                 Elena(biohazard, plague, objRepo, unused<QuestDoors>(), RegicideChemistry(regicide), ElenaResearch(mourning)),
                 BloatedToads(chompy, hunt, unused<ChompyBirds>(), players, DefaultGameRandom(Random(5))),

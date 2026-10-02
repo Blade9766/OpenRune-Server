@@ -2055,3 +2055,31 @@ id = "varbit.mourning_hq_apple"
 varp = "varp.mourning_end_state"
 startBit = 0
 endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.mourning2_puzzle_version"
+varp = "varp.mourning2_state"
+startBit = 0
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.mourning2_thorgel_ticket"
+varp = "varp.mourning2_state"
+startBit = 4
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.mourning2_thorgel_book"
+varp = "varp.mourning2_state"
+startBit = 6
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.mourning2_thorgel_key"
+varp = "varp.mourning2_state"
+startBit = 8
+endBit = 9

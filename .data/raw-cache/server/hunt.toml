@@ -101,3 +101,16 @@ checkNotCombatSelf = 1
 checkVar1 = { varp = 65400, operator = "Equals", required = 0 }
 findKeepHunting = true
 findNewMode = "ApPlayer2"
+
+# Mourning's End Part II: the Temple of Light's shadows, aggressive like `stalk.constant_melee`
+# until the quest is done and the player carries the crystal trinket (`varp.mourning2_shadow_peace`).
+[[hunt]]
+id = "stalk.mourning_shadow"
+type = "Player"
+checkVis = "LineOfSight"
+checkNotTooStrong = "OutsideWilderness"
+checkNotCombat = 65522
+checkNotCombatSelf = 1
+checkVar1 = { varp = 65472, operator = "Equals", required = 0 }
+findKeepHunting = true
+findNewMode = "OpPlayer2"

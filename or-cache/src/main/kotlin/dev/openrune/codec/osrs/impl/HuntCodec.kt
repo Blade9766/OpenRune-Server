@@ -97,7 +97,7 @@ class HuntCodec(val custom: Map<Int, HuntModeType>? = emptyMap()) :
         DefinitionOpcode(
             opcode,
             decode = { buf, def, _ ->
-                val varp = buf.readShort().toInt()
+                val varp = buf.readUnsignedShort()
                 val operator =
                     HuntCondition.Operator[buf.readByte().toInt()] ?: error("Invalid Operator")
                 val required = buf.readInt()

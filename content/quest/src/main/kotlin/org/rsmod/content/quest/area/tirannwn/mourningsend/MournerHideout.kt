@@ -12,6 +12,7 @@ import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Comp
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.FIXED_DEVICE
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.GNOME_KEY
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.STAGE_ADMITTED
+import org.rsmod.content.quest.area.tirannwn.templeoflight.MourningsEndPart2Quest
 import org.rsmod.game.entity.Player
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
@@ -26,9 +27,10 @@ import org.rsmod.plugin.scripts.ScriptContext
  * depends on the player's own progress, never on a door changing for everyone: the front door
  * and the trapdoor open for a disguised player from Arianwyn's briefing onwards (or once the
  * quest policy counts Part I as done). Below, the door to the gnome's cell needs Essyllt's
- * tarnished key from the outside; the other doors open freely. The chest in Essyllt's office
- * hands a broken device to anyone admitted who owns neither form of the device, and his desk
- * holds spare keys.
+ * tarnished key from the outside, and the west door into the mines the new key Essyllt hands out
+ * in Mourning's End Part II (from the mines side it opens freely); the office door opens freely.
+ * The chest in Essyllt's office hands a broken device to anyone admitted who owns neither form of
+ * the device, and his desk holds spare keys of both kinds.
  */
 @Singleton
 class MournerHideout
@@ -37,13 +39,14 @@ constructor(
     private val mourning: MourningsEndQuest,
     private val doors: QuestDoors,
     private val locRepo: LocRepository,
+    private val temple: MourningsEndPart2Quest,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLoc1(LADDER_UP) { climbUp() }
         onOpLoc1(CELL_DOOR) { cellDoor(it.loc) }
         onOpLoc1(OFFICE_DOOR) { doors.open(this, it.loc, OFFICE_DOOR_OPEN) }
-        onOpLoc1(BACK_ROOM_DOOR) { doors.open(this, it.loc, BACK_ROOM_DOOR_OPEN) }
+        onOpLoc1(BACK_ROOM_DOOR) { minesDoor(it.loc) }
         onOpLoc1(OFFICE_CHEST) { openChest(it.loc) }
         onOpLoc1(OFFICE_CHEST_OPEN) { searchChest() }
         onOpLoc2(OFFICE_CHEST_OPEN) { shutChest(it.loc) }
@@ -86,6 +89,19 @@ constructor(
         doors.open(this, door, CELL_DOOR_OPEN)
     }
 
+    private suspend fun ProtectedAccess.minesDoor(door: BoundLocInfo) {
+        arriveDelay()
+        val inside = coords.x >= door.coords.x
+        if (inside && !inv.contains(MourningsEndPart2Quest.NEW_KEY)) {
+            mes("The door is locked.")
+            return
+        }
+        if (inside) {
+            mes("You unlock the door with the new key.")
+        }
+        doors.open(this, door, BACK_ROOM_DOOR_OPEN)
+    }
+
     private suspend fun ProtectedAccess.openChest(chest: BoundLocInfo) {
         arriveDelay()
         anim(CHEST_SEQ)
@@ -117,15 +133,24 @@ constructor(
 
     private suspend fun ProtectedAccess.searchDesk() {
         arriveDelay()
-        if (mourning.stage(player) < STAGE_ADMITTED && !mourning.isComplete(player) || ownsAnywhere(GNOME_KEY)) {
+        val wantsGnomeKey = (mourning.stage(player) >= STAGE_ADMITTED || mourning.isComplete(player)) && !ownsAnywhere(GNOME_KEY)
+        val wantsNewKey = (temple.stage(player) >= MourningsEndPart2Quest.STAGE_KEY || temple.unlocked(player)) &&
+            !ownsAnywhere(MourningsEndPart2Quest.NEW_KEY)
+        val key =
+            when {
+                wantsNewKey -> MourningsEndPart2Quest.NEW_KEY
+                wantsGnomeKey -> GNOME_KEY
+                else -> null
+            }
+        if (key == null) {
             mes("You search the desk but find nothing of interest.")
             return
         }
-        if (inv.freeSpace() < 1 || invAdd(inv, GNOME_KEY).failure) {
+        if (inv.freeSpace() < 1 || invAdd(inv, key).failure) {
             mes("You find a spare key on the desk, but you have no room to take it.")
             return
         }
-        objbox(GNOME_KEY, "You find a tarnished key on the desk.")
+        objbox(key, if (key == GNOME_KEY) "You find a tarnished key on the desk." else "You find a newly cut key on the desk.")
     }
 
     companion object {

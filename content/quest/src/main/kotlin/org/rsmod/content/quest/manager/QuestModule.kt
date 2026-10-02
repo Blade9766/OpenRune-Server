@@ -7,6 +7,7 @@ import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.death.PlayerDeathCleanupHook
 import org.rsmod.api.death.PlayerDeathHook
 import org.rsmod.api.death.PlayerRespawnHook
+import org.rsmod.api.player.hook.PlayerInvUpdateHook
 import org.rsmod.api.player.hook.PlayerObjTakeRedirectHook
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
@@ -189,6 +190,7 @@ import org.rsmod.content.quest.area.tirannwn.mourningsend.FixedDeviceWearHook
 import org.rsmod.content.quest.area.tirannwn.mourningsend.HeadquartersAppleHook
 import org.rsmod.content.quest.area.tirannwn.rovingelves.CrystalEquipmentWearHook
 import org.rsmod.content.quest.area.tirannwn.rovingelves.MossGuardianKillHook
+import org.rsmod.content.quest.area.tirannwn.templeoflight.TrinketPeaceHook
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
@@ -328,6 +330,7 @@ public class QuestModule : PluginModule() {
         addSetBinding<NpcAttackValidateHook>(GreegreeAttackHook::class.java)
         addSetBinding<PlayerRestrictionHook>(GreegreeWearHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MonkeyBackpackTeleportHook::class.java)
+        addSetBinding<PlayerInvUpdateHook>(TrinketPeaceHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GarlicAttackHook::class.java)
         addSetBinding<NpcAttackValidateHook>(TempleGuardianAttackHook::class.java)
         addSetBinding<NpcDeathKillHook>(PriestInPerilKillHook::class.java)

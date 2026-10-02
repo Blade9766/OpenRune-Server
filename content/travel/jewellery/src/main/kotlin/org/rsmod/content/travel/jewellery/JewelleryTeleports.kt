@@ -1,6 +1,7 @@
 package org.rsmod.content.travel.jewellery
 
 import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
 
 /**
@@ -13,6 +14,20 @@ data class JewelleryDestination(
     /** The landing tile is inside the Wilderness, so the player is asked to confirm first. */
     val wilderness: Boolean = false,
 )
+
+/**
+ * Conditions other modules put on a destination, by its name: a quest that has to be done first,
+ * say. The check returns why the player may not go, or null if they may.
+ */
+object JewelleryRequirements {
+    private val checks = HashMap<String, (Player) -> String?>()
+
+    fun register(destination: String, check: (Player) -> String?) {
+        checks[destination] = check
+    }
+
+    fun denial(player: Player, destination: JewelleryDestination): String? = checks[destination.name]?.invoke(player)
+}
 
 /**
  * A family of teleport jewellery: every charge variant of one item, in the order the charges run

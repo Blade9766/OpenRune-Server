@@ -443,6 +443,18 @@ roving_elves_state = 65432
 # Mourning's End Part I: whether the player carries the rotten apple taken from behind the
 # Mourner Headquarters. Everything else uses the cache's `varp.mourning_quest_bits`.
 mourning_end_state = 65433
+# Mourning's End Part II: the pillars' contents in the Temple of Light (seven pillars of four bits a
+# varp), the items handed to Thorgel (one bit each), the schema version and Thorgel's random picks
+# on `varp.mourning2_state`, and the Temp flag the shadows' hunt mode reads.
+mourning2_pillars_1 = 65464
+mourning2_pillars_2 = 65465
+mourning2_pillars_3 = 65466
+mourning2_pillars_4 = 65467
+mourning2_pillars_5 = 65468
+mourning2_thorgel_1 = 65469
+mourning2_thorgel_2 = 65470
+mourning2_state = 65471
+mourning2_shadow_peace = 65472
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -662,6 +674,13 @@ roving_reward_choice = 65804
 
 # Mourning's End Part I: the Headquarters rotten apple carried for Elena, on `varp.mourning_end_state`.
 mourning_hq_apple = 65805
+
+# Mourning's End Part II: the saved puzzle's schema version and Thorgel's choice of ticket, book
+# and key, on `varp.mourning2_state`.
+mourning2_puzzle_version = 65806
+mourning2_thorgel_ticket = 65807
+mourning2_thorgel_book = 65808
+mourning2_thorgel_key = 65809
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

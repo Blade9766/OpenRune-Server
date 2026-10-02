@@ -197,6 +197,11 @@ constructor(
         if (actionDelay > mapClock) {
             return
         }
+        val requirement = JewelleryRequirements.denial(player, destination)
+        if (requirement != null) {
+            mes(requirement)
+            return
+        }
         if (destination.wilderness) {
             val confirm =
                 choice2(

@@ -16,6 +16,7 @@ import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Comp
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.STAGE_STORES_DONE
 import org.rsmod.content.quest.area.tirannwn.mourningsend.ownsAnywhere
 import org.rsmod.content.quest.area.tirannwn.mourningsend.swap
+import org.rsmod.content.quest.area.tirannwn.templeoflight.npcs.EssylltTempleTalk
 import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -25,9 +26,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  * and sets the sheep task, replaces a lost device or key, gives the food-supply task once all four
  * flocks are dyed, and tells of the mines once two stores are spoiled. Each step moves the stage
  * only when its condition is met, so asking him early never skips anything, and the letter is
- * swapped for the device and key in one transaction.
+ * swapped for the device and key in one transaction. Once Part I counts as done he speaks for
+ * Mourning's End Part II ([EssylltTempleTalk]).
  */
-class Essyllt @Inject constructor(private val mourning: MourningsEndQuest) : PluginScript() {
+class Essyllt
+@Inject
+constructor(private val mourning: MourningsEndQuest, private val temple: EssylltTempleTalk) : PluginScript() {
 
     override fun ScriptContext.startup() {
         for (type in listOf(ESSYLLT, ESSYLLT_VIS)) {
@@ -38,7 +42,8 @@ class Essyllt @Inject constructor(private val mourning: MourningsEndQuest) : Plu
     private suspend fun Dialogue.essyllt() {
         val stage = mourning.stage(player)
         when {
-            stage < STAGE_BRIEFED && !mourning.isComplete(player) -> {
+            mourning.unlocked(player) -> with(temple) { essyllt() }
+            stage < STAGE_BRIEFED -> {
                 chatNpc(angry, "I don't know you. Get out of my office.")
             }
             stage == STAGE_BRIEFED -> newRecruit()
