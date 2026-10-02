@@ -80,7 +80,7 @@ constructor(
 
     private val spec =
         boss(*God.entries.map { it.follower }.toTypedArray()) {
-            stats(attackRate = ATTACK_RATE, aggressionRadius = AGGRESSION_RADIUS)
+            stats(attackRate = ATTACK_RATE)
             val godSpell = ability("follower_godspell", external(GOD_SPELL_HANDLER))
             val melee = ability("follower_melee", external(MELEE_HANDLER))
             val barrage = ability("follower_barrage", external(BARRAGE_HANDLER))
@@ -360,7 +360,6 @@ constructor(
         const val SPECIAL_HANDLER = "ma2.special"
 
         const val ATTACK_RATE = 6
-        const val AGGRESSION_RADIUS = 12
         const val MELEE_WEIGHT = 3
         const val GOD_SPELL_WEIGHT = 4
         const val BARRAGE_WEIGHT = 1

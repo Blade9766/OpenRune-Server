@@ -31,7 +31,7 @@ class BattleMages @Inject constructor(private val deps: BossDeps) : PluginScript
 
     private val spec =
         boss("npc.saradomin_mage", "npc.guthix_mage", "npc.zamorak_mage") {
-            stats(attackRate = ATTACK_RATE, aggressionRadius = AGGRESSION_RADIUS)
+            stats(attackRate = ATTACK_RATE)
             val cast = ability("battlemage_cast", external(CAST_HANDLER))
             phase("arena") { weightedSelectorRandom { +random(cast, weight = 1) } }
         }
@@ -61,7 +61,6 @@ class BattleMages @Inject constructor(private val deps: BossDeps) : PluginScript
         const val CAST_HANDLER = "battlemage.cast"
         const val CAST_ANIM = "seq.human_caststrike_staff"
         const val ATTACK_RATE = 4
-        const val AGGRESSION_RADIUS = 8
         const val MAX_HIT = 20
         const val SOUND_RADIUS = 8
         const val IMPACT_CLIENT_DELAY = 30

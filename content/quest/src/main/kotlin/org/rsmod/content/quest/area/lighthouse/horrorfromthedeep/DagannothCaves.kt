@@ -84,7 +84,7 @@ constructor(
 
     private val motherSpec =
         boss(MOTHER) {
-            stats(attackRate = ATTACK_RATE, aggressionRadius = AGGRESSION_RADIUS)
+            stats(attackRate = ATTACK_RATE)
 
             val bite =
                 ability("bite") {
@@ -397,7 +397,6 @@ constructor(
         const val CAVE_LADDER = "loc.horror_ladder_base2"
 
         const val ATTACK_RATE = 4
-        const val AGGRESSION_RADIUS = 10
         const val MELEE_MAX = 9
         const val RANGED_MAX = 12
         const val SPINES_RANGE = 7

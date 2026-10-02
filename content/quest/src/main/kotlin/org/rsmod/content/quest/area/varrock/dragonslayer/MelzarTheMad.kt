@@ -16,7 +16,7 @@ class MelzarTheMad @Inject constructor(deps: BossDeps) : BossPluginScript(deps) 
 
     override val spec =
         boss("npc.melzar_the_mad") {
-            stats(attackRate = 4, aggressionRadius = 4)
+            stats(attackRate = 4)
 
             val kick =
                 ability("kick") {

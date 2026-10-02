@@ -106,7 +106,7 @@ constructor(
 
     private val spec =
         boss(*FORMS.map { it.npc }.toTypedArray()) {
-            stats(attackRate = STANDARD_ATTACK_RATE, aggressionRadius = AGGRESSION_RADIUS)
+            stats(attackRate = STANDARD_ATTACK_RATE)
             val cast = ability("kolodion_cast", external(CAST_HANDLER))
             phase("duel") { weightedSelectorRandom { +random(cast, weight = 1) } }
         }
@@ -272,7 +272,6 @@ constructor(
 
         private const val CAST_HANDLER = "kolodion.cast"
         private const val STANDARD_ATTACK_RATE = 7
-        private const val AGGRESSION_RADIUS = 12
         private const val GOD_SPELL_MAX_HIT = 20
         private const val SOUND_RADIUS = 8
         private const val IMPACT_CLIENT_DELAY = 30

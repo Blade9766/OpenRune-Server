@@ -64,7 +64,7 @@ constructor(
 
     private val spec =
         boss(ELVARG) {
-            stats(attackRate = ATTACK_RATE, aggressionRadius = AGGRESSION_RADIUS)
+            stats(attackRate = ATTACK_RATE)
 
             val bite =
                 ability("bite") {
@@ -176,7 +176,6 @@ constructor(
         const val SLAYERS_FEAT_JINGLE = 267
 
         const val ATTACK_RATE = 4
-        const val AGGRESSION_RADIUS = 10
         const val MELEE_MAX = 8
         const val DRAGONFIRE_MAX = 70
 

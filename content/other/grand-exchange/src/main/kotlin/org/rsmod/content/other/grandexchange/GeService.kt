@@ -10,7 +10,7 @@ import jakarta.inject.Inject
 import java.nio.file.Path
 import kotlin.math.max
 import kotlin.math.min
-import net.rsprot.protocol.game.outgoing.misc.player.UpdateStockMarketSlot
+import net.rsprot.protocol.game.outgoing.misc.player.UpdateStockMarketSlotV1
 import org.rsmod.api.invtx.invAdd
 import org.rsmod.api.invtx.invDel
 import org.rsmod.api.player.ironman.isSoloIronman
@@ -35,7 +35,7 @@ import org.rsmod.game.type.uncert
  * players when their offers move.
  *
  * Client contract (read from the revision-240 clientscripts, see [GeConfig]):
- * - Each slot's state arrives in an `UpdateStockMarketSlot` packet; the screens redraw from it.
+ * - Each slot's state arrives in an `UpdateStockMarketSlotV1` packet; the screens redraw from it.
  * - The setup panel reads the chosen item from `varp.tradingpost_search` and the quantity, price
  *   and type from the `ge_newoffer_*` varbits. The panel's buttons change those varbits client
  *   side, and also reach the server as buttons on `ge_offers:setup`, so the same numbers are
@@ -134,9 +134,9 @@ constructor(
         val offer = exchange.offer(player.accountId, slot)
         val update =
             if (offer == null) {
-                UpdateStockMarketSlot.ResetStockMarketSlot
+                UpdateStockMarketSlotV1.ResetStockMarketSlot
             } else {
-                UpdateStockMarketSlot.SetStockMarketSlot(
+                UpdateStockMarketSlotV1.SetStockMarketSlot(
                     status = offer.clientStatus(),
                     obj = offer.item,
                     price = offer.price,
@@ -145,7 +145,7 @@ constructor(
                     completedGold = offer.gold,
                 )
             }
-        player.client.write(UpdateStockMarketSlot(slot, update))
+        player.client.write(UpdateStockMarketSlotV1(slot, update))
         GeConfig.TAX_VARPS[slot]?.let { setVar(player, it, offer?.taxPaid ?: 0) }
         syncCollectInv(player, slot)
     }
