@@ -1915,3 +1915,17 @@ id = "varbit.holygrail_percival_found"
 varp = "varp.holygrail_state"
 startBit = 6
 endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fishingcompo_round_over"
+varp = "varp.garlicpipe"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.fishingcontest_round_left"
+varp = "varp.fishingcontest_round"
+startBit = 0
+endBit = 5

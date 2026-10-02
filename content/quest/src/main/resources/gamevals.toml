@@ -375,6 +375,8 @@ touristtrap_state = 65442
 # `varp.death_equiproom`. The dice varp is Temp: a stake left on the table at logout is lost.
 deathplateau_state = 65455
 deathplateau_dice = 65456
+# Fishing Contest: the current contest round, cleared on logout.
+fishingcontest_round = 65457
 
 # The Fremennik Trials: the council's votes and each trial's own progress. The stage itself lives
 # in the cache varp `varp.viking`. The Temp varp holds Koschei's form and the letters dialled into
@@ -605,6 +607,10 @@ holygrail_castle_entered = 65782
 holygrail_heard_health = 65783
 holygrail_heard_son = 65784
 holygrail_percival_found = 65785
+# Fishing Contest: the contest round waiting to be judged, on a free bit of the cache varp
+# `varp.garlicpipe`, and the seconds left in the current round (in five-tick steps).
+fishingcompo_round_over = 65786
+fishingcontest_round_left = 65787
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
@@ -638,6 +644,9 @@ dttd_zanik = 137
 dttd_crate = 138
 # Dwarf multicannon: the barrel stepping round and firing, one direction a tick.
 mcannon_rotate = 139
+# Fishing Contest: the contest round countdown, and the Sinister Stranger creeping back to his spot.
+fishingcontest_round = 140
+fishingcontest_stranger_return = 141
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
@@ -671,3 +680,5 @@ romeo_approach = 65433
 hero_drinks_cabinet = 65434
 hero_grip_attack_warning = 65435
 hero_hot_feather = 65436
+# Fishing Contest: one cast of the line at a contest fishing spot.
+fishingcontest_catch = 65439

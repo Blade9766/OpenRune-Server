@@ -1066,3 +1066,9 @@ isServerOnly = true
 id = "varp.holygrail_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fishingcontest_round"
+scope = "Temp"
+transmit = "Never"
