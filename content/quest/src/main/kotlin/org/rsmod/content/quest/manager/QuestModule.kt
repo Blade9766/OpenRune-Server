@@ -182,6 +182,8 @@ import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperimentHooks
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsExperiments
 import org.rsmod.content.quest.area.taverley.witchshouse.WitchsHouseQuest
+import org.rsmod.content.quest.area.tirannwn.rovingelves.CrystalEquipmentWearHook
+import org.rsmod.content.quest.area.tirannwn.rovingelves.MossGuardianKillHook
 import org.rsmod.content.quest.area.varrock.demonslayer.DemonSlayerQuest
 import org.rsmod.content.quest.area.varrock.demonslayer.SilverlightAttackHook
 import org.rsmod.content.quest.area.varrock.demonslayer.StoneCircle
@@ -311,6 +313,8 @@ public class QuestModule : PluginModule() {
         addSetBinding<PlayerRestrictionHook>(DragonHalberdWearHook::class.java)
         addSetBinding<NpcDeathKillHook>(TyrasGuardKillHook::class.java)
         addSetBinding<NpcAttackValidateHook>(TyrasGuardAttackHook::class.java)
+        addSetBinding<NpcDeathKillHook>(MossGuardianKillHook::class.java)
+        addSetBinding<PlayerRestrictionHook>(CrystalEquipmentWearHook::class.java)
         addSetBinding<NpcDeathKillHook>(GodFollowerKillHook::class.java)
         addSetBinding<PlayerTeleportValidateHook>(MageArenaTeleBlockHook::class.java)
         addSetBinding<NpcAttackValidateHook>(GreegreeAttackHook::class.java)

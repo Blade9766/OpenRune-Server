@@ -48,6 +48,7 @@ constructor(
     private suspend fun ProtectedAccess.placePebble() {
         if (player.carriesUnpeacefulItem()) {
             mesbox("You press the pebble into the small hollow in the gravestone, but nothing happens.")
+            mes("The tomb only opens for those who come in peace, without weapons, armour, ammunition or runes.")
             return
         }
         mesbox("You press the pebble into the small hollow in the gravestone. The slab grinds aside to reveal a ladder, and you climb down.")
@@ -72,7 +73,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.searchChest() {
-        if (player.hasAmulet()) {
+        if (player.ownsAnywhere(AMULET)) {
             mes("You search the chest but find nothing.")
             return
         }

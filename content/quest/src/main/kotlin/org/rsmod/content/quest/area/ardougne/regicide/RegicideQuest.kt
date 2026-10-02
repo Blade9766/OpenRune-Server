@@ -87,8 +87,13 @@ class RegicideQuest :
         QuestRequirements.hasCompleted(access.player, UNDERGROUND_PASS) &&
             access.statBase("stat.crafting") >= CRAFTING_REQ
 
-    /** The dense forest needs the tracker's lesson first; after the quest it is common knowledge. */
-    fun knowsDenseForest(player: Player): Boolean = stage(player) >= STAGE_DENSE_FOREST
+    /**
+     * The dense forest needs the tracker's lesson first; after the quest it is common knowledge,
+     * as it is for a player the quest requirement policy counts as done without starting it.
+     */
+    fun knowsDenseForest(player: Player): Boolean =
+        stage(player) >= STAGE_DENSE_FOREST ||
+            (stage(player) == 0 && QuestRequirements.hasCompleted(player, QUEST_KEY))
 
     /** Lord Iorwerth opens the pass through Arandar when he hands over his letter. */
     fun arandarUnlocked(player: Player): Boolean = stage(player) >= STAGE_LETTER

@@ -16916,3 +16916,8 @@ defaultMode = "None"
 id = "npc.leviathan_tail_ring_3"
 inherit = "npc.leviathan_tail_ring_3"
 defaultMode = "None"
+
+[[npc]]
+id = "npc.roving_mossgiant"
+inherit = "npc.roving_mossgiant"
+respawnRate = 10

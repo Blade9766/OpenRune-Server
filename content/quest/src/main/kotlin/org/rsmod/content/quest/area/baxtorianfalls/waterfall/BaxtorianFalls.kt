@@ -64,7 +64,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.boardRaft() {
-        if (waterfall.stage(player) == 0) {
+        if (waterfall.stage(player) == 0 && !waterfall.isDoneForLaterQuests(player)) {
             mesbox("The raft doesn't look very safe. You decide to leave it alone.")
             return
         }
@@ -159,7 +159,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.enterFalls() {
-        if (!waterfall.isComplete(player) && !player.hasAmulet()) {
+        if (!waterfall.isDoneForLaterQuests(player) && !player.hasAmulet()) {
             mesbox("As you reach for the door, a surge of water floods across the ledge...")
             mesbox("...and sweeps you over the edge of the waterfall into the river.")
             washDownstream(bruised = true)

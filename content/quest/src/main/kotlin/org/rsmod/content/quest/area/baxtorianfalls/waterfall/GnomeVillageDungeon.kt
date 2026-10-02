@@ -35,7 +35,9 @@ constructor(
     private suspend fun ProtectedAccess.searchCrate() {
         anim(SEARCH_SEQ)
         delay(1)
-        val keyHere = waterfall.stage(player) >= STAGE_READ_BOOK && GOLRIE_KEY !in player.inv
+        val keyHere =
+            (waterfall.stage(player) >= STAGE_READ_BOOK || waterfall.isDoneForLaterQuests(player)) &&
+                GOLRIE_KEY !in player.inv
         if (!keyHere) {
             mes("You search the crate but find nothing of interest.")
             return
@@ -57,12 +59,12 @@ constructor(
         }
         soundSynth(LOCKED_SOUND)
         when {
-            waterfall.stage(player) < STAGE_READ_BOOK -> {
+            waterfall.stage(player) < STAGE_READ_BOOK && !waterfall.isDoneForLaterQuests(player) -> {
                 startDialogue {
                     chatNpcSpecific(GOLRIE_NAME, GOLRIE, angry, "What are you doing down here? Leave before you land yourself in trouble.")
                 }
             }
-            waterfall.isComplete(player) -> mesbox("Golrie has locked himself in.")
+            waterfall.isDoneForLaterQuests(player) -> mesbox("Golrie has locked himself in.")
             else -> {
                 startDialogue {
                     chatPlayer(worried, "Hello? Are you alright in there?")

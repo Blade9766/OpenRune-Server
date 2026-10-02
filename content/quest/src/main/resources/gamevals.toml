@@ -436,6 +436,10 @@ legends_state = 65409
 regicide_state = 65430
 regicide_scene_return = 65431
 
+# Roving Elves: what the quest remembers besides its stage (`varp.roving_elves_quest`) and the
+# cache's own `varp.roving_elves_bits`: the Moss Guardian slain and the crystal reward chosen.
+roving_elves_state = 65432
+
 [gamevals.varbit]
 digsite_answers = 65560
 digsite_asked = 65561
@@ -646,6 +650,11 @@ ahoy_petition_presented = 65799
 regicide_read_message = 65800
 regicide_messenger_seen = 65801
 regicide_tracker_report = 65802
+
+# Roving Elves: the Moss Guardian slain by the player and the crystal item they chose as their
+# reward (1 bow, 2 shield), on `varp.roving_elves_state`.
+roving_guardian_slain = 65803
+roving_reward_choice = 65804
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

@@ -44,6 +44,9 @@ internal object WaterfallCoords {
 
 internal fun Player.hasAmulet(): Boolean = inv.contains(AMULET) || worn.contains(AMULET)
 
+internal fun Player.ownsAnywhere(obj: String): Boolean =
+    inv.contains(obj) || worn.contains(obj) || invMap.getOrPut("inv.bank").contains(obj)
+
 /**
  * Carries the player off down the river to [WaterfallCoords.DOWNSTREAM]. [bruised] is for the
  * falls themselves: the player takes a knock and says so.

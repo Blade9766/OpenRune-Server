@@ -9,6 +9,7 @@ import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Comp
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.GOLRIE_KEY
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.PEBBLE
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_READ_BOOK
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.ownsAnywhere
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -26,11 +27,11 @@ constructor(private val waterfall: WaterfallQuest, private val objRepo: ObjRepos
 
     private suspend fun Dialogue.golrie() {
         when {
-            waterfall.stage(player) < STAGE_READ_BOOK -> {
+            waterfall.stage(player) < STAGE_READ_BOOK && !waterfall.isDoneForLaterQuests(player) -> {
                 chatNpc(angry, "What are you doing down here? Leave before you land yourself in trouble.")
             }
-            !waterfall.metGolrie.get(player) -> firstMeeting()
-            player.inv.contains(PEBBLE) -> {
+            !waterfall.metGolrie.get(player) && !waterfall.isDoneForLaterQuests(player) -> firstMeeting()
+            player.ownsAnywhere(PEBBLE) -> {
                 chatPlayer(happy, "Hello, Golrie.")
                 chatNpc(happy, "Hello again.")
                 chatPlayer(quiz, "Had any luck getting out?")

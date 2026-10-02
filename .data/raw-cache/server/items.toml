@@ -20710,6 +20710,8 @@ inherit = "obj.crystal_bow"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
 "param.uncharged_variant"=23985
 "param.charged_variant"=23983
 "param.proj_type"="projanim.arrow"
@@ -20733,6 +20735,8 @@ inherit = "obj.crystal_bow_inactive"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
 "param.charged_variant"=23983
 "param.proj_type"="projanim.arrow"
 "param.equipment_sound"=2244
@@ -33106,6 +33110,12 @@ id = "obj.crystal_shield"
 inherit = "obj.crystal_shield"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=23993
+"param.charged_variant"=23991
+"param.statreq1_skill"="stat.defence"
+"param.statreq1_level"=70
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
 "param.equipment_sound"=2245
 
 
@@ -33114,6 +33124,11 @@ id = "obj.crystal_shield_inactive"
 inherit = "obj.crystal_shield_inactive"
 tradeable = false
 [item.params]
+"param.charged_variant"=23991
+"param.statreq1_skill"="stat.defence"
+"param.statreq1_level"=70
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
 "param.equipment_sound"=2245
 
 

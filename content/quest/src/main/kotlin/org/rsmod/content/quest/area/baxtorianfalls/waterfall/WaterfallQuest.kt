@@ -4,6 +4,7 @@ import jakarta.inject.Singleton
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.content.quest.manager.ItemRewardDisplay
 import org.rsmod.content.quest.manager.Quest
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
 import org.rsmod.game.entity.Player
@@ -20,7 +21,7 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 @Singleton
 class WaterfallQuest : QuestScript(
-    "quest_waterfall",
+    QUEST_KEY,
     "varp.waterfall_quest",
     rewards {
         xp("stat.attack", COMBAT_XP)
@@ -47,12 +48,21 @@ class WaterfallQuest : QuestScript(
 
     fun isComplete(player: Player): Boolean = quest.isQuestCompleted(player)
 
+    /** Only moves a started quest on: walking into the tomb or the falls never starts it. */
     fun advanceTo(access: ProtectedAccess, stage: Int) {
-        val remaining = stage - stage(access.player)
-        if (remaining > 0) {
-            quest.advanceQuestStage(access, remaining)
+        val current = stage(access.player)
+        if (current > 0 && stage > current) {
+            quest.advanceQuestStage(access, stage - current)
         }
     }
+
+    /**
+     * Whether the falls, the tomb and Golrie treat the player as having finished the quest: done
+     * for real, or never started and counted as done by the server's quest requirement policy, so
+     * a later quest such as Roving Elves never has to replay it.
+     */
+    fun isDoneForLaterQuests(player: Player): Boolean =
+        isComplete(player) || (stage(player) == 0 && QuestRequirements.hasCompleted(player, QUEST_KEY))
 
     fun allRunesPlaced(player: Player): Boolean = pillarRunes.get(player) == ALL_PILLAR_RUNES
 
@@ -164,6 +174,8 @@ class WaterfallQuest : QuestScript(
         }
 
     companion object {
+        const val QUEST_KEY = "quest_waterfall"
+
         const val STAGE_STARTED = 1
         const val STAGE_MET_HUDON = 2
         const val STAGE_READ_BOOK = 3

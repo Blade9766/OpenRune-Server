@@ -2034,3 +2034,17 @@ id = "varbit.regicide_tracker_report"
 varp = "varp.regicide_state"
 startBit = 2
 endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.roving_guardian_slain"
+varp = "varp.roving_elves_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.roving_reward_choice"
+varp = "varp.roving_elves_state"
+startBit = 1
+endBit = 2
