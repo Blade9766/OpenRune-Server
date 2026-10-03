@@ -467,6 +467,9 @@ clocktower_state = 65371
 princeali_state = 65360
 # Pirate's Treasure: the smuggling and dig flags; see `varbit.piratetreasure_*`.
 piratetreasure_state = 65365
+# Eadgar's Ruse: what has been handed to Eadgar and asked of Parroty Pete. A varbit's base varp
+# must be below 65536, so this one sits outside the 66150-66199 block its varbits use.
+eadgar_ruse_bits = 65372
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -726,6 +729,12 @@ piratetreasure_crate_rum = 66103
 piratetreasure_rum_shipped = 66104
 piratetreasure_wydin_job = 66105
 piratetreasure_gardener_appeared = 66106
+eadgar_logs_given = 66150
+eadgar_chickens_given = 66151
+eadgar_grain_given = 66152
+eadgar_robe_given = 66153
+eadgar_asked_pete_water = 66154
+eadgar_asked_pete_food = 66155
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

@@ -3,6 +3,7 @@ package org.rsmod.content.quest.area.taverley.druidicritual.npcs
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.burthorpe.eadgarsruse.npcs.SanfewEadgarsRuse
 import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest
 import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest.Companion.ENCHANTED_MEATS
 import org.rsmod.content.quest.area.taverley.druidicritual.DruidicRitualQuest.Companion.SANFEW
@@ -15,7 +16,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Sanfew, upstairs in Taverley's herblore shop. He asks for the four meats, each dipped in the
  * Cauldron of Thunder, and takes them off the player's hands.
  */
-class Sanfew @Inject constructor(private val druidicRitual: DruidicRitualQuest) : PluginScript() {
+class Sanfew
+@Inject
+constructor(
+    private val druidicRitual: DruidicRitualQuest,
+    private val eadgarsRuse: SanfewEadgarsRuse,
+) : PluginScript() {
 
     private val quest
         get() = druidicRitual.quest
@@ -26,7 +32,12 @@ class Sanfew @Inject constructor(private val druidicRitual: DruidicRitualQuest) 
 
     private suspend fun Dialogue.sanfew() {
         chatNpc(quiz, "What can I do for you young 'un?")
-        when (druidicRitual.stage(player)) {
+        val ritualStage = druidicRitual.stage(player)
+        if (ritualStage != STAGE_STARTED && ritualStage != STAGE_SPOKEN_SANFEW && eadgarsRuse.handles(player)) {
+            with(eadgarsRuse) { generalQuestions() }
+            return
+        }
+        when (ritualStage) {
             STAGE_STARTED ->
                 when (
                     choice2(

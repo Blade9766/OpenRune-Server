@@ -2293,3 +2293,45 @@ id = "varbit.piratetreasure_gardener_appeared"
 varp = "varp.piratetreasure_state"
 startBit = 8
 endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.eadgar_logs_given"
+varp = "varp.eadgar_ruse_bits"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.eadgar_chickens_given"
+varp = "varp.eadgar_ruse_bits"
+startBit = 1
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.eadgar_grain_given"
+varp = "varp.eadgar_ruse_bits"
+startBit = 4
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.eadgar_robe_given"
+varp = "varp.eadgar_ruse_bits"
+startBit = 8
+endBit = 8
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.eadgar_asked_pete_water"
+varp = "varp.eadgar_ruse_bits"
+startBit = 9
+endBit = 9
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.eadgar_asked_pete_food"
+varp = "varp.eadgar_ruse_bits"
+startBit = 10
+endBit = 10
