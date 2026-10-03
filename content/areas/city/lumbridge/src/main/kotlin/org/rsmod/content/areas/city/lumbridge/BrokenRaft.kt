@@ -3,6 +3,7 @@ package org.rsmod.content.areas.city.lumbridge
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
 import org.rsmod.api.script.onApLoc1
+import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -10,13 +11,15 @@ import org.rsmod.plugin.scripts.ScriptContext
 /** The broken raft shortcut across the River Lum, between Lumbridge and Al Kharid. */
 class BrokenRaft : PluginScript() {
     override fun ScriptContext.startup() {
-        onApLoc1("loc.xbows_raft_tr") { jump(eastbound = true) }
-        onApLoc1("loc.xbows_raft_tl") { jump(eastbound = false) }
-        onApLoc1("loc.xbows_raft_br") { grapple() }
+        onApLoc1("loc.xbows_raft_tr") { jump(it.loc, eastbound = true) }
+        onApLoc1("loc.xbows_raft_tl") { jump(it.loc, eastbound = false) }
+        onApLoc1("loc.xbows_raft_br") { grapple(it.loc) }
     }
 
-    private suspend fun ProtectedAccess.jump(eastbound: Boolean) {
-        apRange(RAFT_AP_RANGE)
+    private suspend fun ProtectedAccess.jump(raft: BoundLocInfo, eastbound: Boolean) {
+        if (!isWithinApRange(raft, distance = RAFT_AP_RANGE)) {
+            return
+        }
         if (player.agilityLvl < JUMP_AGILITY) {
             mes("You need an Agility level of $JUMP_AGILITY to negotiate this obstacle.")
             return
@@ -24,8 +27,10 @@ class BrokenRaft : PluginScript() {
         cross(eastbound)
     }
 
-    private suspend fun ProtectedAccess.grapple() {
-        apRange(RAFT_AP_RANGE)
+    private suspend fun ProtectedAccess.grapple(raft: BoundLocInfo) {
+        if (!isWithinApRange(raft, distance = RAFT_AP_RANGE)) {
+            return
+        }
         mes("You need a mithril grapple tipped bolt with a rope to do that.")
     }
 
