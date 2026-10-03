@@ -186,6 +186,7 @@ constructor(
             listOf(
                 "obj.bullseye_lantern_empty_lunar_quest" to "obj.bullseye_lantern_unlit_lunar_quest",
                 "obj.bullseye_lantern_empty" to "obj.bullseye_lantern_unlit",
+                "obj.tog_sapphire_lantern_empty" to "obj.tog_sapphire_lantern_unlit",
             )
 
         const val HOUSE_SOUND = "synth.moon_babahouse"

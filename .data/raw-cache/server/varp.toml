@@ -1210,3 +1210,15 @@ isServerOnly = true
 id = "varp.eadgar_ruse_bits"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.tog_last_visit_day"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.tog_xp_at_last_visit"
+scope = "Perm"
+transmit = "Never"

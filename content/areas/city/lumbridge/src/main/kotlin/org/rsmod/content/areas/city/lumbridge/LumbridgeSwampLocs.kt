@@ -170,6 +170,7 @@ class LumbridgeSwampLocs @Inject constructor(private val hamHideout: HamHideout)
                 "obj.oil_lamp_lit",
                 "obj.oil_lantern_lit",
                 "obj.bullseye_lantern_lit",
+                "obj.tog_sapphire_lantern_lit",
                 "obj.cave_goblin_mining_helmet_lit",
             )
     }
