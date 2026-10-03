@@ -7,6 +7,7 @@ import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.burthorpe.eadgarsruse.npcs.TegidEadgarsRuse
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.BLOODY_TOP
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.BUCKET
 import org.rsmod.content.quest.area.tirannwn.mourningsend.MourningsEndQuest.Companion.BUCKET_OF_WATER
@@ -51,6 +52,9 @@ class MournerClothing @Inject constructor(private val mourning: MourningsEndQues
         chatNpc(neutral, "Yes. What's it to you?")
         chatPlayer(happy, "Nice day for it.")
         chatNpc(neutral, "I suppose it is.")
+        if (with(TegidEadgarsRuse) { askForRobe() }) {
+            return
+        }
         if (!wantsSoap(access) || access.ownsAnywhere(MOURNER_TOP) && !access.ownsAnywhere(BLOODY_TOP)) {
             return
         }
