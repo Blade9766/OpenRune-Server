@@ -461,6 +461,8 @@ mourning2_shadow_peace = 65472
 rd_session = 65434
 rd_lock = 65435
 respawn_point_state = 65436
+# Clock Tower: which cogs are fitted and whether the cage rats were poisoned.
+clocktower_state = 65371
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -703,6 +705,11 @@ rd_lock_d = 65594
 rd_patience_ticks = 65595
 respawn_point = 65596
 rd_cheevers_talks = 65597
+clocktower_red_cog = 66250
+clocktower_black_cog = 66251
+clocktower_blue_cog = 66252
+clocktower_white_cog = 66253
+clocktower_rats_poisoned = 66254
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

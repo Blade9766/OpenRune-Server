@@ -1186,3 +1186,9 @@ isServerOnly = true
 id = "varp.respawn_point_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.clocktower_state"
+scope = "Perm"
+transmit = "Never"

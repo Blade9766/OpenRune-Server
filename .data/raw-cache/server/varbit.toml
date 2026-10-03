@@ -2195,3 +2195,38 @@ id = "varbit.rd_cheevers_talks"
 varp = "varp.rd_session"
 startBit = 27
 endBit = 28
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.clocktower_red_cog"
+varp = "varp.clocktower_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.clocktower_black_cog"
+varp = "varp.clocktower_state"
+startBit = 1
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.clocktower_blue_cog"
+varp = "varp.clocktower_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.clocktower_white_cog"
+varp = "varp.clocktower_state"
+startBit = 3
+endBit = 3
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.clocktower_rats_poisoned"
+varp = "varp.clocktower_state"
+startBit = 4
+endBit = 4
