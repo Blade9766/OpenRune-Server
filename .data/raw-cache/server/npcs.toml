@@ -16921,3 +16921,9 @@ defaultMode = "None"
 id = "npc.roving_mossgiant"
 inherit = "npc.roving_mossgiant"
 respawnRate = 10
+
+[[npc]]
+id = "npc.tog_light_creature"
+inherit = "npc.tog_light_creature"
+moveRestrict = "NoMove"
+wanderRange = 0

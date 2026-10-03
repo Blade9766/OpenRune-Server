@@ -461,6 +461,10 @@ mourning2_shadow_peace = 65472
 rd_session = 65434
 rd_lock = 65435
 respawn_point_state = 65436
+# Tears of Guthix: the day of the last drink of the tears and the total XP below a billion then
+# (the billions are the cache's `varbit.tog_xp_billions`).
+tog_last_visit_day = 65377
+tog_xp_at_last_visit = 65378
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -753,6 +757,9 @@ regicide_messenger = 148
 # Recruitment Drive: Lady Table's ten seconds, and Sir Tinley's patience count.
 rd_statues = 149
 rd_patience = 150
+# Tears of Guthix: the per-cycle countdown and weeping wall streams while collecting. Timer keys
+# are stored as shorts, so this sits outside the 66200 block.
+tog_tears = 6620
 
 [gamevals.queue]
 # A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
@@ -790,6 +797,8 @@ hero_hot_feather = 65436
 fishingcontest_catch = 65439
 # Recruitment Drive: a marker that any action clearing weak queues removes during Sir Tinley's test.
 rd_patience_watch = 65400
+# Tears of Guthix: drinking the collected tears once the time in the cave runs out.
+tog_drink = 66202
 
 [gamevals.inv]
 # Rag and Bone Man I: Fortunato's wine shop before he agrees to sell vinegar.

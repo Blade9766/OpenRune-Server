@@ -14,6 +14,8 @@ import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQue
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest.Companion.STAGE_TEARS
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest.Companion.STAGE_ZANIK_DEAD
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest.Companion.TEARS_OF_GUTHIX
+import org.rsmod.content.quest.area.lumbridge.tearsofguthix.Juna
+import org.rsmod.content.quest.area.lumbridge.tearsofguthix.TearsCave
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Player
 import org.rsmod.game.loc.BoundLocInfo
@@ -31,7 +33,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class ZanikRevival
 @Inject
-constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: DttdScenes) : PluginScript() {
+constructor(
+    private val dttd: DeathToTheDorgeshuunQuest,
+    private val scenes: DttdScenes,
+    private val tears: Juna,
+    private val tearsCave: TearsCave,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLoc1(CORPSE) { inspectCorpse() }
@@ -112,6 +119,11 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
     }
 
     private suspend fun Dialogue.juna() {
+        val stage = dttd.stage(player)
+        if (stage != STAGE_TEARS && (stage != STAGE_ZANIK_DEAD || DEAD_ZANIK !in player.inv)) {
+            with(tears) { talk() }
+            return
+        }
         junaLine(neutral, "Tell me... a story...")
         when (dttd.stage(player)) {
             STAGE_ZANIK_DEAD -> {
@@ -214,7 +226,7 @@ constructor(private val dttd: DeathToTheDorgeshuunQuest, private val scenes: Dtt
     private suspend fun ProtectedAccess.collectTear(wall: BoundLocInfo) {
         arriveDelay()
         if (dttd.stage(player) != STAGE_TEARS || !player.dttdCollectingTears) {
-            mes("You need a bowl to collect the tears in.")
+            with(tearsCave) { collect(wall) }
             return
         }
         if (!dttd.handsFree(player)) {

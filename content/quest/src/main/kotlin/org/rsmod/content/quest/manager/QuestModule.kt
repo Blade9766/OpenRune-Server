@@ -158,6 +158,7 @@ import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeLore
 import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.TreatySigning
+import org.rsmod.content.quest.area.lumbridge.tearsofguthix.TearsOfGuthixQuest
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarHooks
@@ -285,6 +286,7 @@ public class QuestModule : PluginModule() {
         bindInstance<HamHideout>()
         bindInstance<HamStorerooms>()
         bindInstance<WaterMill>()
+        bindInstance<TearsOfGuthixQuest>()
         bindInstance<KolodionFights>()
         bindInstance<FollowerSpawns>()
         bindInstance<DragonSlayerQuest>()
