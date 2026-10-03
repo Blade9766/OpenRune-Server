@@ -1198,3 +1198,9 @@ isServerOnly = true
 id = "varp.princeali_state"
 scope = "Perm"
 transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.piratetreasure_state"
+scope = "Perm"
+transmit = "Never"

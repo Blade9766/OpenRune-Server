@@ -8,6 +8,10 @@ import org.rsmod.api.shops.Shops
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
 import org.rsmod.content.quest.area.burthorpe.heroesquest.lavaEelAdvice
 import org.rsmod.content.quest.area.burthorpe.heroesquest.lavaEelOption
+import org.rsmod.content.quest.area.karamja.piratestreasure.PiratesTreasureQuest
+import org.rsmod.content.quest.area.karamja.piratestreasure.askWydinForJob
+import org.rsmod.content.quest.area.karamja.piratestreasure.wydinEmployee
+import org.rsmod.content.quest.area.karamja.piratestreasure.wydinJobOption
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -29,7 +33,11 @@ private enum class PortSarimShop(
 
 class PortSarimShopkeepersScript
 @Inject
-constructor(private val shops: Shops, private val heroes: HeroesQuest) : PluginScript() {
+constructor(
+    private val shops: Shops,
+    private val heroes: HeroesQuest,
+    private val piratesTreasure: PiratesTreasureQuest,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         for (shop in PortSarimShop.entries - PortSarimShop.Jewellery) {
             onOpNpc3(shop.npc) { player.openShop(shop) }
@@ -65,13 +73,24 @@ constructor(private val shops: Shops, private val heroes: HeroesQuest) : PluginS
     }
 
     private suspend fun Dialogue.wydin() {
+        if (wydinEmployee { player.openShop(PortSarimShop.Food) }) {
+            return
+        }
         chatNpc(happy, "Welcome to my food store! Would you like to buy anything?")
-        when (choice3("Yes please.", 1, "No, thank you.", 2, "What can you recommend?", 3)) {
+        val job = wydinJobOption(piratesTreasure, player)
+        val topic =
+            if (job != null) {
+                choice4("Yes please.", 1, "No, thank you.", 2, "What can you recommend?", 3, job, 4)
+            } else {
+                choice3("Yes please.", 1, "No, thank you.", 2, "What can you recommend?", 3)
+            }
+        when (topic) {
             1 -> {
                 chatPlayer(happy, "Yes please.")
                 player.openShop(PortSarimShop.Food)
             }
             2 -> chatPlayer(neutral, "No, thank you.")
+            4 -> askWydinForJob()
             else -> {
                 chatPlayer(quiz, "What can you recommend?")
                 chatNpc(

@@ -140,6 +140,8 @@ import org.rsmod.content.quest.area.karamja.legendsquest.NezikchenedAttackHook
 import org.rsmod.content.quest.area.karamja.legendsquest.NezikchenedKillHook
 import org.rsmod.content.quest.area.karamja.legendsquest.npcs.Gujuo
 import org.rsmod.content.quest.area.karamja.legendsquest.npcs.Ungadulu
+import org.rsmod.content.quest.area.karamja.piratestreasure.FaladorParkDig
+import org.rsmod.content.quest.area.karamja.piratestreasure.PiratesTreasureQuest
 import org.rsmod.content.quest.area.karamja.shilovillage.Nazastarool
 import org.rsmod.content.quest.area.karamja.shilovillage.NazastaroolAttackHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
@@ -504,5 +506,7 @@ public class QuestModule : PluginModule() {
         addSetBinding<PlayerObjTakeValidateHook>(CarvedRockGemTakeHook::class.java)
         addSetBinding<WeaponMap>(HolyWaterWeapon::class.java)
         addSetBinding<SpellQuestRequirement>(PolicySpellQuestRequirement::class.java)
+        bindInstance<PiratesTreasureQuest>()
+        bindInstance<FaladorParkDig>()
     }
 }
