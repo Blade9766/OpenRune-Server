@@ -2195,3 +2195,45 @@ id = "varbit.rd_cheevers_talks"
 varp = "varp.rd_session"
 startBit = 27
 endBit = 28
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.piratetreasure_luthas_job"
+varp = "varp.piratetreasure_state"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.piratetreasure_crate_bananas"
+varp = "varp.piratetreasure_state"
+startBit = 1
+endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.piratetreasure_crate_rum"
+varp = "varp.piratetreasure_state"
+startBit = 5
+endBit = 5
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.piratetreasure_rum_shipped"
+varp = "varp.piratetreasure_state"
+startBit = 6
+endBit = 6
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.piratetreasure_wydin_job"
+varp = "varp.piratetreasure_state"
+startBit = 7
+endBit = 7
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.piratetreasure_gardener_appeared"
+varp = "varp.piratetreasure_state"
+startBit = 8
+endBit = 8

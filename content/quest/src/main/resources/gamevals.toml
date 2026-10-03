@@ -461,6 +461,8 @@ mourning2_shadow_peace = 65472
 rd_session = 65434
 rd_lock = 65435
 respawn_point_state = 65436
+# Pirate's Treasure: the smuggling and dig flags; see `varbit.piratetreasure_*`.
+piratetreasure_state = 65365
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -703,6 +705,15 @@ rd_lock_d = 65594
 rd_patience_ticks = 65595
 respawn_point = 65596
 rd_cheevers_talks = 65597
+
+# Pirate's Treasure: Luthas's job, his banana crate and the rum hidden in it, the rum waiting in
+# Wydin's back room, Wydin's job and the Falador Park gardener, on `varp.piratetreasure_state`.
+piratetreasure_luthas_job = 66101
+piratetreasure_crate_bananas = 66102
+piratetreasure_crate_rum = 66103
+piratetreasure_rum_shipped = 66104
+piratetreasure_wydin_job = 66105
+piratetreasure_gardener_appeared = 66106
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.
