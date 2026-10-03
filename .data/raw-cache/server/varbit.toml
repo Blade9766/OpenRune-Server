@@ -2195,3 +2195,24 @@ id = "varbit.rd_cheevers_talks"
 varp = "varp.rd_session"
 startBit = 27
 endBit = 28
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.princeali_key"
+varp = "varp.princeali_state"
+startBit = 0
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.princeali_met_leela"
+varp = "varp.princeali_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.princeali_keli_recruit"
+varp = "varp.princeali_state"
+startBit = 3
+endBit = 3

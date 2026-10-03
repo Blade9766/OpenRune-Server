@@ -6,6 +6,7 @@ import org.rsmod.api.config.Constants
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.desert.princealirescue.DisguiseMakers
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.COINS
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.CRANDOR_MAP
@@ -15,6 +16,7 @@ import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Compa
 import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.STAGE_ON_CRANDOR
 import org.rsmod.content.quest.area.varrock.dragonslayer.LadyLumbridge
 import org.rsmod.content.quest.area.varrock.dragonslayer.Voyage
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -28,6 +30,7 @@ class Ned
 constructor(
     private val dragonSlayer: DragonSlayerQuest,
     private val voyage: Voyage,
+    private val disguiseMakers: DisguiseMakers,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -54,28 +57,22 @@ constructor(
                 stage >= STAGE_BRIEFED -> "You're a sailor? Could you take me to Crandor?"
                 else -> null
             }
-        if (crandorOption == null) {
-            when (
-                choice2(
-                    "Yes, I would like some rope.", 1,
-                    "No thanks, Ned. I don't need any.", 2,
-                )
-            ) {
-                1 -> ropeOffer()
-                2 -> chatPlayer(neutral, "No thanks, Ned. I don't need any.")
-            }
-            return
-        }
-        when (
-            choice3(
-                crandorOption, 1,
-                "Yes, I would like some rope.", 2,
-                "No thanks, Ned. I don't need any.", 3,
+        val choice =
+            menu(
+                buildList {
+                    if (crandorOption != null) add(crandorOption to 1)
+                    if (disguiseMakers.offers(player)) {
+                        add("Could you make other things apart from rope?" to 4)
+                    }
+                    add("Yes, I would like some rope." to 2)
+                    add("No thanks, Ned. I don't need any." to 3)
+                },
             )
-        ) {
+        when (choice) {
             1 -> crandor(stage, asked)
             2 -> ropeOffer()
             3 -> chatPlayer(neutral, "No thanks, Ned. I don't need any.")
+            4 -> with(disguiseMakers) { nedOtherThings() }
         }
     }
 

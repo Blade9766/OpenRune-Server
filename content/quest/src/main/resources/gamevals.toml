@@ -461,6 +461,8 @@ mourning2_shadow_peace = 65472
 rd_session = 65434
 rd_lock = 65435
 respawn_point_state = 65436
+# Prince Ali Rescue: the key copy, meeting Leela and Keli's interest in a new recruit.
+princeali_state = 65360
 
 [gamevals.varbit]
 digsite_answers = 65560
@@ -703,6 +705,11 @@ rd_lock_d = 65594
 rd_patience_ticks = 65595
 respawn_point = 65596
 rd_cheevers_talks = 65597
+
+# Prince Ali Rescue: see `varp.princeali_state`.
+princeali_key = 66050
+princeali_met_leela = 66051
+princeali_keli_recruit = 66052
 
 [gamevals.timer]
 # Quest manager: closing the completion scroll and dialogue after their delay.

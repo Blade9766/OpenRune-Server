@@ -4,7 +4,9 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.desert.princealirescue.DisguiseMakers
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDiplomacyQuest
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -13,7 +15,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  * and five coins. She is a multi-npc: after her first conversation `varbit.gobdip_met_aggie`
  * gives her a `Dyes` option that skips straight to business.
  */
-class Aggie @Inject constructor(private val goblinDiplomacy: GoblinDiplomacyQuest) : PluginScript() {
+class Aggie
+@Inject
+constructor(
+    private val goblinDiplomacy: GoblinDiplomacyQuest,
+    private val disguiseMakers: DisguiseMakers,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1(AGGIE) { startDialogue(it.npc) { aggie() } }
@@ -26,14 +33,18 @@ class Aggie @Inject constructor(private val goblinDiplomacy: GoblinDiplomacyQues
             goblinDiplomacy.syncVars(player)
         }
         chatNpc(quiz, "What can I help you with?")
-        when (
-            choice4(
-                "What could you make for me?", 1,
-                "Cool, do you turn people into frogs?", 2,
-                "You mad old witch, you can't help me.", 3,
-                "Can you make dyes for me please?", 4,
+        val choice =
+            menu(
+                buildList {
+                    add("What could you make for me?" to 1)
+                    if (disguiseMakers.offers(player)) add("Can you make skin paste?" to 5)
+                    add("Cool, do you turn people into frogs?" to 2)
+                    add("You mad old witch, you can't help me." to 3)
+                    add("Can you make dyes for me please?" to 4)
+                },
             )
-        ) {
+        when (choice) {
+            5 -> with(disguiseMakers) { aggieSkinPaste() }
             1 -> {
                 chatPlayer(quiz, "What could you make for me?")
                 chatNpc(happy, "I mostly just make what I find pretty. I sometimes make dye for the women's clothes to brighten the place up. I can make red, yellow and blue dyes. If you'd like some, just bring me the appropriate ingredients.")
