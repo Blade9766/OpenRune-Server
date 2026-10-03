@@ -49,7 +49,6 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.route.BoundValidator
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest
-import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DttdScenes
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikRevival
 import org.rsmod.content.quest.area.lumbridge.tearsofguthix.TearsOfGuthixQuest.Companion.LIT_LANTERN
 import org.rsmod.content.quest.area.lumbridge.tearsofguthix.TearsOfGuthixQuest.Companion.MAGIC_STONE

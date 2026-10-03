@@ -102,7 +102,6 @@ class TearsOfGuthixQuest @Inject constructor(private val rules: TearsOfGuthixRul
         const val MINING_REQ = 20
         const val CRAFTING_XP = 1000.0
 
-
         const val STONE_BOWL = "obj.tog_bowl"
         const val MAGIC_STONE = "obj.tog_stone"
         const val EMPTY_LANTERN = "obj.tog_sapphire_lantern_empty"
