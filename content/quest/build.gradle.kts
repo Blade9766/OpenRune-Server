@@ -36,4 +36,6 @@ dependencies {
     implementation(projects.api.hunt)
     implementation(projects.content.interfaces.emotes)
     implementation(projects.content.travel.jewellery)
+    implementation(projects.content.skills.runecrafting)
+    implementation(projects.content.areas.wilderness)
 }

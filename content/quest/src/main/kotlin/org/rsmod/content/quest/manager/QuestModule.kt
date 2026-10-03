@@ -234,6 +234,9 @@ import org.rsmod.content.quest.area.varrock.romeojuliet.RomeoJulietScenes
 import org.rsmod.content.quest.area.varrock.shieldofarrav.ShieldOfArravQuest
 import org.rsmod.content.quest.area.varrock.shieldofarrav.npcs.JonnyAttackHook
 import org.rsmod.content.quest.area.varrock.shieldofarrav.npcs.WeaponsmasterKillHook
+import org.rsmod.content.quest.area.wilderness.entertheabyss.AbyssTeleport
+import org.rsmod.content.quest.area.wilderness.entertheabyss.EnterTheAbyssQuest
+import org.rsmod.content.quest.area.wilderness.entertheabyss.ScryingOrbReadings
 import org.rsmod.content.quest.area.wilderness.magearena.FollowerSpawns
 import org.rsmod.content.quest.area.wilderness.magearena.GodFollowerKillHook
 import org.rsmod.content.quest.area.wilderness.magearena.KolodionAttackHook
@@ -246,6 +249,7 @@ import org.rsmod.content.quest.area.zanaris.fairytale1.SecateursEnchantment
 import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootAttackHook
 import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootKillHook
 import org.rsmod.content.quest.area.zanaris.fairytale1.TanglefootLair
+import org.rsmod.content.skills.runecrafting.essence.EssenceMineArrivalHook
 import org.rsmod.plugin.module.PluginModule
 
 public class QuestModule : PluginModule() {
@@ -267,6 +271,9 @@ public class QuestModule : PluginModule() {
         bindInstance<MageArenaQuest>()
         bindInstance<MageArena2Quest>()
         bindInstance<BarcrawlQuest>()
+        bindInstance<EnterTheAbyssQuest>()
+        bindInstance<AbyssTeleport>()
+        addSetBinding<EssenceMineArrivalHook>(ScryingOrbReadings::class.java)
         bindInstance<LostTribeQuest>()
         bindInstance<LostTribeDuke>()
         bindInstance<LostTribeLore>()

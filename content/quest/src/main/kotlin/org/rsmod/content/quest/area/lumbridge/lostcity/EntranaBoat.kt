@@ -1,9 +1,7 @@
 package org.rsmod.content.quest.area.lumbridge.lostcity
 
-import dev.openrune.types.ItemServerType
 import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
-import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.worn.WornUnequipOp
@@ -14,7 +12,6 @@ import org.rsmod.content.interfaces.bank.BankTab
 import org.rsmod.content.interfaces.bank.scripts.BankInvScript
 import org.rsmod.content.interfaces.bank.selectedTab
 import org.rsmod.events.EventBus
-import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.Inventory
 import org.rsmod.game.type.getInvObj
 import org.rsmod.map.CoordGrid
@@ -86,9 +83,9 @@ constructor(
             mesbox("The monk quickly searches you.")
             lostCity.searchedByMonks.set(player, true)
         }
-        if (player.carriesForbiddenItem()) {
+        if (player.carriesEntranaForbiddenItem()) {
             chatNpc(angry, "NO WEAPONS OR ARMOUR are permitted on holy Entrana AT ALL. We will not allow you to travel there in breach of mighty Saradomin's edict.")
-            mesbox("The monk points at: ${player.forbiddenNames().joinToString()}.")
+            mesbox("The monk points at: ${player.entranaForbiddenNames().joinToString()}.")
             val store =
                 choice2(
                     "Will you keep them safe for me?", true,
@@ -105,8 +102,8 @@ constructor(
             if (stored.isNotEmpty()) {
                 mesbox("The monk sends to your bank: ${stored.joinToString()}.")
             }
-            if (player.carriesForbiddenItem()) {
-                chatNpc(sad, "Your bank cannot take the rest: ${player.forbiddenNames().joinToString()}. You must leave them yourself.")
+            if (player.carriesEntranaForbiddenItem()) {
+                chatNpc(sad, "Your bank cannot take the rest: ${player.entranaForbiddenNames().joinToString()}. You must leave them yourself.")
                 return
             }
         }
@@ -203,26 +200,6 @@ constructor(
         return stored
     }
 
-    private fun Player.forbiddenNames(): List<String> =
-        (inv.filterNotNull { true } + worn.filterNotNull { true })
-            .map { getInvObj(it) }
-            .filter { it.isForbiddenOnEntrana() }
-            .map { it.name }
-            .distinct()
-
-    private fun Player.carriesForbiddenItem(): Boolean {
-        val carried = inv.filterNotNull { true } + worn.filterNotNull { true }
-        return carried.any { getInvObj(it).isForbiddenOnEntrana() }
-    }
-
-    internal fun ItemServerType.isForbiddenOnEntrana(): Boolean {
-        val slot = Wearpos[wearpos1] ?: return false
-        if (slot !in FORBIDDEN_SLOTS || internalName in TOLERATED) {
-            return false
-        }
-        return BONUS_PARAMS.any { (paramOrNull(it) ?: 0) != 0 }
-    }
-
     private companion object {
         val PORT_SARIM_MONKS = listOf("npc.shipmonk", "npc.shipmonk1_b", "npc.shipmonk1_c")
         val ENTRANA_MONKS = listOf("npc.shipmonk2", "npc.shipmonk2_b", "npc.shipmonk2_c")
@@ -243,39 +220,5 @@ constructor(
 
         const val FADE_CLIENT_DURATION = 50
         const val FADE_TICKS = 3
-
-        val FORBIDDEN_SLOTS =
-            setOf(Wearpos.Hat, Wearpos.Torso, Wearpos.Legs, Wearpos.RightHand, Wearpos.LeftHand)
-
-        /** Robes the monks let through despite their small magic bonuses. */
-        val TOLERATED =
-            setOf(
-                "obj.wizards_robe",
-                "obj.wizards_robe_trim",
-                "obj.wizards_robe_trim_gold",
-                "obj.bluewizhat",
-                "obj.black_robe",
-                "obj.black_wizards_robe_trim",
-                "obj.black_wizards_robe_gold",
-                "obj.blackwizhat",
-                "obj.blue_skirt",
-                "obj.black_skirt",
-            )
-
-        val BONUS_PARAMS =
-            listOf(
-                params.attack_stab,
-                params.attack_slash,
-                params.attack_crush,
-                params.attack_magic,
-                params.attack_ranged,
-                params.defence_stab,
-                params.defence_slash,
-                params.defence_crush,
-                params.defence_magic,
-                params.defence_ranged,
-                params.melee_strength,
-                params.ranged_strength,
-            )
     }
 }

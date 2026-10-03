@@ -176,8 +176,11 @@ enum class AltarData(
     ),
     BLOOD(
         altar = "loc.blood_altar",
+        exitPortal = "loc.bloodtemple_exit_portal",
         rune = Rune.BLOOD,
         option = "bind",
+        entrance = Coord(3226, 4832).pack(),
+        exit = Coord(3560, 9779).pack(),
         row = "dbrow.runecrafting_altar_blood",
     ),
     BLOOD_KOUREND(

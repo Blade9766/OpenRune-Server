@@ -1330,3 +1330,9 @@ coords = "0_41_51_29_31"
 [[spawn]]
 npc = "npc.ikov_lucien1"
 coords = "0_40_51_14_57"
+
+## Wizard Cromperty
+
+[[spawn]]
+npc = "npc.cromperty_pre_diary"
+coords = "0_41_51_61_61"
