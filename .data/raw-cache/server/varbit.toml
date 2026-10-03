@@ -2230,3 +2230,24 @@ id = "varbit.clocktower_rats_poisoned"
 varp = "varp.clocktower_state"
 startBit = 4
 endBit = 4
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.princeali_key"
+varp = "varp.princeali_state"
+startBit = 0
+endBit = 1
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.princeali_met_leela"
+varp = "varp.princeali_state"
+startBit = 2
+endBit = 2
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.princeali_keli_recruit"
+varp = "varp.princeali_state"
+startBit = 3
+endBit = 3

@@ -11,7 +11,6 @@ import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
 import org.rsmod.content.areas.city.draynor.npcs.DiangoHolidayItems.Companion.openHolidayItems
 import org.rsmod.content.interfaces.omnishop.openOmnishop
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.menu
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
@@ -24,7 +23,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
     override fun ScriptContext.startup() {
         onOpNpc1("npc.wgs_lucien_spy") { startDialogue(it.npc) { shadyStranger() } }
         onOpNpc1("npc.wgs_spy2") { startDialogue(it.npc) { suspiciousOutsider() } }
-        onOpNpc1("npc.leela") { startDialogue(it.npc) { leela() } }
         onOpNpc1("npc.wom_gossip") { startDialogue(it.npc) { missSchism() } }
         onOpNpc1("npc.wom_bankguard") { startDialogue(it.npc) { bankGuard() } }
         onOpNpc1("npc.pmod_town_crier_draynor") { startDialogue(it.npc) { townCrier() } }
@@ -47,26 +45,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
         chatPlayer(quiz, "Hello there. What are you doing here?")
         chatNpc(quiz, "That's not really any of your business, is it?")
         chatPlayer(confused, "Fair enough.")
-    }
-
-    private suspend fun Dialogue.leela() {
-        if (!QuestRequirements.hasCompleted(player, PRINCE_ALI_RESCUE)) {
-            chatPlayer(quiz, "What are you waiting here for?")
-            chatNpc(neutral, "That is no concern of yours, adventurer.")
-            return
-        }
-        chatNpc(
-            happy,
-            "Al Kharid will forever owe you for your help in saving Prince Ali. It's good to know " +
-                "that we have you as a friend.",
-        )
-        chatPlayer(quiz, "It's no problem. So how come you're still out here?")
-        chatNpc(
-            neutral,
-            "We still don't know why Keli and her bandits took the Prince. I'm hoping I can find " +
-                "out. The place where they imprisoned him seems a good starting point.",
-        )
-        chatPlayer(happy, "Well if you need help, you know where I am. Good luck.")
     }
 
     private suspend fun Dialogue.missSchism() {
@@ -636,8 +614,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
     }
 
     private companion object {
-        const val PRINCE_ALI_RESCUE = "quest_princealirescue"
-
         const val COINS = "obj.coins"
         const val CHOCOLATE_BAR = "obj.chocolate_bar"
 
