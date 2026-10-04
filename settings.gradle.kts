@@ -33,6 +33,7 @@ include(
     "server",
     "or-cache",
     "example-plugin",
+    "poh-ui-plugin",
     "tools:osrs-mcp",
     "tools:wiki-dumping",
     "tools:combat-anims",
