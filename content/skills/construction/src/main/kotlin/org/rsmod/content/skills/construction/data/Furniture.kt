@@ -240,10 +240,10 @@ object Furniture {
             ),
             trees("big_tree", "Big tree space", "loc.poh_crude_garden_2", "big_tree", "_4"),
             trees("tree", "Tree space", "loc.poh_crude_garden_3", "small_tree", "_5"),
-            plants("big_plant_1", "Big plant space", "loc.poh_crude_garden_4", "plantbig1"),
-            plants("big_plant_2", "Big plant space", "loc.poh_crude_garden_5", "plantbig2"),
-            plants("small_plant_1", "Small plant space", "loc.poh_crude_garden_6", "plantbsmall1"),
-            plants("small_plant_2", "Small plant space", "loc.poh_crude_garden_7", "plantbsmall2"),
+            plants("big_plant_1", "Big plant space", "loc.poh_crude_garden_4", "plantbig1", "Fern", "Bush", "Tall plant"),
+            plants("big_plant_2", "Big plant space", "loc.poh_crude_garden_5", "plantbig2", "Short plant", "Large-leaf plant", "Huge plant"),
+            plants("small_plant_1", "Small plant space", "loc.poh_crude_garden_6", "plantbsmall1", "Plant", "Small fern", "Fern"),
+            plants("small_plant_2", "Small plant space", "loc.poh_crude_garden_7", "plantbsmall2", "Dock leaf", "Thistle", "Reeds"),
         )
 
     private fun trees(key: String, label: String, hotspot: String, prefix: String, suffix: String) =
@@ -271,15 +271,23 @@ object Furniture {
             "loc.poh_$prefix$index$suffix",
         )
 
-    private fun plants(key: String, label: String, hotspot: String, prefix: String) =
+    private fun plants(
+        key: String,
+        label: String,
+        hotspot: String,
+        prefix: String,
+        small: String,
+        medium: String,
+        large: String,
+    ) =
         HotspotGroup(
             key,
             label,
             hotspot,
             listOf(
-                Buildable("Plant", 1, 31.0, mats("obj.poh_sapling_plant_1" to 1), "loc.poh_${prefix}a"),
-                Buildable("Bush", 6, 70.0, mats("obj.poh_sapling_plant_2" to 1), "loc.poh_${prefix}b"),
-                Buildable("Tall plant", 12, 100.0, mats("obj.poh_sapling_plant_3" to 1), "loc.poh_${prefix}c"),
+                Buildable(small, 1, 31.0, mats("obj.poh_sapling_plant_1" to 1), "loc.poh_${prefix}a"),
+                Buildable(medium, 6, 70.0, mats("obj.poh_sapling_plant_2" to 1), "loc.poh_${prefix}b"),
+                Buildable(large, 12, 100.0, mats("obj.poh_sapling_plant_3" to 1), "loc.poh_${prefix}c"),
             ),
         )
 

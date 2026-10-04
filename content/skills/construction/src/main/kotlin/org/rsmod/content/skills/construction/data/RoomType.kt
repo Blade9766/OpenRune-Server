@@ -47,6 +47,8 @@ object Side {
 /**
  * A buildable room.
  *
+ * [roomTypeId] is the room's `poh_room` type, the id the room creation menu answers with.
+ *
  * [zoneOffsetX] and [zoneZ] locate the room's 8x8 template relative to a style's block (see
  * [HouseStyle]); [doors] is a bitmask of the edges the template has a door hotspot on, before the
  * room is rotated, with one bit per [Side].
@@ -57,6 +59,7 @@ object Side {
  */
 enum class RoomType(
     val label: String,
+    val roomTypeId: Int,
     val level: Int,
     val cost: Int,
     val zoneOffsetX: Int,
@@ -66,21 +69,25 @@ enum class RoomType(
     val hotspots: List<HotspotGroup>,
     val stairsTopZoneOffsetX: Int? = null,
 ) {
-    GARDEN("Garden", 1, 1_000, 0, 881, 0b1111, true, Furniture.GARDEN),
-    PARLOUR("Parlour", 1, 1_000, 0, 887, 0b1101, false, Furniture.PARLOUR),
-    KITCHEN("Kitchen", 5, 5_000, 2, 887, 0b1001, false, Furniture.KITCHEN),
-    DINING_ROOM("Dining room", 10, 5_000, 4, 887, 0b1101, false, Furniture.DINING_ROOM),
-    WORKSHOP("Workshop", 15, 10_000, 0, 885, 0b1010, false, Furniture.WORKSHOP),
-    BEDROOM("Bedroom", 20, 10_000, 6, 887, 0b1001, false, Furniture.BEDROOM),
-    SKILL_HALL("Skill hall", 25, 15_000, 1, 886, 0b1111, false, Furniture.SKILL_HALL, 3),
-    QUEST_HALL("Quest hall", 35, 25_000, 5, 886, 0b1111, false, Furniture.QUEST_HALL, 7),
-    STUDY("Study", 40, 50_000, 4, 885, 0b1101, false, Furniture.STUDY),
-    CHAPEL("Chapel", 45, 50_000, 2, 885, 0b1001, false, Furniture.CHAPEL),
-    PORTAL_CHAMBER("Portal chamber", 50, 100_000, 1, 884, 0b1000, false, Furniture.PORTAL_CHAMBER);
+    GARDEN("Garden", 2, 1, 1_000, 0, 881, 0b1111, true, Furniture.GARDEN),
+    PARLOUR("Parlour", 1, 1, 1_000, 0, 887, 0b1101, false, Furniture.PARLOUR),
+    KITCHEN("Kitchen", 3, 5, 5_000, 2, 887, 0b1001, false, Furniture.KITCHEN),
+    DINING_ROOM("Dining room", 4, 10, 5_000, 4, 887, 0b1101, false, Furniture.DINING_ROOM),
+    WORKSHOP("Workshop", 12, 15, 10_000, 0, 885, 0b1010, false, Furniture.WORKSHOP),
+    BEDROOM("Bedroom", 5, 20, 10_000, 6, 887, 0b1001, false, Furniture.BEDROOM),
+    SKILL_HALL("Skill hall", 7, 25, 15_000, 1, 886, 0b1111, false, Furniture.SKILL_HALL, 3),
+    QUEST_HALL("Quest hall", 9, 35, 25_000, 5, 886, 0b1111, false, Furniture.QUEST_HALL, 7),
+    STUDY("Study", 13, 40, 50_000, 4, 885, 0b1101, false, Furniture.STUDY),
+    CHAPEL("Chapel", 11, 45, 50_000, 2, 885, 0b1001, false, Furniture.CHAPEL),
+    PORTAL_CHAMBER("Portal chamber", 14, 50, 100_000, 1, 884, 0b1000, false, Furniture.PORTAL_CHAMBER);
 
     /** Gardens are open to the sky, so they can only sit on the ground floor. */
     val floors: Set<Floor>
         get() = if (outdoors) setOf(Floor.GROUND) else setOf(Floor.GROUND, Floor.UPPER)
+
+    companion object {
+        fun byRoomTypeId(id: Int): RoomType? = entries.firstOrNull { it.roomTypeId == id }
+    }
 
     fun hotspot(key: String): HotspotGroup? = hotspots.firstOrNull { it.key == key }
 

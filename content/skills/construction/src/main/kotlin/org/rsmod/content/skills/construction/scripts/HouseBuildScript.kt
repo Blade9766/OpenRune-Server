@@ -4,8 +4,10 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
+import org.rsmod.api.player.output.ClientScripts
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.constructionLvl
+import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onOpLoc4
 import org.rsmod.api.script.onOpLoc5
 import org.rsmod.api.stats.xpmod.XpModifiers
@@ -13,6 +15,8 @@ import org.rsmod.content.skills.construction.Construction
 import org.rsmod.content.skills.construction.data.Buildable
 import org.rsmod.content.skills.construction.data.Floor
 import org.rsmod.content.skills.construction.data.Furniture
+import org.rsmod.content.skills.construction.data.FurnitureRows
+import org.rsmod.content.skills.construction.data.HotspotGroup
 import org.rsmod.content.skills.construction.data.HouseStyle
 import org.rsmod.content.skills.construction.data.RoomType
 import org.rsmod.content.skills.construction.data.Side
@@ -55,6 +59,9 @@ constructor(
         for (loc in stairLocs()) {
             onOpLoc4(loc) { removeStairRoom(it.loc) }
         }
+        for (interf in PohInterfaces.interfaces) {
+            onIfClose(interf) { ClientScripts.chatDefaultRestoreInput(player) }
+        }
     }
 
     private fun hotspotLocs(): Set<String> =
@@ -95,25 +102,11 @@ constructor(
         }
 
         val facing = Side.opposite(side)
-        val candidates =
-            RoomType.entries.filter {
-                floor in it.floors && it.rotationsFacing(facing).isNotEmpty()
-            }
-        if (candidates.isEmpty()) {
-            mes("Nothing can be built on the ${floor.label} from here.")
+        val room = PohInterfaces.selectRoom(this) ?: return
+        if (floor !in room.floors) {
+            mes("You cannot build a ${room.label.lowercase()} on the ${floor.label}.")
             return
         }
-
-        val choice =
-            menu(
-                "Build to the ${Side.label(side)}",
-                hotkeys = true,
-                choices = candidates.map { "${it.label} - ${it.cost} coins (level ${it.level})" },
-            )
-        val room = candidates.getOrNull(choice) ?: return
-        // The list modal stays open server-side after a choice, and a `delay` that captured it
-        // would lose protected access the moment the client's close reaches us.
-        ifClose()
         if (player.constructionLvl < room.level) {
             mes("You need a Construction level of ${room.level} to build a ${room.label.lowercase()}.")
             return
@@ -198,21 +191,11 @@ constructor(
         val room = roomAt(house, loc) ?: return
         val group = room.type.hotspots.firstOrNull { hotspot in it.locs } ?: return
 
-        val affordable = group.options.filter { player.constructionLvl >= it.level }
-        if (affordable.isEmpty()) {
-            val lowest = group.options.minOf { it.level }
-            mes("You need a Construction level of $lowest to build anything here.")
+        val option = selectFurniture(group) ?: return
+        if (player.constructionLvl < option.level) {
+            mes("You need a Construction level of ${option.level} to build that.")
             return
         }
-
-        val choice =
-            menu(
-                group.label,
-                hotkeys = true,
-                choices = affordable.map { "${it.label} (level ${it.level})" },
-            )
-        val option = affordable.getOrNull(choice) ?: return
-        ifClose()
         if (!hasMaterials(option)) {
             mes("You do not have the materials to build that.")
             mes(option.materials.joinToString(", ") { "${it.count} x ${objName(it.obj)}" })
@@ -238,6 +221,44 @@ constructor(
         statAdvance(Construction.STAT, option.xp * xpMods.get(player, Construction.STAT))
         mes("You build the ${option.label.lowercase()}.")
         access.rebuild(this)
+    }
+
+    private suspend fun ProtectedAccess.selectFurniture(group: HotspotGroup): Buildable? {
+        if (group.options.size > PohInterfaces.MAX_FURNITURE_ENTRIES) {
+            return selectFurnitureFromList(group)
+        }
+        val entries =
+            group.options.map { option ->
+                val row = FurnitureRows.of(option) ?: return selectFurnitureFromList(group)
+                PohInterfaces.FurnitureEntry(
+                    row = row.rowId,
+                    level = option.level,
+                    materials = option.materials.map { "${objName(it.obj)}: ${it.count}" },
+                    buildable = player.constructionLvl >= option.level && hasMaterials(option),
+                )
+            }
+        val slot = PohInterfaces.selectFurniture(this, entries) ?: return null
+        return group.options.getOrNull(slot)
+    }
+
+    private suspend fun ProtectedAccess.selectFurnitureFromList(group: HotspotGroup): Buildable? {
+        val affordable = group.options.filter { player.constructionLvl >= it.level }
+        if (affordable.isEmpty()) {
+            val lowest = group.options.minOf { it.level }
+            mes("You need a Construction level of $lowest to build anything here.")
+            return null
+        }
+        val choice =
+            menu(
+                group.label,
+                hotkeys = true,
+                choices = affordable.map { "${it.label} (level ${it.level})" },
+            )
+        val option = affordable.getOrNull(choice) ?: return null
+        // The list modal stays open server-side after a choice, and a `delay` that captured it
+        // would lose protected access the moment the client's close reaches us.
+        ifClose()
+        return option
     }
 
     private suspend fun ProtectedAccess.removeFurniture(loc: BoundLocInfo, built: String) {
