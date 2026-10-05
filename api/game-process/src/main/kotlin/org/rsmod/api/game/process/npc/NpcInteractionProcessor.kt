@@ -29,6 +29,7 @@ import org.rsmod.game.interact.InteractionNpc
 import org.rsmod.game.interact.InteractionNpcOp
 import org.rsmod.game.interact.InteractionNpcT
 import org.rsmod.game.interact.InteractionObj
+import org.rsmod.game.interact.InteractionObjOp
 import org.rsmod.game.interact.InteractionObjT
 import org.rsmod.game.interact.InteractionPlayer
 import org.rsmod.game.interact.InteractionPlayerOp
@@ -152,7 +153,6 @@ constructor(
             is InteractionLoc -> preMovementStep(interaction)
             is InteractionNpc -> preMovementStep(interaction)
             is InteractionObj -> preMovementStep(interaction)
-            is InteractionObjT -> InteractionStep.Continue
             is InteractionPlayer -> preMovementStep(interaction)
         }
 
@@ -161,7 +161,6 @@ constructor(
             is InteractionLoc -> postMovementStep(interaction)
             is InteractionNpc -> postMovementStep(interaction)
             is InteractionObj -> postMovementStep(interaction)
-            is InteractionObjT -> InteractionStep.Continue
             is InteractionPlayer -> postMovementStep(interaction)
         }
 
@@ -171,10 +170,8 @@ constructor(
             is InteractionLocT -> triggerOp(this, interaction)
             is InteractionNpcOp -> triggerOp(this, interaction)
             is InteractionNpcT -> triggerOp(this, interaction)
-            is InteractionObj -> triggerOp(this, interaction)
-            is InteractionObjT -> {
-                /* Npcs do not use interface components on objs. */
-            }
+            is InteractionObjOp -> triggerOp(this, interaction)
+            is InteractionObjT -> Unit
             is InteractionPlayerOp -> triggerOp(this, interaction)
             is InteractionPlayerT -> triggerOp(this, interaction)
         }
@@ -185,10 +182,8 @@ constructor(
             is InteractionLocT -> triggerAp(this, interaction)
             is InteractionNpcOp -> triggerAp(this, interaction)
             is InteractionNpcT -> triggerAp(this, interaction)
-            is InteractionObj -> triggerAp(this, interaction)
-            is InteractionObjT -> {
-                /* Npcs do not use interface components on objs. */
-            }
+            is InteractionObjOp -> triggerAp(this, interaction)
+            is InteractionObjT -> Unit
             is InteractionPlayerOp -> triggerAp(this, interaction)
             is InteractionPlayerT -> triggerAp(this, interaction)
         }
@@ -397,8 +392,8 @@ constructor(
         when (interaction) {
             is InteractionLoc -> !interaction.isValid(this)
             is InteractionNpc -> !interaction.isValid(this)
-            is InteractionObj -> !interaction.isValid(this)
             is InteractionObjT -> true
+            is InteractionObj -> !interaction.isValid(this)
             is InteractionPlayer -> !interaction.isValid(this)
         }
 
@@ -521,14 +516,14 @@ constructor(
         }
     }
 
-    private fun triggerOp(npc: Npc, interaction: InteractionObj) {
+    private fun triggerOp(npc: Npc, interaction: InteractionObjOp) {
         val op = objInteractions.opTrigger(interaction.target, interaction.op)
         if (op != null) {
             accessLauncher.launch(npc) { eventBus.publish(this, op) }
         }
     }
 
-    public fun triggerAp(npc: Npc, interaction: InteractionObj) {
+    public fun triggerAp(npc: Npc, interaction: InteractionObjOp) {
         val ap = objInteractions.apTrigger(interaction.target, interaction.op)
         if (ap != null) {
             accessLauncher.launch(npc) { eventBus.publish(this, ap) }

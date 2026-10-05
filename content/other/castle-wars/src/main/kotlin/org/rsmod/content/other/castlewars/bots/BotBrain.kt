@@ -43,7 +43,7 @@ import org.rsmod.game.interact.HeldOp
 import org.rsmod.game.interact.InteractionLocOp
 import org.rsmod.game.interact.InteractionLocT
 import org.rsmod.game.interact.InteractionNpcOp
-import org.rsmod.game.interact.InteractionObj
+import org.rsmod.game.interact.InteractionObjOp
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.game.interact.InteractionPlayerOp
 import org.rsmod.game.inv.InvObj
@@ -634,7 +634,7 @@ constructor(
         player.clearPendingAction(eventBus)
         player.resetFaceEntity()
         player.interaction =
-            InteractionObj(
+            InteractionObjOp(
                 target = obj,
                 op = op,
                 hasOpTrigger = objInteractions.hasOpTrigger(obj, op),

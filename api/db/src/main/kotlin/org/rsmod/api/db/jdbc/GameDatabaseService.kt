@@ -4,7 +4,7 @@ import com.github.michaelbull.logging.InlineLogger
 import jakarta.inject.Inject
 import jakarta.inject.Provider
 import org.rsmod.api.db.DatabaseConfig
-import org.rsmod.server.services.Service
+import org.rsmod.server.services.ResourceService
 
 public class GameDatabaseService
 @Inject
@@ -12,13 +12,10 @@ constructor(
     private val configProvider: Provider<DatabaseConfig>,
     private val connector: GameConnection,
     private val database: GameDatabase,
-) : Service {
+) : ResourceService {
     private val logger = InlineLogger()
 
     private var databaseConnected = false
-
-    override val shutdownStage: Int
-        get() = Service.RESOURCE_SHUTDOWN_STAGE
 
     override suspend fun startup() {
         connectDataSource()

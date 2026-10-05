@@ -28,4 +28,4 @@ leviathan_stunned=32
 leviathan_in_special=33
 leviathan_next_special=34
 leviathan_stun_bearing=35
-npc_poison_severity=51
+npc_poison_severity=60

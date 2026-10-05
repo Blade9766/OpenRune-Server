@@ -5,4 +5,5 @@ public enum class DamageReductionAttributes {
     DinhsBlock,
     Justiciar,
     PowerOfDeath,
+    WardOfArceuus,
 }

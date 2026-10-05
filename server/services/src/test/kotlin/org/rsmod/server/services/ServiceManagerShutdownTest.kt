@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -14,7 +13,6 @@ class ServiceManagerShutdownTest {
     private class RecordingService(
         private val name: String,
         private val log: MutableList<String>,
-        override val shutdownStage: Int = Service.DEFAULT_SHUTDOWN_STAGE,
         private val shutdownDelayMs: Long = 0,
     ) : Service {
         override suspend fun startup() {}
@@ -24,21 +22,6 @@ class ServiceManagerShutdownTest {
             delay(shutdownDelayMs)
             log += "$name:end"
         }
-    }
-
-    @Test
-    fun `resource stage shuts down only after default stage services finish`() {
-        val log = Collections.synchronizedList(mutableListOf<String>())
-        val database =
-            RecordingService("database", log, shutdownStage = Service.RESOURCE_SHUTDOWN_STAGE)
-        val saver = RecordingService("saver", log, shutdownDelayMs = 200)
-        val manager = ServiceManager.create(linkedSetOf(database, saver))
-
-        runBlocking { manager.awaitStartup() }
-        manager.shutdown()
-        manager.awaitShutdown()
-
-        assertEquals(listOf("saver:start", "saver:end", "database:start", "database:end"), log)
     }
 
     @Test

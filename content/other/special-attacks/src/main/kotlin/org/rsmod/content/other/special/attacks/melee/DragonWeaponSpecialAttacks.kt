@@ -23,8 +23,8 @@ import org.rsmod.game.entity.Player
 
 /**
  * The dragon melee weapon specials: Puncture (dagger), Shatter (mace), Sever (scimitar), Wild
- * Stab (sword), Powerstab (2h sword), Sweep (halberd), Shove (spear, Zamorakian spear and hasta),
- * Rampage (battleaxe) and Slice and Dice (claws).
+ * Stab (sword), Powerstab (2h sword), Shove (spear, Zamorakian spear and hasta), Rampage
+ * (battleaxe) and Slice and Dice (claws). The halberd sweep is [HalberdSpecialAttack].
  */
 class DragonWeaponSpecialAttacks
 @Inject
@@ -45,7 +45,6 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
 
         registerMelee("obj.dragon_shortsword", WildStab(manager))
         registerMelee("obj.dragon_2h_sword", Powerstab(manager, npcSearch))
-        registerMelee("obj.dragon_halberd", Sweep(manager))
 
         val shove = Shove(manager, "seq.shove")
         registerMelee("obj.dragon_spear", shove)
@@ -213,48 +212,6 @@ constructor(private val worldRepo: WorldRepository, private val npcSearch: NpcSe
 
         private fun dev.openrune.types.NpcServerType.isAttackable(): Boolean =
             actions.getOpOrNull(1)?.equals("attack", ignoreCase = true) == true
-    }
-
-    /**
-     * Dragon halberd: a wide sweep at +10% damage. Large monsters (bigger than one tile) are hit a
-     * second time at -25% accuracy. The sweep graphic faces the target.
-     */
-    private class Sweep(private val manager: SpecialAttackManager) : MeleeSpecialAttack {
-        override suspend fun ProtectedAccess.attack(target: Npc, attack: CombatAttack.Melee) =
-            sweep(target, attack)
-
-        override suspend fun ProtectedAccess.attack(target: Player, attack: CombatAttack.Melee) =
-            sweep(target, attack)
-
-        private fun ProtectedAccess.sweep(target: PathingEntity, attack: CombatAttack.Melee): Boolean {
-            specialAnim("seq.dragon_halberd_special_attack")
-            spotanim(sweepSpot(target), height = 96, slot = COMBAT_SLOT)
-            manager.playWeaponSound(this, attack)
-
-            val first = manager.rollMeleeDamage(this, target, attack, 1.0, 1.1)
-            var total = first
-            manager.queueMeleeHit(this, target, first)
-            if (target is Npc && target.size > 1) {
-                val second = manager.rollMeleeDamage(this, target, attack, 0.75, 1.1)
-                total += second
-                manager.queueMeleeHit(this, target, second)
-            }
-            manager.giveCombatXp(this, target, attack, total)
-            manager.continueCombat(this, target)
-            return true
-        }
-
-        private fun ProtectedAccess.sweepSpot(target: PathingEntity): String {
-            val dx = target.coords.x - coords.x
-            val dz = target.coords.z - coords.z
-            return when {
-                kotlin.math.abs(dx) > kotlin.math.abs(dz) && dx > 0 ->
-                    "spotanim.dragon_halberd_special_east_red"
-                kotlin.math.abs(dx) > kotlin.math.abs(dz) -> "spotanim.dragon_halberd_special_west_red"
-                dz > 0 -> "spotanim.dragon_halberd_special_north_red"
-                else -> "spotanim.dragon_halberd_special_south_red"
-            }
-        }
     }
 
     /**

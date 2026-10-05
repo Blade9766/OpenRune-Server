@@ -11,6 +11,7 @@ import org.rsmod.content.other.special.attacks.melee.AbyssalSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.DragonLongswordSpecialAttack
 import org.rsmod.content.other.special.attacks.melee.DragonWeaponSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.GodswordSpecialAttacks
+import org.rsmod.content.other.special.attacks.melee.HalberdSpecialAttack
 import org.rsmod.content.other.special.attacks.melee.HammerSpecialAttacks
 import org.rsmod.content.other.special.attacks.melee.MiscMeleeSpecialAttacks
 import org.rsmod.content.other.special.attacks.ranged.DarkBowSpecialAttack
@@ -37,5 +38,6 @@ class SpecialAttackModule : PluginModule() {
         addSetBinding<SpecialAttackMap>(PurgingStaffSpecialAttack::class.java)
         addSetBinding<SpecialAttackMap>(ShieldSpecialAttacks::class.java)
         addSetBinding<SpecialAttackMap>(DawnbringerSpecialAttack::class.java)
+        addSetBinding<SpecialAttackMap>(HalberdSpecialAttack::class.java)
     }
 }

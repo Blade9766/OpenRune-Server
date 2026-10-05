@@ -153,7 +153,6 @@ class UnfinishedPotionsEvents : PluginScript() {
             return
         }
 
-        statAdvance("stat.herblore", potion.xp.toDouble())
         val herbName = potion.herbItem.name.lowercase()
         mes("You put the $herbName into the vial of water.")
 

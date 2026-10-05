@@ -81,11 +81,14 @@ class GameBootstrap @Inject constructor(
             }
         try {
             serviceManager.shutdown()
-            serviceManager.awaitShutdownOrThrow(
-                signalTimeoutSecs = HOOK_TIMEOUT_SECS,
-                cleanupTimeoutSecs = HOOK_TIMEOUT_SECS,
-                shutdownTimeoutSecs = HOOK_TIMEOUT_SECS,
-            )
+            // A shutdown report with errors still stops the database gracefully.
+            runCatching {
+                serviceManager.awaitShutdownOrThrow(
+                    signalTimeoutSecs = HOOK_TIMEOUT_SECS,
+                    cleanupTimeoutSecs = HOOK_TIMEOUT_SECS,
+                    shutdownTimeoutSecs = HOOK_TIMEOUT_SECS,
+                )
+            }
             runCatching { centralEmbedded.stopIfRunning() }
             EmbeddedSameInstancePostgres.stop()
         } catch (_: Throwable) {

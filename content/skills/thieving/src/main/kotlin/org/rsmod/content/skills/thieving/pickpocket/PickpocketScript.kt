@@ -113,6 +113,10 @@ constructor(
     private fun ProtectedAccess.fail(npc: Npc, target: PickpocketTarget, name: String) {
         equipment.wearGlovesOfSilence(this)
         spam("You fail to pick the $name's pocket.")
+        if (player.vars[SHADOW_VEIL_ACTIVE] == 1 && random.of(100) < SHADOW_VEIL_CHANCE) {
+            spam("Your attempt to steal goes unnoticed.")
+            return
+        }
         npc.facePlayer(player)
         npc.say(target.shout)
 
@@ -159,5 +163,7 @@ constructor(
         const val THIEVING_STAT: String = "stat.thieving"
         const val MAX_POUCHES: Int = 28
         const val STUN_SPOTANIM_HEIGHT: Int = 100
+        const val SHADOW_VEIL_ACTIVE: String = "varbit.arceuus_shadow_veil_active"
+        const val SHADOW_VEIL_CHANCE: Int = 15
     }
 }

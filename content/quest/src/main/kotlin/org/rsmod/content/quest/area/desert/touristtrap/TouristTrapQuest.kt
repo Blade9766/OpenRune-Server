@@ -363,7 +363,8 @@ class TouristTrapQuest : QuestScript(
         const val SOUND_KNOCKING = "synth.tt_knocking"
         const val SOUND_LOCKED = "synth.locked"
         const val SOUND_PICK_LOCK = "synth.pick_lock"
-        const val SOUND_EAT = "synth.eat"
+        // Synth 2393 is the eating sound; a synth id takes one gameval name and Doom registered it.
+        const val SOUND_EAT = "synth.dom_burrow_slam"
         const val SOUND_ANVIL = "synth.anvil02"
         const val SOUND_CURTAIN = "synth.curtain_open"
     }

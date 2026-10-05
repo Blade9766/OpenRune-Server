@@ -88,7 +88,7 @@ import org.rsmod.game.entity.NpcList
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.util.EntityFaceAngle
-import org.rsmod.game.interact.InteractionObj
+import org.rsmod.game.interact.InteractionObjOp
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.inv.InvVirtualStorageHolder
@@ -430,7 +430,7 @@ class RecruitmentDriveInteractionTest {
         for (action in listOf<(Fixture) -> Unit>(
             { it.player.coords = it.player.coords.translateX(1) },
             { it.player.clearPendingAction(it.events) },
-            { it.player.interaction = InteractionObj(unused<Obj>(), InteractionOp.Op3, hasOpTrigger = true, hasApTrigger = false) },
+            { it.player.interaction = InteractionObjOp(InteractionOp.Op3, unused<Obj>(), hasOpTrigger = true, hasApTrigger = false) },
             { it.player.routeDestination.add(it.player.coords.translateZ(2)) },
         )) {
             val f = Fixture()
