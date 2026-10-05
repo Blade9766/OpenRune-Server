@@ -649,6 +649,10 @@ route_met_harold = 65774
 route_met_ivan = 65775
 route_met_polmafi = 65776
 route_met_radigad = 65777
+# In Aid of the Myreque: server-only flags on the spare bits of varp.myreque2_extravar.
+burgh_rubble_removed = 65810
+burgh_florin_refused = 65811
+burgh_ivan_food_heal = 65813
 knightssword_sword_forged = 65778
 holygrail_napkin = 65779
 holygrail_whistles_found = 65780
@@ -769,6 +773,9 @@ lunar_me_fight = 135
 upass_temple = 136
 # Death to the Dorgeshuun: Zanik following the player, and Zanik riding in her crate.
 dttd_zanik = 137
+# In Aid of the Myreque: the blood tithe fight and Ivan's escort tick loops.
+burgh_tithe_fight = 151
+burgh_escort = 152
 dttd_crate = 138
 # Dwarf multicannon: the barrel stepping round and firing, one direction a tick.
 mcannon_rotate = 139

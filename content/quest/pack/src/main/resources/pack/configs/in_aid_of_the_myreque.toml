@@ -1,0 +1,6 @@
+# In Aid of the Myreque: once lit, Burgh de Rott's furnace works like any other, so the smelting
+# and silver crafting scripts (bound to the furnace category) pick it up.
+[[object]]
+id = "loc.burgh_furnace_fired"
+inherit = "loc.burgh_furnace_fired"
+category = "category.furnace"

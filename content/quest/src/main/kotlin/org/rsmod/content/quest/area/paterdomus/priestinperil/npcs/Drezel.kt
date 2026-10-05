@@ -10,6 +10,7 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
+import org.rsmod.content.quest.area.burghderott.inaid.PaterdomusLibrary
 import org.rsmod.content.quest.area.mortmyre.naturespirit.NatureSpiritDrezel
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusCoords
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
@@ -54,6 +55,7 @@ constructor(
     private val doors: PaterdomusDoors,
     private val objRepo: ObjRepository,
     private val natureSpirit: NatureSpiritDrezel,
+    private val library: PaterdomusLibrary,
 ) : PluginScript() {
 
     private val finalEssenceGiven = priestInPeril.quest.attribute(name = "FINAL_ESSENCE_GIVEN", default = false)
@@ -633,6 +635,10 @@ constructor(
     }
 
     private suspend fun Dialogue.afterQuest() {
+        if (library.hasBusiness(player)) {
+            with(library) { talk { mood, text -> drezel(mood, text) } }
+            return
+        }
         if (!player.holdsAnywhere(WOLFBANE)) {
             chatPlayer(worried, "I've lost my wolfbane dagger.")
             if (player.inv.isFull()) {

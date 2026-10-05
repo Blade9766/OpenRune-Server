@@ -52,6 +52,8 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.route.BoundValidator
+import org.rsmod.content.quest.area.burghderott.inaid.InAidHollows
+import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest
 import org.rsmod.content.quest.area.mortton.myreque.InSearchOfTheMyrequeQuest.Companion.BIG_BONES
 import org.rsmod.content.quest.area.mortton.myreque.InSearchOfTheMyrequeQuest.Companion.COINS
 import org.rsmod.content.quest.area.mortton.myreque.InSearchOfTheMyrequeQuest.Companion.CURPILE
@@ -600,7 +602,7 @@ class InSearchOfTheMyrequeInteractionTest {
             with(HollowsBridge(myq)) { scripts.startup() }
             with(CurpileFyod(myq)) { scripts.startup() }
             with(MyrequeTunnels(myq, locRepo, betrayal)) { scripts.startup() }
-            with(MyrequeMembers(myq, betrayal)) { scripts.startup() }
+            with(MyrequeMembers(myq, betrayal, InAidHollows(InAidOfTheMyrequeQuest(), unused(), unused()))) { scripts.startup() }
             if (stage > 0) myq.quest.jumpToStage(player, stage)
         }
 
@@ -820,6 +822,12 @@ class InSearchOfTheMyrequeInteractionTest {
 
     companion object {
         const val SEED = 7L
+
+        /** A stand-in for collaborators the In Search of the Myreque paths never reach. */
+        inline fun <reified T> unused(): T {
+            val field = sun.misc.Unsafe::class.java.getDeclaredField("theUnsafe").apply { isAccessible = true }
+            return (field.get(null) as sun.misc.Unsafe).allocateInstance(T::class.java) as T
+        }
 
         val REWARD_STATS = listOf("stat.attack", "stat.defence", "stat.strength", "stat.hitpoints", "stat.crafting")
 

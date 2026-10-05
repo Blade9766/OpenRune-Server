@@ -39,6 +39,18 @@ import org.rsmod.content.quest.area.ardougne.undergroundpass.UndergroundPassQues
 import org.rsmod.content.quest.area.ardougne.undergroundpass.UnicornCave
 import org.rsmod.content.quest.area.ardougne.undergroundpass.WellOfDoors
 import org.rsmod.content.quest.area.barbarianoutpost.barcrawl.BarcrawlQuest
+import org.rsmod.content.quest.area.burghderott.inaid.BloodTithe
+import org.rsmod.content.quest.area.burghderott.inaid.BurghCitizens
+import org.rsmod.content.quest.area.burghderott.inaid.BurghCopies
+import org.rsmod.content.quest.area.burghderott.inaid.GadderhammerWearHook
+import org.rsmod.content.quest.area.burghderott.inaid.InAidHollows
+import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest
+import org.rsmod.content.quest.area.burghderott.inaid.InnCellar
+import org.rsmod.content.quest.area.burghderott.inaid.IvanEscort
+import org.rsmod.content.quest.area.burghderott.inaid.PaterdomusLibrary
+import org.rsmod.content.quest.area.burghderott.inaid.Repairs
+import org.rsmod.content.quest.area.burghderott.inaid.VampyreFightAttackHook
+import org.rsmod.content.quest.area.burghderott.inaid.VampyreFights
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
 import org.rsmod.content.quest.area.burthorpe.heroesquest.HotFeatherTakeHook
 import org.rsmod.content.quest.area.burthorpe.heroesquest.npcs.AchiettiesDialogue
@@ -426,6 +438,18 @@ public class QuestModule : PluginModule() {
         bindInstance<InSearchOfTheMyrequeQuest>()
         bindInstance<Betrayal>()
         addSetBinding<NpcAttackValidateHook>(HoundAttackHook::class.java)
+        bindInstance<InAidOfTheMyrequeQuest>()
+        bindInstance<BurghCopies>()
+        bindInstance<BurghCitizens>()
+        bindInstance<InnCellar>()
+        bindInstance<Repairs>()
+        bindInstance<VampyreFights>()
+        bindInstance<BloodTithe>()
+        bindInstance<InAidHollows>()
+        bindInstance<IvanEscort>()
+        bindInstance<PaterdomusLibrary>()
+        addSetBinding<NpcAttackValidateHook>(VampyreFightAttackHook::class.java)
+        addSetBinding<PlayerRestrictionHook>(GadderhammerWearHook::class.java)
         bindInstance<LunarDiplomacyQuest>()
         bindInstance<LunarTravel>()
         bindInstance<DreamWorld>()

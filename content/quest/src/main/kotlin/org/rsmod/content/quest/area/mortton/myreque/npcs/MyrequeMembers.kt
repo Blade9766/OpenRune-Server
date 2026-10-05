@@ -4,6 +4,7 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.burghderott.inaid.InAidHollows
 import org.rsmod.content.quest.area.mortton.myreque.Betrayal
 import org.rsmod.content.quest.area.mortton.myreque.InSearchOfTheMyrequeQuest
 import org.rsmod.content.quest.area.mortton.myreque.InSearchOfTheMyrequeQuest.Companion.STAGE_BETRAYED
@@ -33,6 +34,7 @@ class MyrequeMembers
 constructor(
     private val myq: InSearchOfTheMyrequeQuest,
     private val betrayal: Betrayal,
+    private val inAid: InAidHollows,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -76,7 +78,7 @@ constructor(
             stage < STAGE_MET_MEMBERS -> introductions()
             stage < STAGE_WEAPONS_DELIVERED -> return handOver()
             stage < STAGE_ROUTE_REVEALED -> aftermath()
-            myq.isComplete(player) -> afterQuest()
+            myq.isComplete(player) -> with(inAid) { veliaf() }
             else -> routeReminder()
         }
         return false
@@ -128,12 +130,16 @@ constructor(
         chatNpc(neutral, "And if you see Vanstrom Klause again... don't trust a word he says.")
     }
 
-    private suspend fun Dialogue.afterQuest() {
-        chatNpc(neutral, "We'll mourn our friends and keep fighting. It's what they would have wanted. Thank you for what you did with that hound.")
-    }
-
     private suspend fun Dialogue.memberChat(member: Member) {
         val stage = myq.stage(player)
+        if (myq.isComplete(player) && member in IN_AID_MEMBERS) {
+            when (member) {
+                Member.Ivan -> with(inAid) { ivan() }
+                Member.Polmafi -> with(inAid) { polmafi() }
+                else -> with(inAid) { radigad() }
+            }
+            return
+        }
         when {
             stage < STAGE_MET_VELIAF -> chatNpc(neutral, "Talk to Veliaf first. He decides who's welcome here.")
             stage >= STAGE_BETRAYED -> mourn(member, stage)
@@ -200,5 +206,10 @@ constructor(
                 chatNpc(sad, if (fighting) "Mind its jaws!" else "I'll cook for four now, not six. Doesn't seem right.")
             else -> Unit
         }
+    }
+
+    private companion object {
+        /** In Aid of the Myreque takes these three over once In Search of the Myreque is done. */
+        val IN_AID_MEMBERS = setOf(Member.Ivan, Member.Polmafi, Member.Radigad)
     }
 }
