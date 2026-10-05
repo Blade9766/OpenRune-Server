@@ -14,7 +14,7 @@ dependencies {
     api(libs.or2.filestore)
     api(libs.or2.filesystem)
 
-    findContentPlugins().forEach { runtimeOnly(it) }
+    findContentPlugins().forEach { runtimeOnly(project(it.path)) }
     implementation(projects.engine.map)
     implementation(projects.engine.routefinder)
     implementation("com.michael-bull.kotlin-inline-logger:kotlin-inline-logger:1.0.6")

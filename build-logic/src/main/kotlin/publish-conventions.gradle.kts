@@ -1,5 +1,5 @@
-val ossrhUsername: String? by ext
-val ossrhPassword: String? by ext
+val ossrhUsername = extra.properties["ossrhUsername"] as String?
+val ossrhPassword = extra.properties["ossrhPassword"] as String?
 
 plugins {
     `maven-publish`
