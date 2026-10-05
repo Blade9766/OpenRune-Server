@@ -611,7 +611,7 @@ constructor(
         blockType: MeleeAttackType?,
         multiplier: Double,
     ): Boolean {
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return true
         }
         return when (target) {
@@ -684,7 +684,7 @@ constructor(
     ): Int {
         val maxHit =
             calculateMeleeMaxHit(source, target, attackType, attackStyle, multiplier, roundUp)
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return maxHit
         }
         return random.of(1..maxHit)
@@ -885,7 +885,7 @@ constructor(
         blockType: RangedAttackType?,
         multiplier: Double,
     ): Boolean {
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return true
         }
         return when (target) {
@@ -963,7 +963,7 @@ constructor(
                 multiplier = multiplier,
                 boltSpecDamage = boltSpecDamage,
             )
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return maxHit
         }
         return random.of(1..maxHit)
@@ -1243,7 +1243,7 @@ constructor(
         sunfireRune: Boolean,
         conflictionEligible: Boolean = true,
     ): Boolean {
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return true
         }
         return ConflictionGauntlets.roll(source, target, spell.id, conflictionEligible) {
@@ -1324,7 +1324,7 @@ constructor(
                 attackRate = attackRate,
                 sunfireRune = sunfireRune,
             )
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return hitRange.last
         }
         return random.of(hitRange)
@@ -1496,7 +1496,7 @@ constructor(
         multiplier: Double,
     ): Int {
         val maxHit = calculateStaffMaxHit(source, target, baseMaxHit, multiplier)
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return maxHit
         }
         return random.of(1..maxHit)
@@ -2221,4 +2221,15 @@ constructor(
             radius = radius,
             size = size,
         )
+
+    /**
+     * True when every attack [source] makes on [target] should land at its max hit: the admin cheat,
+     * and the house combat dummies, which exist to show a player their max hit.
+     */
+    private fun alwaysMaxHit(source: Player, target: PathingEntity): Boolean =
+        source.adminMaxHit || (target is Npc && target.visType.isCategoryType(COMBAT_DUMMY))
+
+    private companion object {
+        const val COMBAT_DUMMY = "category.poh_combat_dummy"
+    }
 }

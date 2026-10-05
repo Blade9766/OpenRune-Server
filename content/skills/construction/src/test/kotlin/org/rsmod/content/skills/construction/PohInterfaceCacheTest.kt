@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.ResourceLock
 import org.rsmod.api.table.PohRoomRow
 import org.rsmod.content.skills.construction.data.FurnitureRows
 import org.rsmod.content.skills.construction.data.RoomType
 import org.rsmod.content.skills.construction.scripts.PohInterfaces
 
+@ResourceLock("ServerCacheManager")
 class PohInterfaceCacheTest {
     @Test
     fun `every furniture option has a cache furniture row`() {

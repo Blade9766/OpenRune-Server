@@ -82,3 +82,18 @@ inherit = "inv.trail_rewardinv"
 scope = "Temp"
 stack = "Always"
 protect = false
+
+[[inventory]]
+isServerOnly = true
+id = "inv.poh_costumes"
+inherit = "inv.poh_costumes"
+scope = "Perm"
+stack = "Always"
+protect = false
+
+[[inventory]]
+isServerOnly = true
+id = "inv.poh_menagerie_pets"
+inherit = "inv.poh_menagerie_pets"
+scope = "Perm"
+protect = false

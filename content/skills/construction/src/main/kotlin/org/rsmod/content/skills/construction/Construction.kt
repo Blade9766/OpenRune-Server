@@ -10,6 +10,9 @@ object Construction {
 
     const val BUILD_ANIM = "seq.human_poh_build"
 
+    /** Every watering can with water in it. Gricoller's can is counted whatever it holds. */
+    val WATERING_CANS: List<String> = (1..8).map { "obj.watering_can_$it" } + "obj.zeah_wateringcan"
+
     const val BUILD_WOOD_SOUND = "synth.poh_build_wood"
     const val BUILD_STONE_SOUND = "synth.poh_build_stone"
     const val BUILD_METAL_SOUND = "synth.poh_build_metal"

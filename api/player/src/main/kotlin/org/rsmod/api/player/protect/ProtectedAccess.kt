@@ -62,6 +62,7 @@ import org.rsmod.api.player.hit.queueImpactHit
 import org.rsmod.api.player.hit.takeInstantHit
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.input.ResumePCountDialogInput
+import org.rsmod.api.player.input.ResumePNameDialogInput
 import org.rsmod.api.player.input.ResumePObjDialogInput
 import org.rsmod.api.player.input.ResumePStringDialogInput
 import org.rsmod.api.player.input.ResumePauseButtonInput
@@ -2112,6 +2113,16 @@ public class ProtectedAccess(
      * @see [await]
      */
     public suspend fun pauseButton(): ResumePauseButtonInput = await(ResumePauseButtonInput::class)
+
+    /**
+     * Suspends the coroutine until the client answers a name dialog - one it can resume on its own,
+     * as the house advertisement board's Enter House does, without a prompt being shown.
+     *
+     * @throws ProtectedAccessLostException if the player could not retain protected access after
+     *   the coroutine suspension.
+     * @see [await]
+     */
+    public suspend fun nameDialogInput(): ResumePNameDialogInput = await(ResumePNameDialogInput::class)
 
     /**
      * @throws ProtectedAccessLostException if the player could not retain protected access after

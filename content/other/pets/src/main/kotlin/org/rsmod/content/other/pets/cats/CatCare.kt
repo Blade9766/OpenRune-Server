@@ -45,6 +45,22 @@ class CatCare @Inject constructor(private val followers: PetFollowers) {
         player.catAttention = if (strokes >= 2) ATTENTION_FRESH else ATTENTION_STROKED
     }
 
+    /**
+     * A pet feeder's care for a following kitten: once it asks for food or attention it is fed and
+     * made a fuss of. True when it needed it.
+     */
+    fun tend(player: Player): Boolean {
+        if (following(player)?.stage != CatStage.Kitten) {
+            return false
+        }
+        if (player.catHunger > HUNGER_WARN && player.catAttention > ATTENTION_WARN) {
+            return false
+        }
+        player.catHunger = HUNGER_FULL
+        player.catAttention = ATTENTION_FRESH
+        return true
+    }
+
     fun play(player: Player) {
         player.catAttention = ATTENTION_PLAYED
     }

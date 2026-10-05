@@ -10,6 +10,7 @@ internal object PetLocation {
     const val BANK = 1
     const val INVENTORY = 2
     const val FOLLOWER = 3
+    const val HOUSE = 4
 }
 
 /** True when any of [objs] is held in the backpack or the bank. */
@@ -32,6 +33,9 @@ internal fun Player.petLocation(pet: Pet): Int {
     val bank = invMap["inv.bank"]
     if (bank != null && pet.forms.any { it.obj in bank }) {
         return PetLocation.BANK
+    }
+    if (PetMenagerie.holds(this, pet)) {
+        return PetLocation.HOUSE
     }
     return PetLocation.NONE
 }

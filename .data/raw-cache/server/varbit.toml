@@ -2335,3 +2335,131 @@ id = "varbit.eadgar_asked_pete_food"
 varp = "varp.eadgar_ruse_bits"
 startBit = 10
 endBit = 10
+
+# In Aid of the Myreque: which of the fifteen cellar rubble piles are gone for good.
+[[varbit]]
+isServerOnly = true
+id = "varbit.burgh_rubble_removed"
+varp = "varp.myreque2_extravar"
+startBit = 11
+endBit = 25
+
+# In Aid of the Myreque: Florin has turned the player away at the gate.
+[[varbit]]
+isServerOnly = true
+id = "varbit.burgh_florin_refused"
+varp = "varp.myreque2_extravar"
+startBit = 26
+endBit = 26
+
+# In Aid of the Myreque: hitpoints each piece of Ivan's food restores (the weakest given).
+[[varbit]]
+isServerOnly = true
+id = "varbit.burgh_ivan_food_heal"
+varp = "varp.myreque2_extravar"
+startBit = 28
+endBit = 31
+
+# Skill hall: one bit per head trophy mounted.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_trophies_heads"
+varp = "varp.poh_skill_trophies"
+startBit = 0
+endBit = 8
+
+# Skill hall: one bit per fishing trophy mounted.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_trophies_fish"
+varp = "varp.poh_skill_trophies"
+startBit = 9
+endBit = 18
+
+# Skill hall: the head trophy on show, 1-based; 0 for none.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_trophy_head_shown"
+varp = "varp.poh_skill_trophies"
+startBit = 19
+endBit = 22
+
+# Skill hall: the fishing trophy on show, 1-based; 0 for none.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_trophy_fish_shown"
+varp = "varp.poh_skill_trophies"
+startBit = 23
+endBit = 26
+
+# Player-owned house: the mode the owner set at a throne room lever (0 off, 1 challenge, 2 PvP).
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_house_mode"
+varp = "varp.poh_challenge_mode"
+startBit = 0
+endBit = 1
+
+# Player-owned house: an Attack op is being shown for a house dungeon in PvP mode.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_house_attack_op"
+varp = "varp.poh_challenge_mode"
+startBit = 2
+endBit = 2
+
+# Player-owned house: an admin has turned on free building (no level, materials or coins).
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_free_build"
+varp = "varp.poh_challenge_mode"
+startBit = 3
+endBit = 3
+
+# Player-owned house: portal space 1's destination (Portals.Destination ordinal + 1; 0 = none).
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_portal_1"
+varp = "varp.poh_portals"
+startBit = 0
+endBit = 5
+
+# Player-owned house: portal space 2's destination (Portals.Destination ordinal + 1; 0 = none).
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_portal_2"
+varp = "varp.poh_portals"
+startBit = 6
+endBit = 11
+
+# Player-owned house: portal space 3's destination (Portals.Destination ordinal + 1; 0 = none).
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_portal_3"
+varp = "varp.poh_portals"
+startBit = 12
+endBit = 17
+
+# Player-owned house: the costume room store open (Costumes.Store ordinal + 1; 0 = none).
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_costume_store"
+varp = "varp.poh_costume_view"
+startBit = 0
+endBit = 3
+
+# Player-owned house: that store's build option.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_costume_option"
+varp = "varp.poh_costume_view"
+startBit = 4
+endBit = 7
+
+# Player-owned house: the page of it on show.
+[[varbit]]
+isServerOnly = true
+id = "varbit.poh_costume_page"
+varp = "varp.poh_costume_view"
+startBit = 8
+endBit = 11

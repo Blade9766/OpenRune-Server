@@ -58,6 +58,10 @@ constructor(
             onOpLoc3(loc) { lastDestination() }
             onOpLoc4(loc) { favourites() }
         }
+        // The POH spirit tree and fairy ring keeps the tree on op 1 and the ring's ops one along.
+        onOpLoc2(SPIRIT_RING) { zanaris() }
+        onOpLoc3(SPIRIT_RING) { configure() }
+        onOpLoc4(SPIRIT_RING) { lastDestination() }
 
         for ((dial, varbit) in DIAL_VARBITS.withIndex()) {
             onIfModalButton("component.fairyrings:${dial + 1}_clockwise") { rotate(varbit, 1) }
@@ -264,6 +268,8 @@ constructor(
         /** Every ring the player can operate; the Zanaris hub has no `Zanaris` op of its own. */
         private val RING_LOCS =
             listOf("loc.fairyring_minorhub", "loc.fairyring_homehub", "loc.poh_fairy_ring")
+
+        private const val SPIRIT_RING = "loc.poh_spirit_ring"
 
         private val STAFFS = listOf("obj.dramen_staff", "obj.lunar_moonclan_liminal_staff")
 

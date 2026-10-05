@@ -50,6 +50,20 @@ class ConstructionDataTest {
     }
 
     @Test
+    fun `house styles share whole door pairs or none of one`() {
+        val pairs = HouseStyle.entries.map { it.doors }.distinctBy { it.left }
+        val doors = pairs.flatMap { listOf(it.left, it.right, it.leftOpen, it.rightOpen) }
+        assertEquals(doors.size, doors.toSet().size)
+    }
+
+    @Test
+    fun `the head of a staircase is never itself a staircase foot`() {
+        val tops = Furniture.STAIRS_DOWN.values - Furniture.STAIRS_DOWN.keys
+        assertTrue(tops.isNotEmpty())
+        assertTrue(tops.none { it in Furniture.STAIRS_DOWN })
+    }
+
+    @Test
     fun `build options are listed in ascending level order`() {
         for (room in RoomType.entries) {
             for (group in room.hotspots) {
@@ -59,6 +73,9 @@ class ConstructionDataTest {
         }
     }
 
+    /** Pieces made elsewhere and only hung up, which the wiki gives no experience for. */
+    private val READY_MADE = setOf("Greenman carving")
+
     @Test
     fun `every option costs something and awards experience`() {
         for (room in RoomType.entries) {
@@ -66,7 +83,7 @@ class ConstructionDataTest {
                 for (option in group.options) {
                     assertTrue(option.materials.isNotEmpty(), "${group.key}/${option.label}")
                     assertTrue(option.materials.all { it.count > 0 }, option.label)
-                    assertTrue(option.xp > 0.0, "${group.key}/${option.label}")
+                    assertTrue(option.xp > 0.0 || option.label in READY_MADE, "${group.key}/${option.label}")
                 }
             }
         }
@@ -255,14 +272,17 @@ class ConstructionDataTest {
         }
     }
 
-    /** A hall reached by a staircase has to copy the template with the stairwell cut out. */
+    /**
+     * A hall reached by a staircase has to copy the template with the stairwell cut out. A dungeon
+     * room has stairs too, but nothing is ever built below the dungeon to come up into it.
+     */
     @Test
     fun `only the rooms with a staircase have a second template`() {
         for (room in RoomType.entries) {
             val stairs = room.hotspots.any { group ->
                 group.options.any { option -> option.built.any { it in Furniture.STAIRS_DOWN } }
             }
-            assertEquals(stairs, room.stairsTopZoneOffsetX != null, room.label)
+            assertEquals(stairs && !room.dungeon, room.stairsTopZoneOffsetX != null, room.label)
         }
     }
 

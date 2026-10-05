@@ -3,14 +3,12 @@ package pohui
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
-import org.rsmod.api.player.output.ClientScripts
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.stat.baseConstructionLvl
 import org.rsmod.api.player.ui.ifClose
 import org.rsmod.api.player.ui.ifOpenMain
 import org.rsmod.api.script.onCommand
-import org.rsmod.api.script.onIfClose
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
@@ -30,9 +28,6 @@ class PohUiPlugin @Inject constructor(private val eventBus: EventBus) :
                 player.runClientScript(script, args.drop(1).map(::parseArg))
                 player.mes("Ran clientscript $script with ${args.size - 1} arg(s).")
             }
-        }
-        for (interf in PREVIEW_INTERFACES) {
-            onIfClose(interf) { ClientScripts.chatDefaultRestoreInput(player) }
         }
         onCommand("pohui") {
             desc = "Preview a POH interface: ::pohui jewellery|costumes|furniture|addroom [variant]"
@@ -111,11 +106,6 @@ class PohUiPlugin @Inject constructor(private val eventBus: EventBus) :
 
     private companion object {
         const val MAX_FURNITURE_SLOTS = 31
-        val PREVIEW_INTERFACES =
-            listOf(
-                "interface.poh_jewellery_box",
-                "interface.poh_costumes",
-            )
         val COMPONENT_ARG = Regex("""(\d+):(\d+)""")
 
         val JEWELLERY_TITLES =

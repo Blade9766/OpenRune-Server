@@ -224,3 +224,325 @@ contentGroup = "content.opened_single_door"
 [object.params]
 "param.closesound" = "synth.nicedoor_close"
 "param.next_loc_stage" = "loc.qip_digsite_poshdoor"
+
+# Player-owned house double doors, one pair per house style.
+
+[[object]]
+id = "loc.village_door_l"
+inherit = "loc.village_door_l"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.village_door_l_open"
+
+[[object]]
+id = "loc.village_door_l_open"
+inherit = "loc.village_door_l_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.village_door_l"
+
+[[object]]
+id = "loc.village_door_r"
+inherit = "loc.village_door_r"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.village_door_r_open"
+
+[[object]]
+id = "loc.village_door_r_open"
+inherit = "loc.village_door_r_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.village_door_r"
+
+[[object]]
+id = "loc.desert_door_l"
+inherit = "loc.desert_door_l"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.desert_door_l_open"
+
+[[object]]
+id = "loc.desert_door_l_open"
+inherit = "loc.desert_door_l_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.desert_door_l"
+
+[[object]]
+id = "loc.desert_door_r"
+inherit = "loc.desert_door_r"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.desert_door_r_open"
+
+[[object]]
+id = "loc.desert_door_r_open"
+inherit = "loc.desert_door_r_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.desert_door_r"
+
+[[object]]
+id = "loc.rellekka_poh_doubledoorl"
+inherit = "loc.rellekka_poh_doubledoorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.rellekka_poh_doubledoorl_open"
+
+[[object]]
+id = "loc.rellekka_poh_doubledoorl_open"
+inherit = "loc.rellekka_poh_doubledoorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.rellekka_poh_doubledoorl"
+
+[[object]]
+id = "loc.rellekka_poh_doubledoor"
+inherit = "loc.rellekka_poh_doubledoor"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.rellekka_poh_doubledoor_open"
+
+[[object]]
+id = "loc.rellekka_poh_doubledoor_open"
+inherit = "loc.rellekka_poh_doubledoor_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.rellekka_poh_doubledoor"
+
+[[object]]
+id = "loc.timberwall_doorl"
+inherit = "loc.timberwall_doorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.timberwall_doorl_open"
+
+[[object]]
+id = "loc.timberwall_doorl_open"
+inherit = "loc.timberwall_doorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.timberwall_doorl"
+
+[[object]]
+id = "loc.timberwall_door"
+inherit = "loc.timberwall_door"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.timberwall_door_open"
+
+[[object]]
+id = "loc.timberwall_door_open"
+inherit = "loc.timberwall_door_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.timberwall_door"
+
+[[object]]
+id = "loc.yanille_poh_double_doorl"
+inherit = "loc.yanille_poh_double_doorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.yanille_poh_double_doorl_open"
+
+[[object]]
+id = "loc.yanille_poh_double_doorl_open"
+inherit = "loc.yanille_poh_double_doorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.yanille_poh_double_doorl"
+
+[[object]]
+id = "loc.yanille_poh_double_door"
+inherit = "loc.yanille_poh_double_door"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.yanille_poh_double_door_open"
+
+[[object]]
+id = "loc.yanille_poh_double_door_open"
+inherit = "loc.yanille_poh_double_door_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.yanille_poh_double_door"
+
+[[object]]
+id = "loc.deathly_poh_double_doorl"
+inherit = "loc.deathly_poh_double_doorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.deathly_poh_double_doorl_open"
+
+[[object]]
+id = "loc.deathly_poh_double_doorl_open"
+inherit = "loc.deathly_poh_double_doorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.deathly_poh_double_doorl"
+
+[[object]]
+id = "loc.deathly_poh_double_door"
+inherit = "loc.deathly_poh_double_door"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.deathly_poh_double_door_open"
+
+[[object]]
+id = "loc.deathly_poh_double_door_open"
+inherit = "loc.deathly_poh_double_door_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.deathly_poh_double_door"
+
+[[object]]
+id = "loc.twisted_poh_doubledoorl"
+inherit = "loc.twisted_poh_doubledoorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.twisted_poh_doubledoorl_open"
+
+[[object]]
+id = "loc.twisted_poh_doubledoorl_open"
+inherit = "loc.twisted_poh_doubledoorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.twisted_poh_doubledoorl"
+
+[[object]]
+id = "loc.twisted_poh_doubledoor"
+inherit = "loc.twisted_poh_doubledoor"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.twisted_poh_doubledoor_open"
+
+[[object]]
+id = "loc.twisted_poh_doubledoor_open"
+inherit = "loc.twisted_poh_doubledoor_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.twisted_poh_doubledoor"
+
+[[object]]
+id = "loc.hosidius_poh_doubledoorl"
+inherit = "loc.hosidius_poh_doubledoorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.hosidius_poh_doubledoorl_open"
+
+[[object]]
+id = "loc.hosidius_poh_doubledoorl_open"
+inherit = "loc.hosidius_poh_doubledoorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.hosidius_poh_doubledoorl"
+
+[[object]]
+id = "loc.hosidius_poh_doubledoor"
+inherit = "loc.hosidius_poh_doubledoor"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.hosidius_poh_doubledoor_open"
+
+[[object]]
+id = "loc.hosidius_poh_doubledoor_open"
+inherit = "loc.hosidius_poh_doubledoor_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.hosidius_poh_doubledoor"
+
+[[object]]
+id = "loc.civitas_poh_door_l"
+inherit = "loc.civitas_poh_door_l"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.civitas_poh_door_l_open"
+
+[[object]]
+id = "loc.civitas_poh_door_l_open"
+inherit = "loc.civitas_poh_door_l_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.civitas_poh_door_l"
+
+[[object]]
+id = "loc.civitas_poh_door_r"
+inherit = "loc.civitas_poh_door_r"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.civitas_poh_door_r_open"
+
+[[object]]
+id = "loc.civitas_poh_door_r_open"
+inherit = "loc.civitas_poh_door_r_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.civitas_poh_door_r"
+
+[[object]]
+id = "loc.canifis_poh_doubledoorl"
+inherit = "loc.canifis_poh_doubledoorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.canifis_poh_doubledoorl_open"
+
+[[object]]
+id = "loc.canifis_poh_doubledoorl_open"
+inherit = "loc.canifis_poh_doubledoorl_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.canifis_poh_doubledoorl"
+
+[[object]]
+id = "loc.canifis_poh_doubledoor"
+inherit = "loc.canifis_poh_doubledoor"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.canifis_poh_doubledoor_open"
+
+[[object]]
+id = "loc.canifis_poh_doubledoor_open"
+inherit = "loc.canifis_poh_doubledoor_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.canifis_poh_doubledoor"

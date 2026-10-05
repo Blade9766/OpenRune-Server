@@ -13,7 +13,19 @@ enum class BuildSound(val synth: String) {
  * One option on a hotspot.
  *
  * [built] is parallel to its [HotspotGroup.locs]: a rug fills its whole floor from three hotspot
- * variants - middle, side and corner - so one option has to name a built loc for each of them.
+ * variants - middle, side and corner - so one option has to name a built loc for each of them. A
+ * slot that stays empty names its own hotspot loc.
+ *
+ * An [upgrade] is never offered in the build menu: it is built over the option before it in its
+ * group with the Upgrade op, and its [materials] are only what that upgrade adds. A piece with
+ * [upgradeMaterials] is both: offered in the menu for [materials], or built over the one before it
+ * for [upgradeMaterials]. An upgrade with [upgradeFrom] is built over that option instead of the one
+ * before it, so one piece can be reached from several. A [quest] has to be complete before the
+ * piece can be built.
+ *
+ * [skill] is a second stat the piece needs ([skillLevel]) and trains ([skillXp]); [refund] is what
+ * removing it gives back. A piece that is planted rather than built needs a [wateringCan] with water
+ * in it.
  */
 class Buildable(
     val label: String,
@@ -22,6 +34,15 @@ class Buildable(
     val materials: List<Material>,
     val built: List<String>,
     val sound: BuildSound = BuildSound.WOOD,
+    val upgrade: Boolean = false,
+    val quest: String? = null,
+    val upgradeMaterials: List<Material>? = null,
+    val skill: String? = null,
+    val skillLevel: Int = 0,
+    val skillXp: Double = 0.0,
+    val refund: List<Material> = emptyList(),
+    val upgradeFrom: Int? = null,
+    val wateringCan: Boolean = false,
 ) {
     constructor(
         label: String,
@@ -30,7 +51,36 @@ class Buildable(
         materials: List<Material>,
         built: String,
         sound: BuildSound = BuildSound.WOOD,
-    ) : this(label, level, xp, materials, listOf(built), sound)
+        upgrade: Boolean = false,
+        quest: String? = null,
+        upgradeMaterials: List<Material>? = null,
+        skill: String? = null,
+        skillLevel: Int = 0,
+        skillXp: Double = 0.0,
+        refund: List<Material> = emptyList(),
+        upgradeFrom: Int? = null,
+        wateringCan: Boolean = false,
+    ) : this(
+        label,
+        level,
+        xp,
+        materials,
+        listOf(built),
+        sound,
+        upgrade,
+        quest,
+        upgradeMaterials,
+        skill,
+        skillLevel,
+        skillXp,
+        refund,
+        upgradeFrom,
+        wateringCan,
+    )
+
+    /** True when this piece can be built over the option before it in its group. */
+    val upgradable: Boolean
+        get() = upgrade || upgradeMaterials != null
 }
 
 /**

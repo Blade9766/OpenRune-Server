@@ -10,4 +10,5 @@ dependencies {
     implementation(projects.api.spells)
     implementation(projects.api.spellsRunes)
     implementation(projects.content.quest)
+    implementation(projects.content.skills.construction)
 }

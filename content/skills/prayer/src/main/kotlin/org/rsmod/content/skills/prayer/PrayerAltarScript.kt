@@ -4,12 +4,13 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.basePrayerLvl
 import org.rsmod.api.player.stat.prayerLvl
 import org.rsmod.api.script.onOpLoc1
+import org.rsmod.content.skills.construction.data.Chapel
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 class PrayerAltarScript : PluginScript() {
     override fun ScriptContext.startup() {
-        for (altar in ALTARS) {
+        for (altar in ALTARS + Chapel.ALTARS.keys) {
             onOpLoc1(altar) { prayAt() }
         }
     }

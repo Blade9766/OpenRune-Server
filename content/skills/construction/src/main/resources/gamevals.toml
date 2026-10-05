@@ -12,3 +12,71 @@ poh_teleport = 984
 # first build-area rebuild because of it - so moving them has to wait a cycle to be drawn.
 [gamevals.queue]
 poh_evict = 65422
+poh_lectern_make = 65440
+poh_servant_trip = 65441
+poh_oubliette_drop = 65442
+
+# The tablets each study lectern offers, in the order teletabs_craft_if lists them.
+[gamevals.enum]
+poh_nexus_destinations = 1377
+# The order the nexus configuration interface lists the destinations in.
+poh_nexus_order = 1375
+poh_lectern_oak = 4108
+poh_lectern_eagle = 4178
+poh_lectern_demon = 4179
+poh_lectern_teak_eagle = 5267
+poh_lectern_teak_demon = 5268
+poh_lectern_mahogany_eagle = 5269
+poh_lectern_mahogany_demon = 5270
+
+# The family crest Sir Renitee assigns; 0 until he has assigned one.
+[gamevals.varp]
+poh_family_crest = 65437
+poh_skill_trophies = 65438
+poh_challenge_mode = 65350
+poh_treasure = 65351
+poh_treasure_cooldown = 65352
+poh_portals = 65353
+poh_costume_view = 65354
+poh_prize_chest = 65355
+poh_dummy_variants = 65356
+poh_gallery_lair = 65357
+poh_gallery_cape = 65358
+poh_topiary = 65359
+
+# The skill hall's mounted and shown trophies, packed into varp.poh_skill_trophies.
+[gamevals.timer]
+poh_dungeon_traps = 153
+
+[gamevals.varbit]
+poh_trophies_heads = 65728
+poh_trophies_fish = 65729
+poh_trophy_head_shown = 65730
+poh_trophy_fish_shown = 65731
+poh_house_mode = 65732
+poh_house_attack_op = 65733
+poh_portal_1 = 65734
+poh_portal_2 = 65735
+poh_portal_3 = 65736
+poh_costume_store = 65737
+poh_costume_option = 65738
+poh_costume_page = 65739
+poh_free_build = 65740
+
+# The portal nexus destination structs' params, unnamed in the stock tables: the destination's
+# name, up to four runes and their counts (already the nexus's thousandfold cost), its Magic level,
+# the teleport spell's obj, and the two-way destinations' links between their two halves.
+[gamevals.param]
+poh_nexus_dest_name = 660
+poh_nexus_dest_rune_1 = 664
+poh_nexus_dest_rune_2 = 665
+poh_nexus_dest_rune_3 = 666
+poh_nexus_dest_rune_4 = 667
+poh_nexus_dest_count_1 = 668
+poh_nexus_dest_count_2 = 669
+poh_nexus_dest_count_3 = 670
+poh_nexus_dest_count_4 = 671
+poh_nexus_dest_level = 673
+poh_nexus_dest_spell = 2549
+poh_nexus_dest_alternate = 679
+poh_nexus_dest_primary = 680

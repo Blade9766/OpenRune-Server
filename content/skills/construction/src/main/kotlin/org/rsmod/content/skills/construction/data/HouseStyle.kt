@@ -1,5 +1,7 @@
 package org.rsmod.content.skills.construction.data
 
+import org.rsmod.map.zone.ZoneKey
+
 /**
  * A house decoration style.
  *
@@ -35,9 +37,53 @@ enum class HouseStyle(
     CIVITAS("Civitas illa Fortis", 35, 25_000, 248, 2, "civitas", "loc.civitas_poh_wall_default", "loc.civitas_poh_wall_window"),
     CANIFIS("Canifis", 45, 25_000, 248, 3, "canifis", "loc.canifis_poh_wall_plain", "loc.canifis_poh_wall_window_inner");
 
+    /** The block's lawn - grass, sand or mud by style - laid over every empty ground-floor cell. */
+    val grassZone: ZoneKey
+        get() = ZoneKey(blockZoneX + GRASS_OFFSET_X, FILLER_ZONE_Z, templateLevel)
+
+    /** The block's solid rock, laid over every empty cell of a house with a dungeon. */
+    val rockZone: ZoneKey
+        get() = ZoneKey(blockZoneX + ROCK_OFFSET_X, FILLER_ZONE_Z, templateLevel)
+
     val doorLeft: String
         get() = "loc.poh_hotspot_doorl_$doorHotspot"
 
     val doorRight: String
         get() = "loc.poh_hotspot_doorr_$doorHotspot"
+
+    /**
+     * The double door hung in this style's doorways. Each door hotspot is a ghost of its style's door
+     * (the models sit side by side in the cache), except basic stone, which has no door of its own
+     * and takes basic wood's.
+     */
+    val doors: HouseDoors
+        get() =
+            when (this) {
+                BASIC_WOOD,
+                BASIC_STONE -> HouseDoors("loc.village_door_l", "loc.village_door_r")
+                WHITEWASHED_STONE -> HouseDoors("loc.desert_door_l", "loc.desert_door_r")
+                FREMENNIK_WOOD -> HouseDoors("loc.rellekka_poh_doubledoorl", "loc.rellekka_poh_doubledoor")
+                TROPICAL_WOOD -> HouseDoors("loc.timberwall_doorl", "loc.timberwall_door")
+                FANCY_STONE -> HouseDoors("loc.yanille_poh_double_doorl", "loc.yanille_poh_double_door")
+                DEATHLY_MANSION -> HouseDoors("loc.deathly_poh_double_doorl", "loc.deathly_poh_double_door")
+                TWISTED -> HouseDoors("loc.twisted_poh_doubledoorl", "loc.twisted_poh_doubledoor")
+                HOSIDIUS -> HouseDoors("loc.hosidius_poh_doubledoorl", "loc.hosidius_poh_doubledoor")
+                CIVITAS -> HouseDoors("loc.civitas_poh_door_l", "loc.civitas_poh_door_r")
+                CANIFIS -> HouseDoors("loc.canifis_poh_doubledoorl", "loc.canifis_poh_doubledoor")
+            }
+
+    private companion object {
+        const val GRASS_OFFSET_X = 1
+        const val ROCK_OFFSET_X = 3
+        const val FILLER_ZONE_Z = 880
+    }
+}
+
+/** A style's double door: each panel closed, and the `_open` loc it swings to. */
+class HouseDoors(val left: String, val right: String) {
+    val leftOpen: String
+        get() = left + "_open"
+
+    val rightOpen: String
+        get() = right + "_open"
 }

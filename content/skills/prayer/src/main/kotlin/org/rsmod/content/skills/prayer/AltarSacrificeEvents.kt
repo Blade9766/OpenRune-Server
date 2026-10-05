@@ -1,40 +1,51 @@
 package org.rsmod.content.skills.prayer
 
+import dev.openrune.rscm.RSCM
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.events.interact.LocUEvents
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.table.prayer.SkillPrayerRow
+import org.rsmod.content.skills.construction.data.Chapel
 import org.rsmod.content.skills.prayer.items.ZealotRobes.shouldConsume
 import org.rsmod.game.loc.BoundLocInfo
+import org.rsmod.map.zone.ZoneKey
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class GildedAltarEvents @Inject constructor(
-    private val worldRepo: WorldRepository,
-) : PluginScript() {
+/**
+ * Offering bones at the Chaos Temple altar and at player-owned house altars.
+ *
+ * A house altar's multiplier comes from its tier plus every incense burner lit in its room; a
+ * chapel is a single 8x8 zone, so the burners are whatever lit burner locs share the altar's zone.
+ */
+class AltarSacrificeEvents
+@Inject
+constructor(private val worldRepo: WorldRepository, private val locRepo: LocRepository) :
+    PluginScript() {
+
+    private val litBurners: Set<Int> by lazy {
+        Chapel.LIT_BURNERS.keys.mapTo(HashSet()) { it.asRSCM(RSCMType.LOC) }
+    }
 
     override fun ScriptContext.startup() {
         val bones = PrayerBuryEvents.bones.filterNot { it.ashes }
 
         bones.forEach { row ->
-            registerAltar("loc.chaosaltar", row, chaos = true)
-            GILDED_ALTARS.forEach { altar ->
-                registerAltar(altar, row, chaos = false)
-            }
+            registerAltar(CHAOS_ALTAR, row, chaos = true)
+            Chapel.ALTARS.keys.forEach { altar -> registerAltar(altar, row, chaos = false) }
         }
 
-        onPlayerQueueWithArgs("queue.prayer_altar_sacrifice") {
-            processSacrificeTick(it.args)
-        }
+        onPlayerQueueWithArgs("queue.prayer_altar_sacrifice") { processSacrificeTick(it.args) }
     }
 
     private fun ScriptContext.registerAltar(altar: String, row: SkillPrayerRow, chaos: Boolean) {
-        onOpLocU(altar, row.item.internalName) {
-            startSacrifice(it, row, chaos)
-        }
+        onOpLocU(altar, row.item.internalName) { startSacrifice(it, row, chaos) }
     }
 
     private fun ProtectedAccess.startSacrifice(
@@ -65,13 +76,10 @@ class GildedAltarEvents @Inject constructor(
     private fun ProtectedAccess.performSacrifice(task: SacrificeTask) {
         anim("seq.human_bone_sacrifice")
 
-        spotanimMap(
-            worldRepo,
-            "spotanim.poh_bone_sacrifice",
-            task.altar.coords,
-        )
+        spotanimMap(worldRepo, "spotanim.poh_bone_sacrifice", task.altar.coords)
 
-        statAdvance("stat.prayer", task.row.exp * 3.5)
+        val burners = if (task.chaos) 0 else litBurnersAround(task.altar)
+        statAdvance("stat.prayer", task.row.exp * multiplier(task, burners))
 
         if (shouldConsumeBone(task).not()) {
             mes("The Dark Lord spares your sacrifice, but rewards you for your efforts.")
@@ -83,7 +91,26 @@ class GildedAltarEvents @Inject constructor(
         if (result.failure) {
             return
         }
+
+        if (!task.chaos) {
+            val very = if (burners == MAX_BURNERS) "very " else ""
+            spam("The gods are ${very}pleased with your offering.")
+        }
     }
+
+    private fun multiplier(task: SacrificeTask, burners: Int): Double {
+        if (task.chaos) {
+            return CHAOS_MULTIPLIER
+        }
+        val altar = RSCM.getReverseMapping(RSCMType.LOC, task.altar.id)
+        return Chapel.multiplier(altar, burners) ?: 1.0
+    }
+
+    private fun litBurnersAround(altar: BoundLocInfo): Int =
+        locRepo
+            .findAll(ZoneKey.from(altar.coords))
+            .count { it.id in litBurners }
+            .coerceAtMost(MAX_BURNERS)
 
     private fun ProtectedAccess.canSacrifice(task: SacrificeTask): Boolean {
         val bone = task.row.item.internalName
@@ -109,10 +136,8 @@ class GildedAltarEvents @Inject constructor(
     )
 
     private companion object {
-        val GILDED_ALTARS = listOf(
-            "loc.poh_altar_saradomin_7",
-            "loc.poh_altar_zamorak_7",
-            "loc.poh_altar_gnomechild_7",
-        )
+        const val CHAOS_ALTAR = "loc.chaosaltar"
+        const val CHAOS_MULTIPLIER = 3.5
+        const val MAX_BURNERS = 2
     }
 }

@@ -79,8 +79,14 @@ class HouseState(
         return other.type.hasDoor(Side.opposite(side), other.rotation)
     }
 
-    /** True when a room sits directly on top of this cell, holding it up. */
+    /**
+     * True when a room sits directly on top of this cell, holding it up. Only the ground floor holds
+     * anything up: a dungeon room has the earth over it, not the room above.
+     */
     fun supportsRoomAbove(floor: Floor, gx: Int, gz: Int): Boolean {
+        if (floor == Floor.DUNGEON) {
+            return false
+        }
         val above = Floor.entries.getOrNull(floor.ordinal + 1) ?: return false
         return get(above, gx, gz) != null
     }
@@ -109,9 +115,14 @@ class HouseState(
         }
     }
 
+    /** The grid cells with a room on [floor]. */
+    fun cells(floor: Floor): List<Pair<Int, Int>> =
+        rooms.keys.filter { floorOf(it) == floor }.map { gxOf(it) to gzOf(it) }
+
     /** The garden the exit portal stands in, which is the only way out on foot. */
     fun isEntrance(room: Room): Boolean =
-        room.type == RoomType.GARDEN && room.furniture[CENTREPIECE] == EXIT_PORTAL
+        (room.type == RoomType.GARDEN || room.type == RoomType.FORMAL_GARDEN) &&
+            room.furniture[CENTREPIECE] == EXIT_PORTAL
 
     /** Lays down the single garden every new house starts with, portal already standing. */
     fun createStarterHouse() {
@@ -148,9 +159,9 @@ class HouseState(
 
         fun floorOf(key: Int): Floor = Floor.entries[key shr (AXIS_BITS * 2)]
 
-        private fun gxOf(key: Int): Int = (key shr AXIS_BITS) and AXIS_MASK
+        fun gxOf(key: Int): Int = (key shr AXIS_BITS) and AXIS_MASK
 
-        private fun gzOf(key: Int): Int = key and AXIS_MASK
+        fun gzOf(key: Int): Int = key and AXIS_MASK
 
         fun inBounds(gx: Int, gz: Int): Boolean = gx in 0 until Construction.GRID && gz in 0 until Construction.GRID
 

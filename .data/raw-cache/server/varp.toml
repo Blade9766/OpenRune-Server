@@ -1222,3 +1222,87 @@ isServerOnly = true
 id = "varp.tog_xp_at_last_visit"
 scope = "Perm"
 transmit = "Never"
+
+# Player-owned house: the family crest Sir Renitee has assigned (0 = none yet).
+[[varp]]
+isServerOnly = true
+id = "varp.poh_family_crest"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the skill hall trophies the player has mounted, and the ones on show.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_skill_trophies"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the throne room lever has put the owner's house into challenge mode.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_challenge_mode"
+scope = "Temp"
+transmit = "Never"
+
+# Player-owned house: the coins in the treasure room chest.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_treasure"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the map clock at which the owner may next add treasure.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_treasure_cooldown"
+scope = "Temp"
+transmit = "Never"
+
+# Player-owned house: where each portal chamber space leads, packed into varbit.poh_portal_1..3.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_portals"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: which costume room store the player has open (packed into varbits).
+[[varp]]
+isServerOnly = true
+id = "varp.poh_costume_view"
+scope = "Temp"
+transmit = "Never"
+
+# Player-owned house: coins the owner has put in the games room prize chest.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_prize_chest"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the ornate combat dummy forms the owner has paid for, and the one on show.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_dummy_variants"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the boss lair jars put in the achievement gallery display, and the lair on show.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_gallery_lair"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the cape hung on the achievement gallery cape hanger.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_gallery_cape"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the boss shape the superior garden topiary bush is clipped into.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_topiary"
+scope = "Perm"
+transmit = "Never"

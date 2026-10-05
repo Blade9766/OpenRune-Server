@@ -6,6 +6,7 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.script.onOpLoc3
 import org.rsmod.content.skills.construction.data.Floor
+import org.rsmod.content.skills.construction.data.Furniture
 import org.rsmod.content.skills.construction.house.HouseRegistry
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
@@ -27,6 +28,7 @@ class HouseStairsScript @Inject constructor(private val registry: HouseRegistry)
         for (stairs in DOWN_STAIRS) {
             onOpLoc1(stairs) { climb(it.loc, up = false) }
         }
+        onOpLoc1(Furniture.DUNGEON_ENTRANCE) { enterDungeon(it.loc) }
         for (stairs in SPIRAL_STAIRS) {
             onOpLoc1(stairs) { climb(it.loc, up = true) }
             onOpLoc2(stairs) { climb(it.loc, up = true) }
@@ -35,7 +37,7 @@ class HouseStairsScript @Inject constructor(private val registry: HouseRegistry)
     }
 
     private fun ProtectedAccess.climb(loc: BoundLocInfo, up: Boolean) {
-        val house = registry.active(player) ?: return
+        val house = registry.houseAt(player.coords) ?: return
         val cell = registry.cellOf(house, loc.coords) ?: return
         val (floor, gx, gz) = cell
         val target = Floor.entries.getOrNull(floor.ordinal + if (up) 1 else -1)
@@ -48,6 +50,17 @@ class HouseStairsScript @Inject constructor(private val registry: HouseRegistry)
             return
         }
         telejump(CoordGrid(player.coords.x, player.coords.z, target.regionLevel))
+    }
+
+    /** A garden's dungeon entrance leads down to a dungeon stairs room built right beneath it. */
+    private fun ProtectedAccess.enterDungeon(loc: BoundLocInfo) {
+        val house = registry.houseAt(player.coords) ?: return
+        val (floor, gx, gz) = registry.cellOf(house, loc.coords) ?: return
+        if (!house.state.hasStairsBelow(floor, gx, gz)) {
+            mes("There is no stairway built beneath this entrance.")
+            return
+        }
+        telejump(CoordGrid(player.coords.x, player.coords.z, Floor.DUNGEON.regionLevel))
     }
 
     private companion object {

@@ -11,3 +11,7 @@ life_leech = 2917
 lucky_lightning = 2918
 magical_poison = 2919
 sea_curse = 2920
+
+# The player-owned house combat dummies' npc category, unnamed in the stock tables.
+[gamevals.category]
+poh_combat_dummy = 981
