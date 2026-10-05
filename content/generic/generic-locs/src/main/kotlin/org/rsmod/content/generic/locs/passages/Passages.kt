@@ -59,6 +59,7 @@ object Passages {
             "Steps",
             "Spiral staircase",
             "Rope ladder",
+            "Ship's ladder",
             "Vine",
             "Climbing rocks",
         )

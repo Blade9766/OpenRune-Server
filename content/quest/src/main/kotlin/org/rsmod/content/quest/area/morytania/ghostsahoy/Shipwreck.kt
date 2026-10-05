@@ -10,11 +10,14 @@ import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.output.UpdateRun
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
+import org.rsmod.api.player.ui.ifCloseOverlay
+import org.rsmod.api.player.ui.ifSetText
+import org.rsmod.api.random.GameRandom
 import org.rsmod.api.script.onApLoc1
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLoc2
 import org.rsmod.api.script.onOpLocU
-import org.rsmod.api.script.onPlayerTimer
+import org.rsmod.api.script.onPlayerSoftTimer
 import org.rsmod.content.generic.locs.passages.GenericPassageScript
 import org.rsmod.content.quest.area.ardougne.undergroundpass.faceTowards
 import org.rsmod.content.quest.area.morytania.ghostsahoy.GhostsAhoyQuest.Companion.AGILITY_REQ
@@ -22,6 +25,8 @@ import org.rsmod.content.quest.area.morytania.ghostsahoy.GhostsAhoyQuest.Compani
 import org.rsmod.content.quest.area.morytania.ghostsahoy.GhostsAhoyQuest.Companion.SCRAP_1
 import org.rsmod.content.quest.area.morytania.ghostsahoy.GhostsAhoyQuest.Companion.SCRAP_3
 import org.rsmod.content.quest.area.morytania.ghostsahoy.GhostsAhoyQuest.Companion.STAGE_GATHER
+import org.rsmod.events.EventBus
+import org.rsmod.game.entity.Player
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
@@ -39,7 +44,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class Shipwreck
 @Inject
-constructor(private val ahoy: GhostsAhoyQuest, private val passages: GenericPassageScript) : PluginScript() {
+constructor(
+    private val ahoy: GhostsAhoyQuest,
+    private val passages: GenericPassageScript,
+    private val random: GameRandom,
+    private val eventBus: EventBus,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLoc1(GANGPLANK_ON_SHORE) { board() }
@@ -47,7 +57,7 @@ constructor(private val ahoy: GhostsAhoyQuest, private val passages: GenericPass
         onOpLoc1(LADDER_UP) { climb(it.loc, it.type, up = true) }
         onOpLoc1(LADDER_DOWN) { climb(it.loc, it.type, up = false) }
         onOpLoc1(MAST) { searchMast() }
-        onPlayerTimer(WIND_TIMER) { windTick() }
+        onPlayerSoftTimer(WIND_TIMER) { windTick(player) }
         onOpLoc1(LOCKED_CHEST) { mes("The chest is locked.") }
         onOpLocU(LOCKED_CHEST, CHEST_KEY) { unlockChest(it.loc) }
         onOpLoc1(CLOSED_CHEST) { openChest(it.loc) }
@@ -68,36 +78,38 @@ constructor(private val ahoy: GhostsAhoyQuest, private val passages: GenericPass
     }
 
     private suspend fun ProtectedAccess.climb(loc: BoundLocInfo, type: ObjectServerType, up: Boolean) {
-        val toQuarterdeck = up && loc.coords.level == 1 && onWreck(loc.coords)
         with(passages) { passage(loc, type, 0) }
-        if (toQuarterdeck) {
+        if (up && onQuarterdeck(coords)) {
             startWind()
         }
     }
 
     fun ProtectedAccess.startWind() {
         ahoy.setWindHigh(player, true)
-        ifOpenOverlay(WIND_OVERLAY)
-        showWind()
-        timer(WIND_TIMER, WIND_INTERVAL)
+        ifOpenOverlay(WIND_OVERLAY, WIND_TARGET)
+        showWind(player)
+        softTimer(WIND_TIMER, WIND_INTERVAL)
     }
 
-    /** One change of the wind; ends the overlay and the timer once the player is off the quarterdeck. */
-    fun ProtectedAccess.windTick() {
-        if (!onQuarterdeck(coords)) {
-            clearTimer(WIND_TIMER)
-            ifCloseSub(WIND_OVERLAY)
+    /**
+     * One change of the wind; ends the overlay and the timer once the player is off the
+     * quarterdeck. A soft timer, so it never takes protected access from an open dialogue.
+     */
+    fun windTick(player: Player) {
+        if (!onQuarterdeck(player.coords)) {
+            player.clearSoftTimer(WIND_TIMER)
+            player.ifCloseOverlay(WIND_OVERLAY, eventBus)
             return
         }
         if (random.of(WIND_CHANGE_ODDS) == 0) {
             ahoy.setWindHigh(player, !ahoy.isWindHigh(player))
-            showWind()
+            showWind(player)
         }
     }
 
-    private fun ProtectedAccess.showWind() {
+    private fun showWind(player: Player) {
         val text = if (ahoy.isWindHigh(player)) "<col=ff3000>High</col>" else "<col=00ff00>Low</col>"
-        ifSetText(WIND_TEXT, text)
+        player.ifSetText(WIND_TEXT, text)
     }
 
     private suspend fun ProtectedAccess.searchMast() {
@@ -105,7 +117,7 @@ constructor(private val ahoy: GhostsAhoyQuest, private val passages: GenericPass
         if (!onQuarterdeck(coords)) {
             return
         }
-        if (WIND_TIMER !in player.timerMap) {
+        if (WIND_TIMER !in player.softTimerMap) {
             startWind()
         }
         if (ahoy.stage(player) != STAGE_GATHER) {
@@ -202,6 +214,7 @@ constructor(private val ahoy: GhostsAhoyQuest, private val passages: GenericPass
 
         const val WIND_TIMER = "timer.ahoy_wind"
         const val WIND_OVERLAY = "interface.ahoy_windspeed"
+        const val WIND_TARGET = "component.toplevel_osrs_stretch:overlay_hud"
         const val WIND_TEXT = "component.ahoy_windspeed:ahoy_windspeed_indicator"
         const val WIND_INTERVAL = 5
         const val WIND_CHANGE_ODDS = 3

@@ -282,7 +282,7 @@ class GhostsAhoyInteractionTest {
         val f = Fixture(STAGE_GATHER)
         f.player.coords = Shipwreck.MAST_TILE.translate(-1, 0)
         f.ahoy.setWindHigh(f.player, true)
-        f.player.timerMap.schedule(Shipwreck.WIND_TIMER, 100, 5)
+        f.player.softTimerMap.schedule(Shipwreck.WIND_TIMER, 100, 5)
         f.locOp(Shipwreck.MAST, Shipwreck.MAST_TILE)
         assertTrue(FlagPart.entries.none { f.ahoy.isSeen(f.player, it) })
         f.ahoy.setWindHigh(f.player, false)
@@ -290,6 +290,23 @@ class GhostsAhoyInteractionTest {
         assertTrue(FlagPart.entries.all { f.ahoy.isSeen(f.player, it) })
         val top = checkNotNull(f.ahoy.target(f.player, FlagPart.TOP))
         assertTrue(f.said("top half is ${top.label}"))
+    }
+
+    @Test fun `the wind changes without touching an open dialogue and stops off the quarterdeck`() {
+        val f = Fixture(STAGE_GATHER)
+        f.player.coords = Shipwreck.MAST_TILE.translate(-1, 0)
+        f.player.softTimerMap.schedule(Shipwreck.WIND_TIMER, 100, 5)
+        f.ahoy.setWindHigh(f.player, true)
+        var changed = false
+        repeat(50) {
+            f.shipwreck.windTick(f.player)
+            if (!f.ahoy.isWindHigh(f.player)) changed = true
+        }
+        assertTrue(changed, "the wind drops now and then")
+        assertTrue(Shipwreck.WIND_TIMER in f.player.softTimerMap)
+        f.player.coords = Shipwreck.DECK_LANDING
+        f.shipwreck.windTick(f.player)
+        assertFalse(Shipwreck.WIND_TIMER in f.player.softTimerMap, "the wind stops once off the quarterdeck")
     }
 
     @Test fun `each map scrap comes from its own chest and only distinct scraps make the map`() {
@@ -783,6 +800,7 @@ class GhostsAhoyInteractionTest {
         val ahoy = GhostsAhoyQuest()
         val robin: Robin
         val lobster: GiantLobster
+        val shipwreck: Shipwreck
 
         init {
             for ((x0, z0, x1, z1) in AREAS) {
@@ -794,12 +812,13 @@ class GhostsAhoyInteractionTest {
             robin = Robin(ahoy, objRepo)
             lobster = GiantLobster(ahoy, npcRepo, players, AiPlayerInteractions(events, players), unused<NpcDeath>(), clock)
             val spade = SpadeDigging()
+            shipwreck = Shipwreck(ahoy, unused(), DefaultGameRandom(Random(3)), events)
             val passages = unused<GenericPassageScript>()
             val scripts = ScriptContext(events, CheatCommandMap(), EngineQueueCache())
             for (script in listOf(
                 ahoy, robin, lobster, spade, TreasureMap(ahoy, spade), Velorina(ahoy), Necrovarus(ahoy, objRepo),
                 OldCrone(ahoy), GhostInnkeeper(ahoy), Petition(ahoy), AkHaranu(ahoy), OldMan(ahoy), GhostCaptain(ahoy),
-                NettleTea(), ModelShip(ahoy), Shipwreck(ahoy, passages), TempleRobes(ahoy, passages),
+                NettleTea(), ModelShip(ahoy), shipwreck, TempleRobes(ahoy, passages),
                 Ectophial(validator, unused()), PhasmatysBarrier(ahoy), GoblinDyes(),
             )) {
                 with(script) { scripts.startup() }

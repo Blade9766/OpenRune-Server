@@ -188,14 +188,11 @@ constructor(private val ahoy: GhostsAhoyQuest, private val objRepo: ObjRepositor
         ifSetHide(HOLD_LAYER, game.isOver || game.playerHeld)
     }
 
+    /** Empty slots keep the board's blank stone; the board is reopened fresh for every game. */
     private fun ProtectedAccess.slot(index: Int, rune: RuneDrawGame.Rune?) {
-        val component = "component.ahoy_runedraw:runedraw_slot_$index"
-        if (rune == null) {
-            ifSetHide(component, true)
-            return
+        if (rune != null) {
+            ifSetObj("component.ahoy_runedraw:runedraw_slot_$index", rune.obj, RUNE_ZOOM)
         }
-        ifSetHide(component, false)
-        ifSetObj(component, rune.obj, RUNE_ZOOM)
     }
 
     private fun scoreText(runes: List<RuneDrawGame.Rune>, score: Int): String =
@@ -226,7 +223,7 @@ constructor(private val ahoy: GhostsAhoyQuest, private val objRepo: ObjRepositor
         private const val SCORE_ROBIN = "component.ahoy_runedraw:runedraw_score_r"
         private const val STATUS_PLAYER = "component.ahoy_runedraw:runedraw_totalscore_l"
         private const val STATUS_ROBIN = "component.ahoy_runedraw:runedraw_totalscore_r"
-        private const val RUNE_ZOOM = 1027
+        private const val RUNE_ZOOM = 80
         private const val COIN_DROP_TICKS = 200
     }
 }
