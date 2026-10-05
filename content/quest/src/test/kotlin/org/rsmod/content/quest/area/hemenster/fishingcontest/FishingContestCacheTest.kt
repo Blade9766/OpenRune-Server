@@ -160,7 +160,7 @@ class FishingContestCacheTest {
     @Test fun `every symbol the scripts use resolves`() {
         for (seq in listOf(
             FishingCompetition.CAST_SEQ, FishingCompetition.PLACE_SEQ, FishingCompetition.GAG_SEQ,
-            McGruborsWood.SQUEEZE_SEQ, McGruborsWood.DIG_SEQ, WhiteWolfTunnel.CLIMB_SEQ,
+            McGruborsWood.SQUEEZE_SEQ, McGruborsWood.DIG_SEQ,
         )) assertNotNull(ServerCacheManager.getAnim(seq.asRSCM(RSCMType.SEQ)), seq)
         assertTrue(FishingCompetition.SMELL_SPOTANIM.asRSCM(RSCMType.SPOTANIM) >= 0)
         for (synth in listOf(HemensterGate.OPEN_SOUND, McGruborsWood.SQUEEZE_SOUND, McGruborsWood.DIG_SOUND)) {

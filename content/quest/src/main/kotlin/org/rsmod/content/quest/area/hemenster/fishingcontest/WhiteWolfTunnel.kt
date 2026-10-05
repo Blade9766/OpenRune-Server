@@ -21,30 +21,25 @@ class WhiteWolfTunnel @Inject constructor(private val fc: FishingContestQuest) :
     override fun ScriptContext.startup() {
         onOpLoc1(WEST_DOWN) { climbDown(it.loc, WEST_BOTTOM, VESTRI, "Vestri") }
         onOpLoc1(EAST_DOWN) { climbDown(it.loc, EAST_BOTTOM, AUSTRI, "Austri") }
-        onOpLoc1(WEST_UP) { climbUp(it.loc, WEST_TOP) }
-        onOpLoc1(EAST_UP) { climbUp(it.loc, EAST_TOP) }
+        onOpLoc1(WEST_UP) { climbUp(WEST_TOP) }
+        onOpLoc1(EAST_UP) { climbUp(EAST_TOP) }
     }
 
     private suspend fun ProtectedAccess.climbDown(stairs: BoundLocInfo, dest: CoordGrid, dwarf: String, name: String) {
         arriveDelay()
-        faceLoc(stairs)
         if (!fc.isComplete(player)) {
+            faceLoc(stairs)
             startDialogue {
                 chatNpcSpecific(name, dwarf, angry, "Oi! Where do you think you're going? That tunnel is for friends of the dwarves only.")
             }
             return
         }
-        anim(CLIMB_SEQ)
-        delay(1)
         telejump(dest)
         mes("You climb down into the dwarven tunnel under White Wolf Mountain.")
     }
 
-    private suspend fun ProtectedAccess.climbUp(stairs: BoundLocInfo, dest: CoordGrid) {
+    private suspend fun ProtectedAccess.climbUp(dest: CoordGrid) {
         arriveDelay()
-        faceLoc(stairs)
-        anim(CLIMB_SEQ)
-        delay(1)
         telejump(dest)
     }
 
@@ -53,7 +48,6 @@ class WhiteWolfTunnel @Inject constructor(private val fc: FishingContestQuest) :
         const val EAST_DOWN = "loc.tunnelstairstop2"
         const val WEST_UP = "loc.tunnelstairs"
         const val EAST_UP = "loc.tunnelstairs2"
-        const val CLIMB_SEQ = "seq.human_reachforladder"
 
         val WEST_TOP = CoordGrid(2820, 3486, 0)
         val EAST_TOP = CoordGrid(2876, 3482, 0)
