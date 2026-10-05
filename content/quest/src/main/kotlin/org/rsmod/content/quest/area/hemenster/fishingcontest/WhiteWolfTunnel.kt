@@ -55,7 +55,7 @@ class WhiteWolfTunnel @Inject constructor(private val fc: FishingContestQuest) :
         const val EAST_UP = "loc.tunnelstairs2"
         const val CLIMB_SEQ = "seq.human_reachforladder"
 
-        val WEST_TOP = CoordGrid(2820, 3483, 0)
+        val WEST_TOP = CoordGrid(2820, 3486, 0)
         val EAST_TOP = CoordGrid(2876, 3482, 0)
         val WEST_BOTTOM = CoordGrid(2820, 9882, 0)
         val EAST_BOTTOM = CoordGrid(2876, 9879, 0)

@@ -1,5 +1,6 @@
 package org.rsmod.content.quest.area.hemenster.fishingcontest
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.NpcMode
@@ -10,8 +11,9 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.repo.world.WorldRepository
+import org.rsmod.api.script.onApLoc1
+import org.rsmod.api.script.onApLocT
 import org.rsmod.api.script.onNpcTimer
-import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
@@ -71,8 +73,12 @@ constructor(
         onOpNpc1(JOSHUA_SPOT) { claimed(JOSHUA, "Joshua", "Shh! Go and fish somewhere else, you'll scare them off.") }
         onPlayerQueueWithArgs<Spot>(CATCH_QUEUE) { cast(it.args) }
         onPlayerSoftTimer(ROUND_TIMER) { tick(player) }
+        val inventory = ServerCacheManager.fromComponent(INVENTORY.asRSCM(RSCMType.COMPONENT))
+        onApLocT(PIPE, inventory) {
+            if (it.objType?.id == GARLIC.asRSCM(RSCMType.OBJ)) placeGarlic(it.loc) else apRange(-1)
+        }
         onOpLocU(PIPE, GARLIC) { placeGarlic(it.loc) }
-        onOpLoc1(PIPE) { searchPipe() }
+        onApLoc1(PIPE) { searchPipe(it.loc) }
         onNpcTimer(STRANGER_RETURN_TIMER) { strangerReturns(npc) }
     }
 
@@ -333,7 +339,9 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.placeGarlic(pipe: BoundLocInfo) {
-        arriveDelay()
+        if (!isWithinApRange(pipe, distance = PIPE_AP_RANGE)) {
+            return
+        }
         faceLoc(pipe)
         if (!fc.isContestStage(player)) {
             mes("Why would you want to stuff garlic down a pipe?")
@@ -356,7 +364,11 @@ constructor(
         }
     }
 
-    private fun ProtectedAccess.searchPipe() {
+    private fun ProtectedAccess.searchPipe(pipe: BoundLocInfo) {
+        if (!isWithinApRange(pipe, distance = PIPE_AP_RANGE)) {
+            return
+        }
+        faceLoc(pipe)
         if (fc.isGarlicPlaced(player)) {
             mes("The pipe reeks of garlic.")
             return
@@ -427,6 +439,7 @@ constructor(
 
     companion object {
         const val PIPE = "loc.garlicpipe"
+        const val INVENTORY = "component.inventory:items"
         const val PIPE_SPOT = "npc.0_41_53_sinisterfishspot"
         const val OPEN_SPOT = "npc.0_41_53_compofishspot"
         const val BIG_DAVE_SPOT = "npc.0_41_53_bigdavefishspot"
@@ -443,6 +456,7 @@ constructor(
         const val SMELL_SPOTANIM = "spotanim.mortmyre_swampstench"
 
         const val CAST_TICKS = 5
+        const val PIPE_AP_RANGE = 1
         const val BITE_CHANCE = 2
         const val CHATTER_STEPS = 4
         const val COMPETITORS = 3

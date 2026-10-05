@@ -25,6 +25,7 @@ import org.rsmod.api.area.checker.AreaChecker
 import org.rsmod.api.inv.storage.PlayerItemStorage
 import org.rsmod.api.invtx.InvTransactionsScript
 import org.rsmod.api.player.dialogue.align.TextAlignment
+import org.rsmod.api.player.events.interact.LocEvents
 import org.rsmod.api.player.events.interact.NpcEvents
 import org.rsmod.api.player.hook.PlayerTeleportValidator
 import org.rsmod.api.player.input.ResumePauseButtonInput
@@ -313,6 +314,14 @@ class FishingContestInteractionTest {
         f.garlicOnPipe()
         assertTrue(f.fc.isStrangerMoved(f.player), "garlic during a round works at once")
         f.fishUntil(Spot.PIPES) { f.count(CARP) == 1 }
+    }
+
+    @Test fun `the pipes are reached from the grounds below them`() {
+        val f = Fixture(STAGE_GROUNDS)
+        f.give(GARLIC)
+        f.garlicOnPipe()
+        assertEquals(0, f.count(GARLIC))
+        assertTrue(f.fc.isGarlicPlaced(f.player))
     }
 
     @Test fun `garlic is only used up when it goes in the pipe`() {
@@ -813,9 +822,20 @@ class FishingContestInteractionTest {
 
         fun checkVine() = loc("loc.red_worm_vine", CoordGrid(2631, 3498, 0))
 
-        fun searchPipe() = loc(FishingCompetition.PIPE, CoordGrid(2637, 3446, 0))
+        fun pipeType() = checkNotNull(ServerCacheManager.getObject(FishingCompetition.PIPE.asRSCM()))
 
-        fun garlicOnPipe() = locU(FishingCompetition.PIPE, CoordGrid(2637, 3446, 0), GARLIC)
+        fun searchPipe() {
+            player.coords = BELOW_PIPE
+            val loc = bound(FishingCompetition.PIPE, PIPE_TILE, wall = false)
+            dispatch { assertTrue(events.publish(this, LocEvents.Ap1(loc, loc, pipeType()))) }
+        }
+
+        fun garlicOnPipe() {
+            val back = player.coords
+            player.coords = BELOW_PIPE
+            locU(FishingCompetition.PIPE, PIPE_TILE, GARLIC)
+            player.coords = back
+        }
 
         fun spot(spot: Spot) = npcOp(if (spot == Spot.PIPES) FishingCompetition.PIPE_SPOT else FishingCompetition.OPEN_SPOT)
 
@@ -948,6 +968,8 @@ class FishingContestInteractionTest {
     companion object {
         val TOWN = CoordGrid(2640, 3440, 0)
         val OUTSIDE_GATE = CoordGrid(HemensterGate.OUTSIDE_X, 3441, 0)
+        val PIPE_TILE = CoordGrid(2637, 3446, 0)
+        val BELOW_PIPE = CoordGrid(2637, 3445, 0)
 
         private val restored = mutableListOf<() -> Unit>()
 

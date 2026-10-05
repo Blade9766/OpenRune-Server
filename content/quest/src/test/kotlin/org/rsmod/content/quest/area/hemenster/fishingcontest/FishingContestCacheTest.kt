@@ -85,6 +85,9 @@ class FishingContestCacheTest {
         assertFalse(item(FishingContestQuest.TROPHY).stackable)
         assertNotNull(item(FishingContestQuest.PASS))
         assertNotNull(item(FishingContestQuest.CARP))
+        for (name in listOf(FishingCompetition.PIPE_SPOT, FishingCompetition.OPEN_SPOT, FishingCompetition.BIG_DAVE_SPOT,
+            FishingCompetition.JOSHUA_SPOT, FishingContestQuest.BIG_DAVE, FishingContestQuest.JOSHUA, FishingContestQuest.STRANGER,
+        )) assertEquals(0, npc(name).wanderRange, "$name wanders")
     }
 
     @Test fun `every quest loc stands where the scripts expect`() {
@@ -150,6 +153,8 @@ class FishingContestCacheTest {
         assertTrue(walks(WhiteWolfTunnel.WEST_BOTTOM, WhiteWolfTunnel.EAST_BOTTOM))
         assertTrue(walks(WhiteWolfTunnel.WEST_BOTTOM, TUNNEL_MIDDLE))
         assertFalse(walks(WhiteWolfTunnel.WEST_TOP, WhiteWolfTunnel.EAST_TOP), "the mountain can be crossed on foot nearby")
+        assertTrue(walks(WhiteWolfTunnel.WEST_TOP, VESTRI_TILE), "the west arrival is cut off from Vestri")
+        assertTrue(walks(WhiteWolfTunnel.EAST_TOP, AUSTRI_TILE), "the east arrival is cut off from Austri")
     }
 
     @Test fun `every symbol the scripts use resolves`() {
@@ -221,6 +226,8 @@ class FishingContestCacheTest {
         val BONZO_STAND = CoordGrid(2642, 3438, 0)
         val FORESTER_TILE = CoordGrid(2650, 3468, 0)
         val TUNNEL_MIDDLE = CoordGrid(2848, 9880, 0)
+        val VESTRI_TILE = CoordGrid(2820, 3487, 0)
+        val AUSTRI_TILE = CoordGrid(2877, 3483, 0)
 
         val LOADED = listOf(41 to 53, 41 to 54, 42 to 53, 42 to 54, 43 to 54, 44 to 54, 43 to 154, 44 to 154)
             .map { (x, z) -> MapSquareKey(x, z) }.toSet()

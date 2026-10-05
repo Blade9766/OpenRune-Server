@@ -1,7 +1,9 @@
 package org.rsmod.content.quest.area.hemenster.fishingcontest
 
 import jakarta.inject.Inject
+import org.rsmod.api.config.constants
 import org.rsmod.api.player.dialogue.Dialogue
+import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
@@ -23,7 +25,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 class McGruborsWood @Inject constructor(private val fc: FishingContestQuest) : PluginScript() {
 
     override fun ScriptContext.startup() {
-        onOpLoc1(LOOSE_RAILING) { squeeze(it.loc) }
+        onOpLoc1(LOOSE_RAILING) { squeeze() }
         onOpLoc1(GATE_LEFT) { lockedGate(it.loc) }
         onOpLoc1(GATE_RIGHT) { lockedGate(it.loc) }
         for (vine in VINES) {
@@ -32,15 +34,26 @@ class McGruborsWood @Inject constructor(private val fc: FishingContestQuest) : P
         onOpNpc1(FORESTER) { startDialogue(it.npc) { forester() } }
     }
 
-    private suspend fun ProtectedAccess.squeeze(railing: BoundLocInfo) {
-        arriveDelay()
-        faceLoc(railing)
-        val dest = if (isInside(coords)) OUTSIDE else INSIDE
-        anim(SQUEEZE_SEQ)
-        soundSynth(SQUEEZE_SOUND)
-        delay(1)
-        teleport(dest)
+    private suspend fun ProtectedAccess.squeeze() {
+        val leaving = isInside(coords)
+        val start = if (leaving) INSIDE else OUTSIDE
+        val end = if (leaving) OUTSIDE else INSIDE
+        if (coords != start) {
+            playerWalk(start)
+            arriveDelay()
+        }
         mes("You squeeze through the loose railing.")
+        soundSynth(SQUEEZE_SOUND)
+        anim(SQUEEZE_SEQ)
+        exactMove(
+            start = start,
+            end = end,
+            delay1 = 0,
+            delay2 = SQUEEZE_TICKS * CLIENT_CYCLES_PER_TICK,
+            dir = if (leaving) constants.em_face_west else constants.em_face_east,
+            teleportType = TeleportType.Exempt,
+        )
+        delay(SQUEEZE_TICKS)
     }
 
     private suspend fun ProtectedAccess.lockedGate(gate: BoundLocInfo) {
@@ -93,7 +106,9 @@ class McGruborsWood @Inject constructor(private val fc: FishingContestQuest) : P
                 "loc.red_worm_end_diag",
             )
 
-        const val SQUEEZE_SEQ = "seq.human_walk_fence_north"
+        const val SQUEEZE_SEQ = "seq.railing_squeeze"
+        const val SQUEEZE_TICKS = 2
+        const val CLIENT_CYCLES_PER_TICK = 30
         const val SQUEEZE_SOUND = "synth.squeeze_thru_crack"
         const val DIG_SEQ = "seq.human_dig"
         const val DIG_SOUND = "synth.digspade"
