@@ -76,7 +76,7 @@ class CouncillorHalgrive @Inject constructor(private val sheep: SheepHerderQuest
         if (done == 0) {
             chatPlayer(neutral, "I haven't dealt with any of them yet.")
         } else {
-            chatPlayer(neutral, "I've burned the remains of $done of them.")
+            chatPlayer(neutral, "I've burned the remains of ${COUNTS.getOrElse(done) { "$done" }} of them.")
         }
         chatNpc(neutral, "Then you've still to dispose of the ${left.joinToString(", ") { it.label }.replaceLast(", ", " and ")} sheep. Bring me word once all four are burned.")
         if (!sheep.hasFeed(player, access.bank)) {
@@ -116,5 +116,9 @@ class CouncillorHalgrive @Inject constructor(private val sheep: SheepHerderQuest
     private fun String.replaceLast(old: String, new: String): String {
         val at = lastIndexOf(old)
         return if (at < 0) this else substring(0, at) + new + substring(at + old.length)
+    }
+
+    private companion object {
+        val COUNTS = listOf("none", "one", "two", "three", "four")
     }
 }

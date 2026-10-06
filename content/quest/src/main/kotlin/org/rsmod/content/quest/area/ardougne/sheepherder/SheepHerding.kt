@@ -69,6 +69,9 @@ constructor(
         if (path.isEmpty()) {
             npc.say("Baa!")
             mes("The ${colour.label} sheep can't go any further ${dir.label}: something's in the way.")
+            if (HerdingRules.isDeadEnd(steps, npc.coords)) {
+                wedged(npc, colour, ticks = 1)
+            }
             return
         }
         bleat(npc)
@@ -77,6 +80,9 @@ constructor(
         npc.walk(dest)
         if (!HerdingRules.isThreshold(dest)) {
             mes("You prod the ${colour.label} sheep and it trots ${dir.label}.")
+            if (HerdingRules.isDeadEnd(steps, dest)) {
+                wedged(npc, colour, ticks = path.size + 1)
+            }
             showTutorial()
             return
         }
@@ -130,6 +136,13 @@ constructor(
         sheep.setState(player, colour, SheepState.PENNED)
         player.mes("The ${colour.label} sheep trots through the gate and into the enclosure.")
         player.mes("Now feed it the poisoned sheep feed.")
+    }
+
+    /** The sheep is somewhere it can't be prodded out of, so it heads home once it gets there. */
+    private fun ProtectedAccess.wedged(npc: Npc, colour: SheepColour, ticks: Int) {
+        mes("The ${colour.label} sheep is wedged in where you can't get behind it. It'll wander back to its pasture.")
+        npc.clearTimer(RESTLESS_TIMER)
+        npc.timer(RETURN_TIMER, ticks)
     }
 
     private fun holdForHerding(npc: Npc) {

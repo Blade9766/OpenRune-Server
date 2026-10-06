@@ -262,6 +262,27 @@ class SheepHerderInteractionTest {
         }
     }
 
+    @Test fun `a sheep driven into a dead end is sent home`() {
+        val f = Fixture(STAGE_STARTED)
+        f.equip()
+        val pasture = CoordGrid(2610, 3344, 0)
+        val sheep = f.spawnSheep(SheepColour.RED, pasture)
+        f.prod(sheep, from = pasture.translateZ(-1))
+        assertEquals(CoordGrid(2610, 3348, 0), sheep.routeDestination.lastOrNull())
+        assertTrue(f.said("wedged in where you can't get behind it"), f.output())
+        assertTrue(f.hasTimer(sheep, SheepHerding.RETURN_TIMER))
+        assertFalse(f.hasTimer(sheep, SheepHerding.RESTLESS_TIMER))
+
+        sheep.teleport(f.collision, sheep.routeDestination.lastOrNull()!!)
+        f.herding.startReturn(sheep)
+        assertEquals(pasture, sheep.routeDestination.lastOrNull(), "it walks out of the pocket and home")
+
+        val open = f.spawnSheep(SheepColour.GREEN, OPEN_FIELD)
+        f.prod(open, from = OPEN_FIELD.translateZ(-1))
+        assertTrue(f.hasTimer(open, SheepHerding.RESTLESS_TIMER), "open ground keeps the normal wait")
+        assertFalse(f.hasTimer(open, SheepHerding.RETURN_TIMER))
+    }
+
     @Test fun `fences stop a sheep short or refuse the prod outright`() {
         val f = Fixture(STAGE_STARTED)
         f.equip()
@@ -469,6 +490,7 @@ class SheepHerderInteractionTest {
         f.sheep.setState(f.player, SheepColour.GREEN, SheepState.BONES)
         f.talk(HALGRIVE)
         assertTrue(f.said("still to dispose of the green and yellow sheep"), f.output())
+        assertTrue(f.said("burned the remains of two of them"), f.output())
         assertEquals(STAGE_STARTED, f.stage())
         assertEquals(0, f.count(COINS))
     }

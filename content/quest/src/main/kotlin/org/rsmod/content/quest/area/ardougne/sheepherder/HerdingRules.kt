@@ -74,6 +74,16 @@ object HerdingRules {
     /** Where the player must stand to drive a sheep at [sheep] in [dir]. */
     fun standFor(sheep: CoordGrid, dir: Direction): CoordGrid = sheep.translate(-dir.dx, -dir.dz)
 
+    /**
+     * Whether a sheep at [at] can't be driven anywhere: for every cardinal direction either the
+     * tile the player would have to stand on is walled off, or the sheep can't take a single step.
+     */
+    fun isDeadEnd(steps: StepValidator, at: CoordGrid): Boolean =
+        Direction.entries.filter { it.isCardinal }.none { dir ->
+            steps.canTravel(at.level, at.x, at.z, -dir.dx, -dir.dz) &&
+                steps.canTravel(at.level, at.x, at.z, dir.dx, dir.dz)
+        }
+
     enum class Direction(val dx: Int, val dz: Int, val label: String) {
         NORTH(0, 1, "north"),
         NORTH_EAST(1, 1, "north-east"),

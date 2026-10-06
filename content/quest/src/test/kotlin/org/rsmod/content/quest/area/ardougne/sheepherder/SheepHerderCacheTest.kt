@@ -173,6 +173,15 @@ class SheepHerderCacheTest {
         assertEquals(HerdingRules.GATE_THRESHOLD[1], west.last(), "a sheep crossing the threshold stops there to be penned")
     }
 
+    @Test fun `the walled pocket above the red pasture is a dead end and open ground is not`() {
+        assertTrue(HerdingRules.isDeadEnd(steps, RED_POCKET))
+        val north = HerdingRules.push(steps, RED_POCKET.translateZ(-HerdingRules.PUSH_TILES), Direction.NORTH)
+        assertEquals(RED_POCKET, north.lastOrNull(), "a northward prod from the red pasture lands in the pocket")
+        assertFalse(HerdingRules.isDeadEnd(steps, CoordGrid(2600, 3388, 0)))
+        assertFalse(HerdingRules.isDeadEnd(steps, CoordGrid(2594, 3366, 0)))
+        assertFalse(HerdingRules.isDeadEnd(steps, CoordGrid(2593, 3361, 0)))
+    }
+
     @Test fun `every spawn of every colour can be herded to the gate`() {
         val reachable = flood(BRUMTY_STAND)
         for (colour in SheepColour.entries) {
@@ -269,6 +278,7 @@ class SheepHerderCacheTest {
         const val LEGS_SLOT = 7
 
         val INCINERATOR = CoordGrid(2606, 3360, 0)
+        val RED_POCKET = CoordGrid(2610, 3348, 0)
         val INCINERATOR_STAND = CoordGrid(2604, 3360, 0)
         val BRUMTY_STAND = CoordGrid(2592, 3358, 0)
 
