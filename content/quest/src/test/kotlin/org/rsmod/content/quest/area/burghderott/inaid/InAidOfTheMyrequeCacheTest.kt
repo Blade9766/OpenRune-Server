@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceLock
-import org.rsmod.api.config.refs.BaseParams
+import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.table.QuestRow
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.STAGE_COMPLETE
 import org.rsmod.game.loc.LocEntity
@@ -240,9 +240,15 @@ class InAidOfTheMyrequeCacheTest {
     }
 
     @Test fun `the rod is enchanted by the spellbook's own lvl-1 enchant`() {
-        val spell = ServerCacheManager.getItem(RodOfIvandis.ENCHANT_SPELL_OBJ.asRSCM(RSCMType.OBJ))
-        assertNotNull(spell)
-        assertEquals("Lvl-1 Enchant", spell!!.param(BaseParams.spell_name))
+        val spell = checkNotNull(RodOfIvandis.enchantSpellFrom(checkNotNull(RodOfIvandis.enchantObj())))
+        assertEquals("Lvl-1 Enchant", spell.name)
+        assertEquals(Spellbook.Standard, spell.spellbook)
+        assertEquals(7, spell.levelReq)
+        assertEquals("component.magic_spellbook:enchant_1".asRSCM(RSCMType.COMPONENT), spell.component.packed)
+        assertEquals(
+            setOf("obj.cosmicrune" to 1, "obj.waterrune" to 1).map { it.first.asRSCM(RSCMType.OBJ) to it.second }.toSet(),
+            spell.objReqs.map { it.obj.id to it.count }.toSet(),
+        )
     }
 
     @Test fun `every symbol the scripts use resolves`() {

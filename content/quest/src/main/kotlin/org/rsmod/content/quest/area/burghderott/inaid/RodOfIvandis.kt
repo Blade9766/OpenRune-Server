@@ -6,6 +6,8 @@ import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.magic.MagicSpell
+import org.rsmod.api.combat.commons.magic.MagicSpellType
+import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.combat.manager.MagicRuneManager
 import org.rsmod.api.combat.manager.MagicRuneManager.Companion.isFailure
 import org.rsmod.api.config.refs.BaseParams
@@ -174,10 +176,10 @@ constructor(
         return spell.castXp
     }
 
-    /** The real spell, so the button is whichever one the client's spellbook sends. */
-    private fun enchantObj(): ItemServerType? = ServerCacheManager.getItem(ENCHANT_SPELL_OBJ.asRSCM(RSCMType.OBJ))
-
-    private fun enchantSpell(): MagicSpell? = enchantObj()?.let(spells::getObjSpell)
+    private fun enchantSpell(): MagicSpell? {
+        val obj = enchantObj() ?: return null
+        return spells.getObjSpell(obj) ?: enchantSpellFrom(obj)
+    }
 
     private suspend fun ProtectedAccess.mixUnfinished(dose: Int) {
         if (!canMixBalance()) return
@@ -212,11 +214,39 @@ constructor(
     }
 
     internal companion object {
+        fun enchantObj(): ItemServerType? = ServerCacheManager.getItem(ENCHANT_SPELL_OBJ.asRSCM(RSCMType.OBJ))
+
+        /**
+         * Lvl-1 Enchant sits in the spellbook's jewellery group rather than its spell enum, so the
+         * registry never loads it, and its obj has no cast xp; the rest comes from its own params.
+         */
+        fun enchantSpellFrom(obj: ItemServerType): MagicSpell? {
+            val runes =
+                listOf(
+                    BaseParams.spell_runetype_1 to BaseParams.spell_runecount_1,
+                    BaseParams.spell_runetype_2 to BaseParams.spell_runecount_2,
+                ).mapNotNull { (rune, count) ->
+                    obj.paramOrNull(rune)?.let { MagicSpell.ObjRequirement(it, obj.param(count), null) }
+                }
+            return MagicSpell(
+                obj = obj,
+                name = obj.param(BaseParams.spell_name),
+                component = obj.param(BaseParams.spell_button),
+                spellbook = Spellbook[obj.param(BaseParams.spell_spellbook)],
+                type = MagicSpellType[obj.param(BaseParams.spell_type)] ?: return null,
+                maxHit = 0,
+                levelReq = obj.param(BaseParams.spell_levelreq),
+                castXp = ENCHANT_XP,
+                objReqs = runes,
+            )
+        }
+
         const val BOARDS = "loc.burgh_ivandis_boardedupdoor"
         const val TOMB_ENTRANCE = "loc.burgh_ivandis_tomb_entrance"
         const val TOMB_EXIT = "loc.burgh_ivandis_tomb_exit"
         const val COFFIN = "loc.burgh_ancient_coffin"
         const val ENCHANT_SPELL_OBJ = "obj.07_enchant_amulet_lvl1"
+        const val ENCHANT_XP = 17.5
         const val INVENTORY = "component.inventory:items"
         const val MAGIC = "stat.magic"
         const val HERBLORE = "stat.herblore"

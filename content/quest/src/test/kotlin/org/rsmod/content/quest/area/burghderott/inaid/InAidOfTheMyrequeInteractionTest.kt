@@ -196,7 +196,7 @@ class InAidOfTheMyrequeInteractionTest {
         assertEquals(0, f.count(InAidOfTheMyrequeQuest.PLANK), "the bank takes the other five of the eleven planks")
         assertEquals(0, f.count(InAidOfTheMyrequeQuest.SWAMP_PASTE))
         f.choose(3)
-        f.npcOp(BurghCitizens.CORNELIUS)
+        f.npcOp("npc.burgh_potential_bank_teller_multinpc", seenAs = BurghCitizens.CORNELIUS)
         assertEquals(STAGE_BANK_OPEN, f.stage())
         assertEquals(1, f.player.vars[InAidOfTheMyrequeQuest.BANK_TELLER])
 
@@ -1153,10 +1153,17 @@ class InAidOfTheMyrequeInteractionTest {
             return loaded
         }
 
-        fun npcOp(type: String, at: CoordGrid = player.coords.translateX(1), op: InteractionOp = InteractionOp.Op1) {
+        /** [seenAs] is the type a multinpc [type] shows this player, which the op is keyed on in game. */
+        fun npcOp(
+            type: String,
+            at: CoordGrid = player.coords.translateX(1),
+            op: InteractionOp = InteractionOp.Op1,
+            seenAs: String? = null,
+        ) {
             val npc = Npc(type, at)
             npcRepo.add(npc, Int.MAX_VALUE)
-            dispatch(if (op == InteractionOp.Op3) NpcEvents.Op3(npc) else NpcEvents.Op1(npc))
+            val typeId = seenAs?.asRSCM(RSCMType.NPC) ?: npc.id
+            dispatch(if (op == InteractionOp.Op3) NpcEvents.Op3(npc, typeId) else NpcEvents.Op1(npc, typeId))
         }
 
         fun locOp(symbol: String, coords: CoordGrid, op: InteractionOp = InteractionOp.Op1) {

@@ -33,7 +33,7 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
         for (citizen in CITIZENS.keys - BurghGate.FLORIN) {
             onOpNpc1(citizen) { startDialogue(it.npc) { talk(it.npc) } }
         }
-        onOpNpc1(CORNELIUS) { startDialogue(it.npc) { talk(it.npc) } }
+        onOpNpc1(CORNELIUS) { startDialogue(it.npc) { talk(it.npc, cornelius = true) } }
         onOpNpc1(CORNELIUS_BANKER) { startDialogue(it.npc) { banker() } }
         for (child in CHILDREN) {
             onOpNpc1(child) { startDialogue(it.npc) { chatNpc(shifty, "Sorry. I shouldn't talk to strangers.") } }
@@ -42,15 +42,18 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
         onOpLoc1(MARIUS_BED) { mesbox("The man is too ill to talk.") }
     }
 
-    /** The shared conversation for [npc], who may also be Florin or Aurel once the gate is open. */
-    suspend fun Dialogue.talk(npc: Npc?) {
+    /**
+     * The shared conversation for [npc], who may also be Florin or Aurel once the gate is open.
+     * [cornelius] comes from his own op: he is a per-player multinpc, so the npc can't tell.
+     */
+    suspend fun Dialogue.talk(npc: Npc?, cornelius: Boolean = false) {
         val stage = iaom.effectiveStage(player)
         when {
             stage < STAGE_CELLAR_SUGGESTED -> newcomer(npc)
             stage < STAGE_CELLAR_CLEARED -> clearingCellar(npc)
             stage < STAGE_HELP_OFFERED -> cellarDone(npc)
             stage < STAGE_STORE_STOCKED -> helpingAurel(npc)
-            stage < STAGE_BANK_OPEN -> fixingBank(npc)
+            stage < STAGE_BANK_OPEN -> fixingBank(npc, cornelius)
             stage < STAGE_FURNACE_LIT -> fixingFurnace(npc)
             stage < STAGE_GADDERANKS_DEAD -> titheDays(npc)
             else -> settled(npc)
@@ -211,7 +214,7 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
         }
     }
 
-    private suspend fun Dialogue.fixingBank(npc: Npc?) {
+    private suspend fun Dialogue.fixingBank(npc: Npc?, cornelius: Boolean) {
         val booth = player.bankBooth == 1
         val wall = player.bankWall == 1
         if (booth && wall) {
@@ -239,7 +242,7 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
                     when {
                         !booth -> chatNpc(neutral, "It would be good if you could fix the bank up. I'd start with the bank booth.")
                         !wall -> chatNpc(neutral, "You need to fix up the bank. If the booth's done, you should move on to the wall.")
-                        npc?.isVisType(CORNELIUS) == true -> {
+                        cornelius -> {
                             recruitCornelius()
                             return
                         }
