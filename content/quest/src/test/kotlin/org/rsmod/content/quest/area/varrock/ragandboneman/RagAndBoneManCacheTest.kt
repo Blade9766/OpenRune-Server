@@ -178,6 +178,37 @@ class RagAndBoneManCacheTest {
         }
     }
 
+    @Test fun `every goto place is open ground with room to move`() {
+        val places = RagAndBoneManCommands.PLACES
+        val squares = places.values.map { MapSquareKey(it.x / 64, it.z / 64) }.toSet()
+        val map = CollisionFlagMap()
+        for (square in squares) {
+            val group = (square.x shl 8) or square.z
+            val tiles = MapTileDecoder.decode(InlineByteBuf(checkNotNull(cache.data(MAPS, group, 0))))
+            val spawns = MapLocListDecoder.decode(InlineByteBuf(checkNotNull(cache.data(MAPS, group, 1))))
+            for (level in 0..3) for (x in square.x * 64 until square.x * 64 + 64 step 8) {
+                for (z in square.z * 64 until square.z * 64 + 64 step 8) map.allocateIfAbsent(x, z, level)
+            }
+            GameMapDecoder.putMaps(map, square, tiles)
+            GameMapDecoder.putLocs(GameMapBuilder(), map, square, tiles, spawns)
+        }
+        val steps = org.rsmod.routefinder.StepValidator(map)
+        for ((name, tile) in places) {
+            assertEquals(0, map[tile.x, tile.z, tile.level] and CollisionFlag.BLOCK_WALK, "$name $tile is blocked")
+            val seen = hashSetOf(tile)
+            val queue = ArrayDeque(listOf(tile))
+            while (queue.isNotEmpty() && seen.size < ROOM) {
+                val c = queue.removeFirst()
+                for (dx in -1..1) for (dz in -1..1) {
+                    if ((dx == 0 && dz == 0) || !steps.canTravel(c.level, c.x, c.z, dx, dz)) continue
+                    val n = c.translate(dx, dz)
+                    if (MapSquareKey(n.x / 64, n.z / 64) in squares && seen.add(n)) queue += n
+                }
+            }
+            assertTrue(seen.size >= ROOM, "$name $tile is cut off: only ${seen.size} tiles reachable")
+        }
+    }
+
     private fun qualifies(specimen: Specimen, name: String): Boolean =
         when (specimen) {
             Specimen.GIANT_RAT -> "giant" in name && "rat" in name
@@ -243,6 +274,7 @@ class RagAndBoneManCacheTest {
     private companion object {
         val CAMP = CoordGrid(3360, 3503, 0)
         val CAMP_SQUARE = MapSquareKey(52, 54)
+        const val ROOM = 100
 
         val collision = CollisionFlagMap()
         val placed = mutableListOf<Pair<Int, CoordGrid>>()

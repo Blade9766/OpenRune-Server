@@ -194,6 +194,8 @@ class RagAndBoneManQuest :
                 "Use a specimen in vinegar on the pot-boiler."
             states.values.any { it == SpecimenState.RAW } && !isVinegarUnlocked(player) ->
                 "Ask Fortunato in Draynor Village market about vinegar for the Odd Old Man."
+            states.values.any { it == SpecimenState.RAW } && VINEGAR !in player.inv && POT_OF_VINEGAR !in player.inv ->
+                "You're out of vinegar. Fortunato in Draynor Village market sells it at a coin a jug."
             states.values.any { it == SpecimenState.RAW } ->
                 "Pour vinegar into an empty pot, then add a raw specimen to it."
             SpecimenState.MISSING !in states.values ->

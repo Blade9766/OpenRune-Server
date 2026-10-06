@@ -146,7 +146,7 @@ constructor(
                 rb.setBoiler(player, BOILER_BOILED)
                 player.soundSynth(DONE_SOUND)
                 worldRepo.spotanimMap(SpotanimType(STEAM_SPOTANIM.asRSCM(RSCMType.SPOTANIM)), BOILER_TILE)
-                player.mes("The vinegar boils away, leaving a polished ${specimen?.let(::name) ?: "specimen"} in the pot.")
+                player.mes("The vinegar boils away, leaving the ${specimen?.let(::name) ?: "specimen"} polished in the pot.")
             }
             BOIL_STEPS - 1 -> {
                 player.soundSynth(BUBBLE_SOUND)

@@ -75,27 +75,27 @@ constructor(
         player.mes("Added $KIT_POTS pots, $KIT_POTS logs, a tinderbox, $KIT_COINS coins and $KIT_FOOD trout.")
     }
 
-    private companion object {
-        const val USAGE = "Use as ::ragboneman hint, ::ragboneman kit or ::ragboneman goto <place>"
-        const val FOOD = "obj.trout"
-        const val KIT_POTS = 8
-        const val KIT_FOOD = 4
-        const val KIT_COINS = KIT_POTS + 60
-        const val KIT_SLOTS = KIT_POTS * 2 + 2 + KIT_FOOD
+    companion object {
+        private const val USAGE = "Use as ::ragboneman hint, ::ragboneman kit or ::ragboneman goto <place>"
+        private const val FOOD = "obj.trout"
+        private const val KIT_POTS = 8
+        private const val KIT_FOOD = 4
+        private const val KIT_COINS = KIT_POTS + 60
+        private const val KIT_SLOTS = KIT_POTS * 2 + 2 + KIT_FOOD
 
-        val PLACES =
+        internal val PLACES =
             linkedMapOf(
                 "camp" to CoordGrid(3360, 3503, 0),
                 "fortunato" to CoordGrid(3085, 3249, 0),
-                "rats" to CoordGrid(3190, 3172, 0),
-                "frogs" to CoordGrid(3205, 3180, 0),
-                "goblins" to CoordGrid(3245, 3247, 0),
+                "rats" to CoordGrid(3182, 3169, 0),
+                "frogs" to CoordGrid(3198, 3178, 0),
+                "goblins" to CoordGrid(3252, 3240, 0),
                 "rams" to CoordGrid(3200, 3266, 0),
-                "unicorns" to CoordGrid(3286, 3352, 0),
-                "bear" to CoordGrid(3294, 3347, 0),
+                "unicorns" to CoordGrid(3285, 3352, 0),
+                "bear" to CoordGrid(3296, 3347, 0),
                 "sarim" to CoordGrid(3029, 3217, 0),
-                "monkeys" to CoordGrid(2875, 3152, 0),
-                "volcano" to CoordGrid(2850, 9570, 0),
+                "monkeys" to CoordGrid(2876, 3154, 0),
+                "volcano" to CoordGrid(2852, 9570, 0),
             )
     }
 }
