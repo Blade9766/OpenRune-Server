@@ -1,9 +1,7 @@
 package org.rsmod.content.quest.area.varrock.ragandboneman
 
 import dev.openrune.rscm.RSCM.asRSCM
-import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.invtx.invTransaction
@@ -11,7 +9,6 @@ import org.rsmod.api.invtx.select
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.script.onPlayerLogin
@@ -43,12 +40,7 @@ import org.rsmod.plugin.scripts.ScriptContext
  * permanent var, and logging in restarts the timer from there.
  */
 @Singleton
-class PotBoiler
-@Inject
-constructor(
-    private val rb: RagAndBoneManQuest,
-    private val worldRepo: WorldRepository,
-) : PluginScript() {
+class PotBoiler @Inject constructor(private val rb: RagAndBoneManQuest) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLocU(BOILER) { useOnBoiler(it.objType, it.invSlot) }
@@ -125,7 +117,6 @@ constructor(
                 player.softTimer(BOIL_TIMER, BOIL_STEP_TICKS)
                 anim(LIGHT_SEQ)
                 soundSynth(LIGHT_SOUND)
-                spotanimMap(worldRepo, SMOKE_SPOTANIM, BOILER_TILE)
                 mes("You light the log beneath the pot-boiler. The vinegar starts to warm.")
             }
         }
@@ -145,7 +136,6 @@ constructor(
                 player.clearSoftTimer(BOIL_TIMER)
                 rb.setBoiler(player, BOILER_BOILED)
                 player.soundSynth(DONE_SOUND)
-                worldRepo.spotanimMap(SpotanimType(STEAM_SPOTANIM.asRSCM(RSCMType.SPOTANIM)), BOILER_TILE)
                 player.mes("The vinegar boils away, leaving the ${specimen?.let(::name) ?: "specimen"} polished in the pot.")
             }
             BOIL_STEPS - 1 -> {
@@ -245,7 +235,5 @@ constructor(
         const val LIGHT_SOUND = "synth.fire_lit"
         const val BUBBLE_SOUND = "synth.cauldron_bubbling"
         const val DONE_SOUND = "synth.boil_off"
-        const val SMOKE_SPOTANIM = "spotanim.smokepuff"
-        const val STEAM_SPOTANIM = "spotanim.smokepuff_large"
     }
 }

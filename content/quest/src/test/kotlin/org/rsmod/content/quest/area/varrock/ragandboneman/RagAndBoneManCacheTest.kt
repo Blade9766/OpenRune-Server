@@ -170,7 +170,6 @@ class RagAndBoneManCacheTest {
         for (synth in listOf(PotBoiler.LIGHT_SOUND, PotBoiler.BUBBLE_SOUND, PotBoiler.DONE_SOUND, VinegarPreparation.POUR_SOUND)) {
             assertTrue(synth.asRSCM(RSCMType.SYNTH) >= 0, synth)
         }
-        for (spot in listOf(PotBoiler.SMOKE_SPOTANIM, PotBoiler.STEAM_SPOTANIM)) assertTrue(spot.asRSCM(RSCMType.SPOTANIM) >= 0)
         assertTrue(PotBoiler.BOIL_TIMER.asRSCM(RSCMType.TIMER) >= 0)
         assertTrue(OddOldMan.SCROLL_RESET.asRSCM(RSCMType.CLIENTSCRIPT) >= 0)
         for (obj in listOf(RagAndBoneManQuest.POT, RagAndBoneManQuest.JUG, RagAndBoneManQuest.LOGS, RagAndBoneManQuest.TINDERBOX)) {

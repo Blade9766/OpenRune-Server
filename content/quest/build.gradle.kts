@@ -10,6 +10,7 @@ dependencies {
     testImplementation(projects.api.registry)
     testImplementation(libs.fastutil)
     implementation(projects.api.pluginCommons)
+    implementation(projects.api.registry)
     implementation(projects.api.scriptAdvanced)
     implementation(projects.api.attr)
     implementation(projects.api.instances)

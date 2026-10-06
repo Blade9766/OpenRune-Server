@@ -35,9 +35,9 @@ import org.rsmod.api.player.protect.ProtectedAccessContextFactory
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.random.DefaultGameRandom
 import org.rsmod.api.registry.npc.NpcRegistry
+import org.rsmod.api.registry.obj.ObjRegistry
 import org.rsmod.api.registry.zone.ZoneUpdateMap
 import org.rsmod.api.repo.npc.NpcRepository
-import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.route.BoundValidator
 import org.rsmod.api.shops.Shops
 import org.rsmod.content.quest.area.varrock.ragandboneman.RagAndBoneManQuest.Companion.BOILER_BOILED
@@ -77,6 +77,9 @@ import org.rsmod.game.inv.Inventory
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocInfo
+import org.rsmod.game.obj.Obj
+import org.rsmod.game.obj.ObjEntity
+import org.rsmod.game.obj.ObjScope
 import org.rsmod.game.queue.EngineQueueCache
 import org.rsmod.game.seq.EntitySeq
 import org.rsmod.map.CoordGrid
@@ -205,6 +208,25 @@ class RagAndBoneManInteractionTest {
 
         f.jump(STAGE_COMPLETE)
         assertFalse(f.needsDrop(Specimen.UNICORN), "no drops after the quest")
+    }
+
+    @Test fun `a specimen still lying on the ground nearby isn't dropped again`() {
+        val f = Fixture(STAGE_STARTED)
+        val bat = Specimen.GIANT_BAT
+        assertTrue(f.needsDrop(bat))
+        val mine = Obj.fromOwner(f.player, f.player.coords.translate(3, 2), bat.raw, 1)
+        f.objs.add(mine)
+        assertFalse(f.needsDrop(bat), "a second quick kill doesn't drop a duplicate")
+        assertTrue(f.needsDrop(Specimen.MONKEY), "only that specimen is held back")
+        f.objs.del(mine)
+        assertTrue(f.needsDrop(bat), "once it's gone, the creature drops another")
+
+        f.objs.add(Obj.fromOwner(f.player, f.player.coords.translate(80, 0), bat.raw, 1))
+        assertTrue(f.needsDrop(bat), "a bone left far behind counts as lost")
+
+        val entity = ObjEntity(bat.raw.asRSCM(), 1, ObjScope.Private.id)
+        f.objs.add(Obj(f.player.coords.translate(1, 1), entity, 0, receiverId = 9999L, ownerId = 9999L))
+        assertTrue(f.needsDrop(bat), "someone else's drop doesn't count")
     }
 
     @Test fun `a specimen loaded in the boiler isn't dropped again`() {
@@ -571,15 +593,15 @@ class RagAndBoneManInteractionTest {
         @OptIn(InternalApi::class)
         var player = newPlayer()
 
-        val rb = RagAndBoneManQuest()
+        val objs = ObjRegistry(ZoneUpdateMap())
+        val rb = RagAndBoneManQuest(objs)
         val boiler: PotBoiler
 
         init {
-            val updates = ZoneUpdateMap()
             npcRepo = NpcRepository(org.rsmod.game.MapClock(100), NpcRegistry(npcs, collision, events), npcs)
             for (x in 3352 until 3376 step 8) for (z in 3496 until 3520 step 8) collision.allocateIfAbsent(x, z, 0)
             for (x in 3080 until 3096 step 8) for (z in 3240 until 3256 step 8) collision.allocateIfAbsent(x, z, 0)
-            boiler = PotBoiler(rb, WorldRepository(updates))
+            boiler = PotBoiler(rb)
             val scripts = ScriptContext(events, CheatCommandMap(), EngineQueueCache())
             with(rb) { scripts.startup() }
             with(boiler) { scripts.startup() }

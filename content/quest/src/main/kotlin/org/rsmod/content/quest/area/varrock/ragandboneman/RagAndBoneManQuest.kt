@@ -1,8 +1,11 @@
 package org.rsmod.content.quest.area.varrock.ragandboneman
 
+import dev.openrune.rscm.RSCM.asRSCM
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.intVarBit
+import org.rsmod.api.registry.obj.ObjRegistry
 import org.rsmod.content.quest.manager.ItemRewardDisplay
 import org.rsmod.content.quest.manager.Quest
 import org.rsmod.content.quest.manager.QuestItemDrops
@@ -10,6 +13,7 @@ import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.Inventory
+import org.rsmod.map.zone.ZoneKey
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
@@ -22,13 +26,14 @@ import org.rsmod.plugin.scripts.ScriptContext
  * - [STAGE_COMPLETE]: all eight polished specimens are in the collection.
  *
  * No specimen keeps a var of its own: each is tracked by which of its three objs the player holds
- * (inventory or bank), or by being in the pot-boiler. The boiler is the player's own multiloc
+ * (inventory or bank), or by being in the pot-boiler. A kill only drops a specimen the player has
+ * none of, counting their own loot still on the ground nearby, so two quick kills can't both drop. The boiler is the player's own multiloc
  * view of `loc.rag_multi_potboiler`, driven by the cache varbits `varbit.rag_boiler` (what the
  * boiler shows) and `varbit.rag_potboiler` (which [Specimen] is in it), plus a server-only count
  * of the boiling steps left, all permanent, so a boil survives logging out.
  */
 @Singleton
-class RagAndBoneManQuest :
+class RagAndBoneManQuest @Inject constructor(private val objs: ObjRegistry) :
     QuestScript(
         QUEST_KEY,
         "varp.rag_quest",
@@ -134,7 +139,26 @@ class RagAndBoneManQuest :
 
     /** Whether a kill should drop [specimen]: only during the quest, and only if none is held. */
     fun isNeeded(player: Player, specimen: Specimen): Boolean =
-        isStarted(player) && specimenState(player, specimen) == SpecimenState.MISSING
+        isStarted(player) &&
+            specimenState(player, specimen) == SpecimenState.MISSING &&
+            !isOnGroundNearby(player, specimen)
+
+    /** Whether the player's own drop of [specimen], in any form, is lying near them. */
+    fun isOnGroundNearby(player: Player, specimen: Specimen): Boolean {
+        val observer = player.observerUUID ?: return false
+        val types = setOf(specimen.raw, specimen.inVinegar, specimen.polished).map { it.asRSCM() }.toSet()
+        val centre = ZoneKey.from(player.coords)
+        for (dx in -GROUND_ZONE_RADIUS..GROUND_ZONE_RADIUS) {
+            for (dz in -GROUND_ZONE_RADIUS..GROUND_ZONE_RADIUS) {
+                val found =
+                    objs.findAll(centre.translate(dx, dz)).any { obj ->
+                        obj.type in types && (obj.receiverId == observer || obj.ownerId == observer)
+                    }
+                if (found) return true
+            }
+        }
+        return false
+    }
 
     /** Specimens the Odd Old Man would still refuse: not polished and in the inventory. */
     fun unfinished(player: Player): List<Specimen> =
@@ -224,6 +248,9 @@ class RagAndBoneManQuest :
         const val STAGE_COMPLETE = 4
 
         const val REWARD_XP = 500.0
+
+        /** Zones either side of the player searched for their own dropped specimens. */
+        const val GROUND_ZONE_RADIUS = 4
 
         /** `varbit.rag_boiler` values, which pick the pot-boiler's multiloc variant. */
         const val BOILER_EMPTY = 0
