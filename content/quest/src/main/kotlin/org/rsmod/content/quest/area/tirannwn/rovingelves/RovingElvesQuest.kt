@@ -43,8 +43,7 @@ class RovingElvesQuest :
         "varp.roving_elves_quest",
         rewards {
             xp("stat.strength", STRENGTH_XP)
-            extra("A crystal bow or crystal shield")
-            extra("with 500 charges")
+            scroll("10,000 Strength XP", "A crystal bow or crystal shield", "with 500 charges")
         },
         ItemRewardDisplay(NEW_SEED, zoom = 400),
     ) {

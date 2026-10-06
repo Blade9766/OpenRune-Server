@@ -101,6 +101,12 @@ constructor(private val equipOp: HeldEquipOp, private val charges: ObjChargeMana
                         "varobj.crystal_weapon_charges",
                         20_000,
                     ),
+                "obj.crystal_shield" to
+                    Charge(
+                        "obj.crystal_shield_inactive",
+                        "varobj.crystal_weapon_charges",
+                        20_000,
+                    ),
             )
 
         private val PRESETS =
