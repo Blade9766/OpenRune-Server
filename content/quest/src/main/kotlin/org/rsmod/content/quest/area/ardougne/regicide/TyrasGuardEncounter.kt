@@ -28,14 +28,15 @@ import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.CA
 import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.ENCOUNTER_GUARD
 import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.STAGE_DENSE_FOREST
 import org.rsmod.content.quest.area.ardougne.regicide.RegicideQuest.Companion.STAGE_GUARD_KILLED
-import org.rsmod.content.quest.area.wilderness.magearena.nearestFree
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.player.PlayerUid
+import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
+import org.rsmod.routefinder.StepValidator
 import org.rsmod.routefinder.collision.CollisionFlagMap
 
 /**
@@ -91,7 +92,7 @@ constructor(
             existing.opPlayer2(player, aiInteractions)
             return
         }
-        val tile = collision.nearestFree(player.coords.translate(-SPAWN_OFFSET, 0), SPAWN_RADIUS) ?: return
+        val tile = spawnTile(collision, player.coords) ?: return
         val guard = Npc(guardType, tile)
         guard.respawns = false
         npcRepo.add(guard, LIFETIME + DESPAWN_MARGIN)
@@ -146,9 +147,33 @@ constructor(
         private const val DESPAWN_MARGIN = 10
         private const val LEASH_RANGE = 16
         private const val SPAWN_OFFSET = 3
-        private const val SPAWN_RADIUS = 3
+        private const val SPAWN_RADIUS = 5
 
         val CAMP_GUARDS = listOf(CAMP_GUARD, CAMP_GUARD_2)
+
+        /**
+         * The tile the guard steps out onto: the one nearest [SPAWN_OFFSET] tiles west of the
+         * player among those the player can walk to within [SPAWN_RADIUS] steps. The forest is
+         * fenced by server-side walls, so a tile that is merely free can be on the far side of
+         * one, where neither the guard nor the player could reach the other.
+         */
+        internal fun spawnTile(collision: CollisionFlagMap, from: CoordGrid): CoordGrid? {
+            val steps = StepValidator(collision)
+            val target = from.translate(-SPAWN_OFFSET, 0)
+            val seen = hashSetOf(from)
+            var frontier = listOf(from)
+            repeat(SPAWN_RADIUS) {
+                frontier =
+                    frontier.flatMap { tile ->
+                        STEPS.filter { (dx, dz) -> steps.canTravel(tile.level, tile.x, tile.z, dx, dz) }
+                            .map { (dx, dz) -> tile.translate(dx, dz) }
+                            .filter(seen::add)
+                    }
+            }
+            return (seen - from).minWithOrNull(compareBy({ it.chebyshevDistance(target) }, { -it.chebyshevDistance(from) }))
+        }
+
+        private val STEPS = listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)
     }
 }
 

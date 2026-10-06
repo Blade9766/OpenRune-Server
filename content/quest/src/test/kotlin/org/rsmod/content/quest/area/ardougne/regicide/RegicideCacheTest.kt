@@ -243,6 +243,16 @@ class RegicideCacheTest {
         assertTrue(graph.componentOf(CoordGrid(2223, 3123, 0)) == west, "the guard catches the player on the tar side of the forest")
     }
 
+    @Test fun `the forest guard steps out where the player can reach him`() {
+        val landings = listOf(CoordGrid(2231, 3150, 0), CoordGrid(2231, 3149, 0), CoordGrid(2231, 3148, 0)).filter(::open)
+        assertTrue(CoordGrid(2231, 3150, 0) in landings, "the tile the forest drops the player on")
+        for (landing in landings) {
+            val tile = checkNotNull(TyrasGuardEncounter.spawnTile(collision, landing)) { "$landing" }
+            assertTrue(tile in reach(landing), "guard tile $tile is walkable from $landing")
+            assertTrue(tile.chebyshevDistance(landing) >= 2, "guard tile $tile is not on top of the player")
+        }
+    }
+
     private class Crossing(val coords: CoordGrid, val a: Int?, val b: Int?, val sideA: DenseForest.Side, val sideB: DenseForest.Side)
 
     private inner class IsafdarGraph {
