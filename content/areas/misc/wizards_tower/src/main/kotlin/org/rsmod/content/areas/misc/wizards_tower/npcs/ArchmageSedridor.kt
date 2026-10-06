@@ -35,7 +35,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.teleport(npc: Npc) {
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             return
         }
         teleports.teleportToMine(this, npc, EssenceMineTeleporter.Sedridor)
@@ -43,7 +43,7 @@ constructor(
 
     private suspend fun Dialogue.sedridorDialogue(npc: Npc) {
         when (runeMysteries.stage(player)) {
-            0 -> beforeQuest()
+            0 -> if (runeMysteries.isUnlocked(player)) afterQuest(npc) else beforeQuest()
             RuneMysteriesQuest.STAGE_TALISMAN -> talismanDelivery()
             RuneMysteriesQuest.STAGE_TALISMAN_GIVEN -> {
                 chatPlayer(quiz, "So is that talisman of any use to you?")

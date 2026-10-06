@@ -29,7 +29,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.teleport(npc: Npc) {
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             return
         }
         teleports.teleportToMine(this, npc, EssenceMineTeleporter.Distentor)
@@ -39,7 +39,7 @@ constructor(
         chatNpc(happy, "Welcome to the Magicians' Guild!")
         chatPlayer(happy, "Hello there.")
         chatNpc(quiz, "What can I do for you?")
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             justLooking()
             return
         }

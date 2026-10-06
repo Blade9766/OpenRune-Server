@@ -343,7 +343,8 @@ class InAidOfTheMyrequeQuest :
         window(IVAN_FOOD_HEAL, STAGE_RELOCATION_BRIEFED, STAGE_IVAN_DELIVERED, 0)
         window(AMBUSH_ROUTE, STAGE_PARTY_TOLD, STAGE_IVAN_DELIVERED, player.vars[AMBUSH_ROUTE])
         window(AMBUSH_DEATHS, STAGE_PARTY_TOLD, STAGE_IVAN_DELIVERED, 0)
-        val hideoutEmpty = if (stage >= STAGE_IVAN_DELIVERED) 1 else 0
+        // The real stage: Veliaf starts the quest from this hideout, so it stays manned until then.
+        val hideoutEmpty = if (stage(player) >= STAGE_IVAN_DELIVERED) 1 else 0
         if (player.vars[HIDEOUT_NPCS] != hideoutEmpty) VarPlayerIntMapSetter.set(player, HIDEOUT_NPCS, hideoutEmpty)
         window(LIBRARY_TRAPDOOR, STAGE_LIBRARY_KEY, Int.MAX_VALUE, 0)
         if (stage >= STAGE_COMPLETE && stage(player) == 0) {

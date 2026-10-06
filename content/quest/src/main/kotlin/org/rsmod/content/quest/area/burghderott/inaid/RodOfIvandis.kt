@@ -1,10 +1,14 @@
 package org.rsmod.content.quest.area.burghderott.inaid
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
+import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
+import org.rsmod.api.combat.commons.magic.MagicSpell
 import org.rsmod.api.combat.manager.MagicRuneManager
 import org.rsmod.api.combat.manager.MagicRuneManager.Companion.isFailure
+import org.rsmod.api.config.refs.BaseParams
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.RestrictedAction
 import org.rsmod.api.player.hook.TeleportType
@@ -13,7 +17,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.ui.IfOverlayButtonT
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
-import org.rsmod.api.script.onIfOverlayButtonT
+import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.script.onOpLoc1
@@ -28,6 +32,7 @@ import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Com
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.STAGE_MOULD_MADE
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.STAGE_TOMB_FOUND
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.TOMB_BOARDS
+import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -65,7 +70,11 @@ constructor(
         onOpLocU(COFFIN, SOFT_CLAY) { makeMould() }
         onOpHeld1(SILVTHRILL) { mesbox("This rod looks very similar to the rod you saw fused to the top of the coffin. However, this rod lacks both the mortal and divine energies that the original gave off.") }
         onOpHeld1(SILVTHRILL_ENCHANTED) { mesbox("This rod looks very similar to the rod you saw fused to the top of the coffin. However, this rod lacks the divine energies that the original gave off.") }
-        onIfOverlayButtonT(ENCHANT_SPELL, INVENTORY) { castOnItem() }
+        val button = enchantObj()?.param(BaseParams.spell_button)
+        if (button != null) {
+            val key = EventBus.composeLongKey(button.packed, INVENTORY.asRSCM(RSCMType.COMPONENT))
+            onEvent<IfOverlayButtonT>(key) { castOnItem() }
+        }
         for (dose in 1..4) {
             onOpHeldU("obj.${dose}dosestatrestore", GARLIC) { mixUnfinished(dose) }
             onOpHeldU("obj.burgh_unfinished_guthix_balance_$dose", SILVER_DUST) { mixBalance(dose) }
@@ -158,12 +167,17 @@ constructor(
 
     /** Checks and takes Lvl-1 Enchant's requirements; the cast xp on success, null otherwise. */
     protected open fun castEnchant(player: Player): Double? {
-        val spell = spells.allSpells().firstOrNull { it.component.packed == ENCHANT_SPELL.asRSCM(RSCMType.COMPONENT) } ?: return null
+        val spell = enchantSpell() ?: return null
         if (!runes.canCastSpell(player, spell) || runes.attemptCast(player, spell).isFailure()) {
             return null
         }
         return spell.castXp
     }
+
+    /** The real spell, so the button is whichever one the client's spellbook sends. */
+    private fun enchantObj(): ItemServerType? = ServerCacheManager.getItem(ENCHANT_SPELL_OBJ.asRSCM(RSCMType.OBJ))
+
+    private fun enchantSpell(): MagicSpell? = enchantObj()?.let(spells::getObjSpell)
 
     private suspend fun ProtectedAccess.mixUnfinished(dose: Int) {
         if (!canMixBalance()) return
@@ -202,7 +216,7 @@ constructor(
         const val TOMB_ENTRANCE = "loc.burgh_ivandis_tomb_entrance"
         const val TOMB_EXIT = "loc.burgh_ivandis_tomb_exit"
         const val COFFIN = "loc.burgh_ancient_coffin"
-        const val ENCHANT_SPELL = "component.magic_spellbook:enchant_1"
+        const val ENCHANT_SPELL_OBJ = "obj.07_enchant_amulet_lvl1"
         const val INVENTORY = "component.inventory:items"
         const val MAGIC = "stat.magic"
         const val HERBLORE = "stat.herblore"

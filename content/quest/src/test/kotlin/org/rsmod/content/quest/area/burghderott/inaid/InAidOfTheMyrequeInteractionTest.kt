@@ -694,6 +694,7 @@ class InAidOfTheMyrequeInteractionTest {
             assertTrue(f.iaom.isBankOpen(f.player))
             assertEquals(1, f.player.vars[InAidOfTheMyrequeQuest.BANK_TELLER])
             assertEquals(InAidOfTheMyrequeQuest.FURNACE_LIT, f.player.vars[InAidOfTheMyrequeQuest.FURNACE])
+            assertEquals(0, f.player.vars[InAidOfTheMyrequeQuest.HIDEOUT_NPCS], "Veliaf is still in the old hideout to start it")
             f.finishInSearch()
             f.choose(1)
             f.npcOp(InAidOfTheMyrequeQuest.VELIAF_HOLLOWS)

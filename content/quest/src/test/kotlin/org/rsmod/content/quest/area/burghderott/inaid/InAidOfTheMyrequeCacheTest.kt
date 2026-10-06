@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceLock
+import org.rsmod.api.config.refs.BaseParams
 import org.rsmod.api.table.QuestRow
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.STAGE_COMPLETE
 import org.rsmod.game.loc.LocEntity
@@ -238,6 +239,12 @@ class InAidOfTheMyrequeCacheTest {
         assertTrue(walks(CoordGrid(3430, 9897, 0), BurghCoords.SALVE_WELL.translateX(1), mausoleum), "the well room is past the east gate")
     }
 
+    @Test fun `the rod is enchanted by the spellbook's own lvl-1 enchant`() {
+        val spell = ServerCacheManager.getItem(RodOfIvandis.ENCHANT_SPELL_OBJ.asRSCM(RSCMType.OBJ))
+        assertNotNull(spell)
+        assertEquals("Lvl-1 Enchant", spell!!.param(BaseParams.spell_name))
+    }
+
     @Test fun `every symbol the scripts use resolves`() {
         for (name in SEQS) assertNotNull(ServerCacheManager.getAnim(name.asRSCM(RSCMType.SEQ)), name)
         for (name in SPOTANIMS) assertTrue(name.asRSCM(RSCMType.SPOTANIM) >= 0, name)
@@ -343,7 +350,7 @@ class InAidOfTheMyrequeCacheTest {
                     InAidOfTheMyrequeQuest.VELIAF_HOLLOWS, InAidOfTheMyrequeQuest.IVAN_HOLLOWS, InAidOfTheMyrequeQuest.VELIAF_BURGH,
                 )
         val COMPONENTS =
-            listOf(RodOfIvandis.ENCHANT_SPELL, RodOfIvandis.INVENTORY, PaterdomusLibrary.PAGE_LEFT, PaterdomusLibrary.PAGE_RIGHT)
+            listOf(RodOfIvandis.INVENTORY, PaterdomusLibrary.PAGE_LEFT, PaterdomusLibrary.PAGE_RIGHT)
 
         val collision = CollisionFlagMap()
         val placed = mutableListOf<Pair<Int, CoordGrid>>()

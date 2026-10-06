@@ -32,7 +32,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.teleport(npc: Npc) {
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             mes("You need to have completed Rune Mysteries to use this teleport.")
             return
         }
@@ -47,7 +47,7 @@ constructor(
                 "As both wizard and inventor, he has aided me in my great invention!",
         )
         val choice =
-            if (runeMysteries.isComplete(player)) {
+            if (runeMysteries.isUnlocked(player)) {
                 choice3(
                     "Two jobs? That's got to be tough.",
                     1,

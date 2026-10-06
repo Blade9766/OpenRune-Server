@@ -36,13 +36,17 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.teleport(npc: Npc) {
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             return
         }
         teleports.teleportToMine(this, npc, EssenceMineTeleporter.Aubury)
     }
 
     private suspend fun Dialogue.auburyDialogue(npc: Npc) {
+        if (runeMysteries.isUnlocked(player)) {
+            shopDialogue(npc, teleport = true)
+            return
+        }
         when (runeMysteries.stage(player)) {
             RuneMysteriesQuest.STAGE_PACKAGE -> packageDelivery(npc)
             RuneMysteriesQuest.STAGE_PACKAGE_DELIVERED -> packageDelivered(npc)

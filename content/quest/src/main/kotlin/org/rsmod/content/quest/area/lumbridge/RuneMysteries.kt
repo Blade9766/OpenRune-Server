@@ -3,6 +3,7 @@ package org.rsmod.content.quest.area.lumbridge
 import jakarta.inject.Singleton
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.content.quest.manager.ItemRewardDisplay
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
 import org.rsmod.game.entity.Player
@@ -32,6 +33,10 @@ class RuneMysteriesQuest :
     fun stage(player: Player): Int = quest.getQuestStage(player)
 
     fun isComplete(player: Player): Boolean = quest.isQuestCompleted(player)
+
+    /** Complete, or untouched and counted as done by the quest policy: the essence mine is open. */
+    fun isUnlocked(player: Player): Boolean =
+        isComplete(player) || (stage(player) == 0 && QuestRequirements.hasCompleted(player, quest.key))
 
     fun advanceTo(access: ProtectedAccess, stage: Int) {
         val remaining = stage - stage(access.player)

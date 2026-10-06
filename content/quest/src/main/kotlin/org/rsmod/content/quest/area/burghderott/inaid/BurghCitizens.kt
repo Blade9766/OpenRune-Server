@@ -239,7 +239,7 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
                     when {
                         !booth -> chatNpc(neutral, "It would be good if you could fix the bank up. I'd start with the bank booth.")
                         !wall -> chatNpc(neutral, "You need to fix up the bank. If the booth's done, you should move on to the wall.")
-                        npc?.isType(CORNELIUS) == true -> {
+                        npc?.isVisType(CORNELIUS) == true -> {
                             recruitCornelius()
                             return
                         }
@@ -345,7 +345,7 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
 
     private suspend fun Dialogue.job(npc: Npc?) {
         chatPlayer(quiz, "What do you do here?")
-        val type = npc?.let { n -> (CITIZENS.keys + CORNELIUS).firstOrNull { n.isType(it) } }
+        val type = npc?.let { n -> (CITIZENS.keys + CORNELIUS).firstOrNull { n.isType(it) || n.isVisType(it) } }
         val name = type?.let { CITIZENS[it]?.first } ?: "Cornelius"
         when (type?.let { CITIZENS[it]?.second }) {
             Job.Odd ->
@@ -411,6 +411,7 @@ class BurghCitizens @Inject constructor(private val iaom: InAidOfTheMyrequeQuest
                 "npc.burgh_vilager_6" to ("Valeria" to Job.Odd),
                 "npc.burgh_vilager_7" to ("Emilia" to Job.Odd),
                 "npc.burgh_vilager_8" to ("Florin" to Job.Odd),
+                "npc.burgh_vilager_rat_1" to ("Vasile" to Job.RatCatcher),
                 "npc.burgh_vilager_rat_2" to ("Razvan" to Job.RatCatcher),
                 "npc.burgh_vilager_rat_3" to ("Luminata" to Job.RatCatcher),
                 "npc.burgh_vilager_sit1" to ("Calin" to Job.Warming),

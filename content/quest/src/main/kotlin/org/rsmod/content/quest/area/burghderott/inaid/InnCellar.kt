@@ -140,6 +140,9 @@ constructor(
         arriveDelay()
         anim(CLIMB_DOWN_SEQ)
         delay(CLIMB_TICKS)
+        if (iaom.stage(player) in 1 until STAGE_CELLAR_CLEARED && iaom.isCellarClear(player)) {
+            iaom.advanceTo(this, STAGE_CELLAR_CLEARED)
+        }
         val stage = iaom.effectiveStage(player)
         when {
             stage < STAGE_CELLAR_CLEARED -> enterRubbleCellar()
@@ -237,10 +240,15 @@ constructor(
         locRepo.del(loc, Int.MAX_VALUE)
         visits[player.uid]?.piles?.remove(loc.coords)
         iaom.markPileRemoved(player, pile)
+        // Advanced before the finds and the scene: a click that cuts them short must not strand the quest.
+        val cleared = iaom.isCellarClear(player)
+        if (cleared) {
+            iaom.advanceTo(this, STAGE_CELLAR_CLEARED)
+        }
         mes("You use ${if (scoop == POT) "a pot" else "a spade"} to scoop the rubble into a bucket.")
         val removed = iaom.rubbleRemoved(player)
         FINDS[removed]?.let { find -> find(find) }
-        if (iaom.isCellarClear(player)) {
+        if (cleared) {
             discoverPlaque()
         }
     }
@@ -276,7 +284,6 @@ constructor(
         } finally {
             camReset()
         }
-        iaom.advanceTo(this, STAGE_CELLAR_CLEARED)
     }
 
     private suspend fun ProtectedAccess.readPlaque() {

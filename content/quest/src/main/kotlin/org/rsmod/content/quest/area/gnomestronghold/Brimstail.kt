@@ -26,7 +26,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.teleport(npc: Npc) {
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             return
         }
         teleports.teleportToMine(this, npc, EssenceMineTeleporter.Brimstail)
@@ -34,7 +34,7 @@ constructor(
 
     private suspend fun Dialogue.brimstailDialogue(npc: Npc) {
         chatNpc(happy, "Hello adventurer, what can I do for you?")
-        if (!runeMysteries.isComplete(player)) {
+        if (!runeMysteries.isUnlocked(player)) {
             chatPlayer(neutral, "Nothing, thanks.")
             return
         }

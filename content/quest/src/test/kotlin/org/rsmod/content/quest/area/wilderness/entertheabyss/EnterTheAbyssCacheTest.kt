@@ -29,11 +29,14 @@ import org.rsmod.content.quest.area.wilderness.entertheabyss.EnterTheAbyssQuest.
 import org.rsmod.content.quest.area.wilderness.entertheabyss.EnterTheAbyssQuest.Companion.readingVarbit
 import org.rsmod.content.skills.runecrafting.essence.EssenceMineTeleporter
 import org.rsmod.content.skills.runecrafting.essence.RuneEssenceTeleports
+import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocEntity
+import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocZoneKey
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.square.MapSquareKey
 import org.rsmod.map.zone.ZoneKey
+import org.rsmod.routefinder.RouteFinding
 import org.rsmod.routefinder.StepValidator
 import org.rsmod.routefinder.collision.CollisionFlagMap
 import org.rsmod.routefinder.flag.CollisionFlag
@@ -235,6 +238,17 @@ class EnterTheAbyssCacheTest {
         }
     }
 
+    @Test fun `every rift can be walked up to and used from the inner ring`() {
+        val unreachable =
+            AbyssRift.entries.filter { rift ->
+                val loc = boundLocs.single { it.id == rift.loc.asRSCM(RSCMType.LOC) }
+                !RouteFinding(collision).findRoute(level = 0, srcX = INNER_RING.x, srcZ = INNER_RING.z, destX = loc.x, destZ = loc.z,
+                    destWidth = loc.width, destLength = loc.length, locShape = loc.shapeId, locAngle = loc.angleId,
+                    blockAccessFlags = loc.forceApproachFlags, moveNear = false, maxWaypoints = 200).success
+            }
+        assertEquals(emptyList<AbyssRift>(), unreachable)
+    }
+
     @Test fun `the blood rift shows the last-used altar first and the soul rift has one exit`() {
         val parent = loc(AbyssRift.Blood.loc)
         assertEquals(AbyssRifts.LAST_BLOOD_RIFT.asRSCM(RSCMType.VARBIT), parent.multiVarBit)
@@ -347,6 +361,7 @@ class EnterTheAbyssCacheTest {
 
         val collision = CollisionFlagMap()
         val placedLocs = mutableListOf<Pair<Int, CoordGrid>>()
+        val boundLocs = mutableListOf<BoundLocInfo>()
         lateinit var cache: dev.openrune.filesystem.Cache
 
         fun file(path: String): java.io.File =
@@ -380,6 +395,8 @@ class EnterTheAbyssCacheTest {
                     for (entry in zone.build().byte2IntEntrySet()) {
                         val key = LocZoneKey(entry.byteKey)
                         placedLocs += LocEntity(entry.intValue).id to base.translate(key.x, key.z)
+                        val entity = LocEntity(entry.intValue)
+                        boundLocs += BoundLocInfo(LocInfo(key.layer, base.translate(key.x, key.z), entity), checkNotNull(ServerCacheManager.getObject(entity.id)))
                     }
                 }
             }
