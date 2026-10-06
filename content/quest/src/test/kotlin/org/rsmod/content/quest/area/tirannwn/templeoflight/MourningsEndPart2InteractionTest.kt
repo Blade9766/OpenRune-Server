@@ -158,6 +158,15 @@ class MourningsEndPart2InteractionTest {
         assertEquals(1, f.count(NEW_KEY), "only one")
     }
 
+    @Test fun `a player who already holds a key from the desk is not given a second one`() {
+        val f = Fixture(STAGE_STARTED)
+        f.give(NEW_KEY)
+        f.fill()
+        f.talk(ESSYLLT)
+        assertEquals(STAGE_KEY, f.stage(), "a full pack doesn't matter when no key is due")
+        assertEquals(1, f.count(NEW_KEY))
+    }
+
     @Test fun `the door into the mines wants the new key from the basement side`() {
         val f = Fixture(STAGE_KEY)
         f.player.coords = CoordGrid(2035, 4636, 0)
@@ -516,6 +525,18 @@ class MourningsEndPart2InteractionTest {
         during.player.coords = CoordGrid(1917, 4639, 0)
         during.dispatch { with(during.obstacles) { enterTemple() } }
         assertEquals(CoordGrid(1916, 4639, 0), during.player.coords, "open to everyone until the safeguards return")
+    }
+
+    @Test fun `the doorway notices a player walking or running up to it from either side`() {
+        fun crossing(fromX: Int, toX: Int, z: Int = 4639) =
+            TempleObstacles.doorwayCrossing(CoordGrid(fromX, z, 0), CoordGrid(toX, z, 0))
+        assertEquals(TempleObstacles.Crossing.ENTER, crossing(1918, 1917))
+        assertEquals(TempleObstacles.Crossing.ENTER, crossing(1919, 1917), "a running step")
+        assertEquals(TempleObstacles.Crossing.LEAVE, crossing(1915, 1916))
+        assertEquals(TempleObstacles.Crossing.LEAVE, crossing(1914, 1916), "a running step")
+        assertEquals(null, crossing(1916, 1917), "stepping back out of the doorway")
+        assertEquals(null, crossing(1925, 1917), "a teleport onto the threshold")
+        assertEquals(null, crossing(1919, 1917, z = 4641), "beside the doorway")
     }
 
     @Test fun `the slayer ring's Dark Beasts teleport waits for the quest`() {

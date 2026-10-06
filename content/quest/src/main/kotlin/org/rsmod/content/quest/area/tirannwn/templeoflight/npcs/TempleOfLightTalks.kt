@@ -232,7 +232,8 @@ class EssylltTempleTalk @Inject constructor(private val quest: MourningsEndPart2
 
     private suspend fun Dialogue.handOverKey() {
         chatPlayer(quiz, "Do you have the key to the excavation site yet?")
-        if (player.inv.freeSpace() < 1) {
+        val hasKey = access.ownsAnywhere(NEW_KEY)
+        if (!hasKey && player.inv.freeSpace() < 1) {
             chatNpc(neutral, "Free up some space in your pack, then we can talk about keys.")
             return
         }
@@ -244,6 +245,11 @@ class EssylltTempleTalk @Inject constructor(private val quest: MourningsEndPart2
         chatPlayer(neutral, "Sounds easy enough.")
         chatNpc(neutral, "You say that now, but the beasts in the mines are deadly. You'll have to be very careful down there.")
         chatPlayer(neutral, "I'll be on my guard.")
+        if (hasKey) {
+            quest.advanceTo(access, STAGE_KEY)
+            chatNpc(neutral, "Good. You already have a key, so get to it.")
+            return
+        }
         if (access.invAdd(player.inv, NEW_KEY).failure) {
             return
         }

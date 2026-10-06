@@ -164,21 +164,22 @@ constructor(
         if (to == from || to.level != from.level) {
             return
         }
-        if (to.level == 0 && to.z in DOORWAY_Z) {
-            if (to.x == DOORWAY_OUTSIDE_X && from.x == DOORWAY_OUTSIDE_X + 1) {
+        when (doorwayCrossing(from, to)) {
+            Crossing.ENTER -> {
                 launcher.launch(player) {
                     stopAction()
                     enterTemple()
                 }
                 return
             }
-            if (to.x == DOORWAY_INSIDE_X && from.x == DOORWAY_INSIDE_X - 1) {
+            Crossing.LEAVE -> {
                 launcher.launch(player) {
                     stopAction()
                     leaveTemple()
                 }
                 return
             }
+            null -> Unit
         }
         val trap = Trap.at(to) ?: return
         val other = trap.other(to) ?: return
@@ -291,6 +292,8 @@ constructor(
         fun matches(bound: BoundLocInfo): Boolean = bound.coords == coords
     }
 
+    enum class Crossing { ENTER, LEAVE }
+
     companion object {
         const val AGILITY = "stat.agility"
         const val LOW_WALL = "loc.mourning_temple_wall_jump"
@@ -346,6 +349,22 @@ constructor(
         const val DOORWAY_OUTSIDE_X = 1917
         const val DOORWAY_INSIDE_X = 1916
         val DOORWAY_Z = 4638..4640
+        const val RUN_STEP = 2
+
+        /**
+         * Whether a move from [from] to [to] walks up to the doorway from the mines or from inside.
+         * A running step covers two tiles, so the threshold is reached from up to two tiles away.
+         */
+        fun doorwayCrossing(from: CoordGrid, to: CoordGrid): Crossing? {
+            if (to.level != 0 || from.level != 0 || to.z !in DOORWAY_Z || from.chebyshevDistance(to) > RUN_STEP) {
+                return null
+            }
+            return when {
+                to.x == DOORWAY_OUTSIDE_X && from.x > DOORWAY_OUTSIDE_X -> Crossing.ENTER
+                to.x == DOORWAY_INSIDE_X && from.x < DOORWAY_INSIDE_X -> Crossing.LEAVE
+                else -> null
+            }
+        }
 
         val UPASS_LANDING = CoordGrid(2311, 9793, 0)
         val TEMPLE_LANDING = CoordGrid(1857, 4639, 0)
