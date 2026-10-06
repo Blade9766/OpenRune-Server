@@ -2,10 +2,6 @@ id = "Mourner (Arandar) Drops"
 npcs = ["npc.mourning_overpass_mourner"]
 
 [[guaranteed]]
-obj = "obj.bones"
-count = 1
-
-[[guaranteed]]
 obj = "obj.gasmask"
 count = 1
 

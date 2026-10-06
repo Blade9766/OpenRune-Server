@@ -6,6 +6,7 @@ import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.content.quest.area.ardougne.GAS_MASK
 import org.rsmod.content.quest.manager.ItemRewardDisplay
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
 import org.rsmod.game.entity.Player
@@ -85,7 +86,7 @@ class PlagueCityQuest : QuestScript(
     /** Re-applies the client-facing varbits from the persisted attributes. */
     fun syncVars(player: Player) {
         player.edmondBelowVar = if (edmondBelow.get(player)) 1 else 0
-        player.elenaHomeVar = if (elenaHome.get(player)) 1 else 0
+        player.elenaHomeVar = if (isElenaHome(player)) 1 else 0
         // The cache varbit is a single bit: the hole either shows or it does not. "Filled in" is
         // remembered in the attribute (the spade says so) but renders as the plain mud patch.
         player.mudVar = if (mudState.get(player) == MUD_HOLE) 1 else 0
@@ -96,6 +97,12 @@ class PlagueCityQuest : QuestScript(
     }
 
     fun stage(player: Player): Int = quest.getQuestStage(player)
+
+    /** Rescued in this playthrough, or the quest policy counts Plague City done before it began. */
+    fun isElenaHome(player: Player): Boolean =
+        elenaHome.get(player) ||
+            quest.isQuestCompleted(player) ||
+            (stage(player) == 0 && QuestRequirements.hasCompleted(player, quest.key))
 
     /** Moves the quest forward to [stage] if it is not already there or past it. */
     fun advanceTo(access: ProtectedAccess, stage: Int) {

@@ -363,7 +363,8 @@ class MourningsEndQuest :
 /**
  * A flock of Farmer Brumty's sheep. [field] is the grazing multinpc on [varbit]: 0 shows the
  * sickly Sheep Herder sheep, 1 the freshly dyed one. [ammo] is the `varbit.mourning_gun_ammo`
- * value of the matching toad, in the order of the toad objs and of the client's toad models.
+ * value of the matching toad, as `mourning_toad_settoad` picks the toad model (1 red, 2 green,
+ * 3 blue, 4 yellow).
  */
 enum class Flock(
     val label: String,
@@ -376,10 +377,10 @@ enum class Flock(
     val travel: String,
     val impact: String,
 ) {
-    BLUE("blue", "varbit.mourning_sheep_blue", "npc.plaguesheep_3", 1, "obj.bluedye", "obj.mourning_ogre_bellows_blue", "obj.mourning_bloated_toad_blue", "spotanim.toad_cannon_travel_blue", "spotanim.toad_cannon_impact_blue"),
-    RED("red", "varbit.mourning_sheep_red", "npc.plaguesheep_1", 2, "obj.reddye", "obj.mourning_ogre_bellows_red", "obj.mourning_bloated_toad_red", "spotanim.toad_cannon_travel_red", "spotanim.toad_cannon_impact_red"),
-    YELLOW("yellow", "varbit.mourning_sheep_yellow", "npc.plaguesheep_4", 3, "obj.yellowdye", "obj.mourning_ogre_bellows_yellow", "obj.mourning_bloated_toad_yellow", "spotanim.toad_cannon_travel_yellow", "spotanim.toad_cannon_impact_yellow"),
-    GREEN("green", "varbit.mourning_sheep_green", "npc.plaguesheep_2", 4, "obj.greendye", "obj.mourning_ogre_bellows_green", "obj.mourning_bloated_toad_green", "spotanim.toad_cannon_travel_green", "spotanim.toad_cannon_impact_green"),
+    BLUE("blue", "varbit.mourning_sheep_blue", "npc.plaguesheep_3", 3, "obj.bluedye", "obj.mourning_ogre_bellows_blue", "obj.mourning_bloated_toad_blue", "spotanim.toad_cannon_travel_blue", "spotanim.toad_cannon_impact_blue"),
+    RED("red", "varbit.mourning_sheep_red", "npc.plaguesheep_1", 1, "obj.reddye", "obj.mourning_ogre_bellows_red", "obj.mourning_bloated_toad_red", "spotanim.toad_cannon_travel_red", "spotanim.toad_cannon_impact_red"),
+    YELLOW("yellow", "varbit.mourning_sheep_yellow", "npc.plaguesheep_4", 4, "obj.yellowdye", "obj.mourning_ogre_bellows_yellow", "obj.mourning_bloated_toad_yellow", "spotanim.toad_cannon_travel_yellow", "spotanim.toad_cannon_impact_yellow"),
+    GREEN("green", "varbit.mourning_sheep_green", "npc.plaguesheep_2", 2, "obj.greendye", "obj.mourning_ogre_bellows_green", "obj.mourning_bloated_toad_green", "spotanim.toad_cannon_travel_green", "spotanim.toad_cannon_impact_green"),
     ;
 
     companion object {
