@@ -243,6 +243,22 @@ class RegicideCacheTest {
         assertTrue(graph.componentOf(CoordGrid(2223, 3123, 0)) == west, "the guard catches the player on the tar side of the forest")
     }
 
+    @Test fun `a tripwire is crossed from whichever end of it the player stands on`() {
+        val north = IsafdarObstacles.Tripwire.NORTH_EAST
+        for (z in listOf(3242, 3243)) assertEquals(CoordGrid(2294, 3245, 0), north.across(CoordGrid(2294, z, 0)), "from z=$z")
+        for (z in listOf(3244, 3245)) assertEquals(CoordGrid(2294, 3242, 0), north.across(CoordGrid(2294, z, 0)), "from z=$z")
+        assertTrue(north.covers(CoordGrid(2294, 3243, 0)) && !north.covers(CoordGrid(2294, 3242, 0)))
+        assertEquals(CoordGrid(2294, 3242, 0), north.nearSide(CoordGrid(2294, 3243, 0)))
+        val east = IsafdarObstacles.Tripwire.EAST
+        for (x in listOf(2284, 2285)) assertEquals(CoordGrid(2287, 3188, 0), east.across(CoordGrid(x, 3188, 0)), "from x=$x")
+        for (x in listOf(2286, 2287)) assertEquals(CoordGrid(2284, 3188, 0), east.across(CoordGrid(x, 3188, 0)), "from x=$x")
+        for (wire in IsafdarObstacles.Tripwire.entries) {
+            for (side in listOf(wire.across(wire.coords.translate(-5, -5)), wire.across(wire.coords.translate(5, 5)))) {
+                assertTrue(open(side), "$wire lands on an open tile at $side")
+            }
+        }
+    }
+
     @Test fun `the forest guard steps out where the player can reach him`() {
         val landings = listOf(CoordGrid(2231, 3150, 0), CoordGrid(2231, 3149, 0), CoordGrid(2231, 3148, 0)).filter(::open)
         assertTrue(CoordGrid(2231, 3150, 0) in landings, "the tile the forest drops the player on")

@@ -83,6 +83,9 @@ constructor(private val regicide: RegicideQuest, private val guard: TyrasGuardEn
             mes("You trip the wire and are hit by crossbow bolts from the twigs!")
             takeInstantHit(HitType.Typeless, TRIPWIRE_DAMAGE)
             CombatEffects.poison(player, TRIPWIRE_POISON)
+            if (wire.covers(coords)) {
+                telejump(wire.nearSide(coords))
+            }
             return
         }
         climbOver(dest, STEP_OVER_SEQ, ticks = 2)
@@ -91,8 +94,8 @@ constructor(private val regicide: RegicideQuest, private val guard: TyrasGuardEn
 
     private suspend fun ProtectedAccess.passSticks(sticks: BoundLocInfo) {
         arriveDelay()
-        val start = coords
-        val dest = alongTrap(sticks)
+        val start = alongTrap(sticks, far = false)
+        val dest = alongTrap(sticks, far = true)
         faceSquare(dest)
         if (!statRandom("stat.agility", TRAP_LOW, TRAP_HIGH, 0)) {
             soundSynth(STICKS_SOUND)
@@ -160,16 +163,22 @@ constructor(private val regicide: RegicideQuest, private val guard: TyrasGuardEn
         }
     }
 
-    /** The tile at the far end of a trap that is crossed along its length. */
-    private fun ProtectedAccess.alongTrap(trap: BoundLocInfo): CoordGrid {
+    /**
+     * The tile beyond the [far] or near end of a trap that is crossed along its length. The sticks
+     * do not block walking, so the player may be standing on the end they came in by; whichever
+     * half of the trap they are on is their side.
+     */
+    private fun ProtectedAccess.alongTrap(trap: BoundLocInfo, far: Boolean): CoordGrid {
         val minX = trap.coords.x
         val maxX = minX + trap.adjustedWidth - 1
         val minZ = trap.coords.z
         val maxZ = minZ + trap.adjustedLength - 1
         return if (trap.adjustedWidth >= trap.adjustedLength) {
-            CoordGrid(if (coords.x <= minX) maxX + 1 else minX - 1, minZ, trap.coords.level)
+            val fromWest = coords.x * 2 <= minX + maxX
+            CoordGrid(if (fromWest == far) maxX + 1 else minX - 1, minZ, trap.coords.level)
         } else {
-            CoordGrid(minX, if (coords.z <= minZ) maxZ + 1 else minZ - 1, trap.coords.level)
+            val fromSouth = coords.z * 2 <= minZ + maxZ
+            CoordGrid(minX, if (fromSouth == far) maxZ + 1 else minZ - 1, trap.coords.level)
         }
     }
 
@@ -189,7 +198,11 @@ constructor(private val regicide: RegicideQuest, private val guard: TyrasGuardEn
             }
     }
 
-    /** The tripwires, by their south-west tile, length and the axis they are stepped over along. */
+    /**
+     * The tripwires, by the south-west tile of the two-tile wire and the axis they are stepped
+     * over along. The wire does not block walking, so a player can stand on the end they came in
+     * by; standing on the wire's first tile counts as their own side.
+     */
     enum class Tripwire(val coords: CoordGrid, private val northSouth: Boolean) {
         CAMP_EAST(CoordGrid(2220, 3153, 0), northSouth = true),
         CAMP_WEST(CoordGrid(2215, 3154, 0), northSouth = true),
@@ -198,11 +211,24 @@ constructor(private val regicide: RegicideQuest, private val guard: TyrasGuardEn
         NORTH_EAST(CoordGrid(2294, 3243, 0), northSouth = true),
         ;
 
-        fun across(from: CoordGrid): CoordGrid =
+        fun across(from: CoordGrid): CoordGrid = side(from, far = true)
+
+        fun nearSide(from: CoordGrid): CoordGrid = side(from, far = false)
+
+        fun covers(tile: CoordGrid): Boolean =
             if (northSouth) {
-                CoordGrid(coords.x, if (from.z < coords.z) coords.z + 2 else coords.z - 1, coords.level)
+                tile.x == coords.x && tile.z in coords.z..coords.z + 1
             } else {
-                CoordGrid(if (from.x < coords.x) coords.x + 2 else coords.x - 1, coords.z, coords.level)
+                tile.z == coords.z && tile.x in coords.x..coords.x + 1
+            }
+
+        private fun side(from: CoordGrid, far: Boolean): CoordGrid =
+            if (northSouth) {
+                val fromSouth = from.z <= coords.z
+                CoordGrid(coords.x, if (fromSouth == far) coords.z + 2 else coords.z - 1, coords.level)
+            } else {
+                val fromWest = from.x <= coords.x
+                CoordGrid(if (fromWest == far) coords.x + 2 else coords.x - 1, coords.z, coords.level)
             }
     }
 
