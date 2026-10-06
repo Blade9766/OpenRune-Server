@@ -16,6 +16,8 @@ on:
 
 jobs:
   update-issue:
+    # Forks have Issues turned off, so only the upstream repo keeps the tracker issue.
+    if: github.repository == 'OpenRune/OpenRune-Server'
     runs-on: ubuntu-latest
 
     steps:
