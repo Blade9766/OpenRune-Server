@@ -126,6 +126,7 @@ class MourningsEndCacheTest {
     @Test fun `the people of the quest stand where the scripts expect`() {
         assertEquals(listOf(CoordGrid(2353, 3172, 0)), spawns("npc.mourning_arianwyn"))
         assertEquals(listOf(CoordGrid(2044, 4628, 0)), spawns("npc.mourner_hideout_head_mourner"))
+        assertEquals(emptyList<CoordGrid>(), spawns("npc.regicide_evil_elf1"), "only Regicide's cutscene spawns that Essyllt")
         assertEquals(listOf(CoordGrid(2913, 3417, 0)), spawns("npc.eadgar_druid_washing"))
         assertTrue(CoordGrid(2324, 3179, 0) in spawns("npc.mourning_seamstress"))
         assertEquals("Essyllt", npc(checkNotNull(npc("npc.mourner_hideout_head_mourner").transforms)[0]).name)

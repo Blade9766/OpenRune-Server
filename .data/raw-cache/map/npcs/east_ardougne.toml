@@ -1314,10 +1314,6 @@ coords = "0_31_72_60_36"
 npc = "npc.paladin_west_f"
 coords = "0_31_72_59_24"
 
-[[spawn]]
-npc = "npc.regicide_evil_elf1"
-coords = "0_31_72_60_20"
-
 ## Zenesha's Plate Mail Body Shop
 
 [[spawn]]
