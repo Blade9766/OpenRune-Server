@@ -1,0 +1,5 @@
+[[npc]]
+isServerOnly = true
+id = "npc.mourner_hideout_head_mourner"
+inherit = "npc.mourner_hideout_head_mourner"
+wanderRange = 2
