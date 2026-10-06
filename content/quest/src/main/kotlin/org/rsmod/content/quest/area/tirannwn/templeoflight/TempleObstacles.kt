@@ -197,14 +197,14 @@ constructor(
             mes("A strange force blocks your path.")
             return
         }
-        val dest = CoordGrid(DOORWAY_INSIDE_X, coords.z, 0)
+        val dest = CoordGrid(DOORWAY_INSIDE_X - 1, coords.z, 0)
         exactMove(coords, dest, 0, CYCLES_PER_TICK, faceTowards(coords, dest))
         delay(1)
         puzzle.refresh(player)
     }
 
     internal suspend fun ProtectedAccess.leaveTemple() {
-        val dest = CoordGrid(DOORWAY_OUTSIDE_X, coords.z, 0)
+        val dest = CoordGrid(DOORWAY_OUTSIDE_X + 1, coords.z, 0)
         exactMove(coords, dest, 0, CYCLES_PER_TICK, faceTowards(coords, dest))
         delay(1)
     }
@@ -345,7 +345,10 @@ constructor(
         const val TRAP_DAMAGE = 5
         const val TRAP_XP = 5.0
 
-        /** The doorway from the mines: the tiles either side of the temple's invisible threshold. */
+        /**
+         * The doorway from the mines: the tiles either side of the temple's invisible threshold. A
+         * glide lands a tile past the far one, off its trigger, so the player can turn straight back.
+         */
         const val DOORWAY_OUTSIDE_X = 1917
         const val DOORWAY_INSIDE_X = 1916
         val DOORWAY_Z = 4638..4640

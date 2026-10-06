@@ -515,7 +515,10 @@ class MourningsEndPart2InteractionTest {
         assertTrue(f.said("A strange force blocks your path."))
         f.give(TRINKET)
         f.dispatch { with(f.obstacles) { enterTemple() } }
-        assertEquals(CoordGrid(1916, 4639, 0), f.player.coords)
+        assertEquals(CoordGrid(1915, 4639, 0), f.player.coords, "past the inside threshold")
+        f.player.coords = CoordGrid(1916, 4639, 0)
+        f.dispatch { with(f.obstacles) { leaveTemple() } }
+        assertEquals(CoordGrid(1918, 4639, 0), f.player.coords, "past the outside threshold")
         TempleShadows.syncPeace(f.player, f.part2)
         assertEquals(1, f.player.vars[TempleShadows.PEACE_VARP])
         f.drop(TRINKET)
@@ -524,7 +527,7 @@ class MourningsEndPart2InteractionTest {
         val during = Fixture(STAGE_KEY)
         during.player.coords = CoordGrid(1917, 4639, 0)
         during.dispatch { with(during.obstacles) { enterTemple() } }
-        assertEquals(CoordGrid(1916, 4639, 0), during.player.coords, "open to everyone until the safeguards return")
+        assertEquals(CoordGrid(1915, 4639, 0), during.player.coords, "open to everyone until the safeguards return")
     }
 
     @Test fun `the doorway notices a player walking or running up to it from either side`() {

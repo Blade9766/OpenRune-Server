@@ -201,7 +201,7 @@ class MourningsEndPart2CacheTest {
             listOf(
                 TempleObstacles.ROPE_TOP, TempleObstacles.ROPE_BOTTOM, TempleObstacles.SUPPORTS_WEST, TempleObstacles.SUPPORTS_EAST,
                 TempleObstacles.UPASS_LANDING, TempleObstacles.TEMPLE_LANDING, CoordGrid(1863, 4639, 0),
-            ) + TempleObstacles.DOORWAY_Z.flatMap { listOf(CoordGrid(TempleObstacles.DOORWAY_INSIDE_X, it, 0), CoordGrid(TempleObstacles.DOORWAY_OUTSIDE_X, it, 0)) }
+            ) + TempleObstacles.DOORWAY_Z.flatMap { (TempleObstacles.DOORWAY_INSIDE_X - 1..TempleObstacles.DOORWAY_OUTSIDE_X + 1).map { x -> CoordGrid(x, it, 0) } }
         for (tile in tiles) assertTrue(open(tile), "$tile")
         for (x in TempleObstacles.SUPPORTS_WEST.x + 1 until TempleObstacles.SUPPORTS_EAST.x) {
             assertTrue(placed(TempleObstacles.WALL_SUPPORT, CoordGrid(x, 4612, 1)), "support at $x")
