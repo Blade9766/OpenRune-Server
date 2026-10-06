@@ -1,7 +1,6 @@
-# Fortunato's wine shop until the Odd Old Man's errand gets his vinegar out from under the
-# counter (Rag and Bone Man I); the full stock is inv.wine_vinegar_merchant.
+# Rag and Bone Man I: Fortunato's wine shop until the Odd Old Man's errand gets his vinegar out
+# from under the counter; the full stock is inv.wine_vinegar_merchant.
 [[inventory]]
-isServerOnly = true
 id = "inv.rag_wine_merchant_no_vinegar"
 name = "Wine Shop."
 

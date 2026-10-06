@@ -172,6 +172,7 @@ class RagAndBoneManCacheTest {
         }
         for (spot in listOf(PotBoiler.SMOKE_SPOTANIM, PotBoiler.STEAM_SPOTANIM)) assertTrue(spot.asRSCM(RSCMType.SPOTANIM) >= 0)
         assertTrue(PotBoiler.BOIL_TIMER.asRSCM(RSCMType.TIMER) >= 0)
+        assertTrue(OddOldMan.SCROLL_RESET.asRSCM(RSCMType.CLIENTSCRIPT) >= 0)
         for (obj in listOf(RagAndBoneManQuest.POT, RagAndBoneManQuest.JUG, RagAndBoneManQuest.LOGS, RagAndBoneManQuest.TINDERBOX)) {
             assertNotNull(item(obj), obj)
         }

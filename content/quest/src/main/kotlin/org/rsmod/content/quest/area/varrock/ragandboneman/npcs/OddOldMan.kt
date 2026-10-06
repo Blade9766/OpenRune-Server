@@ -1,6 +1,7 @@
 package org.rsmod.content.quest.area.varrock.ragandboneman.npcs
 
 import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.invtx.invTransaction
 import org.rsmod.api.invtx.select
@@ -209,7 +210,7 @@ class OddOldMan @Inject constructor(private val rb: RagAndBoneManQuest) : Plugin
             }
         val text = lines.flatMap { it.toRs(wrapAt = SCROLL_WRAP).split("<br>") }
         ifOpenMain("interface.questjournal")
-        runClientScript(SCROLL_RESET.asRSCM())
+        runClientScript(SCROLL_RESET.asRSCM(RSCMType.CLIENTSCRIPT))
         ifSetText("component.questjournal:title", "<col=7f0000>The Odd Old Man's Wish-list</col>")
         for (line in 1..SCROLL_LINES) {
             ifSetText("component.questjournal:qj$line", text.getOrElse(line - 1) { "" })
@@ -223,7 +224,7 @@ class OddOldMan @Inject constructor(private val rb: RagAndBoneManQuest) : Plugin
     companion object {
         const val WISH_LIST = "loc.rag_shopping_list"
 
-        private const val SCROLL_RESET = "clientscript.quest_journal_reset"
+        const val SCROLL_RESET = "clientscript.[clientscript,quest_journal_reset]"
         private const val SCROLL_WRAP = 64
         private const val SCROLL_LINES = 24
         private const val MESBOX_LINES = 3
