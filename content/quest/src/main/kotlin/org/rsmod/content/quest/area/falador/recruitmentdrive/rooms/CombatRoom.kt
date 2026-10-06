@@ -71,18 +71,16 @@ constructor(
         for ((weapon, tile) in WEAPONS) {
             testing.grounds.spawnObj(player, weapon, tile)
         }
-        val kuam = testing.grounds.observer(player, room)
+        // Sir Leye comes before the greeting: a player who walks off mid-greeting ends it early.
+        if (testing.testing(player, room, attempt)) {
+            summonLeye(player)
+        }
+        val kuam = testing.grounds.observer(player, room) ?: return
         val name = player.displayName
-        if (kuam != null) {
-            startDialogue(kuam) {
-                chatNpc(neutral, "Ah, $name, you're finally here. Your task for this room is to defeat Sir Leye. He has been blessed by Saradomin to be undefeatable by any blade, so it should be quite a challenge for you.")
-                kuamHint()
-            }
+        startDialogue(kuam) {
+            chatNpc(neutral, "Ah, $name, you're finally here. Your task for this room is to defeat Sir Leye. He has been blessed by Saradomin to be undefeatable by any blade, so it should be quite a challenge for you.")
+            kuamHint()
         }
-        if (!testing.testing(player, room, attempt)) {
-            return
-        }
-        summonLeye(player)
     }
 
     private suspend fun Dialogue.kuamHint() {

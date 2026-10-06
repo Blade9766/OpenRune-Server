@@ -213,7 +213,7 @@ class CrossingRoom @Inject constructor(private val testing: RecruitmentTesting) 
         val path = if (from == Bank.EAST) EAST_TO_WEST else EAST_TO_WEST.reversed()
         val facing = if (from == Bank.EAST) FACE_WEST else FACE_EAST
         val start = testing.grounds.local(player, path.first()) ?: return
-        telejump(start)
+        telejump(start, org.rsmod.api.player.hook.TeleportType.Exempt)
         mes("You carefully walk across the rickety bridge...")
         for (tile in path.drop(1)) {
             val step = testing.grounds.local(player, tile) ?: return

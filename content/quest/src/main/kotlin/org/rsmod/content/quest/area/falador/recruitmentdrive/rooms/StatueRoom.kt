@@ -57,14 +57,23 @@ class StatueRoom @Inject constructor(private val testing: RecruitmentTesting) : 
         player.rdStatueLayout = player.rdStatueAnswer
         val lady = testing.grounds.observer(player, room) ?: return
         val name = player.displayName
-        startDialogue(lady) {
-            chatNpc(neutral, "Welcome, $name. This room will test your observation skills.")
-            chatNpc(neutral, "Study the statues closely. There is one missing statue in this room.")
-            chatNpc(neutral, "We will also mix the order up a little to make things interesting for you!")
-            if (testing.testing(player, room, attempt)) {
-                access.softTimer(TIMER, MEMORISE_TICKS)
+        var armed = false
+        try {
+            startDialogue(lady) {
+                chatNpc(neutral, "Welcome, $name. This room will test your observation skills.")
+                chatNpc(neutral, "Study the statues closely. There is one missing statue in this room.")
+                chatNpc(neutral, "We will also mix the order up a little to make things interesting for you!")
+                if (testing.testing(player, room, attempt)) {
+                    access.softTimer(TIMER, MEMORISE_TICKS)
+                }
+                armed = true
+                chatNpc(neutral, "You have 10 seconds to memorise the statues... starting NOW!")
             }
-            chatNpc(neutral, "You have 10 seconds to memorise the statues... starting NOW!")
+        } finally {
+            // A player who walks off mid-greeting still gets the swap, or the room could never be solved.
+            if (!armed && testing.testing(player, room, attempt)) {
+                softTimer(TIMER, MEMORISE_TICKS)
+            }
         }
     }
 
