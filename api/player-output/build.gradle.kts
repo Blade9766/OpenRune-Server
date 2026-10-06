@@ -11,4 +11,6 @@ dependencies {
     implementation(projects.api.config)
     implementation(projects.engine.game)
     implementation(projects.engine.map)
+    testImplementation(libs.rsprot.desktop)
+    testImplementation(projects.api.testing.testCapture)
 }
