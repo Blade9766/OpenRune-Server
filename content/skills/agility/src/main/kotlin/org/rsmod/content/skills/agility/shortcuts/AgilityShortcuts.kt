@@ -338,6 +338,16 @@ object AgilityShortcuts {
                 oneWay = true,
             ),
             AgilityShortcut(
+                name = "Climbing rocks",
+                level = 66,
+                xp = 25.0,
+                locs = listOf("loc.tavelryshortcut"),
+                sideA = tile(2946, 3439),
+                sideB = tile(2943, 3439),
+                move = Climb(),
+                oneWay = true,
+            ),
+            AgilityShortcut(
                 name = "Rocks",
                 level = 68,
                 xp = 0.0,
