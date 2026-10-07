@@ -9,6 +9,7 @@ import dev.openrune.map.tile.MapTileDecoder
 import dev.openrune.map.util.InlineByteBuf
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
+import dev.openrune.types.MoveRestrict
 import dev.openrune.types.varp.VarpLifetime
 import dev.openrune.types.varp.baseVar
 import org.junit.jupiter.api.AfterAll
@@ -97,6 +98,13 @@ class EadgarsRuseCacheTest {
             assertTrue(open(tile), "$tile")
         }
         assertTrue(open(CoordGrid(2890, 10086, 2)), "Eadgar's own tile is floor")
+    }
+
+    @Test fun `the troll thistle stays on its patch and can still be picked`() {
+        val thistle = npc(EadgarsRuseQuest.THISTLE_NPC)
+        assertEquals(0, thistle.wanderRange)
+        assertEquals(MoveRestrict.NoMove, thistle.moveRestrict)
+        assertEquals("Pick", thistle.actions.getOpOrNull(0))
     }
 
     private fun width(varbit: String): Int {
