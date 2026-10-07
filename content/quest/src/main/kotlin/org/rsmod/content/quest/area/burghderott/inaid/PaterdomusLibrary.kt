@@ -74,10 +74,13 @@ class PaterdomusLibrary @Inject constructor(private val iaom: InAidOfTheMyrequeQ
             chatPlayer(happy, "Thanks very much for your help. I really appreciate it.")
             drezel(sad, "I just hope all our sacrifices are worth it.")
             if (!player.holdsAnywhere(LIBRARY_KEY) && player.vars[LIBRARY_TRAPDOOR] == 0) {
-                drezel(neutral, "You've lost the key? Here, take it, but guard it better this time.")
-                if (!access.inv.isFull()) {
-                    access.invAdd(access.inv, LIBRARY_KEY)
+                if (access.inv.isFull()) {
+                    drezel(neutral, "You'll need the library key, but you have no room to carry it. Come back when you do.")
+                    return
                 }
+                drezel(neutral, "You've lost the key? Here, take it, but guard it better this time.")
+                access.invAdd(access.inv, LIBRARY_KEY)
+                objbox(LIBRARY_KEY, "Drezel gives you a key.")
             }
             return
         }
@@ -167,12 +170,13 @@ class PaterdomusLibrary @Inject constructor(private val iaom: InAidOfTheMyrequeQ
                     chatPlayer(neutral, "I know. So please, help me as much as you can.")
                     drezel(sad, "Very well, but there is only so much I can do. Remember that I am still a priest of Saradomin.")
                     drezel(neutral, "I don't know if it will help, but take this key. It opens a secret library here in the mausoleum. You may find what you seek there, but I pray you never tell me of it.")
+                    // He has agreed for good: a full pack only delays the key, it never repeats the questions.
+                    iaom.advanceTo(access, STAGE_LIBRARY_KEY)
                     if (access.inv.isFull()) {
                         drezel(neutral, "...though you have no room to carry it. Come back when you do.")
                         return true
                     }
                     access.invAdd(access.inv, LIBRARY_KEY)
-                    iaom.advanceTo(access, STAGE_LIBRARY_KEY)
                     objbox(LIBRARY_KEY, "Drezel gives you a key.")
                     chatPlayer(happy, "Thank you, Drezel.")
                     return true

@@ -627,6 +627,23 @@ class InAidOfTheMyrequeInteractionTest {
         assertEquals(1, f.count(InAidOfTheMyrequeQuest.ROD_MOULD))
     }
 
+    @Test fun `a full pack only delays drezel's key and never repeats the questions`() {
+        val f = Fixture(STAGE_IVAN_DELIVERED)
+        f.fillInventory()
+        f.askDrezel()
+        assertEquals(STAGE_LIBRARY_KEY, f.stage(), "he has agreed, key or no key")
+        assertEquals(0, f.count(InAidOfTheMyrequeQuest.LIBRARY_KEY))
+        assertTrue(f.said("no room to carry it"))
+
+        f.talkToDrezel()
+        assertEquals(0, f.count(InAidOfTheMyrequeQuest.LIBRARY_KEY), "still no room")
+        assertTrue(f.said("Come back when you do"))
+
+        f.emptySlots(1)
+        f.talkToDrezel()
+        assertEquals(1, f.count(InAidOfTheMyrequeQuest.LIBRARY_KEY), "no questions the second time")
+    }
+
     @Test fun `the rod is enchanted by the spell and blessed only with a rope`() {
         val f = Fixture(STAGE_MOULD_MADE)
         f.give(InAidOfTheMyrequeQuest.SILVTHRILL)
@@ -1063,6 +1080,10 @@ class InAidOfTheMyrequeInteractionTest {
 
         fun askDrezel() {
             choose(1, 1, 2, 3, 4, 3)
+            talkToDrezel()
+        }
+
+        fun talkToDrezel() {
             run {
                 startDialogue {
                     with(PaterdomusLibrary(iaom)) { talk { mood, text -> chatNpcSpecific("Drezel", "npc.burgh_farmer", mood, text) } }
