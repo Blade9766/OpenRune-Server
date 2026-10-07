@@ -67,6 +67,7 @@ misthalin_puzzle_state = 63702
 # catacomb doors the player has unlocked this visit.
 shades_coffin = 65330
 shades_catacomb_doors = 65331
+cooks_assistant_ingredients = 63705
 
 [gamevals.varbit]
 restless_ghost_progress = 63702
@@ -75,6 +76,10 @@ misthalin_reflections = 63700
 misthalin_gem_row_slot = 63701
 # Dwarf multicannon: whether the player's cannon is the Shattered Relics ornamented one.
 mcannon_ornate = 65768
+cooks_assistant_progress = 63704
+cooks_assistant_milk = 63705
+cooks_assistant_egg = 63706
+cooks_assistant_flour = 63707
 
 [gamevals.models]
 misthalin_gem_diamond = 32333

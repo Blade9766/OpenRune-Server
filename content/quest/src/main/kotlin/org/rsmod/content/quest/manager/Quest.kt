@@ -153,7 +153,7 @@ data class Quest(
     }
 
     /** Moves a stage saved in the attribute map before the quest kept it in [questVarbit]. */
-    private fun migrateLegacyStage(player: Player) {
+    fun migrateLegacyStage(player: Player) {
         val varbit = questVarbit ?: return
         val legacy = player.attr[QUEST_STAGE_MAP_ATTR]?.remove(key) ?: return
         if (player.vars[varbit] == 0) {

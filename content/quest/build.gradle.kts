@@ -9,6 +9,7 @@ dependencies {
     testImplementation(projects.api.invStorage)
     testImplementation(projects.api.registry)
     testImplementation(libs.fastutil)
+    testImplementation(libs.mockk)
     implementation(projects.api.pluginCommons)
     implementation(projects.api.registry)
     implementation(projects.api.scriptAdvanced)
