@@ -640,7 +640,7 @@ constructor(
             with(library) { talk { mood, text -> drezel(mood, text) } }
             return
         }
-        if (!player.holdsAnywhere(WOLFBANE)) {
+        if (!priestInPeril.isAssumedComplete(player) && !player.holdsAnywhere(WOLFBANE)) {
             chatPlayer(worried, "I've lost my wolfbane dagger.")
             if (player.inv.isFull()) {
                 drezel(neutral, "Yes I know, but you have no space for it at the moment so I can't return it to you.")

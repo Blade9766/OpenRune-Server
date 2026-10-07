@@ -200,7 +200,7 @@ constructor(
         if (juvinate.coords.chebyshevDistance(ivan.coords) > 1) {
             // A straight walk snags on the clearing's scenery from most spawns, so they path round it.
             val route = routeFactory.create(juvinate.avatar, ivan.avatar).map { CoordGrid(it.x, it.z, it.level) }
-            if (route.isNotEmpty()) juvinate.walk(route)
+            if (route.isNotEmpty()) juvinate.walk(route) else juvinate.walk(ivan.coords)
             return
         }
         juvinate.faceNpc(ivan)
