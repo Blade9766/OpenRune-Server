@@ -508,14 +508,13 @@ constructor(
                 val stackable = ocType(errand.obj).stackable
                 val room = if (stackable) errand.count else inv.freeSpace()
                 val count = minOf(errand.count, invTotal(bank, errand.obj), room)
+                val id = errand.obj.asRSCM(RSCMType.OBJ)
+                val slot = bank.indexOfFirst { it?.id == id }
                 when {
-                    invTotal(bank, errand.obj) <= 0 -> "You do not have any of those items in your bank."
+                    invTotal(bank, errand.obj) <= 0 || slot < 0 -> "You do not have any of those items in your bank."
                     count <= 0 -> "You have no room for the items."
-                    invDel(bank, errand.obj, count).failure -> "I could not fetch those items."
-                    else -> {
-                        invAdd(inv, errand.obj, count)
-                        null
-                    }
+                    invMoveFromSlot(bank, inv, slot, minOf(count, bank[slot]?.count ?: 0)).failure -> "I could not fetch those items."
+                    else -> null
                 }
             }
             is Errand.Unnote -> {
@@ -533,8 +532,11 @@ constructor(
                 val count = minOf(errand.count, inv.count(plank.logs), invCoinTotal() / plank.cost)
                 when {
                     count <= 0 -> "You need the logs and the sawmill's fee for me to make planks."
-                    invDel(inv, plank.logs, count).failure || !invTakeFee(count * plank.cost) ->
+                    !invTakeFee(count * plank.cost) -> "I could not make the planks."
+                    invDel(inv, plank.logs, count).failure -> {
+                        invAdd(inv, "obj.coins", count * plank.cost)
                         "I could not make the planks."
+                    }
                     else -> {
                         invAdd(inv, plank.plank, count)
                         null
