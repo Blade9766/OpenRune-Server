@@ -404,6 +404,7 @@ constructor(
     private suspend fun Dialogue.inMausoleum() {
         val stage = priestInPeril.stage(player)
         when {
+            priestInPeril.isAssumedComplete(player) -> afterQuest()
             stage == STAGE_MEET_IN_MAUSOLEUM -> repairingTheBarrier()
             stage in STAGE_ESSENCE until STAGE_COMPLETE -> essence()
             stage >= STAGE_COMPLETE && !priestInPeril.blessed.get(player) -> blessing()

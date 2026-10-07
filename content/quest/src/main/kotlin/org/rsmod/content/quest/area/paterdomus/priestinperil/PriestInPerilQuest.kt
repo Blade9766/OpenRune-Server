@@ -1,10 +1,15 @@
 package org.rsmod.content.quest.area.paterdomus.priestinperil
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Singleton
+import org.rsmod.api.player.output.VarpSync
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.content.quest.manager.ItemRewardDisplay
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
 import org.rsmod.game.entity.Player
@@ -25,7 +30,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 @Singleton
 class PriestInPerilQuest : QuestScript(
     "quest_priestinperil",
-    "varp.priestperil",
+    STAGE_VARP,
     rewards {
         xp("stat.prayer", PRAYER_XP)
         item(WOLFBANE)
@@ -48,7 +53,25 @@ class PriestInPerilQuest : QuestScript(
         onPlayerLogin { syncHoodedMonk(player) }
     }
 
+    /**
+     * The client draws Drezel in the mausoleum from the real varp, so a policy that counts an
+     * untouched quest as done would leave him invisible to Nature Spirit and In Aid of the Myreque.
+     * The client alone is shown the endstate; the saved stage stays 0 and the first real stage
+     * change overwrites it. Runs from [PriestInPerilLoginVars], after login resends the varps.
+     */
+    fun showAssumedCompletion(player: Player) {
+        if (!isAssumedComplete(player)) {
+            return
+        }
+        val varp = checkNotNull(ServerCacheManager.getVarp(STAGE_VARP.asRSCM(RSCMType.VARP)))
+        VarpSync.writeVarp(player, varp, STAGE_COMPLETE)
+    }
+
     fun stage(player: Player): Int = quest.getQuestStage(player)
+
+    /** Untouched, and counted as done by the quest policy: Drezel and the barrier act as after it. */
+    fun isAssumedComplete(player: Player): Boolean =
+        stage(player) == 0 && QuestRequirements.hasCompleted(player, questKey)
 
     fun isComplete(player: Player): Boolean = quest.isQuestCompleted(player)
 
@@ -176,6 +199,7 @@ class PriestInPerilQuest : QuestScript(
         const val STAGE_MEET_IN_MAUSOLEUM = 8
         const val STAGE_ESSENCE = 10
         const val STAGE_COMPLETE = 60
+        const val STAGE_VARP = "varp.priestperil"
 
         const val ESSENCE_NEEDED = STAGE_COMPLETE - STAGE_ESSENCE
         const val PRAYER_XP = 1406.0

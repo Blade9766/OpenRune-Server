@@ -8,6 +8,7 @@ import org.rsmod.api.death.PlayerDeathCleanupHook
 import org.rsmod.api.death.PlayerDeathHook
 import org.rsmod.api.death.PlayerRespawnHook
 import org.rsmod.api.player.hook.PlayerInvUpdateHook
+import org.rsmod.api.player.hook.PlayerLoginVarsHook
 import org.rsmod.api.player.hook.PlayerObjTakeRedirectHook
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
@@ -197,6 +198,7 @@ import org.rsmod.content.quest.area.mortton.shades.ShadesOfMorttonQuest
 import org.rsmod.content.quest.area.mortton.shades.catacombs.ShadeCoffins
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PaterdomusDoors
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilKillHook
+import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilLoginVars
 import org.rsmod.content.quest.area.paterdomus.priestinperil.PriestInPerilQuest
 import org.rsmod.content.quest.area.paterdomus.priestinperil.TempleGuardianAttackHook
 import org.rsmod.content.quest.area.rellekka.fremenniktrials.DraugenAttackHook
@@ -289,6 +291,7 @@ public class QuestModule : PluginModule() {
         bindInstance<EnterTheAbyssQuest>()
         bindInstance<AbyssTeleport>()
         addSetBinding<EssenceMineArrivalHook>(ScryingOrbReadings::class.java)
+        addSetBinding<PlayerLoginVarsHook>(PriestInPerilLoginVars::class.java)
         bindInstance<LostTribeQuest>()
         bindInstance<LostTribeDuke>()
         bindInstance<LostTribeLore>()

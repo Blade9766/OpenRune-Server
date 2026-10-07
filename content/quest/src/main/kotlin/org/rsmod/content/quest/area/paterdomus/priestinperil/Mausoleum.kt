@@ -65,7 +65,8 @@ constructor(
     private suspend fun ProtectedAccess.westGate(gate: BoundLocInfo) {
         arriveDelay()
         val north = coords.z >= gate.coords.z
-        if (north && !priestInPeril.westGateUnlocked.get(player)) {
+        val unlocked = priestInPeril.westGateUnlocked.get(player) || priestInPeril.isAssumedComplete(player)
+        if (north && !unlocked) {
             if (priestInPeril.stage(player) < STAGE_ROALD_FURIOUS || !inv.contains(GOLDEN_KEY)) {
                 mesbox("The gate is securely locked.")
                 return
@@ -81,7 +82,8 @@ constructor(
     private suspend fun ProtectedAccess.eastGate(gate: BoundLocInfo) {
         arriveDelay()
         val east = coords.x > gate.coords.x
-        if (!east && priestInPeril.stage(player) < STAGE_MEET_IN_MAUSOLEUM) {
+        val open = priestInPeril.stage(player) >= STAGE_MEET_IN_MAUSOLEUM || priestInPeril.isAssumedComplete(player)
+        if (!east && !open) {
             mesbox("The gate is securely locked.")
             return
         }
@@ -93,7 +95,8 @@ constructor(
         arriveDelay()
         anim(FILL_SEQ)
         soundSynth(FILL_SOUND)
-        val water = if (priestInPeril.stage(player) < STAGE_COMPLETE) MURKY_WATER else BUCKET_OF_WATER
+        val polluted = priestInPeril.stage(player) < STAGE_COMPLETE && !priestInPeril.isAssumedComplete(player)
+        val water = if (polluted) MURKY_WATER else BUCKET_OF_WATER
         invReplace(inv, BUCKET, 1, water)
         objbox(water, "You fill the bucket from the well.")
     }
@@ -102,7 +105,7 @@ constructor(
         arriveDelay()
         val stage = priestInPeril.stage(player)
         when {
-            priestInPeril.blessed.get(player) -> {
+            priestInPeril.blessed.get(player) || priestInPeril.isAssumedComplete(player) -> {
                 delay(1)
                 telejump(PaterdomusCoords.MORYTANIA_EXIT, TeleportType.Exempt)
             }
@@ -135,11 +138,12 @@ constructor(
 
     /* Monuments */
 
-    private fun giftsTaken(stage: Int): Boolean = stage >= STAGE_COFFIN_SEALED
+    private fun ProtectedAccess.giftsTaken(): Boolean =
+        priestInPeril.stage(player) >= STAGE_COFFIN_SEALED || priestInPeril.isAssumedComplete(player)
 
     private suspend fun ProtectedAccess.study(monument: Monument) {
         arriveDelay()
-        if (giftsTaken(priestInPeril.stage(player))) {
+        if (giftsTaken()) {
             mesbox("A monument dedicated to the fallen.")
             return
         }
@@ -148,7 +152,7 @@ constructor(
 
     private suspend fun ProtectedAccess.takeFrom(monument: Monument) {
         arriveDelay()
-        if (giftsTaken(priestInPeril.stage(player))) {
+        if (giftsTaken()) {
             mesbox("It would be wrong to dishonour this monument.")
             return
         }
@@ -161,7 +165,7 @@ constructor(
 
     private suspend fun ProtectedAccess.useOn(monument: Monument, obj: String) {
         arriveDelay()
-        if (giftsTaken(priestInPeril.stage(player))) {
+        if (giftsTaken()) {
             mes("Nothing interesting happens.")
             return
         }

@@ -35,6 +35,10 @@ constructor(
     private suspend fun ProtectedAccess.useDoor() {
         arriveDelay()
         val inside = coords.x > PaterdomusCoords.TEMPLE_DOOR_X
+        if (priestInPeril.isAssumedComplete(player)) {
+            enter(inside)
+            return
+        }
         when (priestInPeril.stage(player)) {
             0 -> if (inside) enter(inside) else startDialogue { nobodyHome() }
             STAGE_STARTED -> if (inside) enter(inside) else startDialogue { firstKnock() }

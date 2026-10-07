@@ -45,7 +45,7 @@ constructor(
 
     private suspend fun ProtectedAccess.open() {
         arriveDelay()
-        if (priestInPeril.stage(player) >= STAGE_COFFIN_SEALED) {
+        if (priestInPeril.stage(player) >= STAGE_COFFIN_SEALED || priestInPeril.isAssumedComplete(player)) {
             startDialogue { chatPlayer(neutral, "The vampyre should be dealt with. I'd still best not risk it though.") }
             return
         }

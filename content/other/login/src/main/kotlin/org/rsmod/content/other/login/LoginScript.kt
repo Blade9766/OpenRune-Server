@@ -16,6 +16,7 @@ import org.rsmod.api.inv.weight.InvWeight
 import org.rsmod.api.net.central.OpenRuneCentralWorldLink
 import org.rsmod.api.net.central.writeCentralSocialSnapshot
 import org.rsmod.api.net.central.writeCentralSocialSnapshotEmpty
+import org.rsmod.api.player.hook.PlayerLoginVarsHook
 import org.rsmod.api.player.output.Camera
 import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.output.MiscOutput
@@ -47,6 +48,7 @@ constructor(
     private val invisibleLevels: InvisibleLevels,
     private val config: ServerConfig,
     private val openRuneCentral: OpenRuneCentralWorldLink,
+    private val loginVarsHooks: Set<@JvmSuppressWildcards PlayerLoginVarsHook>,
 ) : PluginScript() {
     private val statSyncEntries by lazy { statSyncEntries() }
 
@@ -134,6 +136,9 @@ constructor(
             if (varp.configType > 0 && varp.id !in sent) {
                 resyncVar(varp)
             }
+        }
+        for (hook in loginVarsHooks) {
+            hook.onLoginVarsSent(this)
         }
     }
 

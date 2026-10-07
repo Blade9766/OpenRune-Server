@@ -4,6 +4,7 @@ import com.google.inject.Provider
 import jakarta.inject.Inject
 import org.rsmod.api.player.hook.GroundItemDropResolver
 import org.rsmod.api.player.hook.PlayerGroundItemDropHook
+import org.rsmod.api.player.hook.PlayerLoginVarsHook
 import org.rsmod.api.player.hook.PlayerObjTakeRedirectHook
 import org.rsmod.api.player.hook.PlayerObjTakeRedirector
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
@@ -26,6 +27,7 @@ public object PlayerModule : ExtendedModule() {
         newSetBinding<PlayerObjTakeValidateHook>()
         newSetBinding<PlayerObjTakeRedirectHook>()
         newSetBinding<PlayerRestrictionHook>()
+        newSetBinding<PlayerLoginVarsHook>()
         bindInstance<PlayerRestrictions>()
         bindInstance<MusicPlayer>()
         bindInstance<ProtectedAccessContextFactory>()
