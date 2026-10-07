@@ -1,0 +1,34 @@
+# Aubury, Sedridor, Distentor and Brimstail are multinpcs on varp.runemysteries whose Teleport op
+# only appears at the endstate. When the quest policy counts an untouched Rune Mysteries as done,
+# the client is shown the endstate, but the server still resolves the saved stage 0 to the forms
+# without the op and would drop the click. These server-only entries give those forms the op;
+# the client keeps its own definitions, so a player mid-quest still sees no Teleport. A server-only
+# entry replaces the whole op list, so every op is listed.
+[[npc]]
+isServerOnly = true
+id = "npc.aubury_2op"
+inherit = "npc.aubury_2op"
+option1 = "Talk-to"
+option3 = "Trade"
+option4 = "Teleport"
+
+[[npc]]
+isServerOnly = true
+id = "npc.head_wizard_1op"
+inherit = "npc.head_wizard_1op"
+option1 = "Talk-to"
+option3 = "Teleport"
+
+[[npc]]
+isServerOnly = true
+id = "npc.guild_wizard_1op"
+inherit = "npc.guild_wizard_1op"
+option1 = "Talk-to"
+option3 = "Teleport"
+
+[[npc]]
+isServerOnly = true
+id = "npc.gnome_brimstail_1op"
+inherit = "npc.gnome_brimstail_1op"
+option1 = "Talk-to"
+option3 = "Teleport"

@@ -1,6 +1,10 @@
 package org.rsmod.content.quest.area.lumbridge
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Singleton
+import org.rsmod.api.player.output.VarpSync
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.content.quest.manager.ItemRewardDisplay
 import org.rsmod.content.quest.manager.QuestRequirements
@@ -23,7 +27,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 class RuneMysteriesQuest :
     QuestScript(
         "quest_runemysteries",
-        "varp.runemysteries",
+        STAGE_VARP,
         rewards { extra("Access to the Rune Essence Mine") },
         ItemRewardDisplay(AIR_TALISMAN),
     ) {
@@ -35,8 +39,24 @@ class RuneMysteriesQuest :
     fun isComplete(player: Player): Boolean = quest.isQuestCompleted(player)
 
     /** Complete, or untouched and counted as done by the quest policy: the essence mine is open. */
-    fun isUnlocked(player: Player): Boolean =
-        isComplete(player) || (stage(player) == 0 && QuestRequirements.hasCompleted(player, quest.key))
+    fun isUnlocked(player: Player): Boolean = isComplete(player) || isAssumedComplete(player)
+
+    fun isAssumedComplete(player: Player): Boolean =
+        stage(player) == 0 && QuestRequirements.hasCompleted(player, quest.key)
+
+    /**
+     * The client draws the Teleport op on Aubury, Sedridor, Distentor and Brimstail from the real
+     * varp, so an untouched quest counted as done is shown the endstate on the client alone; the
+     * saved stage stays 0 and the first real stage change overwrites it. The forms the server
+     * resolves at stage 0 carry the op server-side (`rune_mysteries_npcs.toml`).
+     */
+    fun showAssumedCompletion(player: Player) {
+        if (!isAssumedComplete(player)) {
+            return
+        }
+        val varp = checkNotNull(ServerCacheManager.getVarp(STAGE_VARP.asRSCM(RSCMType.VARP)))
+        VarpSync.writeVarp(player, varp, STAGE_COMPLETE)
+    }
 
     fun advanceTo(access: ProtectedAccess, stage: Int) {
         val remaining = stage - stage(access.player)
@@ -150,6 +170,7 @@ class RuneMysteriesQuest :
         const val STAGE_PACKAGE_DELIVERED = 4
         const val STAGE_NOTES = 5
         const val STAGE_COMPLETE = 6
+        const val STAGE_VARP = "varp.runemysteries"
 
         const val AIR_TALISMAN = "obj.air_talisman"
         const val RESEARCH_PACKAGE = "obj.research_package"

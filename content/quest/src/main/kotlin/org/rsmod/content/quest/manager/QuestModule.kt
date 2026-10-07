@@ -160,6 +160,7 @@ import org.rsmod.content.quest.area.karamja.shilovillage.NazastaroolAttackHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageKillHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest
+import org.rsmod.content.quest.area.lumbridge.RuneMysteriesLoginVars
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DttdScenes
@@ -292,6 +293,7 @@ public class QuestModule : PluginModule() {
         bindInstance<AbyssTeleport>()
         addSetBinding<EssenceMineArrivalHook>(ScryingOrbReadings::class.java)
         addSetBinding<PlayerLoginVarsHook>(PriestInPerilLoginVars::class.java)
+        addSetBinding<PlayerLoginVarsHook>(RuneMysteriesLoginVars::class.java)
         bindInstance<LostTribeQuest>()
         bindInstance<LostTribeDuke>()
         bindInstance<LostTribeLore>()

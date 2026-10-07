@@ -116,8 +116,9 @@ class EnterTheAbyssCacheTest {
             assertEquals("varp.runemysteries".asRSCM(RSCMType.VARP), base.multiVarp, name)
             val complete = npc(checkNotNull(base.transforms)[6])
             assertEquals("Teleport", complete.actions.getOpOrNull(index), name)
-            val started = npc(checkNotNull(base.transforms)[5])
-            assertEquals(null, started.actions.getOpOrNull(index), "$name hides Teleport before Rune Mysteries")
+            // Server-side only: an untouched quest the policy counts as done resolves this form.
+            val untouched = npc(checkNotNull(base.transforms)[0])
+            assertEquals("Teleport", untouched.actions.getOpOrNull(index), "$name accepts Teleport at a saved stage of 0")
         }
         for (name in listOf("npc.cromperty_pre_diary", "npc.cromperty_post_diary")) {
             assertEquals("Teleport", npc(name).actions.getOpOrNull(2), name)
