@@ -34,6 +34,16 @@ object AgilityShortcuts {
                 move = climbOver,
             ),
             AgilityShortcut(
+                name = "Climbing rocks",
+                level = 5,
+                xp = 25.0,
+                locs = listOf("loc.watchshortcut"),
+                sideA = tile(2561, 3108),
+                sideB = tile(2561, 3111),
+                move = Climb(),
+                oneWay = true,
+            ),
+            AgilityShortcut(
                 name = "Fence",
                 level = 13,
                 xp = 0.0,
