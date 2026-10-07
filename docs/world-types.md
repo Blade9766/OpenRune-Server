@@ -78,8 +78,9 @@ several is a *mixed world* — see
 `::worldtype` opens a menu of the modes this world serves, current one marked. Picking one swaps the
 save **in place** — the player stays connected.
 
-The choice is also written to `accounts.active_world_type`, so the next login lands on the same mode
-without asking. The client never expresses a mode on connect, so none of this needs a protocol or
+Once the swap completes (on `WorldTypeChangedEvent`), the choice is written to
+`accounts.active_world_type`, so the next login lands on the same mode without asking. A switch that
+fails never touches it. The client never expresses a mode on connect, so none of this needs a protocol or
 client change.
 
 ### What happens
@@ -89,7 +90,7 @@ client change.
 | 1. Guard | game | Refused whenever a **logout** would be refused |
 | 2. Save | saver service | Current mode written out |
 | 3. Load | loader service | Target mode read back (pinned, no re-negotiation) |
-| 4. Swap | game | State replaced, client resynced, login events re-fired |
+| 4. Swap | game | Current mode written again, state replaced, client resynced, login events re-fired |
 
 **The guard is shared with logout.** Both call `Player.isLogoutBlocked()`, because a switch discards
 exactly the state a logout would — so they cannot drift apart. It is `preventLogoutUntil` **or**
@@ -104,13 +105,14 @@ already landed, and that is the mode they stay on.
 
 In order, on the game thread (`WorldTypeSwitchService.applySwitch`):
 
-1. Suspend autosave (`Player.persistenceSuspended`).
-2. Clear the mode-scoped state.
-3. Apply the loaded save.
-4. Set `Player.worldType`, and mark the save new if this is a first visit.
-5. Telejump through the engine, force a scene rebuild.
-6. Publish `PrepareLogin` → `Initialize` → `Login` → `EngineLogin`.
-7. Publish `WorldTypeChangedEvent(from, to)`.
+1. Under `GameDatabase.exclusive` (`AccountManager.saveThenSwapWorldType`): save the outgoing mode
+   synchronously and clear its online marker, suspend persistence (`Player.persistenceSuspended`),
+   clear the mode-scoped state, apply the loaded save, set `Player.worldType` (marking a first visit
+   new), and restore the saved position the way login does (instance exit coord, abandoned-instance
+   recovery).
+2. Telejump through the engine, force a scene rebuild.
+3. Publish `PrepareLogin` → `Initialize` → `Login` → `EngineLogin`.
+4. Publish `WorldTypeChangedEvent(from, to)`, then resume persistence.
 
 Re-publishing the login events is what makes it seamless — their handlers already do a full client
 resync (`VarpReset` and retransmit, inventory retransmit, stats, run energy, camera). Nothing new
@@ -125,9 +127,16 @@ had to be written for the client.
 
 Each one is load-bearing; removing it reintroduces a bug that was fixed once already.
 
-- **Suspend autosave.** Clearing and re-applying mutates attrs and inventories, and those mutations
-  are themselves autosave triggers. `AccountSaveRequest` holds the player *live*, so an autosave
-  queued mid-swap would persist the half-built state.
+- **Save again, under the lock.** The player keeps playing during steps 2–3, so the step-2 save
+  alone would let an item dropped or traded since exist both in the world and in the old save. The
+  re-save and the swap run while no other transaction can, and the saver re-checks
+  `Player.worldType` inside its transaction, so an in-flight save never reads the mode from one save
+  and the data from the other.
+- **Suspend persistence.** Clearing and re-applying mutates attrs and inventories, and those
+  mutations are themselves autosave triggers. `AccountSaveRequest` holds the player *live*, so an
+  autosave queued mid-swap would persist the half-built state. If the swap throws, persistence
+  **stays** suspended and the player is disconnected: both modes are already written, and the logout
+  save must not write the half-cleared state over the old mode.
 - **Clear before applying.** The appliers were written for a fresh `Player` and only write the rows
   they loaded — they merge rather than replace. Without `clearWorldTypeScopedState`, anything the
   incoming save has no row for survives from the mode being left; for inventories that means **items
@@ -210,6 +219,10 @@ Work that must span modes loops the served types and runs once per schema — se
 schema-scoped transaction. **The schema is resolved from `request.player.worldType` at execution
 time**, not from the request — the request holds the player live, so taking both from the same place
 is what stops a queued save writing one mode's state into another's tables.
+
+The duplicate-login guard (`isActiveSessionOnOtherWorld`) reads `public.progress_all`, since
+presence lives in each mode's `character_progress`: a character online in `main` on one world must
+not log into leagues on another.
 
 The login query `LEFT JOIN`s `character_progress`, so a character with no save for a mode still
 resolves. The repository creates the row and reports it as

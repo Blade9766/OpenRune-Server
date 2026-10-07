@@ -29,7 +29,7 @@ public class UnboundEventMap : EventMap<UnboundEvent, MutableList<UnboundEvent.(
         for (list in events.values) {
             val iterator = list.iterator()
             while (iterator.hasNext()) {
-                if (iterator.next().javaClass.classLoader === loader) {
+                if (iterator.next().registrantClassLoader() === loader) {
                     iterator.remove()
                     removed++
                 }

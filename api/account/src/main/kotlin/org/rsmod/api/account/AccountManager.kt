@@ -25,6 +25,10 @@ constructor(private val loader: AccountLoaderService, private val saver: Account
         saver.queue(request)
     }
 
+    /** See [AccountSavingService.saveThenSwapWorldType]. */
+    public fun <T> saveThenSwapWorldType(player: Player, swap: () -> T): T =
+        saver.saveThenSwapWorldType(player, swap)
+
     public fun load(
         auth: AccountLoadAuth,
         accountName: String,

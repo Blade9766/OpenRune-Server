@@ -12,8 +12,10 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.realm.Realm
 import org.rsmod.api.script.onCommand
+import org.rsmod.api.script.onEvent
 import org.rsmod.api.server.config.ServerConfig
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.WorldTypeChangedEvent
 import org.rsmod.game.world.WorldType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -40,6 +42,7 @@ constructor(
             desc = "Pick a world type to play"
             cheat { protectedAccess.launch(player) { worldTypeMenu() } }
         }
+        onEvent<WorldTypeChangedEvent> { rememberChoice(player, to) }
     }
 
     private suspend fun ProtectedAccess.worldTypeMenu() {
@@ -74,10 +77,8 @@ constructor(
 
     private fun switchTo(player: Player, target: WorldType) {
         when (val result = switchService.switch(player, target, served, realm.config.spawnCoord)) {
-            is WorldTypeSwitchService.Result.Started -> {
+            is WorldTypeSwitchService.Result.Started ->
                 player.mes("Switching to ${target.label}...")
-                rememberChoice(player, target)
-            }
             is WorldTypeSwitchService.Result.Busy -> player.mes(result.message)
             is WorldTypeSwitchService.Result.AlreadySwitching ->
                 player.mes("You are already switching world type.")
@@ -88,7 +89,10 @@ constructor(
         }
     }
 
-    /** Persisted so the next login lands on the same mode without the player picking again. */
+    /**
+     * Persisted so the next login lands on the same mode without the player picking again. Only once
+     * the swap has completed, or a failed switch would send the next login to a mode never reached.
+     */
     private fun rememberChoice(player: Player, target: WorldType) {
         val accountId = player.accountId
         db.request(

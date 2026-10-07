@@ -14,8 +14,8 @@ import org.rsmod.api.account.loader.request.AccountLoadAuth
 import org.rsmod.api.account.loader.request.AccountLoadCallback
 import org.rsmod.api.account.loader.request.AccountLoadResponse
 import org.rsmod.api.account.loader.request.isNewAccount
-import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.db.jdbc.GameDatabase
+import org.rsmod.api.game.process.player.restoreSavedCoords
 import org.rsmod.api.net.central.CentralAuthResult
 import org.rsmod.api.net.central.InflightCentralAuth
 import org.rsmod.api.net.central.OpenRuneCentralWorldLink
@@ -24,14 +24,12 @@ import org.rsmod.api.realm.RealmConfig
 import org.rsmod.api.registry.account.AccountRegistry
 import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.registry.player.isSuccess
-import org.rsmod.api.registry.region.RegionRegistry
 import org.rsmod.events.EventBus
 import org.rsmod.game.GameUpdate
 import org.rsmod.game.GameUpdate.Companion.isCountdown
 import org.rsmod.game.GameUpdate.Companion.isUpdating
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.SessionStateEvent
-import org.rsmod.map.CoordGrid
 
 class AccountLoadResponseHook(
     private val world: Int,
@@ -301,8 +299,6 @@ class AccountLoadResponseHook(
         pendingCentralRights = null
     }
 
-    public val LOGIN_EXIT_COORD: AttributeKey<Int> = AttributeKey(persistenceKey = "instance_exit_coord")
-
     /**
      * [firstVisitToWorldType] covers an existing character playing a world type for the first time:
      * the account and name are not new, but it has no save for that mode, so it starts from spawn
@@ -314,12 +310,7 @@ class AccountLoadResponseHook(
             modLevel = Rights.ADMINISTRATOR
         }
         if (!newAccount && !firstVisitToWorldType) {
-            val hasExit = attr[LOGIN_EXIT_COORD]
-            if (hasExit != null) {
-                coords = CoordGrid(hasExit)
-                attr.remove(LOGIN_EXIT_COORD)
-            }
-            recoverAbandonedInstance(config.spawnCoord)
+            restoreSavedCoords(config.spawnCoord)
             return
         }
 
@@ -373,7 +364,7 @@ class AccountLoadResponseHook(
         val characterId = loadResponse.account.characterData.characterId
         val duplicateCheckStart = System.nanoTime()
         val sessionHeldElsewhere =
-            database.withTransactionBlocking(loadResponse.worldType.key) { connection ->
+            database.withTransactionBlocking { connection ->
                 characterRepository.isActiveSessionOnOtherWorld(
                     connection,
                     characterId,
@@ -565,11 +556,5 @@ class AccountLoadResponseHook(
 
         @Suppress("konsist.avoid usage of stdlib Random in functions")
         private fun randomInt(): Int = java.util.concurrent.ThreadLocalRandom.current().nextInt()
-    }
-}
-
-internal fun Player.recoverAbandonedInstance(spawn: CoordGrid) {
-    if (coords in RegionRegistry.workingAreaSmall || coords in RegionRegistry.workingAreaLarge) {
-        coords = spawn
     }
 }

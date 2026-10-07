@@ -15,8 +15,10 @@ import org.rsmod.api.account.character.CharacterDataStage
 import org.rsmod.api.account.character.main.CharacterAccountRepository
 import org.rsmod.api.account.saver.request.AccountSaveRequest
 import org.rsmod.api.account.saver.request.AccountSaveResponse
+import org.rsmod.api.db.DatabaseConnection
 import org.rsmod.api.db.jdbc.GameDatabase
 import org.rsmod.api.server.config.ServerConfig
+import org.rsmod.game.entity.Player
 import org.rsmod.server.services.concurrent.ScheduledDrainService
 
 // Serialized account saves: one writer at a time avoids overlapping transactions on the game DB.
@@ -93,22 +95,59 @@ constructor(
         }
     }
 
+    /**
+     * Schema and data both come from the live player, so a request queued cycles ago cannot write
+     * one world type's state into another's tables. A world-type swap mutates the player only under
+     * [GameDatabase.exclusive], so once inside the transaction the mode is re-checked and cannot
+     * change until the write commits.
+     */
     private suspend fun saveSegments(request: AccountSaveRequest) {
-        // Schema and data both come from the player, so a request queued cycles ago cannot write
-        // one world type's state into another's tables.
-        database.withSchemaTransaction(request.player.worldType.key) { connection ->
-            repository.save(
-                connection,
-                request.player,
-                request.accountId,
-                request.characterId,
-                serverConfig.world,
-            )
-            for (pipeline in pipelines) {
-                pipeline.save(connection, request.player, request.characterId)
+        val player = request.player
+        while (true) {
+            val schema = player.worldType.key
+            val written =
+                database.withSchemaTransaction(schema) { connection ->
+                    if (player.worldType.key != schema) {
+                        return@withSchemaTransaction false
+                    }
+                    if (player.persistenceSuspended) {
+                        logger.warn { "Skipped save, persistence is suspended: $player" }
+                        return@withSchemaTransaction true
+                    }
+                    writeSegments(connection, player, request.accountId, request.characterId)
+                    true
+                }
+            if (written) {
+                return
             }
         }
     }
+
+    private fun writeSegments(
+        connection: DatabaseConnection,
+        player: Player,
+        accountId: Int,
+        characterId: Int,
+    ) {
+        repository.save(connection, player, accountId, characterId, serverConfig.world)
+        for (pipeline in pipelines) {
+            pipeline.save(connection, player, characterId)
+        }
+    }
+
+    /**
+     * Game thread. Writes [player]'s current world type synchronously and marks them offline in it,
+     * then runs [swap] before any other save can start, so no save observes a half-swapped player
+     * and nothing done since the last save is lost.
+     */
+    public fun <T> saveThenSwapWorldType(player: Player, swap: () -> T): T =
+        database.exclusive {
+            database.withTransactionBlocking(player.worldType.key) { connection ->
+                writeSegments(connection, player, player.accountId, player.characterId)
+                repository.clearOnlineSession(connection, player.characterId)
+            }
+            swap()
+        }
 
     private fun invokeSaveCallback(request: AccountSaveRequest) {
         safeInvokeCallback(request, AccountSaveResponse.Success(request.player))

@@ -1,4 +1,4 @@
-package org.rsmod.api.net.rsprot.player
+package org.rsmod.api.game.process.player
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

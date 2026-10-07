@@ -4,6 +4,7 @@ import org.rsmod.api.player.events.interact.NpcEvents
 import org.rsmod.api.player.events.interact.OpEvent
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.events.DelegatingHandler
 import org.rsmod.events.EventBus
 import org.rsmod.events.KeyedEvent
 import org.rsmod.events.SuspendEvent
@@ -51,19 +52,18 @@ public object WorldTypeScriptContext {
         }
     }
 
-    /** Gated when the event identifies a player; world-level events run regardless. */
+    /**
+     * Gated when the event identifies a player; world-level events run regardless.
+     *
+     * Wrappers are [DelegatingHandler]s so unloading an external plugin still finds its handlers.
+     */
     private class GatedEventBus(
         parent: EventBus,
         private val gate: WorldTypeGate,
         private val denyMessage: String?,
     ) : EventBus(parent.unbound, parent.keyed, parent.suspend) {
         override fun <T : UnboundEvent> subscribeUnbound(type: Class<T>, action: T.() -> Unit) {
-            super.subscribeUnbound(type) {
-                val event = this
-                if (event !is PlayerEvent || gate.allows(event.player.worldType)) {
-                    action.invoke(event)
-                }
-            }
+            super.subscribeUnbound(type, GatedHandler(action, gate))
         }
 
         override fun <T : KeyedEvent> subscribeKeyed(
@@ -71,12 +71,7 @@ public object WorldTypeScriptContext {
             id: Long,
             action: T.() -> Unit,
         ) {
-            super.subscribeKeyed(type, id) {
-                val event = this
-                if (event !is PlayerEvent || gate.allows(event.player.worldType)) {
-                    action.invoke(event)
-                }
-            }
+            super.subscribeKeyed(type, id, GatedHandler(action, gate))
         }
 
         override fun <R, T : SuspendEvent<R>> subscribeSuspend(
@@ -84,14 +79,32 @@ public object WorldTypeScriptContext {
             id: Long,
             action: suspend R.(T) -> Unit,
         ) {
-            super.subscribeSuspend(type, id) { event ->
-                val receiver = this
-                when {
-                    receiver !is ProtectedAccess -> action.invoke(receiver, event)
-                    gate.allows(receiver.player.worldType) -> action.invoke(receiver, event)
-                    // Only a deliberate interaction gets an explanation.
-                    event is OpEvent -> receiver.mes(denyMessageFor(event, gate, denyMessage))
-                }
+            super.subscribeSuspend(type, id, GatedSuspendHandler(action, gate, denyMessage))
+        }
+    }
+
+    private class GatedHandler<T>(
+        override val delegate: T.() -> Unit,
+        private val gate: WorldTypeGate,
+    ) : (T) -> Unit, DelegatingHandler {
+        override fun invoke(event: T) {
+            if (event !is PlayerEvent || gate.allows(event.player.worldType)) {
+                delegate(event)
+            }
+        }
+    }
+
+    private class GatedSuspendHandler<R, T>(
+        override val delegate: suspend R.(T) -> Unit,
+        private val gate: WorldTypeGate,
+        private val denyMessage: String?,
+    ) : suspend (R, T) -> Unit, DelegatingHandler {
+        override suspend fun invoke(receiver: R, event: T) {
+            when {
+                receiver !is ProtectedAccess -> delegate(receiver, event)
+                gate.allows(receiver.player.worldType) -> delegate(receiver, event)
+                // Only a deliberate interaction gets an explanation.
+                event is OpEvent -> receiver.mes(denyMessageFor(event, gate, denyMessage))
             }
         }
     }

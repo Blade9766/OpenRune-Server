@@ -6,6 +6,8 @@ import jakarta.inject.Inject
 import jakarta.inject.Provider
 import java.sql.Connection
 import java.sql.SQLException
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlinx.coroutines.delay
 import org.rsmod.api.db.Database
 import org.rsmod.api.db.DatabaseConfig
@@ -23,6 +25,12 @@ constructor(
     private val logger = InlineLogger()
 
     private lateinit var connection: Connection
+
+    /**
+     * Loader, saver, gateway and game threads share [connection]; a transaction's `SET LOCAL
+     * search_path` and its commit must not interleave with another thread's statements.
+     */
+    private val transactionLock = ReentrantLock()
 
     public fun connect(connector: GameConnection) {
         check(!::connection.isInitialized) { "Connection already initialized." }
@@ -68,11 +76,32 @@ constructor(
         schema: String?,
         block: (DatabaseConnection) -> T,
     ): T =
-        withConnection { connection ->
-            val wrapped = DatabaseConnection(connection)
+        withConnection { connection -> runTransaction(connection, schema, block) }
+
+    /**
+     * Runs [block] while no other thread can be inside a transaction. [block] may itself open
+     * transactions on the calling thread.
+     */
+    public fun <T> exclusive(block: () -> T): T = transactionLock.withLock(block)
+
+    /** Blocking variant for the game thread (avoids [runBlocking] coroutine overhead). */
+    public fun <T> withTransactionBlocking(
+        schema: String? = null,
+        block: (DatabaseConnection) -> T,
+    ): T {
+        assertValidConnection()
+        return runTransaction(connection, schema, block)
+    }
+
+    private fun <T> runTransaction(
+        connection: Connection,
+        schema: String?,
+        block: (DatabaseConnection) -> T,
+    ): T =
+        transactionLock.withLock {
             try {
                 applySchemaSearchPath(connection, schema)
-                val result = block(wrapped)
+                val result = block(DatabaseConnection(connection))
                 connection.commit()
                 result
             } catch (t: Throwable) {
@@ -84,28 +113,6 @@ constructor(
                 throw t
             }
         }
-
-    /** Blocking variant for the game thread (avoids [runBlocking] coroutine overhead). */
-    public fun <T> withTransactionBlocking(
-        schema: String? = null,
-        block: (DatabaseConnection) -> T,
-    ): T {
-        assertValidConnection()
-        try {
-            val wrapped = DatabaseConnection(connection)
-            applySchemaSearchPath(connection, schema)
-            val result = block(wrapped)
-            connection.commit()
-            return result
-        } catch (t: Throwable) {
-            try {
-                connection.rollback()
-            } catch (rollbackEx: Throwable) {
-                throw DatabaseRollbackException(t, rollbackEx)
-            }
-            throw t
-        }
-    }
 
     /** `SET LOCAL` reverts on commit, so a scoped transaction cannot leak into the next one. */
     private fun applySchemaSearchPath(connection: Connection, schema: String?) {
