@@ -1,7 +1,9 @@
 package org.rsmod.content.other.cheatmenu
 
 import dev.openrune.ServerCacheManager
+import dev.openrune.definition.type.widget.IfEvent
 import dev.openrune.rscm.RSCM
+import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import dev.openrune.types.StatType
@@ -19,6 +21,7 @@ import org.rsmod.api.player.cheat.adminOneHitKill
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.output.UpdateRun
 import org.rsmod.api.player.output.mes
+import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.stat.PlayerSkillXP
@@ -28,8 +31,8 @@ import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.stat.statRestore
 import org.rsmod.api.player.stat.statSub
 import org.rsmod.api.player.ui.PlayerInterfaceUpdates
-import org.rsmod.api.random.GameRandom
 import org.rsmod.api.script.onCommand
+import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.spells.autocast.MagicSpellbookManager
 import org.rsmod.game.cheat.Cheat
 import org.rsmod.game.entity.Player
@@ -40,18 +43,17 @@ import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * An administrator cheat menu: a single `::cheat` command that opens a nested menu for spawning
- * objs, teleporting, restoring stats, editing skills and appearance, switching spellbook, and
- * toggling the god mode / one-hit-kill / no-rune-cost / no-clip cheats.
+ * An administrator cheat menu: `::cheat` opens `interface.cheat_panel` in the side panel, laid out
+ * like the house options panel - On/Off radio rows for the god mode / one-hit-kill / max hit /
+ * no-rune-cost / no-clip cheats, and stone buttons for healing, teleporting, skills, spawning,
+ * appearance and spellbook.
  *
- * Everything is presented through the chatbox option dialogue ([ProtectedAccess.choice2] and
- * friends) rather than [ProtectedAccess.menu], which opens a main modal over the middle of the
- * screen. That dialogue holds at most five options, so menus are grouped into screens of four plus
- * a navigation entry, and the long lists (skills, teleport destinations) are reached by typing a
- * name instead of paging.
+ * The panel keeps the game view clear; the long lists behind its buttons (teleport destinations,
+ * skills) open in the scrollable [ProtectedAccess.menu] list, and the short ones in the chatbox
+ * option dialogue.
  *
  * Every toggle is backed by an attribute in `org.rsmod.api.player.cheat`, so the cheats stay active
- * until switched off (or until the player logs out) rather than only for the duration of the menu.
+ * until switched off (or until the player logs out) rather than only while the panel is open.
  */
 class CheatMenuScript
 @Inject
@@ -71,6 +73,98 @@ constructor(
         adminCommand("freerunes", "Toggle casting spells without runes", ::toggleInfiniteRunes)
         adminCommand("ghost", "Toggle walking through walls and objects", ::toggleNoClip)
         adminCommand("heal", "Fully restore stats, hitpoints, prayer and run energy", ::fullHeal)
+
+        onIfModalButton("component.cheat_panel:close") { ifClose() }
+        for (toggle in CheatToggle.entries) {
+            onIfModalButton("component.cheat_panel:${toggle.key}_on") {
+                if (isAdmin()) setToggle(toggle, true)
+            }
+            onIfModalButton("component.cheat_panel:${toggle.key}_off") {
+                if (isAdmin()) setToggle(toggle, false)
+            }
+        }
+        onIfModalButton("component.cheat_panel:heal") {
+            if (isAdmin()) {
+                player.fullRestore()
+                mes("Stats, hitpoints, prayer points and run energy restored.")
+            }
+        }
+        onIfModalButton("component.cheat_panel:alloff") {
+            if (isAdmin()) {
+                CheatToggle.entries.forEach { it.set(player, false) }
+                player.drawPanel()
+                mes("Every cheat has been switched off.")
+            }
+        }
+        onIfModalButton("component.cheat_panel:teleport") { if (isAdmin()) teleportMenu() }
+        onIfModalButton("component.cheat_panel:skills") { if (isAdmin()) skillsMenu() }
+        onIfModalButton("component.cheat_panel:spawn") { if (isAdmin()) spawnItems() }
+        onIfModalButton("component.cheat_panel:looks") { if (isAdmin()) openDesign() }
+        onIfModalButton("component.cheat_panel:spellbook") { if (isAdmin()) spellbookMenu() }
+
+        onIfModalButton("component.cheat_teleport:list") {
+            val destination = teleportRows().getOrNull(it.comsub)?.second
+            if (isAdmin() && destination != null) {
+                ifCloseSub(TELEPORT)
+                goTo(destination)
+            }
+        }
+        onIfModalButton("component.cheat_teleport:search") {
+            if (isAdmin()) {
+                ifCloseSub(TELEPORT)
+                searchTeleport()
+            }
+        }
+        onIfModalButton("component.cheat_teleport:coords") {
+            if (isAdmin()) {
+                ifCloseSub(TELEPORT)
+                customTeleport()
+            }
+        }
+
+        for ((key, part) in DESIGN_PARTS) {
+            onIfModalButton("component.player_design:${key}_left") {
+                if (isAdmin()) player.stepStyle(part, -1)
+            }
+            onIfModalButton("component.player_design:${key}_right") {
+                if (isAdmin()) player.stepStyle(part, 1)
+            }
+        }
+        for ((key, colour) in DESIGN_COLOURS) {
+            onIfModalButton("component.player_design:${key}_left") {
+                if (isAdmin()) player.stepColour(colour, -1)
+            }
+            onIfModalButton("component.player_design:${key}_right") {
+                if (isAdmin()) player.stepColour(colour, 1)
+            }
+        }
+        onIfModalButton("component.player_design:gender_male") {
+            if (isAdmin()) chooseBodyType(Appearance.BODY_TYPE_A)
+        }
+        onIfModalButton("component.player_design:gender_female") {
+            if (isAdmin()) chooseBodyType(Appearance.BODY_TYPE_B)
+        }
+        onIfModalButton(PRONOUN_BUTTONS) {
+            val pronoun = it.comsub - PRONOUN_ROW_OFFSET
+            if (isAdmin() && pronoun in Appearance.PRONOUN_HE..Appearance.PRONOUN_THEY) {
+                player.appearance.pronoun = pronoun
+                vars[PRONOUN_SETTING] = pronoun
+            }
+        }
+        onIfModalButton("component.player_design:confirm") {
+            if (isAdmin()) {
+                ifCloseSub(DESIGN)
+                mes("Appearance updated.")
+            }
+        }
+    }
+
+    private fun ProtectedAccess.isAdmin(): Boolean {
+        if (player.modLevel.isAtLeast(Rights.ADMINISTRATOR)) {
+            return true
+        }
+        ifClose()
+        return false
     }
 
     private fun ScriptContext.adminCommand(
@@ -86,24 +180,27 @@ constructor(
     /* Commands */
 
     private fun openMenu(cheat: Cheat) =
-        with(cheat) { protectedAccess.launch(player) { mainMenu() } }
+        with(cheat) { protectedAccess.launch(player) { openPanel() } }
 
     private fun toggleOneHitKill(cheat: Cheat) =
         with(cheat) {
             player.adminOneHitKill = !player.adminOneHitKill
             player.mes("One-hit-kill ${enabledText(player.adminOneHitKill)}.")
+            player.drawPanel()
         }
 
     private fun toggleInfiniteRunes(cheat: Cheat) =
         with(cheat) {
             player.adminInfiniteRunes = !player.adminInfiniteRunes
             player.mes("Magic rune cost ${runeCostText(player.adminInfiniteRunes)}.")
+            player.drawPanel()
         }
 
     private fun toggleNoClip(cheat: Cheat) =
         with(cheat) {
             player.adminNoClip = !player.adminNoClip
             player.mes("No clip ${enabledText(player.adminNoClip)}.")
+            player.drawPanel()
         }
 
     private fun fullHeal(cheat: Cheat) =
@@ -187,106 +284,67 @@ constructor(
     private suspend fun ProtectedAccess.confirm(title: String): Boolean =
         ask(title, listOf("Yes", "No")) == 0
 
-    /* Main menu */
+    /* Side panel */
 
-    private suspend fun ProtectedAccess.mainMenu() {
-        while (true) {
-            val choice =
-                select(
-                    title = "Cheat Menu",
-                    choices =
-                        listOf(
-                            Choice("Cheat toggles...", MainOption.Toggles),
-                            Choice("Teleport...", MainOption.Teleport),
-                            Choice("Skills and experience...", MainOption.Skills),
-                            Choice("Items and appearance...", MainOption.Items),
-                            Choice(
-                                "Spellbook: ${spellbookName(spellbooks.activeSpellbook(player))}",
-                                MainOption.Spellbook,
-                            ),
-                        ),
-                    exitLabel = "Close",
-                ) ?: return
-            when (choice) {
-                MainOption.Toggles -> togglesMenu()
-                MainOption.Teleport -> teleportMenu()
-                MainOption.Skills -> skillsMenu()
-                MainOption.Items -> itemsMenu()
-                MainOption.Spellbook -> spellbookMenu()
-            }
+    private fun ProtectedAccess.openPanel() {
+        ifOpenSide(PANEL)
+        for (component in panelButtons()) {
+            ifSetEvents(component, -1..-1, IfEvent.Op1)
         }
+        player.drawPanel()
     }
 
-    /* Toggles */
-
-    private suspend fun ProtectedAccess.togglesMenu() {
-        while (true) {
-            val choices =
-                listOf(
-                    Choice("God mode: ${state(player.adminGodMode)}", ToggleOption.God),
-                    Choice("One-hit-kill: ${state(player.adminOneHitKill)}", ToggleOption.OneHitKill),
-                    Choice("Always max hit: ${state(player.adminMaxHit)}", ToggleOption.MaxHit),
-                    Choice("No rune cost: ${state(player.adminInfiniteRunes)}", ToggleOption.Runes),
-                    Choice("No clip: ${state(player.adminNoClip)}", ToggleOption.NoClip),
-                    Choice("Turn every cheat off", ToggleOption.AllOff),
-                )
-            when (select("Cheat toggles", choices) ?: return) {
-                ToggleOption.God -> {
-                    player.adminGodMode = !player.adminGodMode
-                    mes("God mode ${enabledText(player.adminGodMode)}.")
-                }
-                ToggleOption.OneHitKill -> {
-                    player.adminOneHitKill = !player.adminOneHitKill
-                    mes("One-hit-kill ${enabledText(player.adminOneHitKill)}.")
-                }
-                ToggleOption.MaxHit -> {
-                    player.adminMaxHit = !player.adminMaxHit
-                    mes("Always max hit ${enabledText(player.adminMaxHit)}.")
-                }
-                ToggleOption.Runes -> {
-                    player.adminInfiniteRunes = !player.adminInfiniteRunes
-                    mes("Magic rune cost ${runeCostText(player.adminInfiniteRunes)}.")
-                }
-                ToggleOption.NoClip -> {
-                    player.adminNoClip = !player.adminNoClip
-                    mes("No clip ${enabledText(player.adminNoClip)}.")
-                }
-                ToggleOption.AllOff -> {
-                    player.adminGodMode = false
-                    player.adminOneHitKill = false
-                    player.adminMaxHit = false
-                    player.adminInfiniteRunes = false
-                    player.adminNoClip = false
-                    mes("Every cheat has been switched off.")
-                }
-            }
+    private fun ProtectedAccess.setToggle(toggle: CheatToggle, enabled: Boolean) {
+        if (toggle.get(player) == enabled) {
+            return
         }
+        toggle.set(player, enabled)
+        player.drawPanel()
+        val text = if (toggle == CheatToggle.Runes) runeCostText(enabled) else enabledText(enabled)
+        mes("${toggle.message} $text.")
+    }
+
+    private fun Player.drawPanel() {
+        if (!ui.containsModal(PANEL)) {
+            return
+        }
+        runClientScript(
+            "clientscript.cheat_panel_draw".asRSCM(RSCMType.CLIENTSCRIPT),
+            toggleFlags(this),
+        )
+    }
+
+    /**
+     * Picks from the scrollable list modal, then closes it here: the client closes its own copy on
+     * a pick, but the server would otherwise still hold it open and a dialogue suspended after the
+     * pick would lose protected access the moment that close arrives.
+     */
+    private suspend fun ProtectedAccess.pickFromList(title: String, choices: List<String>): Int {
+        val picked = menu(title, hotkeys = false, choices = choices)
+        ifCloseSub(MENU_INTERFACE)
+        return picked
     }
 
     /* Teleport */
 
-    private suspend fun ProtectedAccess.teleportMenu() {
-        while (true) {
-            val choice =
-                select(
-                    title = "Teleport",
-                    choices =
-                        listOf(
-                            Choice("Search by name", TeleportOption.Search),
-                            Choice("Browse by region...", TeleportOption.Browse),
-                            Choice("Enter coordinates", TeleportOption.Coords),
-                        ),
-                ) ?: return
-            val teleported =
-                when (choice) {
-                    TeleportOption.Search -> searchTeleport()
-                    TeleportOption.Browse -> browseTeleport()
-                    TeleportOption.Coords -> customTeleport()
-                }
-            if (teleported) {
-                return
+    /**
+     * Opens the teleport window: every destination in one scrolling list under its region's
+     * heading. A row's index is its position in [teleportRows], so a click needs no other state.
+     */
+    private fun ProtectedAccess.teleportMenu() {
+        val rows = teleportRows()
+        ifOpenMainModal(TELEPORT)
+        ifSetEvents("component.cheat_teleport:list", rows.indices, IfEvent.Op1)
+        ifSetEvents("component.cheat_teleport:search", -1..-1, IfEvent.Op1)
+        ifSetEvents("component.cheat_teleport:coords", -1..-1, IfEvent.Op1)
+        val encoded =
+            rows.joinToString("") { (label, destination) ->
+                "${if (destination == null) "H:" else "D:"}$label|"
             }
-        }
+        player.runClientScript(
+            "clientscript.cheat_teleport_draw".asRSCM(RSCMType.CLIENTSCRIPT),
+            encoded,
+        )
     }
 
     /** @return `true` if the player teleported. */
@@ -299,18 +357,6 @@ constructor(
         }
         goTo(destination)
         return true
-    }
-
-    /** @return `true` if the player teleported. */
-    private suspend fun ProtectedAccess.browseTeleport(): Boolean {
-        while (true) {
-            val regions = TeleportRegion.entries.map { Choice(it.label, it) }
-            val region = select("Which region?", regions) ?: return false
-            val destinations = region.destinations.map { Choice(it.name, it) }
-            val destination = select(region.label, destinations) ?: continue
-            goTo(destination)
-            return true
-        }
     }
 
     /** @return `true` if the player teleported. */
@@ -336,39 +382,22 @@ constructor(
     /* Skills */
 
     private suspend fun ProtectedAccess.skillsMenu() {
-        while (true) {
-            val choice =
-                select(
-                    title = "Skills and experience",
-                    choices =
-                        listOf(
-                            Choice("Give experience", SkillOption.GiveXp),
-                            Choice("Set a skill level", SkillOption.SetLevel),
-                            Choice("Reset a skill", SkillOption.ResetOne),
-                            Choice("Restore stats, prayer and run", SkillOption.Restore),
-                            Choice("Max every skill", SkillOption.MaxAll),
-                            Choice("Reset every skill", SkillOption.ResetAll),
-                        ),
-                ) ?: return
-            when (choice) {
-                SkillOption.GiveXp -> giveXp()
-                SkillOption.SetLevel -> setLevel()
-                SkillOption.ResetOne -> resetSkill()
-                SkillOption.Restore -> {
-                    player.fullRestore()
-                    mes("Stats, hitpoints, prayer points and run energy restored.")
+        val options = SkillOption.entries
+        val picked = pickFromList("Skills and experience", options.map { it.label })
+        when (options.getOrNull(picked) ?: return) {
+            SkillOption.GiveXp -> giveXp()
+            SkillOption.SetLevel -> setLevel()
+            SkillOption.ResetOne -> resetSkill()
+            SkillOption.MaxAll -> {
+                if (confirm("Max every skill?")) {
+                    player.setAllStatLevels(MAX_LEVEL)
+                    mes("Every skill has been maxed.")
                 }
-                SkillOption.MaxAll -> {
-                    if (confirm("Max every skill?")) {
-                        player.setAllStatLevels(MAX_LEVEL)
-                        mes("Every skill has been maxed.")
-                    }
-                }
-                SkillOption.ResetAll -> {
-                    if (confirm("Reset every skill?")) {
-                        player.setAllStatLevels(1)
-                        mes("Every skill has been reset.")
-                    }
+            }
+            SkillOption.ResetAll -> {
+                if (confirm("Reset every skill?")) {
+                    player.setAllStatLevels(1)
+                    mes("Every skill has been reset.")
                 }
             }
         }
@@ -382,7 +411,7 @@ constructor(
             return
         }
         val added = player.statAdvance(internal, amount.toDouble(), rate = 1.0, globalRate = 1.0)
-        mes("Added $added ${stat.displayName} xp (now level ${player.statBase(internal)}).")
+        mes("Added $added ${skillName(stat)} xp (now level ${player.statBase(internal)}).")
     }
 
     private suspend fun ProtectedAccess.setLevel() {
@@ -390,47 +419,22 @@ constructor(
         val requested = countDialog("Enter the level (${stat.minLevel}-${stat.maxLevel}):")
         val level = requested.coerceIn(stat.minLevel, stat.maxLevel)
         player.setStatLevel(stat, level)
-        mes("${stat.displayName} set to level $level.")
+        mes("${skillName(stat)} set to level $level.")
     }
 
     private suspend fun ProtectedAccess.resetSkill() {
         val stat = pickStat() ?: return
         player.setStatLevel(stat, stat.minLevel)
-        mes("${stat.displayName} reset to level ${stat.minLevel}.")
+        mes("${skillName(stat)} reset to level ${stat.minLevel}.")
     }
 
-    /**
-     * There are more skills than the chatbox dialogue can list, so the skill is typed rather than
-     * picked from a paged menu.
-     */
     private suspend fun ProtectedAccess.pickStat(): StatType? {
-        val query = stringDialog("Enter a skill name:")
-        val stat = findStat(query)
-        if (stat == null) {
-            mes("No skill matching '${query.trim()}'.")
-        }
-        return stat
+        val stats = releasedStats()
+        val picked = pickFromList("Which skill?", stats.map { skillName(it) })
+        return stats.getOrNull(picked)
     }
 
     /* Items and appearance */
-
-    private suspend fun ProtectedAccess.itemsMenu() {
-        while (true) {
-            val choice =
-                select(
-                    title = "Items and appearance",
-                    choices =
-                        listOf(
-                            Choice("Spawn an item", ItemOption.Spawn),
-                            Choice("Change appearance...", ItemOption.Appearance),
-                        ),
-                ) ?: return
-            when (choice) {
-                ItemOption.Spawn -> spawnItems()
-                ItemOption.Appearance -> appearanceMenu()
-            }
-        }
-    }
 
     private suspend fun ProtectedAccess.spawnItems() {
         while (true) {
@@ -460,143 +464,46 @@ constructor(
         mes("Spawned '${item.name}' x $spawned.")
     }
 
-    private suspend fun ProtectedAccess.appearanceMenu() {
-        while (true) {
-            val appearance = player.appearance
-            val choice =
-                select(
-                    title = "Change appearance",
-                    choices =
-                        listOf(
-                            Choice(
-                                "Body type: ${bodyTypeName(appearance.bodyType)}",
-                                AppearanceOption.BodyType,
-                            ),
-                            Choice(
-                                "Pronoun: ${pronounName(appearance.pronoun)}",
-                                AppearanceOption.Pronoun,
-                            ),
-                            Choice("Change a body part style", AppearanceOption.Part),
-                            Choice("Change a colour", AppearanceOption.Colour),
-                            Choice("Randomise appearance", AppearanceOption.Randomise),
-                            Choice("Reset to default", AppearanceOption.Reset),
-                        ),
-                ) ?: return
-            when (choice) {
-                AppearanceOption.BodyType -> {
-                    val flipped =
-                        if (appearance.bodyType == Appearance.BODY_TYPE_A) {
-                            Appearance.BODY_TYPE_B
-                        } else {
-                            Appearance.BODY_TYPE_A
-                        }
-                    player.setBodyType(flipped)
-                    mes("Body type set to ${bodyTypeName(flipped)}.")
-                }
-                AppearanceOption.Pronoun -> {
-                    appearance.pronoun = (appearance.pronoun + 1) % PRONOUN_COUNT
-                    mes("Pronoun set to ${pronounName(appearance.pronoun)}.")
-                }
-                AppearanceOption.Part -> bodyPartMenu()
-                AppearanceOption.Colour -> colourMenu()
-                AppearanceOption.Randomise -> {
-                    player.randomiseAppearance(random)
-                    mes("Appearance randomised.")
-                }
-                AppearanceOption.Reset -> {
-                    player.resetAppearance()
-                    mes("Appearance reset to default.")
-                }
+    private fun ProtectedAccess.openDesign() {
+        ifOpenMainModal(DESIGN)
+        for (component in designButtons()) {
+            ifSetEvents(component, -1..-1, IfEvent.Op1)
+        }
+        ifSetEvents(
+            PRONOUN_BUTTONS,
+            PRONOUN_ROW_OFFSET + Appearance.PRONOUN_HE..PRONOUN_ROW_OFFSET + Appearance.PRONOUN_THEY,
+            IfEvent.Op1,
+        )
+        vars[DESIGN_BODY_TYPE] = player.appearance.bodyType
+        vars[PRONOUN_SETTING] = player.appearance.pronoun
+    }
+
+    private fun ProtectedAccess.chooseBodyType(bodyType: Int) {
+        if (player.appearance.bodyType != bodyType) {
+            player.setBodyType(bodyType)
+        }
+        vars[DESIGN_BODY_TYPE] = bodyType
+    }
+
+    /** Steps a slot through its styles like the designer's arrows; facial hair can also be none. */
+    private fun Player.stepStyle(part: AppearancePart, step: Int) {
+        val bodyType = appearance.bodyType
+        val styles =
+            if (part.optional) {
+                part.stylesFor(bodyType) + Appearance.NO_IDENT_KIT
+            } else {
+                part.stylesFor(bodyType)
             }
-        }
+        val current =
+            appearance.identKitSnapshot().getOrNull(part.slot)?.toInt() ?: Appearance.NO_IDENT_KIT
+        val index = styles.indexOf(current)
+        val next = if (index < 0) styles.first() else styles[(index + step).mod(styles.size)]
+        appearance.setIdentKit(part.slot, next)
     }
 
-    private suspend fun ProtectedAccess.bodyPartMenu() {
-        while (true) {
-            val bodyType = player.appearance.bodyType
-            val identKit = player.appearance.identKitSnapshot()
-            val choices =
-                AppearancePart.entries.map { part ->
-                    val current = identKit.getOrNull(part.slot)?.toInt() ?: Appearance.NO_IDENT_KIT
-                    Choice("${part.label}: ${part.positionOf(current, bodyType)}", part)
-                }
-            val part = select("Body type ${bodyTypeName(bodyType)} parts", choices) ?: return
-            cyclePart(part)
-        }
-    }
-
-    /**
-     * Steps through a slot's styles the way the in-game makeover does, applying each one
-     * immediately so the change is visible on the character rather than described in chat.
-     */
-    private suspend fun ProtectedAccess.cyclePart(part: AppearancePart) {
-        while (true) {
-            val bodyType = player.appearance.bodyType
-            val styles = part.stylesFor(bodyType)
-            val current =
-                player.appearance.identKitSnapshot().getOrNull(part.slot)?.toInt()
-                    ?: Appearance.NO_IDENT_KIT
-            val index = styles.indexOf(current)
-
-            val choices = buildList {
-                add(Choice("Next", StyleStep.Next))
-                add(Choice("Previous", StyleStep.Previous))
-                add(Choice("Random", StyleStep.Random))
-                if (part.optional) {
-                    add(Choice("None (clean shaven)", StyleStep.None))
-                }
-            }
-            val title = "${part.label}: ${part.positionOf(current, bodyType)}"
-            val step = select(title, choices, exitLabel = "Done") ?: return
-
-            val next =
-                when (step) {
-                    // A current style outside the list (none, or one from the other body type)
-                    // has no position, so stepping from it enters the list at either end.
-                    StyleStep.Next ->
-                        if (index < 0) styles.first() else styles[(index + 1).mod(styles.size)]
-                    StyleStep.Previous ->
-                        if (index < 0) styles.last() else styles[(index - 1).mod(styles.size)]
-                    StyleStep.Random -> random.pick(styles)
-                    StyleStep.None -> Appearance.NO_IDENT_KIT
-                }
-            player.appearance.setIdentKit(part.slot, next)
-        }
-    }
-
-    private suspend fun ProtectedAccess.colourMenu() {
-        while (true) {
-            val current = player.appearance.coloursSnapshot()
-            val choices =
-                AppearanceColour.entries.map { colour ->
-                    val value = current.getOrNull(colour.index)?.toInt() ?: 0
-                    Choice("${colour.label}: ${value + 1}/${colour.paletteSize}", colour)
-                }
-            val colour = select("Which colour?", choices) ?: return
-            cycleColour(colour)
-        }
-    }
-
-    private suspend fun ProtectedAccess.cycleColour(colour: AppearanceColour) {
-        while (true) {
-            val current = player.appearance.coloursSnapshot().getOrNull(colour.index)?.toInt() ?: 0
-            val choices =
-                listOf(
-                    Choice("Next", StyleStep.Next),
-                    Choice("Previous", StyleStep.Previous),
-                    Choice("Random", StyleStep.Random),
-                )
-            val title = "${colour.label}: ${current + 1}/${colour.paletteSize}"
-            val step = select(title, choices, exitLabel = "Done") ?: return
-
-            val next =
-                when (step) {
-                    StyleStep.Next -> (current + 1).mod(colour.paletteSize)
-                    StyleStep.Previous -> (current - 1).mod(colour.paletteSize)
-                    else -> random.of(0..(colour.paletteSize - 1))
-                }
-            player.appearance.setColour(colour.index, next)
-        }
+    private fun Player.stepColour(colour: AppearanceColour, step: Int) {
+        val current = appearance.coloursSnapshot().getOrNull(colour.index)?.toInt() ?: 0
+        appearance.setColour(colour.index, (current + step).mod(colour.paletteSize))
     }
 
     /* Spellbook */
@@ -691,86 +598,33 @@ constructor(
         }
     }
 
-    private fun Player.randomiseAppearance(random: GameRandom) {
-        val bodyType = appearance.bodyType
-        for (part in AppearancePart.entries) {
-            val pool =
-                if (part.optional) {
-                    part.stylesFor(bodyType) + Appearance.NO_IDENT_KIT
-                } else {
-                    part.stylesFor(bodyType)
-                }
-            appearance.setIdentKit(part.slot, random.pick(pool))
-        }
-        for (colour in AppearanceColour.entries) {
-            appearance.setColour(colour.index, random.of(0..(colour.paletteSize - 1)))
-        }
-    }
-
-    private fun Player.resetAppearance() {
-        for (part in AppearancePart.entries) {
-            appearance.setIdentKit(part.slot, DefaultAppearance.identKit[part.slot])
-        }
-        for (colour in AppearanceColour.entries) {
-            appearance.setColour(colour.index, DefaultAppearance.colours[colour.index])
-        }
-        appearance.bodyType = Appearance.BODY_TYPE_A
-        appearance.pronoun = Appearance.PRONOUN_HE
-    }
-
     private data class Choice<out T>(val label: String, val value: T)
 
-    private enum class MainOption {
-        Toggles,
-        Teleport,
-        Skills,
-        Items,
-        Spellbook,
+    private enum class SkillOption(val label: String) {
+        GiveXp("Give experience"),
+        SetLevel("Set a skill level"),
+        ResetOne("Reset a skill"),
+        MaxAll("Max every skill"),
+        ResetAll("Reset every skill"),
     }
 
-    private enum class ToggleOption {
-        God,
-        OneHitKill,
-        MaxHit,
-        Runes,
-        NoClip,
-        AllOff,
-    }
-
-    private enum class TeleportOption {
-        Search,
-        Browse,
-        Coords,
-    }
-
-    private enum class SkillOption {
-        GiveXp,
-        SetLevel,
-        ResetOne,
-        Restore,
-        MaxAll,
-        ResetAll,
-    }
-
-    private enum class ItemOption {
-        Spawn,
-        Appearance,
-    }
-
-    private enum class StyleStep {
-        Next,
-        Previous,
-        Random,
-        None,
-    }
-
-    private enum class AppearanceOption {
-        BodyType,
-        Pronoun,
-        Part,
-        Colour,
-        Randomise,
-        Reset,
+    /** The panel's radio rows, in the bit order `cheat_panel_draw` reads them. */
+    internal enum class CheatToggle(
+        val key: String,
+        val message: String,
+        val get: (Player) -> Boolean,
+        val set: (Player, Boolean) -> Unit,
+    ) {
+        God("god", "God mode", { it.adminGodMode }, { p, on -> p.adminGodMode = on }),
+        OneHitKill("ohk", "One-hit-kill", { it.adminOneHitKill }, { p, on -> p.adminOneHitKill = on }),
+        MaxHit("maxhit", "Always max hit", { it.adminMaxHit }, { p, on -> p.adminMaxHit = on }),
+        Runes(
+            "runes",
+            "Magic rune cost",
+            { it.adminInfiniteRunes },
+            { p, on -> p.adminInfiniteRunes = on },
+        ),
+        NoClip("noclip", "No clip", { it.adminNoClip }, { p, on -> p.adminNoClip = on }),
     }
 
     internal companion object {
@@ -779,7 +633,65 @@ constructor(
         const val MORE = "More options..."
         const val BACK = "Back"
         const val MAX_LEVEL = 99
-        const val PRONOUN_COUNT = 3
+
+        const val PANEL = "interface.cheat_panel"
+        const val TELEPORT = "interface.cheat_teleport"
+        const val MENU_INTERFACE = "interface.menu"
+        const val DESIGN = "interface.player_design"
+        const val DESIGN_BODY_TYPE = "varbit.player_design_bodytype"
+        const val PRONOUN_BUTTONS = "component.player_design:pronouns_buttons"
+        const val PRONOUN_SETTING = "varbit.settings_transmit_pronouns"
+
+        /** The pronoun dropdown's first row is its highlight, so pronoun rows start at 1. */
+        const val PRONOUN_ROW_OFFSET = 1
+
+        /** The designer's style rows by component prefix. */
+        private val DESIGN_PARTS =
+            mapOf(
+                "head" to AppearancePart.Hair,
+                "jaw" to AppearancePart.Jaw,
+                "torso" to AppearancePart.Torso,
+                "arms" to AppearancePart.Arms,
+                "hands" to AppearancePart.Hands,
+                "legs" to AppearancePart.Legs,
+                "feet" to AppearancePart.Feet,
+            )
+
+        /** The designer's colour rows by component prefix. */
+        private val DESIGN_COLOURS =
+            mapOf(
+                "hair" to AppearanceColour.Hair,
+                "torso_col" to AppearanceColour.Torso,
+                "legs_col" to AppearanceColour.Legs,
+                "feet_col" to AppearanceColour.Feet,
+                "skin" to AppearanceColour.Skin,
+            )
+
+        fun designButtons(): List<String> {
+            val arrows =
+                (DESIGN_PARTS.keys + DESIGN_COLOURS.keys).flatMap { listOf("${it}_left", "${it}_right") }
+            return (arrows + listOf("gender_male", "gender_female", "confirm"))
+                .map { "component.player_design:$it" }
+        }
+
+        /** Region headings (with no destination) followed by their destinations, in list order. */
+        fun teleportRows(): List<Pair<String, TeleportDestination?>> =
+            TeleportRegion.entries.flatMap { region ->
+                listOf(region.label to null) + region.destinations.map { it.name to it }
+            }
+
+        private val PANEL_BUTTONS =
+            listOf("close", "heal", "alloff", "teleport", "skills", "spawn", "looks", "spellbook")
+
+        fun panelButtons(): List<String> {
+            val radios = CheatToggle.entries.flatMap { listOf("${it.key}_on", "${it.key}_off") }
+            return (PANEL_BUTTONS + radios).map { "component.cheat_panel:$it" }
+        }
+
+        fun toggleFlags(player: Player): Int =
+            CheatToggle.entries.foldIndexed(0) { bit, flags, toggle ->
+                if (toggle.get(player)) flags or (1 shl bit) else flags
+            }
 
         const val GREEN = "0dc10d"
         const val RED = "ff0000"
@@ -791,20 +703,6 @@ constructor(
                 .sortedBy(StatType::displayName)
 
         fun StatType.internal(): String = RSCM.getReverseMapping(RSCMType.STAT, id)
-
-        /** Matches a typed skill name: exact, then gameval, then prefix, then substring. */
-        fun findStat(input: String): StatType? {
-            val query = input.trim().lowercase()
-            if (query.isEmpty()) {
-                return null
-            }
-            val gameval = query.replace(' ', '_')
-            val stats = releasedStats()
-            return stats.firstOrNull { it.displayName.lowercase() == query }
-                ?: stats.firstOrNull { it.internal().removePrefix("stat.").lowercase() == gameval }
-                ?: stats.firstOrNull { it.displayName.lowercase().startsWith(query) }
-                ?: stats.firstOrNull { it.displayName.lowercase().contains(query) }
-        }
 
         /** Matches a typed teleport name: exact, then prefix, then substring. */
         fun findDestination(input: String): TeleportDestination? {
@@ -822,12 +720,10 @@ constructor(
          * Colours the toggle state, matching the confirm/cancel labels the bank interface uses for
          * its own option text.
          */
-        fun styleName(style: Int): String =
-            if (style == Appearance.NO_IDENT_KIT) "none" else "$style"
-
         fun state(enabled: Boolean): String =
             if (enabled) "<col=$GREEN>ON</col>" else "<col=$RED>OFF</col>"
 
+        fun skillName(stat: StatType): String = stat.displayName.replaceFirstChar(Char::uppercase)
         fun enabledText(enabled: Boolean): String = if (enabled) "enabled" else "disabled"
 
         fun runeCostText(infinite: Boolean): String = if (infinite) "removed" else "restored"
@@ -850,15 +746,5 @@ constructor(
                 ?: Spellbook.entries.firstOrNull { it.name.lowercase() == query }
                 ?: Spellbook.entries.firstOrNull { spellbookName(it).lowercase().startsWith(query) }
         }
-
-        fun bodyTypeName(bodyType: Int): String =
-            if (bodyType == Appearance.BODY_TYPE_B) "B" else "A"
-
-        fun pronounName(pronoun: Int): String =
-            when (pronoun) {
-                Appearance.PRONOUN_SHE -> "She"
-                Appearance.PRONOUN_THEY -> "They"
-                else -> "He"
-            }
     }
 }

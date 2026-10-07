@@ -1,0 +1,9 @@
+[proc,cheat_panel_radio](int $on, component $oncom, component $offcom)
+def_graphic $ongraphic = "radio_buttons,0";
+def_graphic $offgraphic = "radio_buttons,2";
+if ($on = 1) {
+    $ongraphic = "radio_buttons,2";
+    $offgraphic = "radio_buttons,0";
+}
+~cheat_panel_graphic($oncom, $ongraphic);
+~cheat_panel_graphic($offcom, $offgraphic);

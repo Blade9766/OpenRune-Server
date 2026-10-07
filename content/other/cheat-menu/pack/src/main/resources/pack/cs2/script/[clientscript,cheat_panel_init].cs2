@@ -1,0 +1,17 @@
+[clientscript,cheat_panel_init]
+def_component $close = cheat_panel:close;
+~cheat_panel_graphic($close, "close_buttons,0");
+if_setonmouseover("cc_graphic_swapper(event_com, 0, \"close_buttons,1\", null)", $close);
+if_setonmouseleave("cc_graphic_swapper(event_com, 0, \"close_buttons,0\", null)", $close);
+~cheat_panel_button(cheat_panel:heal);
+~cheat_panel_button(cheat_panel:alloff);
+~cheat_panel_button(cheat_panel:teleport);
+~cheat_panel_button(cheat_panel:skills);
+~cheat_panel_button(cheat_panel:spawn);
+~cheat_panel_button(cheat_panel:looks);
+~cheat_panel_button(cheat_panel:spellbook);
+~cheat_panel_radio(0, cheat_panel:god_on, cheat_panel:god_off);
+~cheat_panel_radio(0, cheat_panel:ohk_on, cheat_panel:ohk_off);
+~cheat_panel_radio(0, cheat_panel:maxhit_on, cheat_panel:maxhit_off);
+~cheat_panel_radio(0, cheat_panel:runes_on, cheat_panel:runes_off);
+~cheat_panel_radio(0, cheat_panel:noclip_on, cheat_panel:noclip_off);

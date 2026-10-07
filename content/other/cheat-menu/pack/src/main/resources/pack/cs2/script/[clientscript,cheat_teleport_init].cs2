@@ -1,0 +1,6 @@
+[clientscript,cheat_teleport_init]
+~steelborder(cheat_teleport:frame, "Teleport", 0);
+~cheat_panel_button(cheat_teleport:search);
+~cheat_panel_button(cheat_teleport:coords);
+cc_deleteall(cheat_teleport:list_box);
+~thinbox(cheat_teleport:list_box, 0);

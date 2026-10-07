@@ -1,0 +1,41 @@
+[clientscript,cheat_teleport_draw](string $rows)
+def_component $list = cheat_teleport:list;
+def_component $scrollbar = cheat_teleport:scrollbar;
+cc_deleteall($list);
+def_int $width = calc(if_getwidth($list) - 8);
+def_int $row = 0;
+def_int $number = 1;
+def_int $start = 0;
+def_int $end = string_indexof_string($rows, "|", 0);
+def_string $entry = "";
+def_string $name = "";
+// Each row is "H:<region>" for a heading or "D:<destination>", separated by '|'.
+while ($end >= 0) {
+    $entry = substring($rows, $start, $end);
+    $name = substring($entry, 2, string_length($entry));
+    cc_create($list, ^iftype_text, $row);
+    cc_setposition(4, calc($row * 18), ^setpos_abs_left, ^setpos_abs_top);
+    cc_setsize($width, 18, ^setsize_abs, ^setsize_abs);
+    cc_settextalign(^settextalign_left, ^settextalign_centre, 0);
+    cc_settextshadow(true);
+    if (compare(substring($entry, 0, 2), "H:") = 0) {
+        cc_settextfont(b12_full);
+        cc_setcolour(0xff981f);
+        cc_settext($name);
+    } else {
+        cc_settextfont(p12_full);
+        cc_setcolour(0xffffff);
+        cc_settext(append(append(tostring($number), ": "), $name));
+        cc_setop(1, "Teleport");
+        cc_setopbase(append("<col=ff9040>", $name));
+        cc_setonmouseover("cc_colour_swapper(event_com, event_comsubid, 16776960)");
+        cc_setonmouseleave("cc_colour_swapper(event_com, event_comsubid, 16777215)");
+        $number = calc($number + 1);
+    }
+    $row = calc($row + 1);
+    $start = calc($end + 1);
+    $end = string_indexof_string($rows, "|", $start);
+}
+if_setscrollsize(0, calc($row * 18), $list);
+if_setscrollpos(0, 0, $list);
+~scrollbar_vertical($scrollbar, $list, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

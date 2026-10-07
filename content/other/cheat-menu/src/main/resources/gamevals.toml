@@ -1,0 +1,9 @@
+[gamevals.interface]
+cheat_panel = 1105
+cheat_teleport = 1106
+
+[gamevals.clientscript]
+cheat_panel_init = 45600
+cheat_panel_draw = 45603
+cheat_teleport_init = 45615
+cheat_teleport_draw = 45618

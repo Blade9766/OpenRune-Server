@@ -1,0 +1,6 @@
+[clientscript,cheat_panel_draw](int $flags)
+~cheat_panel_radio(testbit($flags, 0), cheat_panel:god_on, cheat_panel:god_off);
+~cheat_panel_radio(testbit($flags, 1), cheat_panel:ohk_on, cheat_panel:ohk_off);
+~cheat_panel_radio(testbit($flags, 2), cheat_panel:maxhit_on, cheat_panel:maxhit_off);
+~cheat_panel_radio(testbit($flags, 3), cheat_panel:runes_on, cheat_panel:runes_off);
+~cheat_panel_radio(testbit($flags, 4), cheat_panel:noclip_on, cheat_panel:noclip_off);

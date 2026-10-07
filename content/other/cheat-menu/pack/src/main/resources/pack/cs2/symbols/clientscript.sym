@@ -1,0 +1,7 @@
+45600	[clientscript,cheat_panel_init]
+45603	[clientscript,cheat_panel_draw]
+45606	[proc,cheat_panel_radio]
+45609	[proc,cheat_panel_button]
+45612	[proc,cheat_panel_graphic]
+45615	[clientscript,cheat_teleport_init]
+45618	[clientscript,cheat_teleport_draw]
