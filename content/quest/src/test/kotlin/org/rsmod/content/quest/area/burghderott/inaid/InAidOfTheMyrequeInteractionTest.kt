@@ -64,6 +64,7 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.route.BoundValidator
+import org.rsmod.api.route.RouteFactory
 import org.rsmod.content.other.pets.PetFollowers
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.ROD_FULL
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.STAGE_ADMITTED
@@ -841,7 +842,7 @@ class InAidOfTheMyrequeInteractionTest {
             copies = InPlaceCopies(npcRepo)
             fights = VampyreFights(npcRepo, players)
             tithe = BloodTithe(iaom, copies, fights, doors, ai, noHits, random, players, worldQueues)
-            escort = IvanEscort(iaom, copies, fights, doors, ai, noHits, random, players, clock)
+            escort = IvanEscort(iaom, copies, fights, doors, ai, noHits, random, players, clock, RouteFactory(collision))
             rod = TestRod(iaom)
             val citizens = BurghCitizens(iaom)
             val repairs = Repairs()

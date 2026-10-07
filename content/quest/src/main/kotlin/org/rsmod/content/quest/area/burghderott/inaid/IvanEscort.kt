@@ -17,6 +17,7 @@ import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.random.GameRandom
+import org.rsmod.api.route.RouteFactory
 import org.rsmod.api.script.onNpcQueue
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
@@ -75,6 +76,7 @@ constructor(
     private val random: GameRandom,
     private val playerList: PlayerList,
     private val clock: MapClock,
+    private val routeFactory: RouteFactory,
 ) : PluginScript() {
 
     enum class Route(val varValue: Int, val juvinate: String, val count: Int, val maxHit: Int, val leaving: String) {
@@ -196,7 +198,9 @@ constructor(
     private fun attackIvan(escort: Escort, juvinate: Npc) {
         val ivan = escort.ivan
         if (juvinate.coords.chebyshevDistance(ivan.coords) > 1) {
-            juvinate.walk(ivan.coords)
+            // A straight walk snags on the clearing's scenery from most spawns, so they path round it.
+            val route = routeFactory.create(juvinate.avatar, ivan.avatar).map { CoordGrid(it.x, it.z, it.level) }
+            if (route.isNotEmpty()) juvinate.walk(route)
             return
         }
         juvinate.faceNpc(ivan)

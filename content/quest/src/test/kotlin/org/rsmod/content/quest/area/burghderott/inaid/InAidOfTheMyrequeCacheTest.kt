@@ -23,8 +23,10 @@ import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.junit.jupiter.api.parallel.ResourceLock
 import org.rsmod.api.combat.commons.magic.Spellbook
+import org.rsmod.api.route.RouteFactory
 import org.rsmod.api.table.QuestRow
 import org.rsmod.content.quest.area.burghderott.inaid.InAidOfTheMyrequeQuest.Companion.STAGE_COMPLETE
+import org.rsmod.game.entity.Npc
 import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocZoneKey
 import org.rsmod.map.CoordGrid
@@ -237,6 +239,18 @@ class InAidOfTheMyrequeCacheTest {
         val mausoleum = intArrayOf(3392, 9856, 3455, 9919)
         assertTrue(walks(BurghCoords.LIBRARY_TRAPDOOR_TOP, CoordGrid(3432, 9897, 0), mausoleum), "Drezel's passage reaches the east gate")
         assertTrue(walks(CoordGrid(3430, 9897, 0), BurghCoords.SALVE_WELL.translateX(1), mausoleum), "the well room is past the east gate")
+    }
+
+    @Test fun `every juvinate's route reaches ivan round the clearing's scenery`() {
+        val routes = RouteFactory(collision)
+        val ivan = Npc(IvanEscort.IVAN_PLAIN, IvanEscort.IVAN_START)
+        val stuck =
+            IvanEscort.JUVINATE_SPAWNS.filter { spawn ->
+                val juvinate = Npc(IvanEscort.Route.Long.juvinate, spawn)
+                val end = routes.create(juvinate.avatar, ivan.avatar).lastOrNull()?.let { CoordGrid(it.x, it.z, it.level) } ?: spawn
+                end.chebyshevDistance(IvanEscort.IVAN_START) > 1
+            }
+        assertEquals(emptyList<CoordGrid>(), stuck, "a straight walk snags on scenery from most spawns")
     }
 
     @Test fun `the rod is enchanted by the spellbook's own lvl-1 enchant`() {
