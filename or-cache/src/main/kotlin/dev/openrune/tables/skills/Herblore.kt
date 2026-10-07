@@ -296,11 +296,11 @@ object Herblore {
             }
             row("dbrow.herblore_super_antifire") {
                 production {
-                    input("obj.lantadymevial")
+                    input("obj.4dose1antidragon")
                     input("obj.crushed_dragon_bones")
                     statReq("stat.herblore", 92)
-                    xp(180)
-                    output("obj.3dose2antidragon")
+                    xp(130)
+                    output("obj.4dose3antidragon")
                     category("Potions")
                 }
             }
