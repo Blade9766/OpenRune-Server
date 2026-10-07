@@ -26,14 +26,14 @@ class PyramidEntranceRocks : PluginScript() {
 
     private suspend fun ProtectedAccess.climb(face: Face) {
         arriveDelay()
-        if (player.agilityLvl < face.level) {
+        val down = coords.x <= (face.topX + face.bottomX) / 2
+        if (down && player.agilityLvl < face.level) {
             mes("You need an Agility level of ${face.level} to climb these rocks.")
             return
         }
         val z = coords.z.coerceIn(face.rows)
         val top = CoordGrid(face.topX, z, 0)
         val bottom = CoordGrid(face.bottomX, z, 0)
-        val down = coords.x <= (face.topX + face.bottomX) / 2
         val start = if (down) top else bottom
         stepOnto(start)
         balanceAlong(line(start, if (down) bottom else top), BalanceStyle.Climbing)
