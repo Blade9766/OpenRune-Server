@@ -1,6 +1,12 @@
 package org.rsmod.content.areas.misc.stronghold_of_security
 
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
+import org.rsmod.api.area.checker.AreaChecker
+import org.rsmod.api.player.hook.PlayerTeleportValidator
+import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpHeld3
@@ -22,7 +28,13 @@ import org.rsmod.plugin.scripts.ScriptContext
  * An imbued sceptre (see [StrongholdNotes]) never crumbles. Piece values are the base OSRS ones
  * without the Varrock diary bonus.
  */
-class SkullSceptreScript @Inject constructor(private val objRepo: ObjRepository) : PluginScript() {
+class SkullSceptreScript
+@Inject
+constructor(
+    private val objRepo: ObjRepository,
+    private val teleportValidator: PlayerTeleportValidator,
+    private val areaChecker: AreaChecker,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpHeldU(RIGHT_SKULL, LEFT_SKULL) { join(RIGHT_SKULL, LEFT_SKULL, STRANGE_SKULL, "You join the two halves of the skull together.") }
         onOpHeldU(TOP_OF_SCEPTRE, BOTTOM_OF_SCEPTRE) { join(TOP_OF_SCEPTRE, BOTTOM_OF_SCEPTRE, RUNED_SCEPTRE, "You join the two halves of the sceptre together.") }
@@ -59,16 +71,28 @@ class SkullSceptreScript @Inject constructor(private val objRepo: ObjRepository)
             mes("Your sceptre has no charges left. Use sceptre pieces or bone fragments on it to recharge it.")
             return
         }
+        val denial = teleportValidator.validate(player, TeleportType.Standard, areaChecker)
+        if (denial != null) {
+            mes(denial, ChatType.Engine)
+            return
+        }
         anim(TELEPORT_ANIM)
         spotanim(TELEPORT_SPOTANIM, height = TELEPORT_SPOTANIM_HEIGHT)
         soundSynth(TELEPORT_SOUND)
         delay(TELEPORT_DELAY)
         telejump(SURFACE)
+        if (coords != SURFACE) {
+            return
+        }
         anim(TELEPORT_END_ANIM)
         val left = charges - 1
         setCharges(left)
         if (left == 0 && sceptre == SKULL_SCEPTRE) {
-            invDel(inventory, sceptre, 1, slot = slot)
+            if (inventory[slot]?.id == sceptre.asRSCM(RSCMType.OBJ)) {
+                invDel(inventory, sceptre, 1, slot = slot)
+            } else {
+                invDel(inventory, sceptre, 1)
+            }
             if (inventory === worn) {
                 rebuildAppearance()
             }
