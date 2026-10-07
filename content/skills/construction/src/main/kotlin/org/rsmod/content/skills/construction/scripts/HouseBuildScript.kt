@@ -604,6 +604,12 @@ constructor(
                 return
             }
         }
+        if (house.state.isEntrance(room) && group.key == HouseState.CENTREPIECE &&
+            house.state.rooms.values.count(house.state::isEntrance) <= 1
+        ) {
+            mes("You cannot remove your house's only exit portal.")
+            return
+        }
         val costumes = Costumes.Store.ofGroup(group.key)
         if (costumes != null && Costumes.setsStored(costumes, player.costumeStorage) > 0) {
             mes("You must take everything out of it before you can remove it.")

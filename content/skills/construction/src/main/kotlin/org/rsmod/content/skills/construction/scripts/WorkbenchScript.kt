@@ -6,6 +6,7 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.constructionLvl
+import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.skills.construction.Construction
@@ -21,7 +22,12 @@ import org.rsmod.plugin.scripts.ScriptContext
  * clientscript that is not in the dumps, so the categories are a plain list here; the pieces in one
  * are shown in the regular furniture creation menu.
  */
-class WorkbenchScript @Inject constructor(private val xpMods: XpModifiers) : PluginScript() {
+class WorkbenchScript
+@Inject
+constructor(
+    private val xpMods: XpModifiers,
+    private val objRepo: ObjRepository,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         for ((bench, maxLevel) in Flatpacks.WORKBENCHES) {
             onOpLoc1(bench) { workAt(maxLevel) }
@@ -65,12 +71,14 @@ class WorkbenchScript @Inject constructor(private val xpMods: XpModifiers) : Plu
         anim(Construction.BUILD_ANIM)
         delay(PACK_CYCLE)
         resetAnim()
-        for (material in option.materials) {
-            if (invDel(inv, material.obj, material.count).failure) {
-                return
-            }
+        if (!hasMaterials(option)) {
+            mes("You do not have the materials to make that.")
+            return
         }
-        invAdd(inv, flatpack)
+        for (material in option.materials) {
+            invDel(inv, material.obj, material.count)
+        }
+        invAddOrDrop(objRepo, flatpack)
         statAdvance(Construction.STAT, option.xp * xpMods.get(player, Construction.STAT))
         mes("You make a flatpack of the ${option.label.lowercase()}.")
     }

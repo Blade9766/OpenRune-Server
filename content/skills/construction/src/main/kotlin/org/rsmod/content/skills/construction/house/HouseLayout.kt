@@ -208,6 +208,7 @@ object HouseLayout {
                 "You must remove the dungeon stairs below before you can take this one out."
             room.type == RoomType.COSTUME_ROOM && costumesStored ->
                 "You must empty the costume room's furniture before you can remove it."
+            room.holdsRefundable() -> "You must remove the furniture holding your items before you can remove this room."
             else -> splitProblem(state, after, floor, size)
         }
     }
@@ -234,6 +235,9 @@ object HouseLayout {
         } else {
             null
         }
+
+    private fun Room.holdsRefundable(): Boolean =
+        furniture.any { (key, option) -> type.hotspot(key)?.options?.getOrNull(option)?.refund.orEmpty().isNotEmpty() }
 
     private fun HouseState.copy(): HouseState = HouseState.decode(encode())
 

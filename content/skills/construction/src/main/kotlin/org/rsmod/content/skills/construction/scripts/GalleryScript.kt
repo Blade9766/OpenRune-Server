@@ -49,7 +49,7 @@ constructor(
         for (cape in Cape.entries) {
             onOpLoc1(cape.loc) { mes("You admire the ${itemName(cape.obj)}.") }
             onOpLoc2(cape.loc) { mes("You'll need to wear the cape for that.") }
-            onOpLoc4(cape.loc) { takeCape(cape) }
+            onOpLoc4(cape.loc) { takeCape() }
         }
         onOpLoc1(Gallery.EMBLEM) { mes("You admire the emblem.") }
         onOpLoc1(Gallery.COINS) { mes("A hundred million coins, mounted for all to see.") }
@@ -124,6 +124,9 @@ constructor(
             return
         }
         val lair = pick(held.map { it.label to it }, "Take which jar?")?.second ?: return
+        if (!Gallery.hasJar(lairVarp, lair)) {
+            return
+        }
         if (invAdd(inv, lair.jar, 1).failure) {
             mes("You don't have enough inventory space.")
             return
@@ -147,6 +150,10 @@ constructor(
             mes("That can't be hung on the cape hanger.")
             return
         }
+        if (player.vars[Gallery.CAPE_VARP] != 0) {
+            mes("There is already a cape on the hanger.")
+            return
+        }
         if (invDel(inv, cape.obj, 1).failure) {
             return
         }
@@ -154,10 +161,11 @@ constructor(
         houses.rebuild(this)
     }
 
-    private fun ProtectedAccess.takeCape(cape: Cape) {
+    private fun ProtectedAccess.takeCape() {
         if (!isOwner()) {
             return
         }
+        val cape = Cape.entries.getOrNull(player.vars[Gallery.CAPE_VARP] - 1) ?: return
         if (invAdd(inv, cape.obj, 1).failure) {
             mes("You don't have enough inventory space.")
             return

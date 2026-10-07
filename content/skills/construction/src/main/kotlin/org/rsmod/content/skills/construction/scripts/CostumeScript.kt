@@ -136,12 +136,11 @@ constructor(
         if (invTotal(storage, name) <= 0) {
             return
         }
-        if (inv.freeSpace() <= 0) {
+        val slot = storage.indexOfFirst { it?.id == obj.id }
+        if (slot < 0 || invMoveFromSlot(storage, inv, slot, 1).failure) {
             mes("You don't have enough inventory space.")
             return
         }
-        invDel(storage, name, 1)
-        invAdd(inv, name, 1)
         UpdateInventory.updateInvFullMirror(player, storage)
     }
 
@@ -190,13 +189,17 @@ constructor(
             }
             return false
         }
-        val name = nameOf(obj)
-        val count = invTotal(inv, name)
-        if (count <= 0) {
+        val count = invTotal(inv, nameOf(obj))
+        val slot = inv.indexOfFirst { it?.id == obj }
+        if (count <= 0 || slot < 0) {
             return false
         }
-        invDel(inv, name, count)
-        invAdd(storage, name, count)
+        if (invMoveFromSlot(inv, storage, slot, count).failure) {
+            if (!quiet) {
+                mes("There's no room for that in here.")
+            }
+            return false
+        }
         return true
     }
 

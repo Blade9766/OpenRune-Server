@@ -279,7 +279,10 @@ constructor(
             }
             val room = ownerRoom!!.type.label.lowercase()
             chatNpc(neutral, "${owner.displayName} is entertaining in the $room. Would %sir% care to follow me?".address(player))
-            access.telejump(owner.coords)
+            val stillHome = registry.active(owner) === house && registry.isInside(owner)
+            if (stillHome && registry.houseAt(player.coords) === house) {
+                access.telejump(owner.coords)
+            }
         }
     }
 
@@ -469,15 +472,13 @@ constructor(
     }
 
     private fun ProtectedAccess.deposit(errand: Errand.Deposit): Boolean {
-        val count = minOf(errand.count, inv.count(errand.obj))
-        if (count <= 0) {
+        val count = minOf(errand.count, inv.physicalCount(errand.obj))
+        val id = errand.obj.asRSCM(RSCMType.OBJ)
+        val slot = inv.indexOfFirst { it?.id == id }
+        if (count <= 0 || slot < 0) {
             return false
         }
-        if (invDel(inv, errand.obj, count).failure) {
-            return false
-        }
-        if (invAdd(bank, errand.obj, count, uncert = true).failure) {
-            invAdd(inv, errand.obj, count)
+        if (invMoveFromSlot(inv, bank, slot, count, uncert = true).failure) {
             mes("Your bank is too full for your servant to deposit that.")
             return false
         }

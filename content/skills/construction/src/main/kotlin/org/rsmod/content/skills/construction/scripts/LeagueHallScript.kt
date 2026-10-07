@@ -49,7 +49,7 @@ constructor(
                     for (metal in Leagues.METALS.indices) {
                         val shown = Leagues.pedestalWith(base, league, metal)
                         onOpLoc2(shown) { mes("The pedestal displays a ${trophyName(league, metal)}.") }
-                        onOpLoc3(shown) { takeTrophy(number, league, metal) }
+                        onOpLoc3(shown) { takeTrophy(number) }
                     }
                 }
             }
@@ -61,7 +61,7 @@ constructor(
             for (league in League.entries) {
                 val shown = Leagues.bannerStandWith(base, league)
                 onOpLoc2(shown) { mes("The stand flies a ${itemName(league.bannerObj)}.") }
-                onOpLoc3(shown) { takeBanner(league) }
+                onOpLoc3(shown) { takeBanner() }
             }
         }
         for (style in Leagues.OUTFIT_STYLES) {
@@ -72,7 +72,7 @@ constructor(
                 for (tier in 1..Leagues.OUTFIT_TIERS) {
                     val shown = Leagues.outfitStandWith(base, league, tier)
                     onOpLoc2(shown) { mes("The stand displays a tier $tier relic hunter outfit.") }
-                    onOpLoc3(shown) { takeOutfit(league, tier) }
+                    onOpLoc3(shown) { takeOutfit() }
                 }
             }
         }
@@ -112,6 +112,10 @@ constructor(
                 mes("Only a league trophy can go on the pedestal.")
                 return
             }
+        if (player.vars[Leagues.pedestalLeague(number)] != 0) {
+            mes(OCCUPIED)
+            return
+        }
         if (invDel(inv, league.trophy(metal), 1).failure) {
             return
         }
@@ -121,8 +125,13 @@ constructor(
         houses.rebuild(this)
     }
 
-    private fun ProtectedAccess.takeTrophy(number: Int, league: League, metal: Int) {
+    private fun ProtectedAccess.takeTrophy(number: Int) {
         if (!isOwner()) {
+            return
+        }
+        val league = League.entries.getOrNull(player.vars[Leagues.pedestalLeague(number)] - 1) ?: return
+        val metal = player.vars[Leagues.pedestalTrophy(number)] - 1
+        if (metal !in Leagues.METALS.indices) {
             return
         }
         if (invAdd(inv, league.trophy(metal), 1).failure) {
@@ -147,6 +156,10 @@ constructor(
             mes("Only a league banner can go on the banner stand.")
             return
         }
+        if (player.vars[Leagues.BANNER_LEAGUE] != 0) {
+            mes(OCCUPIED)
+            return
+        }
         if (invDel(inv, league.bannerObj, 1).failure) {
             return
         }
@@ -154,10 +167,11 @@ constructor(
         houses.rebuild(this)
     }
 
-    private fun ProtectedAccess.takeBanner(league: League) {
+    private fun ProtectedAccess.takeBanner() {
         if (!isOwner()) {
             return
         }
+        val league = League.entries.getOrNull(player.vars[Leagues.BANNER_LEAGUE] - 1) ?: return
         if (invAdd(inv, league.bannerObj, 1).failure) {
             mes("You don't have enough inventory space.")
             return
@@ -179,6 +193,10 @@ constructor(
                 mes("Only a relic hunter outfit can go on the outfit stand.")
                 return
             }
+        if (player.vars[Leagues.OUTFIT_LEAGUE] != 0) {
+            mes(OCCUPIED)
+            return
+        }
         val pieces = league.outfit(tier)
         if (pieces.any { inv.count(it) < 1 }) {
             mes("You need the whole outfit - head, top, legs and boots - to put it on display.")
@@ -192,8 +210,13 @@ constructor(
         houses.rebuild(this)
     }
 
-    private fun ProtectedAccess.takeOutfit(league: League, tier: Int) {
+    private fun ProtectedAccess.takeOutfit() {
         if (!isOwner()) {
+            return
+        }
+        val league = League.entries.getOrNull(player.vars[Leagues.OUTFIT_LEAGUE] - 1) ?: return
+        val tier = player.vars[Leagues.OUTFIT_TIER]
+        if (tier !in 1..Leagues.OUTFIT_TIERS) {
             return
         }
         val pieces = league.outfit(tier)
@@ -225,5 +248,6 @@ constructor(
 
     private companion object {
         const val NO_LEAGUES = "No leagues have been held on this world yet."
+        const val OCCUPIED = "Something is already on display there."
     }
 }

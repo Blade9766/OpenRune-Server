@@ -69,7 +69,8 @@ constructor(
         }
         // A house left standing for its guests is reopened like any other, and they are carried
         // across to it - unless the owner is coming back to build, which puts them out.
-        val before = registry.active(player) ?: registry.reclaim(player)
+        val live = registry.active(player)
+        val before = live ?: registry.reclaim(player)
         val guests = before?.let { registry.guests(it, players) }.orEmpty()
         if (buildMode) {
             expelGuests(player)
@@ -77,7 +78,9 @@ constructor(
         val entrance = registry.open(player, state, buildMode)
         if (entrance == null) {
             // A house just taken back from its guests goes back to them, rather than stand ownerless.
-            registry.vacate(player, players)
+            if (live == null) {
+                registry.vacate(player, players)
+            }
             access.mes("There is no room for your house right now. Try again shortly.")
             return false
         }
