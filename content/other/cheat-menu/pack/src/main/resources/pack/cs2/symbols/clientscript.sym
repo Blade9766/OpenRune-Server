@@ -5,3 +5,4 @@
 45612	[proc,cheat_panel_graphic]
 45615	[clientscript,cheat_teleport_init]
 45618	[clientscript,cheat_teleport_draw]
+45621	[clientscript,cheat_design_zoom]

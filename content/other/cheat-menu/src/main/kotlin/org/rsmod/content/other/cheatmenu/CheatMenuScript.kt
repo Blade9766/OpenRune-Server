@@ -476,6 +476,15 @@ constructor(
         )
         vars[DESIGN_BODY_TYPE] = player.appearance.bodyType
         vars[PRONOUN_SETTING] = player.appearance.pronoun
+        player.runClientScript(
+            "clientscript.cheat_design_zoom".asRSCM(RSCMType.CLIENTSCRIPT),
+            0,
+            DESIGN_MODEL_Y,
+            0,
+            0,
+            0,
+            DESIGN_MODEL_ZOOM,
+        )
     }
 
     private fun ProtectedAccess.chooseBodyType(bodyType: Int) {
@@ -641,6 +650,14 @@ constructor(
         const val DESIGN_BODY_TYPE = "varbit.player_design_bodytype"
         const val PRONOUN_BUTTONS = "component.player_design:pronouns_buttons"
         const val PRONOUN_SETTING = "varbit.settings_transmit_pronouns"
+
+        /**
+         * Frames the creator's preview closer than the cache does (origin 175, zoom 450), so the
+         * whole body just fills the preview box. The y offset also adds to the camera distance,
+         * so the two are tuned together.
+         */
+        const val DESIGN_MODEL_Y = 200
+        const val DESIGN_MODEL_ZOOM = 277
 
         /** The pronoun dropdown's first row is its highlight, so pronoun rows start at 1. */
         const val PRONOUN_ROW_OFFSET = 1
