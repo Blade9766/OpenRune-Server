@@ -19,7 +19,6 @@ import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld2
 import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpHeld4
-import org.rsmod.api.script.onOpHeld5
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.table.fishing.FishingSpotRow
 import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
@@ -40,7 +39,6 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
             onOpHeld2(barrel) { dispatch(2, barrel) }
             onOpHeld3(barrel) { dispatch(3, barrel) }
             onOpHeld4(barrel) { dispatch(4, barrel) }
-            onOpHeld5(barrel) { dispatch(5, barrel) }
             onEvent<HeldBanksideEvents.Type>(barrel.asRSCM(RSCMType.OBJ)) { emptyIntoBank(player) }
         }
 
