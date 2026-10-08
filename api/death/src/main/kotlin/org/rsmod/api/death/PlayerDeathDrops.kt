@@ -32,7 +32,7 @@ constructor(
     ): DeathDropResult =
         selectDrops(
             carried = sortedCarriedObjs(player),
-            rules = DeathDropRules(isUIM = context.isUIM, isPvpDeath = context.isPvpDeath),
+            rules = DeathDropRules(isUIM = context.usesUimRules, isPvpDeath = context.isPvpDeath),
             handling = handling,
         )
 
@@ -43,20 +43,23 @@ constructor(
     ): DeathDropResult {
         val allCarried = carried.sortedByDescending { marketPriceSingle(it) }
 
-        if (rules.isUIM) {
-            return selectUimDrops(allCarried, handling, rules)
+        if (handling.keepsEverything) {
+            return DeathDropResult(allCarried, emptyList(), emptyList(), emptyList(), 0L)
         }
 
-        val slotlessKept = allCarried.filter { isSlotlessKept(it, rules) }
-        val neverKept = allCarried.filter { isNeverKeptInternal(it, rules) }
-        val normal = allCarried - slotlessKept.toSet() - neverKept.toSet()
+        val (slotlessKept, rest) = allCarried.partition { isSlotlessKept(it, rules) }
+        val (neverKept, normal) = rest.partition { isNeverKeptInternal(it, rules) }
+
+        if (rules.isUIM) {
+            return selectUimDrops(slotlessKept, rest, handling)
+        }
 
         if (handling.untradeableHandling == UntradeableHandling.KEEP) {
-            return selectInstanceDrops(slotlessKept, normal, handling)
+            return selectInstanceDrops(slotlessKept, normal, neverKept, handling)
         }
 
-        val keptNormal = normal.take(handling.keepCount)
-        val lost = normal.drop(handling.keepCount)
+        val (keptNormal, lostNormal) = splitKept(normal, handling.keepCount)
+        val lost = lostNormal + neverKept
 
         val (supply, lostRemainder) = if (handling.supplyPile) {
             lost.partition { isSupplyPileItem(it) }
@@ -87,29 +90,25 @@ constructor(
     private fun selectInstanceDrops(
         slotlessKept: List<InvObj>,
         normal: List<InvObj>,
+        neverKept: List<InvObj>,
         handling: PlayerDeathHandling,
     ): DeathDropResult {
         val (untradeablesKept, tradeables) = normal.partition { isUntradeable(it) }
-        val keptTradeables = tradeables.take(handling.keepCount)
-        val lostTradeables = tradeables.drop(handling.keepCount)
+        val (keptTradeables, lostTradeables) = splitKept(tradeables, handling.keepCount)
         return DeathDropResult(
             kept = slotlessKept + untradeablesKept + keptTradeables,
             supplyPile = emptyList(),
-            lostTradeable = lostTradeables,
+            lostTradeable = lostTradeables + neverKept,
             lostUntradeable = emptyList(),
             coinsForKiller = 0L,
         )
     }
 
     private fun selectUimDrops(
-        allCarried: List<InvObj>,
+        slotlessKept: List<InvObj>,
+        rest: List<InvObj>,
         handling: PlayerDeathHandling,
-        rules: DeathDropRules,
     ): DeathDropResult {
-        val slotlessKept = allCarried.filter { isSlotlessKept(it, rules) }
-        val neverKept = allCarried.filter { isNeverKeptInternal(it, rules) }
-        val rest = allCarried - slotlessKept.toSet() - neverKept.toSet()
-
         val (supply, remaining) = if (handling.supplyPile) {
             rest.partition { isSupplyPileItem(it) }
         } else {
@@ -135,15 +134,26 @@ constructor(
         result: DeathDropResult,
         handling: PlayerDeathHandling,
         coords: CoordGrid,
+        overflowCoords: CoordGrid = coords,
     ) {
-        if (keepsEverything(player, result)) {
+        if (handling.keepsEverything || keepsEverything(player, result)) {
             return
+        }
+        val wornSlots = HashMap<Int, Int>()
+        for (slot in player.worn.indices) {
+            val obj = player.worn[slot] ?: continue
+            wornSlots.putIfAbsent(obj.id, slot)
         }
         player.inv.fillNulls()
         player.worn.fillNulls()
 
+        val overflowHandling =
+            handling.copy(dropDuration = DROP_DURATION_STANDARD, revealDelay = PVP_REVEAL_DELAY)
         for (item in result.kept) {
-            addToInvDirect(player, item)
+            if (addToInvDirect(player, item) || restoreWorn(player, item, wornSlots)) {
+                continue
+            }
+            dropItem(player, item, overflowCoords, overflowHandling, receiver = player)
         }
 
         for (item in result.supplyPile) {
@@ -208,11 +218,34 @@ constructor(
         objRepo.add(obj, dropParams.duration, dropParams.reveal)
     }
 
-    private fun addToInvDirect(player: Player, item: InvObj) {
-        val freeSlot = player.inv.objs.indexOfFirst { it == null }
-        if (freeSlot >= 0) {
-            player.inv[freeSlot] = item
+    private fun addToInvDirect(player: Player, item: InvObj): Boolean {
+        if (getInvObj(item).stackable) {
+            val stackSlot = player.inv.objs.indexOfFirst {
+                it != null && it.id == item.id && it.vars == item.vars
+            }
+            if (stackSlot >= 0) {
+                val existing = player.inv[stackSlot]!!
+                if (existing.count.toLong() + item.count <= Int.MAX_VALUE) {
+                    player.inv[stackSlot] = existing.copy(count = existing.count + item.count)
+                    return true
+                }
+            }
         }
+        val freeSlot = player.inv.objs.indexOfFirst { it == null }
+        if (freeSlot < 0) {
+            return false
+        }
+        player.inv[freeSlot] = item
+        return true
+    }
+
+    private fun restoreWorn(player: Player, item: InvObj, wornSlots: Map<Int, Int>): Boolean {
+        val slot = wornSlots[item.id] ?: return false
+        if (player.worn[slot] != null) {
+            return false
+        }
+        player.worn[slot] = item
+        return true
     }
 
     /** A death that costs nothing (safe minigames) leaves worn items worn and the inventory as it was. */
@@ -293,4 +326,22 @@ constructor(
             return if (hasProtectItem) base + 1 else base
         }
     }
+}
+
+/** Each kept slot protects a single unit, so a stack only keeps as many as there are slots left. */
+internal fun splitKept(objs: List<InvObj>, keepCount: Int): Pair<List<InvObj>, List<InvObj>> {
+    val kept = ArrayList<InvObj>()
+    val lost = ArrayList<InvObj>()
+    var slots = keepCount.coerceAtLeast(0)
+    for (obj in objs) {
+        val keep = minOf(slots, obj.count)
+        if (keep > 0) {
+            kept += obj.copy(count = keep)
+            slots -= keep
+        }
+        if (obj.count > keep) {
+            lost += obj.copy(count = obj.count - keep)
+        }
+    }
+    return kept to lost
 }

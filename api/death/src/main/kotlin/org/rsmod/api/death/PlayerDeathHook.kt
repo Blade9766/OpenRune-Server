@@ -26,6 +26,9 @@ public data class PlayerDeathContext(
     val isHardcoreIronman: Boolean get() = gamemode == PlayerGamemode.HARDCORE_IRONMAN
     val isIronman: Boolean get() = gamemode != PlayerGamemode.NORMAL
     val isPvpDeath: Boolean get() = killer != null || recentPvpDamage
+
+    /** Wilderness PvP deaths follow the regular PvP rules even for an Ultimate Ironman. */
+    val usesUimRules: Boolean get() = isUIM && !(inWilderness && isPvpDeath)
 }
 
 public data class PlayerDeathHandling(
@@ -35,7 +38,10 @@ public data class PlayerDeathHandling(
     val revealDelay: Int,
     val supplyPile: Boolean,
     val untradeableHandling: UntradeableHandling,
-)
+) {
+    /** A safe death (POH, Castle Wars, duels...): nothing is lost and it does not count as a real death. */
+    val keepsEverything: Boolean get() = keepCount == Int.MAX_VALUE
+}
 
 public enum class UntradeableHandling {
     DROP,
@@ -45,6 +51,11 @@ public enum class UntradeableHandling {
 }
 
 public const val RECENT_PVP_HIT_TICKS: Int = 600
+
+/** Where a death's drops land when the death tile itself is about to disappear (an instance). */
+public fun interface PlayerDeathDropCoordsHook {
+    public fun dropCoords(player: Player): CoordGrid?
+}
 
 public interface PlayerDeathHook {
     /**
@@ -59,6 +70,7 @@ public interface PlayerDeathHook {
 
     public companion object {
         public const val PRIORITY_SAFE_ACTIVITY: Int = 100
+        public const val PRIORITY_GAMEMODE: Int = 50
         public const val PRIORITY_DEFAULT: Int = 0
         public const val PRIORITY_FALLBACK: Int = -100
     }

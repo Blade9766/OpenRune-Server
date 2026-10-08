@@ -18,6 +18,9 @@ import org.rsmod.api.repo.obj.ObjRepository
 class DizanasQuiverDeathHook @Inject constructor(private val objRepo: ObjRepository) :
     PlayerDeathItemHook {
     override fun beforeDrops(context: PlayerDeathContext, handling: PlayerDeathHandling) {
+        if (handling.keepsEverything) {
+            return
+        }
         val player = context.player
         val stored = DizanasQuiver.storedAmmo(player) ?: return
         DizanasQuiver.setStoredAmmo(player, null)

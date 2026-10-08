@@ -3,13 +3,16 @@ package org.rsmod.content.interfaces.equipment.death
 import dev.openrune.definition.type.widget.IfEvent
 import jakarta.inject.Inject
 import java.util.Objects
-import kotlin.math.abs
 import org.rsmod.api.area.checker.AreaChecker
 import org.rsmod.api.death.PlayerDeathDrops
 import org.rsmod.api.death.PlayerDeathHandlingResolver
 import org.rsmod.api.death.PlayerDeathPreviewContext
 import org.rsmod.api.death.UntradeableHandling
+import org.rsmod.api.death.deathWildernessLevel
+import org.rsmod.api.death.hasSkullDeathPenalty
+import org.rsmod.api.death.isHighRiskSkulled
 import org.rsmod.api.market.MarketPrices
+import org.rsmod.api.player.hasProtectItemPrayer
 import org.rsmod.api.player.isInCombat
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.output.soundSynth
@@ -60,7 +63,12 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.showKeptOnDeath() {
-        val deathSettings = DeathSettings()
+        val deathSettings =
+            DeathSettings(
+                skullActive = player.hasSkullDeathPenalty(),
+                protectItemPrayer = player.hasProtectItemPrayer() && !player.isHighRiskSkulled(),
+                wildernessLvl = player.coords.deathWildernessLevel().coerceAtLeast(0),
+            )
         val deathInventory = createDeathInventory(deathSettings)
         updateDeathInventory(deathInventory)
         openDeathInventory(deathInventory, deathSettings)
@@ -104,7 +112,7 @@ constructor(
                 0 -> settings.copy(protectItemPrayer = !settings.protectItemPrayer)
                 1 -> settings.copy(skullActive = !settings.skullActive)
                 2 -> settings.copy(playerKill = !settings.playerKill)
-                3 -> settings.copy(wildernessLvl = abs(settings.wildernessLvl - 21))
+                3 -> settings.copy(wildernessLvl = if (settings.wildernessLvl > 0) 0 else 21)
                 else -> throw IllegalStateException("Invalid sub component: $sub")
             }
 
@@ -154,27 +162,28 @@ constructor(
 
         val rules =
             PlayerDeathDrops.DeathDropRules(
-                isUIM = context.isUIM,
+                isUIM = context.usesUimRules,
                 isPvpDeath = context.isPvpDeath,
             )
         val result = deathDrops.selectDrops(carried, rules, handling)
 
-        val neverKept = carried.filter { deathDrops.isNeverKept(it, rules) }
         val lost =
             buildList {
+                addAll(result.supplyPile)
                 addAll(result.lostTradeable)
                 if (handling.untradeableHandling != UntradeableHandling.KEEP) {
                     addAll(result.lostUntradeable)
                 }
-                addAll(neverKept)
             }
 
-        val keptAddResult = invMoveAll(keptInventory, result.kept)
-        val lostAddResult = invMoveAll(lostInventory, lost)
-
-        check(result.kept.isEmpty() || keptAddResult.success) {
-            "Could not add `inv` and `worn` into kept inventory. (result=$keptAddResult)"
+        for (obj in result.kept) {
+            val slot = keptInventory.indexOfFirst { it == null }
+            if (slot < 0) {
+                break
+            }
+            keptInventory[slot] = obj
         }
+        val lostAddResult = invMoveAll(lostInventory, lost)
 
         check(lost.isEmpty() || lostAddResult.success) {
             "Could not add `inv` and `worn` into lost inventory. (result=$lostAddResult)"

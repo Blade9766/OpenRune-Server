@@ -6,7 +6,6 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.area.checker.AreaChecker
-import org.rsmod.api.area.checker.isInWildernessBasic
 import org.rsmod.api.mechanics.toxins.Toxin.cureAllToxins
 import org.rsmod.api.player.death.DEATH_CAUSE_ATTR
 import org.rsmod.api.player.death.DeathCause
@@ -14,6 +13,7 @@ import org.rsmod.api.player.deathResetTimers
 import org.rsmod.api.player.disablePrayers
 import org.rsmod.api.player.hasProtectItemPrayer
 import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.ironman.markNextDeathSafe
 import org.rsmod.api.player.midiJingle
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -33,6 +33,7 @@ constructor(
     private val handlingResolver: PlayerDeathHandlingResolver,
     private val cleanupHooks: Set<PlayerDeathCleanupHook>,
     private val itemHooks: Set<PlayerDeathItemHook>,
+    private val dropCoordsHooks: Set<PlayerDeathDropCoordsHook>,
     respawnHooks: Set<PlayerRespawnHook>,
     private val areaChecker: AreaChecker,
     private val worldRepo: WorldRepository,
@@ -87,11 +88,20 @@ constructor(
     }
 
     private fun handleDeathDrops(player: Player, deathCoords: CoordGrid) {
-        if (player.hasAdminDeathProtection()) {
-            player.mes("Your items were protected by admin death protection.")
-            return
+        try {
+            if (player.hasAdminDeathProtection()) {
+                player.mes("Your items were protected by admin death protection.")
+                return
+            }
+            selectAndApplyDrops(player, deathCoords)
+        } finally {
+            player.attr.remove(DEATH_KILLER_ATTR)
+            player.attr.remove(DEATH_CAUSE_ATTR)
+            player.attr.remove(LAST_PVP_HIT_TICK_ATTR)
         }
+    }
 
+    private fun selectAndApplyDrops(player: Player, deathCoords: CoordGrid) {
         val killer = when (val cause = player.attr[DEATH_CAUSE_ATTR]) {
             is DeathCause.ByPlayer -> cause.killer
             else -> player.attr[DEATH_KILLER_ATTR]
@@ -99,21 +109,24 @@ constructor(
 
         val context = buildContext(player, deathCoords, killer)
         val handling = handlingResolver.resolve(context)
+        if (handling.keepsEverything) {
+            player.markNextDeathSafe()
+        }
 
         for (hook in itemHooks) {
             hook.beforeDrops(context, handling)
         }
 
-        val result = drops.selectDrops(player, context, handling)
-        drops.applyDrops(player, result, handling, deathCoords)
-        drops.spawnRemains(deathCoords, handling)
+        val safeCoords = dropCoordsHooks.firstNotNullOfOrNull { it.dropCoords(player) } ?: deathCoords
+        val dropCoords = if (context.usesUimRules) safeCoords else deathCoords
 
-        player.attr.remove(DEATH_KILLER_ATTR)
-        player.attr.remove(DEATH_CAUSE_ATTR)
+        val result = drops.selectDrops(player, context, handling)
+        drops.applyDrops(player, result, handling, dropCoords, overflowCoords = safeCoords)
+        drops.spawnRemains(deathCoords, handling)
     }
 
     private fun buildContext(player: Player, deathCoords: CoordGrid, killer: Player?): PlayerDeathContext {
-        val wildernessLevel = deathCoords.wildernessLevel()
+        val wildernessLevel = deathCoords.deathWildernessLevel()
         val recentPvp = wasRecentlyHitByPlayer(player)
 
         return PlayerDeathContext(
@@ -167,16 +180,5 @@ constructor(
          * in-game by ear with the `::jingle` command.
          */
         private const val DEATH_JINGLE_GROUP = 90
-
-        private fun CoordGrid.wildernessLevel(): Int {
-            if (!isInWildernessBasic()) return -1
-            val y = z
-            return when {
-                level == 0 && x in 2944..3392 && y in 3520..4351 -> ((y - 3520) shr 3) + 1
-                level == 0 && x in 3008..3071 && y in 10112..10175 -> ((y - 9920) shr 3) - 1
-                level == 0 && x in 2944..3455 && y in 9920..10879 -> ((y - 9920) shr 3) + 1
-                else -> 1
-            }
-        }
     }
 }

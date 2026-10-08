@@ -32,7 +32,7 @@ import org.rsmod.game.type.getInvObj
  * The looting bag's contents always go to the floor (to the killer on a PvP death, minus food and
  * potions, otherwise to the player) and never count towards the items kept; the bag itself is
  * destroyed on any PvP or Wilderness death. A rune pouch drops its runes to the killer on a PvP
- * death; outside PvP the runes stay in the pouch.
+ * death; outside PvP the runes stay in the pouch. Safe deaths leave both untouched.
  */
 @OptIn(UncheckedType::class)
 class PouchDeathHook
@@ -43,6 +43,9 @@ constructor(
     private val dropResolver: GroundItemDropResolver,
 ) : PlayerDeathItemHook {
     override fun beforeDrops(context: PlayerDeathContext, handling: PlayerDeathHandling) {
+        if (handling.keepsEverything) {
+            return
+        }
         val player = context.player
         releaseLootingBag(player, context, handling)
         if (context.isPvpDeath) {
