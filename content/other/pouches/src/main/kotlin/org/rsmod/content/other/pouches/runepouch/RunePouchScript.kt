@@ -69,6 +69,9 @@ constructor(private val objRepo: ObjRepository, private val protectedAccess: Pro
     }
 
     private fun ProtectedAccess.openPouch() {
+        val slots = player.runePouchSlots() ?: return
+        // The interface's cs2 reads the slot count from if1 and hides every pouch slot above it.
+        vars["varp.if1"] = slots
         ifOpenMainModal(INTERFACE)
         ifSetEvents(COMPONENT_POUCH, 0 until RunePouches.DIVINE_SLOTS, *SLOT_EVENTS)
         ifSetEvents(COMPONENT_INVENTORY, inv.indices, *SLOT_EVENTS)
