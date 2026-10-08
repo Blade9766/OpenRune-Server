@@ -36,6 +36,7 @@ import org.rsmod.content.interfaces.bank.alwaysPlacehold
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.interfaces.bank.configs.bank_comsubs
 import org.rsmod.content.interfaces.bank.configs.bank_constants
+import org.rsmod.content.interfaces.bank.coverStrayBankObjs
 import org.rsmod.content.interfaces.bank.insertMode
 import org.rsmod.content.interfaces.bank.lastQtyInput
 import org.rsmod.content.interfaces.bank.leftClickQtyMode
@@ -216,6 +217,7 @@ constructor(
     }
 
     public fun ProtectedAccess.invDeposit(slot: Int, count: Int, inventory: Inventory): Boolean {
+        player.coverStrayBankObjs()
         val obj = inventory[slot]
         if (obj == null) {
             resendSlot(inventory, 0)
@@ -335,6 +337,7 @@ constructor(
 
     /** Withdraws up to [count] of the obj in bank [slot] into [into], keeping the tab sizes in step. */
     public fun ProtectedAccess.invWithdraw(slot: Int, count: Int, into: Inventory): Boolean {
+        player.coverStrayBankObjs()
         val result = invMoveFromSlot(from = bank, into = into, fromSlot = slot, count = count, strict = false)[0]
         if (!result.isOk()) {
             return false

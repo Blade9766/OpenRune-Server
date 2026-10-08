@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.api.scriptAdvanced)
     implementation(projects.content.interfaces.bank)
     implementation(projects.api.pluginCommons)
     implementation(projects.api.attr)

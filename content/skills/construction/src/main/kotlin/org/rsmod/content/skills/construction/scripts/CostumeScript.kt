@@ -189,18 +189,22 @@ constructor(
             }
             return false
         }
-        val count = invTotal(inv, nameOf(obj))
-        val slot = inv.indexOfFirst { it?.id == obj }
-        if (count <= 0 || slot < 0) {
+        val slots = inv.indices.filter { inv[it]?.id == obj }
+        if (slots.isEmpty()) {
             return false
         }
-        if (invMoveFromSlot(inv, storage, slot, count).failure) {
-            if (!quiet) {
-                mes("There's no room for that in here.")
+        var stored = false
+        for (slot in slots) {
+            val held = inv[slot] ?: continue
+            if (invMoveFromSlot(inv, storage, slot, held.count).failure) {
+                if (!quiet) {
+                    mes("There's no room for that in here.")
+                }
+                return stored
             }
-            return false
+            stored = true
         }
-        return true
+        return stored
     }
 
     private fun nameOf(obj: Int): String = RSCM.getReverseMapping(RSCMType.OBJ, obj)

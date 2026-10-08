@@ -14,6 +14,7 @@ import org.rsmod.api.player.events.skilling.SkillingActionContext
 import org.rsmod.api.player.events.skilling.SkillingProductSource
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.script.advanced.onDestroyHeld
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld2
@@ -40,6 +41,12 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
             onOpHeld3(barrel) { dispatch(3, barrel) }
             onOpHeld4(barrel) { dispatch(4, barrel) }
             onEvent<HeldBanksideEvents.Type>(barrel.asRSCM(RSCMType.OBJ)) { emptyIntoBank(player) }
+        }
+
+        onDestroyHeld {
+            if (type in ALL_BARRELS) {
+                player.attr.remove(FISH_BARREL_ATTR)
+            }
         }
 
         onOpHeldU(FISH_SACK, BARREL_CLOSED) { combine(BARREL_CLOSED, SACK_CLOSED) }
