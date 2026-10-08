@@ -7,6 +7,7 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.max
 import kotlin.math.min
@@ -53,7 +54,8 @@ constructor(
     private val playerList: PlayerList,
 ) : GeExchange.Listener {
     private val savePath: Path = Path.of(GeConfig.SAVE_PATH)
-    private var saveCountdown = GeConfig.SAVE_INTERVAL_TICKS
+    private var saveCountdown = 0
+    private var saveDisabled = false
     private val coinsId: Int by lazy { GeConfig.COINS.asRSCM(RSCMType.OBJ) }
     private val bondId: Int by lazy { GeConfig.BOND.asRSCM(RSCMType.OBJ) }
 
@@ -67,7 +69,15 @@ constructor(
         try {
             exchange.load(savePath)
         } catch (t: Throwable) {
-            logger.error(t) { "Could not load the Grand Exchange book from $savePath; starting empty." }
+            val backup = savePath.resolveSibling("${savePath.fileName}.corrupt-${System.currentTimeMillis()}")
+            try {
+                Files.move(savePath, backup)
+                logger.error(t) { "Could not load the Grand Exchange book from $savePath; moved it to $backup and starting empty." }
+            } catch (moveFailure: Throwable) {
+                saveDisabled = true
+                logger.error(t) { "Could not load the Grand Exchange book from $savePath; saving is disabled to keep the file intact." }
+                logger.error(moveFailure) { "Could not move $savePath aside." }
+            }
         }
     }
 
@@ -81,13 +91,14 @@ constructor(
     }
 
     fun save() {
-        saveCountdown = GeConfig.SAVE_INTERVAL_TICKS
-        if (!exchange.dirty) {
+        if (saveDisabled || !exchange.dirty) {
             return
         }
         try {
             exchange.save(savePath)
+            saveCountdown = 0
         } catch (t: Throwable) {
+            saveCountdown = GeConfig.SAVE_RETRY_TICKS
             logger.error(t) { "Could not save the Grand Exchange book to $savePath." }
         }
     }

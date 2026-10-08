@@ -5,6 +5,10 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import dev.openrune.types.aconverted.interf.IfButtonOp
+import org.rsmod.api.invtx.add
+import org.rsmod.api.invtx.delete
+import org.rsmod.api.invtx.invTransaction
+import org.rsmod.api.invtx.select
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.ui.IfScriptArgs
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
@@ -49,9 +53,8 @@ class OmnishopScript : PluginScript() {
         val stock = OmnishopStock.find(shop, index) ?: return
         if (!stock.buyable) return
         var quantity = BUY_QUANTITIES.getOrNull(option - 1) ?: return
-        val costs = stock.buyCosts()
+        val costs = stock.buyCosts().filter { it.second > 0 }
         for ((currency, price) in costs) {
-            if (price == 0) continue
             val affordable = currencyCount(currency) / price
             if (affordable == 0) {
                 mes("You don't have enough ${currency.pluralName}.")
@@ -61,17 +64,50 @@ class OmnishopScript : PluginScript() {
         }
         if (!stock.obj.stackable) {
             quantity = minOf(quantity, inv.freeSpace() / stock.multiplier)
-        } else if (inv.count(stock.obj.internalName) == 0 && inv.isFull()) {
+        } else if (inv.physicalCount(stock.obj.internalName) == 0 && inv.isFull()) {
             quantity = 0
         }
         if (quantity <= 0) {
             mes("You don't have enough inventory space.")
             return
         }
-        for ((currency, price) in costs) {
-            removeCurrency(currency, price * quantity)
+        val count = quantity.toLong() * stock.multiplier
+        if (count > Int.MAX_VALUE) {
+            mes("You don't have enough inventory space.")
+            return
         }
-        invAdd(inv, stock.obj.internalName, quantity * stock.multiplier)
+        val objDebits = ArrayList<Pair<Int, Int>>()
+        for ((currency, price) in costs) {
+            if (currency.varp != null) continue
+            var remaining = price * quantity
+            for (obj in currency.objs) {
+                val take = minOf(remaining, inv.physicalCount(obj.internalName))
+                if (take > 0) {
+                    objDebits += obj.id to take
+                    remaining -= take
+                }
+            }
+            if (remaining > 0) {
+                mes("You don't have enough ${currency.pluralName}.")
+                return
+            }
+        }
+        val result =
+            player.invTransaction(inv) {
+                val image = select(inv)
+                for ((obj, take) in objDebits) {
+                    delete(image, obj, take)
+                }
+                add(image, stock.obj.id, count.toInt())
+            }
+        if (result.failure) {
+            mes("You don't have enough inventory space.")
+            return
+        }
+        for ((currency, price) in costs) {
+            val varp = currency.varp ?: continue
+            VarPlayerIntMapSetter.set(player, varp, player.vars[varp] - price * quantity)
+        }
     }
 
     private fun ProtectedAccess.sell(obj: ItemServerType, requested: Int) {
@@ -81,32 +117,43 @@ class OmnishopScript : PluginScript() {
             mes("You can't sell this item to this shop.")
             return
         }
-        val quantity = minOf(requested, inv.count(obj.internalName))
+        val quantity = minOf(requested, inv.physicalCount(obj.internalName))
         if (quantity == 0) return
-        if (invDel(inv, obj.internalName, quantity).failure) return
-        for ((currency, price) in stock.sellCosts()) {
-            val currencyObj = currency.objs.firstOrNull() ?: continue
-            if (price > 0) invAdd(inv, currencyObj.internalName, price * quantity)
+        val payouts = stock.sellCosts().filter { it.second > 0 }.map { it.first to it.second.toLong() * quantity }
+        for ((currency, amount) in payouts) {
+            val varp = currency.varp
+            val held = if (varp != null) player.vars[varp].toLong() else 0L
+            if (held + amount > Int.MAX_VALUE) {
+                mes("You can't hold any more ${currency.pluralName}.")
+                return
+            }
+        }
+        val objCredits =
+            payouts.mapNotNull { (currency, amount) ->
+                if (currency.varp != null) return@mapNotNull null
+                currency.objs.firstOrNull()?.let { it.id to amount.toInt() }
+            }
+        val result =
+            player.invTransaction(inv) {
+                val image = select(inv)
+                delete(image, obj.id, quantity)
+                for ((currencyObj, amount) in objCredits) {
+                    add(image, currencyObj, amount)
+                }
+            }
+        if (result.failure) {
+            mes("You don't have enough inventory space.")
+            return
+        }
+        for ((currency, amount) in payouts) {
+            val varp = currency.varp ?: continue
+            VarPlayerIntMapSetter.set(player, varp, player.vars[varp] + amount.toInt())
         }
     }
 
     private fun ProtectedAccess.currencyCount(currency: OmnishopCurrency): Int {
-        val varp = currency.varp ?: return currency.objs.sumOf { inv.count(it.internalName) }
+        val varp = currency.varp ?: return currency.objs.sumOf { inv.physicalCount(it.internalName) }
         return player.vars[varp]
-    }
-
-    private fun ProtectedAccess.removeCurrency(currency: OmnishopCurrency, amount: Int) {
-        val varp = currency.varp
-        if (varp != null) {
-            VarPlayerIntMapSetter.set(player, varp, player.vars[varp] - amount)
-            return
-        }
-        var remaining = amount
-        for (obj in currency.objs) {
-            if (remaining == 0) return
-            val take = minOf(remaining, inv.count(obj.internalName))
-            if (take > 0 && invDel(inv, obj.internalName, take).success) remaining -= take
-        }
     }
 
     internal data class InfoArgs(val shop: Int, val index: Int) : IfScriptArgs

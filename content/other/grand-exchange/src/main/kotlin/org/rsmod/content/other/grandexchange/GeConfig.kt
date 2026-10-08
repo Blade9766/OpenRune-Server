@@ -31,8 +31,8 @@ object GeConfig {
     /** Where the world's offer book is written, relative to the server working directory. */
     const val SAVE_PATH = ".data/grand-exchange.json"
 
-    /** Ticks between background saves while there are unsaved changes. */
-    const val SAVE_INTERVAL_TICKS = 50
+    /** Ticks to wait before retrying a failed save. */
+    const val SAVE_RETRY_TICKS = 50
 
     const val COINS = "obj.coins"
     const val BOND = "obj.osrs_bond"

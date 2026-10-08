@@ -7,7 +7,6 @@ import jakarta.inject.Inject
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import kotlin.math.min
 
 /**
  * The world's order book: every player's offer slots, the matching between them, buy-limit
@@ -163,13 +162,14 @@ class GeExchange(private val items: GeItemData, private val clock: () -> Long) {
             }
             val buy = if (offer.type == GeOfferType.Buy) offer else other
             val sell = if (offer.type == GeOfferType.Sell) offer else other
-            var quantity = min(buy.remaining, sell.remaining)
-            quantity = min(quantity, remainingBuyLimit(buy.owner, buy.item))
+            val buyLimit = remainingBuyLimit(buy.owner, buy.item)
+            if (buyLimit <= 0 && buy === offer) {
+                break
+            }
+            // A sell offer's gross proceeds must stay within an Int; the rest stays unfilled.
+            val proceedsCap = (Int.MAX_VALUE - sell.gold) / other.price
+            val quantity = minOf(buy.remaining, sell.remaining, buyLimit, proceedsCap)
             if (quantity <= 0) {
-                if (buy === offer) {
-                    // The new buyer is at their limit; nothing else on the book can help.
-                    break
-                }
                 continue
             }
             trade(buy, sell, quantity, other.price)

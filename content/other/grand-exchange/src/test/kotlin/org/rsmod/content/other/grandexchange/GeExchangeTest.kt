@@ -212,6 +212,19 @@ class GeExchangeTest {
     }
 
     @Test
+    fun `sell proceeds never overflow an int`() {
+        exchange.place(BUYER, "buyer", 0, GeOfferType.Buy, RARE, 1_500_000_000, 1)
+        exchange.place(BUYER, "buyer", 1, GeOfferType.Buy, RARE, 1_500_000_000, 1)
+        val sell = exchange.place(SELLER, "seller", 0, GeOfferType.Sell, RARE, 1, 2)
+
+        assertEquals(1, sell.completed)
+        assertTrue(sell.isActive, "the second item stays unsold rather than overflow the proceeds")
+        assertEquals(1_500_000_000, sell.gold)
+        assertEquals(1_495_000_000, sell.collectCoins)
+        assertTrue(exchange.offer(BUYER, 1)!!.isActive)
+    }
+
+    @Test
     fun `client status encodes type and completion`() {
         val sell = exchange.place(SELLER, "seller", 0, GeOfferType.Sell, LOBSTER, 100, 1)
         assertEquals(10, sell.clientStatus())
