@@ -5,6 +5,7 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest.Companion.AIR_TALISMAN
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest.Companion.RESEARCH_NOTES
@@ -585,6 +586,7 @@ constructor(
         val banked = access.bank.count(obj)
         if (banked > 0) {
             access.invDel(access.bank, obj, banked)
+            player.syncBankAfterDirectWrite()
         }
     }
 }

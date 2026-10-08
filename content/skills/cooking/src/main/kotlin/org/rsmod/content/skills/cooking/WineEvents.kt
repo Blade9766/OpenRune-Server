@@ -10,6 +10,7 @@ import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.script.onPlayerSoftTimer
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.content.skills.openSkillMulti
 import org.rsmod.content.skills.skillMulti
 import org.rsmod.game.entity.Player
@@ -17,7 +18,6 @@ import org.rsmod.game.inv.Inventory
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import skillSuccess
-
 
 private enum class WineKind {
     Normal,
@@ -228,7 +228,10 @@ class WineEvents @Inject constructor() : PluginScript() {
         }
 
         processContainer(packInv)
-        processContainer(bankInv)
+        if (bankInv.count(unfermented) > 0) {
+            processContainer(bankInv)
+            syncBankAfterDirectWrite()
+        }
 
         if (successes > 0) {
             statAdvance("stat.cooking", 200.0 * successes)

@@ -19,6 +19,7 @@ import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpHeld4
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.obj.Obj
@@ -228,6 +229,7 @@ constructor(private val objRepo: ObjRepository, private val protectedAccess: Pro
             }
         }
         player.writeRunePouch(contents)
+        player.syncBankAfterDirectWrite()
         player.mes("You empty the runes from your pouch into your bank.")
     }
 

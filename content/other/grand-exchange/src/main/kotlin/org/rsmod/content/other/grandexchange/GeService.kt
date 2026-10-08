@@ -23,6 +23,7 @@ import org.rsmod.api.player.stopInvTransmit
 import org.rsmod.api.player.ui.ifSetEvents
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.utils.format.formatAmount
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.inv.InvObj
@@ -655,6 +656,9 @@ constructor(
             player.mes(if (toBank) "Your bank is full." else "You don't have enough inventory space.")
             return
         }
+        if (toBank) {
+            player.syncBankAfterDirectWrite()
+        }
         exchange.takeCoins(offer, count)
     }
 
@@ -670,6 +674,7 @@ constructor(
                 player.mes("Your bank is full.")
                 return
             }
+            player.syncBankAfterDirectWrite()
             exchange.takeItems(offer, count)
             return
         }

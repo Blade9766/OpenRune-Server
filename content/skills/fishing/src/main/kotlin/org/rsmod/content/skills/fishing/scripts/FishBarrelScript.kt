@@ -4,7 +4,6 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
-import org.rsmod.api.table.fishing.FishingSpotRow
 import jakarta.inject.Inject
 import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.invtx.invAdd
@@ -22,6 +21,8 @@ import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpHeld4
 import org.rsmod.api.script.onOpHeld5
 import org.rsmod.api.script.onOpHeldU
+import org.rsmod.api.table.fishing.FishingSpotRow
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -71,8 +72,14 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
         val iterator = store.entries.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()
-            player.invAdd(bank, entry.key, entry.value)
-            iterator.remove()
+            if (player.invAdd(bank, entry.key, entry.value).success) {
+                iterator.remove()
+            }
+        }
+        player.syncBankAfterDirectWrite()
+        if (store.isNotEmpty()) {
+            player.mes("Your bank is too full to take everything from the fish barrel.")
+            return
         }
         player.mes("You empty the fish barrel into your bank.")
     }

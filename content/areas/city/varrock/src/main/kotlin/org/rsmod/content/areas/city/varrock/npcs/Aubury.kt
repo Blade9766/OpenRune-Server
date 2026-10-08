@@ -9,6 +9,7 @@ import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.script.onOpNpc4
 import org.rsmod.api.shops.Shops
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest.Companion.RESEARCH_NOTES
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest.Companion.RESEARCH_PACKAGE
@@ -211,6 +212,7 @@ constructor(
             val banked = access.bank.count(RESEARCH_NOTES)
             if (banked > 0) {
                 access.invDel(access.bank, RESEARCH_NOTES, banked)
+                player.syncBankAfterDirectWrite()
             }
             handOverNotes(offerTea = false)
             return

@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.content.interfaces.bank)
     implementation(projects.api.areaChecker)
     implementation(projects.api.death)
     implementation(projects.api.player)

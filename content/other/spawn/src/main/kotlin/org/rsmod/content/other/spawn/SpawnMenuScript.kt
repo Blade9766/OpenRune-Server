@@ -25,6 +25,7 @@ import org.rsmod.api.script.onGameStartup
 import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onIfScriptTrigger
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.game.cheat.Cheat
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
@@ -308,6 +309,9 @@ class SpawnMenuScript @Inject constructor(private val protectedAccess: Protected
         if (completed <= 0) {
             player.mes("You don't have enough $destination space for ${toSpawn.name}.")
             return
+        }
+        if (state.bank) {
+            player.syncBankAfterDirectWrite()
         }
         player.mes("Spawned ${toSpawn.name} x $completed to your $destination.")
     }
