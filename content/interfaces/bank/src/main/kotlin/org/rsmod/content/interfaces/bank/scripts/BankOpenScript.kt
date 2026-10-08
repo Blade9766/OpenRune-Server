@@ -1,6 +1,9 @@
 package org.rsmod.content.interfaces.bank.scripts
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.definition.type.widget.IfEvent
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.weapon.WeaponSpeeds
 import org.rsmod.api.config.constants
@@ -13,9 +16,11 @@ import org.rsmod.api.player.stopInvTransmit
 import org.rsmod.api.player.ui.ifClose
 import org.rsmod.api.player.ui.ifSetEvents
 import org.rsmod.api.player.ui.ifSetText
+import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfOpen
+import org.rsmod.content.interfaces.bank.BankTab
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.interfaces.bank.configs.bank_comsubs
 import org.rsmod.content.interfaces.bank.configs.bank_constants
@@ -52,6 +57,7 @@ constructor(
             ifClose(eventBus)
             return
         }
+        coverStrayObjsWithMainTab()
         if (!disableIfEvents) {
             val capacityIncrease = bank_constants.purchasable_capacity
             withdrawCert = false
@@ -69,6 +75,21 @@ constructor(
         }
 
         startInvTransmit(bank)
+    }
+
+    /**
+     * Objs added straight into the bank inv (servant errands, the grand exchange, pouches) land
+     * past the tracked tab sizes, where withdrawing them finds no tab; the main tab is grown over
+     * them so the bank stays consistent.
+     */
+    private fun Player.coverStrayObjsWithMainTab() {
+        val lastOccupied = bank.indexOfLast { it != null }
+        val tracked = BankTab.entries.sumOf { vars[it.sizeVarBit] }
+        if (lastOccupied < tracked) {
+            return
+        }
+        val main = checkNotNull(ServerCacheManager.getVarbit(BankTab.Main.sizeVarBit.asRSCM(RSCMType.VARBIT)))
+        VarPlayerIntMapSetter.set(this, main, vars[BankTab.Main.sizeVarBit] + lastOccupied + 1 - tracked)
     }
 
     private fun Player.onBankClose() {

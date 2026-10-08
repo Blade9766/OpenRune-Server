@@ -13,6 +13,9 @@ import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.constructionLvl
 import org.rsmod.api.player.vars.intVarBit
+import org.rsmod.content.interfaces.bank.BankTab
+import org.rsmod.content.interfaces.bank.scripts.BankInvScript
+import org.rsmod.content.interfaces.bank.selectedTab
 import org.rsmod.content.quest.manager.menu
 import org.rsmod.content.skills.construction.data.Kitchen
 import org.rsmod.content.skills.construction.data.PlankType
@@ -42,6 +45,7 @@ constructor(
     private val registry: HouseRegistry,
     private val store: HouseStore,
     private val players: PlayerList,
+    private val bankInv: BankInvScript,
 ) {
     sealed class Errand {
         data class Fetch(val obj: String, val count: Int) : Errand()
@@ -472,17 +476,34 @@ constructor(
     }
 
     private fun ProtectedAccess.deposit(errand: Errand.Deposit): Boolean {
-        val count = minOf(errand.count, inv.physicalCount(errand.obj))
         val id = errand.obj.asRSCM(RSCMType.OBJ)
-        val slot = inv.indexOfFirst { it?.id == id }
-        if (count <= 0 || slot < 0) {
-            return false
+        val before = inv.physicalCount(errand.obj)
+        var left = minOf(errand.count, before)
+        intoMainTab {
+            for (slot in inv.indices) {
+                val obj = inv[slot]?.takeIf { it.id == id } ?: continue
+                if (left <= 0) {
+                    break
+                }
+                val take = minOf(left, obj.count)
+                if (!with(bankInv) { invDeposit(slot, take, inv) }) {
+                    break
+                }
+                left -= take
+            }
         }
-        if (invMoveFromSlot(inv, bank, slot, count, uncert = true).failure) {
-            mes("Your bank is too full for your servant to deposit that.")
-            return false
+        return inv.physicalCount(errand.obj) < before
+    }
+
+    /** A servant banks into the main tab whatever tab the owner last had open. */
+    private inline fun ProtectedAccess.intoMainTab(block: () -> Unit) {
+        val previous = selectedTab
+        selectedTab = BankTab.Main
+        try {
+            block()
+        } finally {
+            selectedTab = previous
         }
-        return true
     }
 
     /** The servant is back from [errand]: settle it and hand over whatever it brought. */
@@ -513,7 +534,8 @@ constructor(
                 when {
                     invTotal(bank, errand.obj) <= 0 || slot < 0 -> "You do not have any of those items in your bank."
                     count <= 0 -> "You have no room for the items."
-                    invMoveFromSlot(bank, inv, slot, minOf(count, bank[slot]?.count ?: 0)).failure -> "I could not fetch those items."
+                    !with(bankInv) { invWithdraw(slot, minOf(count, bank[slot]?.count ?: 0), inv) } ->
+                        "I could not fetch those items."
                     else -> null
                 }
             }

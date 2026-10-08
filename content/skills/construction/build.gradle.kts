@@ -22,6 +22,7 @@ dependencies {
     implementation(projects.api.mechanics.toxins)
     implementation(projects.content.other.pets)
     implementation(projects.content.interfaces.emotes)
+    implementation(projects.content.interfaces.bank)
     implementation(projects.api.combat.combatWeapon)
     implementation(projects.api.combatMaxhit)
     implementation(projects.api.invtx)

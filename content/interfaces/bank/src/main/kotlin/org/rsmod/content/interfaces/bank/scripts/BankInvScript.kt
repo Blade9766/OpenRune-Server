@@ -333,6 +333,18 @@ constructor(
         }
     }
 
+    /** Withdraws up to [count] of the obj in bank [slot] into [into], keeping the tab sizes in step. */
+    public fun ProtectedAccess.invWithdraw(slot: Int, count: Int, into: Inventory): Boolean {
+        val result = invMoveFromSlot(from = bank, into = into, fromSlot = slot, count = count, strict = false)[0]
+        if (!result.isOk()) {
+            return false
+        }
+        if (bank[slot] == null) {
+            notifySlotUpdate(slot)
+        }
+        return true
+    }
+
     public fun ProtectedAccess.depositInv() {
         if (inv.isEmpty()) {
             mes("You have nothing to deposit.")
