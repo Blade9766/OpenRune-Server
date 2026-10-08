@@ -2,10 +2,12 @@ package org.rsmod.content.skills.runecrafting.essencepouch
 
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM
-import dev.openrune.rscm.RSCMType
 import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
+import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.baseRunecraftingLvl
+import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld2
 import org.rsmod.api.script.onOpHeld3
@@ -13,7 +15,7 @@ import org.rsmod.game.inv.isType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class EssencePouchScript : PluginScript() {
+class EssencePouchScript @Inject constructor(private val objRepo: ObjRepository) : PluginScript() {
 
     override fun ScriptContext.startup() {
         EssencePouch.Tier.entries.flatMap { it.items.toList() }.forEach { pouch ->
@@ -95,9 +97,14 @@ class EssencePouchScript : PluginScript() {
         if (capacityAfter <= 0) {
             val itemType = RSCM.getReverseMapping(RSCMType.OBJ, pouchObj.id)
             val name = ServerCacheManager.getItem(itemType.asRSCM(RSCMType.OBJ))?.name?.lowercase() ?: "pouch"
+            val stored = EssencePouch.storedAmount(player, tier)
+            val storedType = EssencePouch.storedEssenceTypeName(player, tier)
             mes("Your $name has disintegrated.")
             EssencePouch.clearStorage(player, tier)
             invDel(inv, itemType, 1, slot = slot)
+            if (stored > 0 && storedType != null) {
+                invAddOrDrop(objRepo, storedType, stored)
+            }
             return
         }
 

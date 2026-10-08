@@ -14,6 +14,7 @@ import org.rsmod.content.skills.runecrafting.items.BloodEssence
 import org.rsmod.content.skills.runecrafting.items.BloodEssence.applyBloodRuneBonus
 import org.rsmod.content.skills.runecrafting.items.RaimentsOfTheEye.applyBonus
 import org.rsmod.content.skills.runecrafting.magic.MagicImbue.isActive
+import org.rsmod.game.inv.isType
 
 object RunecraftAction {
     private const val RUNECRAFT_WAIT_CYCLE = 3
@@ -28,8 +29,12 @@ object RunecraftAction {
     private const val CORE_RUNE_MULTIPLIER = 11
     private const val CORE_XP_MULTIPLIER = 10
     private const val ASTRAL_RUNE = "obj.astralrune"
+    private const val SOUL_RUNE = "obj.soulrune"
+    private const val AETHER_CATALYST = "obj.cosmic_soul_catalyst"
+    private const val COMBINATION_EXTRACT = "obj.scar_extract_twisted"
     private const val LUNAR_DIPLOMACY_STAGE = "varbit.lunar_quest_main"
     private const val LUNAR_DIPLOMACY_COMPLETE = 190
+    private const val NO_SPACE_MESSAGE = "You don't have enough inventory space."
 
     private val runecraftingExtract = mapOf(
         "obj.scar_extract_warped" to 250,
@@ -73,20 +78,15 @@ object RunecraftAction {
         craftStandardEssence(rune, xpMods, validEssence, ouraniaAltar)
     }
 
-    private suspend fun ProtectedAccess.craftDaeyaltEssence(
+    private fun ProtectedAccess.craftDaeyaltEssence(
         rune: RunecraftingRunesRow,
         xpMods: XpModifiers,
         daeyaltEssCount: Int,
         ouraniaAltar: Boolean,
     ) {
-        if (invDel(inv, DAEYALT_ESSENCE, daeyaltEssCount).failure) {
-            return
-        }
-
         val level = player.baseRunecraftingLvl
         val baseMultiplier = getBonusMultiplier(rune.output.internalName, level).toInt()
-        val baseProduced = daeyaltEssCount * baseMultiplier
-        val produced = applyBonus(baseProduced)
+        val produced = applyBonus(daeyaltEssCount * baseMultiplier)
 
         val xpMultiplier =
             if (ouraniaAltar) {
@@ -97,15 +97,15 @@ object RunecraftAction {
 
         finishEssenceCraft(
             rune,
-            daeyaltEssCount,
-            baseProduced * rune.xp * xpMultiplier,
+            mapOf(DAEYALT_ESSENCE to daeyaltEssCount),
+            daeyaltEssCount * rune.xpPerEssence * xpMultiplier,
             xpMods,
             ouraniaAltar,
             produced,
         )
     }
 
-    private suspend fun ProtectedAccess.craftStandardEssence(
+    private fun ProtectedAccess.craftStandardEssence(
         rune: RunecraftingRunesRow,
         xpMods: XpModifiers,
         validEssence: Set<String>,
@@ -130,70 +130,64 @@ object RunecraftAction {
             return
         }
 
-        if (pureEssCount > 0 && invDel(inv, PURE_ESSENCE, pureEssCount).failure) {
-            return
-        }
-        if (guardianEssCount > 0 && invDel(inv, GUARDIAN_ESSENCE, guardianEssCount).failure) {
-            return
-        }
-        if (darkEssCount > 0 && invDel(inv, DARK_ESSENCE, darkEssCount).failure) {
-            return
-        }
-        if (runeEssCount > 0 && invDel(inv, RUNE_ESSENCE, runeEssCount).failure) {
-            return
-        }
+        val essence =
+            linkedMapOf(
+                PURE_ESSENCE to pureEssCount,
+                GUARDIAN_ESSENCE to guardianEssCount,
+                DARK_ESSENCE to darkEssCount,
+                RUNE_ESSENCE to runeEssCount,
+            )
 
         val level = player.baseRunecraftingLvl
         val baseMultiplier = getBonusMultiplier(rune.output.internalName, level).toInt()
-
-        val basePure = pureEssCount * baseMultiplier
-        val baseGuardian = guardianEssCount * baseMultiplier
-        val baseDark = darkEssCount * baseMultiplier
-        val baseRune = runeEssCount * baseMultiplier
-        val totalXp = (basePure + baseGuardian + baseDark + baseRune) * rune.xp
+        val produced = essence.values.sumOf { count -> applyBonus(count * baseMultiplier) }
         val xpMultiplier = if (ouraniaAltar) OURANIA_XP_MULTIPLIER else 1.0
-        val produced =
-            applyBonus(basePure) +
-                applyBonus(baseGuardian) +
-                applyBonus(baseDark) +
-                applyBonus(baseRune)
 
         finishEssenceCraft(
             rune,
-            totalEssence,
-            totalXp * xpMultiplier,
+            essence,
+            totalEssence * rune.xpPerEssence * xpMultiplier,
             xpMods,
             ouraniaAltar,
             produced,
         )
     }
 
-    private suspend fun ProtectedAccess.finishEssenceCraft(
+    private fun ProtectedAccess.finishEssenceCraft(
         rune: RunecraftingRunesRow,
-        essenceConsumed: Int,
+        essence: Map<String, Int>,
         xp: Double,
         xpMods: XpModifiers,
         ouraniaAltar: Boolean,
-        producedRunes: Int? = null,
+        producedRunes: Int,
     ) {
-        val level = player.baseRunecraftingLvl
-        val baseMultiplier = getBonusMultiplier(rune.output.internalName, level).toInt()
-        var totalRunes = producedRunes ?: applyBonus(essenceConsumed * baseMultiplier)
+        val output = rune.output.internalName
+        val essenceConsumed = essence.values.sum()
+        val extract = rune.extract.internalName
+        val extractBonus = extractBonus(extract)
+        val bloodBonusCap =
+            if (!ouraniaAltar && output == BloodEssence.BLOOD_RUNE) essenceConsumed else 0
 
-        if (inv.contains(rune.extract.internalName)) {
-            totalRunes += runecraftingExtract[rune.extract.internalName] ?: 0
+        val maxRunes = producedRunes.toLong() + extractBonus + bloodBonusCap
+        if (!canFitRunes(mapOf(output to maxRunes), freedSlots(essence))) {
+            mes(NO_SPACE_MESSAGE)
+            return
+        }
+        if (!removeAll(essence)) {
+            return
         }
 
-        if (
-            !ouraniaAltar &&
-            rune.output.internalName == BloodEssence.BLOOD_RUNE
-        ) {
-            applyBloodRuneBonus(essenceConsumed)?.let { bonus ->
-                totalRunes += bonus
-            }
+        var totalRunes = producedRunes
+        if (extractBonus > 0 && invDel(inv, extract, 1).success) {
+            totalRunes += extractBonus
+        }
+        if (bloodBonusCap > 0) {
+            applyBloodRuneBonus(essenceConsumed)?.let { bonus -> totalRunes += bonus }
         }
 
-        invAdd(inv, rune.output.internalName, totalRunes)
+        if (totalRunes > 0 && invAdd(inv, output, totalRunes).failure) {
+            return
+        }
         advanceRunecraftingXp(xp, xpMods)
     }
 
@@ -250,12 +244,12 @@ object RunecraftAction {
 
         preCraft()
 
-        val essenceCount = countPureLikeEssence()
-        if (removePureLikeEssence(essenceCount).not()) {
-            return
-        }
-
-        craftOuraniaBatch(essenceCount, xpMultiplier = OURANIA_XP_MULTIPLIER, xpMods = xpMods)
+        val essence =
+            linkedMapOf(
+                PURE_ESSENCE to inv.count(PURE_ESSENCE),
+                GUARDIAN_ESSENCE to inv.count(GUARDIAN_ESSENCE),
+            )
+        craftOuraniaBatch(essence, xpMultiplier = OURANIA_XP_MULTIPLIER, xpMods = xpMods)
     }
 
     private suspend fun ProtectedAccess.craftOuraniaDaeyalt(
@@ -263,27 +257,49 @@ object RunecraftAction {
         daeyaltCount: Int,
     ) {
         preCraft()
-        if (invDel(inv, DAEYALT_ESSENCE, daeyaltCount).failure) {
-            return
-        }
         val xpMultiplier = DAEYALT_XP_MULTIPLIER * OURANIA_XP_MULTIPLIER
-        craftOuraniaBatch(daeyaltCount, xpMultiplier = xpMultiplier, xpMods = xpMods)
+        craftOuraniaBatch(
+            mapOf(DAEYALT_ESSENCE to daeyaltCount),
+            xpMultiplier = xpMultiplier,
+            xpMods = xpMods,
+        )
     }
 
-    private suspend fun ProtectedAccess.craftOuraniaBatch(
-        essenceCount: Int,
+    private fun ProtectedAccess.craftOuraniaBatch(
+        essence: Map<String, Int>,
         xpMultiplier: Double,
         xpMods: XpModifiers,
     ) {
+        val essenceCount = essence.values.sum()
+        if (essenceCount <= 0) {
+            return
+        }
+
         val level = player.baseRunecraftingLvl
-        var totalXp = 0.0
+        val produced = linkedMapOf<String, Int>()
+        val xpByRune = mutableMapOf<String, Double>()
 
         repeat(essenceCount) {
             val rune = rollOuraniaRune(level)
-            val multiplier = getBonusMultiplier(rune.output.internalName, level).toInt()
-            val produced = applyBonus(multiplier)
-            totalXp += rune.xp * xpMultiplier * multiplier
-            invAdd(inv, rune.output.internalName, produced)
+            val output = rune.output.internalName
+            val multiplier = getBonusMultiplier(output, level).toInt()
+            produced[output] = (produced[output] ?: 0) + applyBonus(multiplier)
+            xpByRune[output] = (xpByRune[output] ?: 0.0) + rune.xpPerEssence * xpMultiplier
+        }
+
+        if (!canFitRunes(produced.mapValues { it.value.toLong() }, freedSlots(essence))) {
+            mes(NO_SPACE_MESSAGE)
+            return
+        }
+        if (!removeAll(essence)) {
+            return
+        }
+
+        var totalXp = 0.0
+        for ((output, amount) in produced) {
+            if (invAdd(inv, output, amount).success) {
+                totalXp += xpByRune[output] ?: 0.0
+            }
         }
 
         advanceRunecraftingXp(totalXp, xpMods)
@@ -308,14 +324,21 @@ object RunecraftAction {
 
         preCraft()
 
-        if (invDel(inv, coreItem, 1).failure) {
+        val output = rune.output.internalName
+        val multiplier = getBonusMultiplier(output, level).toInt()
+        val produced = applyBonus(CORE_RUNE_MULTIPLIER * multiplier)
+        if (!canFitRunes(mapOf(output to produced.toLong()), freedSlots(mapOf(coreItem to 1)))) {
+            mes(NO_SPACE_MESSAGE)
             return
         }
 
-        val multiplier = getBonusMultiplier(rune.output.internalName, level).toInt()
-        val produced = applyBonus(CORE_RUNE_MULTIPLIER * multiplier)
-        invAdd(inv, rune.output.internalName, produced)
-        advanceRunecraftingXp(rune.xp * CORE_XP_MULTIPLIER.toDouble(), xpMods)
+        if (invDel(inv, coreItem, 1).failure) {
+            return
+        }
+        if (invAdd(inv, output, produced).failure) {
+            return
+        }
+        advanceRunecraftingXp(rune.xpPerEssence * CORE_XP_MULTIPLIER, xpMods)
     }
 
     suspend fun ProtectedAccess.craftAether(xpMods: XpModifiers) {
@@ -331,37 +354,47 @@ object RunecraftAction {
         }
 
         val guardianCount = inv.count(GUARDIAN_ESSENCE)
-        val soulCount = inv.count("obj.soulrune")
+        val soulCount = inv.count(SOUL_RUNE)
         val craftCount = minOf(guardianCount, soulCount)
         if (craftCount <= 0) {
             mes("You need guardian essence and soul runes to craft aether runes.")
             return
         }
 
-        if (!inv.contains("obj.cosmic_soul_catalyst")) {
+        if (!inv.contains(AETHER_CATALYST)) {
             mes("You need an aether catalyst to craft aether runes.")
             return
         }
 
         preCraft()
 
-        if (invDel(inv, "obj.cosmic_soul_catalyst", 1).failure) {
+        val output = aetherRune.output.internalName
+        val extract = aetherRune.extract.internalName
+        val extractBonus = extractBonus(extract)
+        val produced = applyBonus(craftCount)
+        val consumed =
+            linkedMapOf(
+                AETHER_CATALYST to 1,
+                GUARDIAN_ESSENCE to craftCount,
+                SOUL_RUNE to craftCount,
+            )
+        if (!canFitRunes(mapOf(output to produced.toLong() + extractBonus), freedSlots(consumed))) {
+            mes(NO_SPACE_MESSAGE)
             return
         }
-        if (invDel(inv, GUARDIAN_ESSENCE, craftCount).failure) {
-            return
-        }
-        if (invDel(inv, "obj.soulrune", craftCount).failure) {
+        if (!removeAll(consumed)) {
             return
         }
 
-        var totalRunes = applyBonus(craftCount)
-        if (inv.contains("obj.scar_extract_scarred")) {
-            totalRunes += runecraftingExtract["obj.scar_extract_scarred"] ?: 0
+        var totalRunes = produced
+        if (extractBonus > 0 && invDel(inv, extract, 1).success) {
+            totalRunes += extractBonus
         }
 
-        invAdd(inv, aetherRune.output.internalName, totalRunes)
-        advanceRunecraftingXp(craftCount * aetherRune.xp.toDouble(), xpMods)
+        if (invAdd(inv, output, totalRunes).failure) {
+            return
+        }
+        advanceRunecraftingXp(craftCount * aetherRune.xpPerEssence, xpMods)
     }
 
     private fun rollOuraniaRune(level: Int): RunecraftingRunesRow {
@@ -419,32 +452,42 @@ object RunecraftAction {
         }
 
         val usingMagicImbue = player.isActive()
-        if (!usingMagicImbue && invDel(inv, talisman.internalName, 1).failure) {
+        val pureTaken = minOf(inv.count(PURE_ESSENCE), craftCount)
+        val consumed = linkedMapOf<String, Int>()
+        if (!usingMagicImbue) {
+            consumed[talisman.internalName] = 1
+        }
+        consumed[PURE_ESSENCE] = pureTaken
+        consumed[GUARDIAN_ESSENCE] = craftCount - pureTaken
+        consumed[input.internalName] = craftCount
+
+        val extractBonus = extractBonus(COMBINATION_EXTRACT)
+        val maxRunes = craftCount.toLong() + extractBonus
+        if (!canFitRunes(mapOf(output.internalName to maxRunes), freedSlots(consumed))) {
+            mes(NO_SPACE_MESSAGE)
             return
         }
-        if (removePureLikeEssence(craftCount).not()) {
-            return
-        }
-        val removedRunes = invDel(inv, input.internalName, craftCount)
-        if (removedRunes.failure) {
+        if (!removeAll(consumed)) {
             return
         }
 
         val wearingBinding = player.isWearing()
-        val removedCount = removedRunes.completed()
-        var finalCount =
+        val craftedCount =
             if (wearingBinding) {
-                removedCount
+                craftCount
             } else {
-                (1..removedCount).count { random.of(100) < 50 }
+                (1..craftCount).count { random.of(100) < 50 }
             }
 
-        if (inv.contains("obj.scar_extract_twisted")) {
-            finalCount += runecraftingExtract["obj.scar_extract_twisted"] ?: 0
+        var totalRunes = craftedCount
+        if (extractBonus > 0 && invDel(inv, COMBINATION_EXTRACT, 1).success) {
+            totalRunes += extractBonus
         }
 
-        invAdd(inv, output.internalName, finalCount)
-        advanceRunecraftingXp(finalCount * (xp.toDouble() / 10.0), xpMods)
+        if (totalRunes > 0 && invAdd(inv, output.internalName, totalRunes).failure) {
+            return
+        }
+        advanceRunecraftingXp(craftedCount * (xp.toDouble() / 10.0), xpMods)
 
         if (wearingBinding) {
             consumeChargeAfterCombo()
@@ -455,31 +498,62 @@ object RunecraftAction {
         statAdvance("stat.runecrafting", baseXp * xpMods.get(player, "stat.runecrafting"))
     }
 
+    private val RunecraftingRunesRow.xpPerEssence: Double
+        get() = xp / 10.0
+
     private fun ProtectedAccess.countPureLikeEssence(): Int =
         inv.count(PURE_ESSENCE) + inv.count(GUARDIAN_ESSENCE)
 
     private fun ProtectedAccess.hasPureLikeEssence(): Boolean = countPureLikeEssence() > 0
 
-    private fun ProtectedAccess.removePureLikeEssence(amount: Int): Boolean {
-        var remaining = amount
-        if (remaining <= 0) {
-            return true
-        }
+    private fun ProtectedAccess.extractBonus(extract: String): Int =
+        if (inv.contains(extract)) runecraftingExtract[extract] ?: 0 else 0
 
-        val pureAvailable = inv.count(PURE_ESSENCE)
-        if (pureAvailable > 0) {
-            val take = minOf(pureAvailable, remaining)
-            if (invDel(inv, PURE_ESSENCE, take).failure) {
+    private fun ProtectedAccess.removeAll(items: Map<String, Int>): Boolean {
+        for ((item, amount) in items) {
+            if (amount > 0 && invDel(inv, item, amount).failure) {
                 return false
             }
-            remaining -= take
         }
-
-        if (remaining > 0 && invDel(inv, GUARDIAN_ESSENCE, remaining).failure) {
-            return false
-        }
-
         return true
+    }
+
+    private fun ProtectedAccess.freedSlots(items: Map<String, Int>): Int {
+        var freed = 0
+        for ((item, amount) in items) {
+            var remaining = amount
+            for (obj in inv) {
+                if (remaining <= 0) {
+                    break
+                }
+                if (obj == null || !obj.isType(item)) {
+                    continue
+                }
+                if (obj.count > remaining) {
+                    break
+                }
+                remaining -= obj.count
+                freed++
+            }
+        }
+        return freed
+    }
+
+    private fun ProtectedAccess.canFitRunes(outputs: Map<String, Long>, freedSlots: Int): Boolean {
+        var slotsNeeded = 0
+        for ((output, amount) in outputs) {
+            if (amount <= 0) {
+                continue
+            }
+            val existing = inv.physicalCount(output)
+            if (existing + amount > Int.MAX_VALUE) {
+                return false
+            }
+            if (existing == 0) {
+                slotsNeeded++
+            }
+        }
+        return slotsNeeded <= inv.freeSpace() + freedSlots
     }
 
     private suspend fun ProtectedAccess.canCraftCombo(
