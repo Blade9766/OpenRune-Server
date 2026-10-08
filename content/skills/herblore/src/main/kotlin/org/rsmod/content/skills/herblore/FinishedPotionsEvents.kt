@@ -106,15 +106,13 @@ class FinishedPotionsEvents @Inject constructor(private val random: GameRandom) 
 
     private suspend fun ProtectedAccess.processFinishedTick(task: FinishedPotionTask) {
         val potion = task.potion
-        val brewResult = AmuletOfChemistry.rollBrewOutput(player, random, potion)
-        val output = brewResult.output
 
         if (!meetsStatReqs(potion.statReq)) {
             resetAnim()
             return
         }
 
-        if (!potion.hasRequiredMaterials(inv) || (inv.freeSpace() < 1 && !inv.contains(output))) {
+        if (!potion.hasRequiredMaterials(inv)) {
             resetAnim()
             return
         }
@@ -174,7 +172,8 @@ class FinishedPotionsEvents @Inject constructor(private val random: GameRandom) 
             return
         }
 
-        if (invAdd(inv, output, 1).failure) {
+        val brewResult = AmuletOfChemistry.rollBrewOutput(player, random, potion)
+        if (invAdd(inv, brewResult.output, 1).failure) {
             removed.forEach { (item, amount) ->
                 if (amount > 0) {
                     invAdd(inv, item, amount)
@@ -197,12 +196,18 @@ class FinishedPotionsEvents @Inject constructor(private val random: GameRandom) 
         mes("You mix the ${itemForMessage.name.lowercase()} into your potion.")
 
         if (brewResult.extraDoseApplied) {
-            mes("Your amulet of chemistry helps you create an extra dose.")
-        }
-
-        if (brewResult.crumbled) {
-            mes("Your amulet of chemistry crumbles to dust.")
-            if (player.shouldStopBrewingOnChemistryCrumble()) {
+            val imbued = AmuletOfChemistry.isImbued(player)
+            val name = if (imbued) "alchemist's amulet" else "amulet of chemistry"
+            mes("Your $name helps you create an extra dose.")
+            val depleted = AmuletOfChemistry.consumeCharge(player)
+            if (depleted) {
+                if (imbued) {
+                    mes("Your alchemist's amulet has run out of charges.")
+                } else {
+                    mes("Your amulet of chemistry crumbles to dust.")
+                }
+            }
+            if (depleted && player.shouldStopBrewingOnChemistryCrumble()) {
                 resetAnim()
                 return
             }

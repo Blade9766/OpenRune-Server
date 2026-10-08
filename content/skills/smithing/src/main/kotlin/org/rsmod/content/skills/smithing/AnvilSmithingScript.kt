@@ -183,7 +183,10 @@ class AnvilSmithingScript @Inject constructor(
             return
         }
 
-        performSmith(task.meta)
+        if (!performSmith(task.meta)) {
+            resetAnim()
+            return
+        }
 
         val completed = task.completed + 1
         if (completed >= task.amount) {
@@ -204,19 +207,22 @@ class AnvilSmithingScript @Inject constructor(
         )
     }
 
-    private fun ProtectedAccess.performSmith(meta: SmithingProductMeta) {
-        val barRemoved =
-            invDel(inv, meta.bar.output.internalName, meta.barCount, strict = true).success
-        if (!barRemoved) {
-            resetAnim()
-            return
+    private fun ProtectedAccess.performSmith(meta: SmithingProductMeta): Boolean {
+        val bar = meta.bar.output.internalName
+        if (invDel(inv, bar, meta.barCount, strict = true).failure) {
+            return false
         }
 
-        if (invAdd(inv, meta.product.internalName, meta.numProduced).success) {
-            spam(forgedMessage(meta))
-            val xp = meta.barCount * meta.bar.smithxp * xpMods.get(player, "stat.smithing")
-            statAdvance("stat.smithing", xp.toDouble())
+        if (invAdd(inv, meta.product.internalName, meta.numProduced).failure) {
+            invAdd(inv, bar, meta.barCount)
+            mes("You don't have enough inventory space to do that.")
+            return false
         }
+
+        spam(forgedMessage(meta))
+        val xp = meta.barCount * meta.bar.smithxp * xpMods.get(player, "stat.smithing")
+        statAdvance("stat.smithing", xp.toDouble())
+        return true
     }
 
     private fun forgedMessage(meta: SmithingProductMeta): String {

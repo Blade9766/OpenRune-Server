@@ -6,10 +6,16 @@ cooking_ales =65530
 cooking_wine_ferment =15
 cooking_zamorak_wine_ferment =14
 
+[gamevals.varp]
+brewing_ferment_start_1 =65316
+brewing_ferment_start_2 =65317
+brewing_ferment_start_3 =65318
+brewing_ferment_start_4 =65319
+
 [gamevals.queue]
 cooking_cook =65535
 wine_mix =65534
-brewing_ferment =65533
+cooking_dough_make =65500
 
 [gamevals.dbrow]
 cooking_shrimp =65414

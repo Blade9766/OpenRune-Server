@@ -1319,3 +1319,27 @@ id = "varp.dom_loot_claimed"
 scope = "Temp"
 transmit = "Never"
 
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_3"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_4"
+scope = "Perm"
+transmit = "Never"
+

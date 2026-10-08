@@ -3,6 +3,7 @@ package org.rsmod.content.skills.cooking
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.cookingLvl
+import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onOpContentLoc1
 import org.rsmod.api.script.onOpContentMixedLocU
 import org.rsmod.api.script.onOpLoc1
@@ -16,12 +17,14 @@ import org.rsmod.content.skills.Material
 import org.rsmod.content.skills.SkillMultiConfig
 import org.rsmod.content.skills.SkillMultiEntry
 import org.rsmod.content.skills.openSkillMulti
+import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import skillSuccess
 
 class CookingEvents @Inject constructor(
     private val xpMods: XpModifiers,
+    private val locRepo: LocRepository,
 ) : PluginScript() {
 
     private val foods = CookingFoodsRow.all()
@@ -43,7 +46,7 @@ class CookingEvents @Inject constructor(
     )
 
     private sealed class CookingSurface {
-        data class Fire(val locInternal: String) : CookingSurface()
+        data class Fire(val locInternal: String, val coords: CoordGrid) : CookingSurface()
 
         data class Range(val rangeType: RangeType, val locInternal: String) : CookingSurface()
     }
@@ -53,7 +56,7 @@ class CookingEvents @Inject constructor(
         foods.forEach { food ->
             fireAndCamp.forEach { loc ->
                 onOpLocU(loc, food.raw.internalName) {
-                    cookFood(food, CookingSurface.Fire(loc))
+                    cookFood(food, CookingSurface.Fire(loc, it.loc.coords))
                 }
             }
         }
@@ -68,7 +71,7 @@ class CookingEvents @Inject constructor(
 
         fires.forEach { loc ->
             onOpLoc1(loc) {
-                openCookingMenu(CookingSurface.Fire(it.type.internalName))
+                openCookingMenu(CookingSurface.Fire(it.type.internalName, it.loc.coords))
             }
         }
         rangeTypeByContent.forEach { (content, rangeType) ->
@@ -192,6 +195,11 @@ class CookingEvents @Inject constructor(
 
         if (!inv.contains(food.raw.internalName)) return
 
+        if (!surfaceExists(task.surface)) {
+            resetAnim()
+            return
+        }
+
         if (player.cookingLvl < food.level) {
             mes("You need a Cooking level of ${food.level} to cook ${food.raw.name}.")
             return
@@ -205,6 +213,12 @@ class CookingEvents @Inject constructor(
             weakQueue("queue.cooking_cook", 4, CookTask(food, task.surface, task.amount, cooked))
         }
     }
+
+    private fun surfaceExists(surface: CookingSurface): Boolean =
+        when (surface) {
+            is CookingSurface.Fire -> locRepo.findLoc(surface.coords, surface.locInternal)
+            is CookingSurface.Range -> true
+        }
 
     private fun ProtectedAccess.applyCook(food: CookingFoodsRow, surface: CookingSurface) {
         val burned = isBurned(food, surface)
