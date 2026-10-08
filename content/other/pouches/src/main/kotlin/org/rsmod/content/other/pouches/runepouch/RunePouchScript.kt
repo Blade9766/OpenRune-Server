@@ -19,6 +19,7 @@ import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpHeld4
+import org.rsmod.api.script.onOpHeldU
 import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
@@ -47,6 +48,9 @@ constructor(private val objRepo: ObjRepository, private val protectedAccess: Pro
             onOpHeld1(pouch) { openPouch() }
             onOpHeld4(pouch) { emptyPouch() }
             onEvent<HeldBanksideEvents.Type>(pouch.asRSCM(RSCMType.OBJ)) { banksideOp(player, op) }
+            for (rune in RunePouchRunes.all) {
+                onOpHeldU(pouch, rune.name) { storeRune(rune, Int.MAX_VALUE) }
+            }
         }
         onOpHeld3(RunePouches.DIVINE) { revertDivine(it.slot) }
 
@@ -94,8 +98,13 @@ constructor(private val objRepo: ObjRepository, private val protectedAccess: Pro
         if (current == null || current.id != obj.id) {
             return
         }
+        storeRune(rune, amount)
+    }
+
+    private fun ProtectedAccess.storeRune(rune: RunePouchRunes.Rune, amount: Int) {
+        val slots = player.runePouchSlots() ?: return
         val contents = player.readRunePouch(slots)
-        val carried = inv.objs.sumOf { if (it != null && it.id == obj.id) it.count else 0 }
+        val carried = inv.objs.sumOf { if (it != null && it.id == rune.id) it.count else 0 }
         val stored = contents.add(rune.compactId, minOf(amount, carried))
         if (stored == 0) {
             val message =

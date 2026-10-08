@@ -51,6 +51,9 @@ object RunePouchRunes {
         }
     }
 
+    val all: List<Rune>
+        get() = runes
+
     private val byObjId: Map<Int, Rune> by lazy { runes.associateBy { it.id } }
     private val byCompactId: Map<Int, Rune> by lazy { runes.associateBy { it.compactId } }
 
