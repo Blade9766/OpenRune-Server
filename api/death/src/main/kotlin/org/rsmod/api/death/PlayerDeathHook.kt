@@ -62,6 +62,9 @@ public interface PlayerDeathHook {
      * Hooks are asked in descending priority and the first non-null handling wins. Activities
      * with their own death rules (safe minigames) sit above [PRIORITY_DEFAULT]; the catch-all
      * standard handling sits at [PRIORITY_FALLBACK] so it can never shadow them.
+     *
+     * [handleDeath] must be free of side effects: it also builds the Items Kept on Death preview.
+     * Work that changes the player belongs in [PlayerDeathItemHook].
      */
     public val priority: Int
         get() = PRIORITY_DEFAULT

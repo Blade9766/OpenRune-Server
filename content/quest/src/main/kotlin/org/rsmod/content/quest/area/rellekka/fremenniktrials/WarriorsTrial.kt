@@ -688,6 +688,9 @@ constructor(
         return NpcAttackValidateResult.Pass
     }
 
+    override val priority: Int
+        get() = PlayerDeathHook.PRIORITY_SAFE_ACTIVITY
+
     override fun handleDeath(context: PlayerDeathContext): PlayerDeathHandling? {
         if (!WarriorsTrial.isInArena(context.coords)) {
             return null
