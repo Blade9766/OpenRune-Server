@@ -134,6 +134,16 @@ constructor(
             dropDuration = dropDuration,
         )
 
+    /**
+     * Removes [count] of [weaponType] from the `righthand` slot with no chance of it being
+     * conserved or dropped, for thrown weapons that are destroyed on use such as chinchompas.
+     */
+    public fun consumeThrownWeapon(
+        player: Player,
+        weaponType: ItemServerType,
+        count: Int = 1,
+    ): Unit = RangedAmmunition.detractAmmo(player, Wearpos.RightHand, weaponType, count, eventBus)
+
     private fun useAmmo(
         player: Player,
         ammoWearpos: Wearpos,

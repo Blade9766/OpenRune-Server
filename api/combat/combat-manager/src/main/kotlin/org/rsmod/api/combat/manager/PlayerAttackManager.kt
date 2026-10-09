@@ -494,17 +494,15 @@ constructor(
             is Player -> giveCombatXp(player, target, attack, damage)
         }
 
-    @Suppress("unused")
     private fun giveCombatXp(player: Player, target: Npc, attack: CombatAttack.Staff, damage: Int) {
         if (player.shouldBlockNpcCombatXp(target) || target.isStyleImmuneTo(HitType.Magic)) {
             return
         }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
-        giveStaffCombatXp(player, cappedDamage, multiplier)
+        giveStaffCombatXp(player, attack, cappedDamage, multiplier)
     }
 
-    @Suppress("unused")
     private fun giveCombatXp(
         player: Player,
         target: Player,
@@ -516,11 +514,21 @@ constructor(
         }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
-        giveStaffCombatXp(player, cappedDamage, multiplier)
+        giveStaffCombatXp(player, attack, cappedDamage, multiplier)
     }
 
-    private fun giveStaffCombatXp(player: Player, damage: Int, multiplier: Double) {
-        statAdvance(player, "stat.magic", damage * 2.0, multiplier)
+    private fun giveStaffCombatXp(
+        player: Player,
+        attack: CombatAttack.Staff,
+        damage: Int,
+        multiplier: Double,
+    ) {
+        if (attack.style == MagicAttackStyle.Longrange) {
+            statAdvance(player, "stat.magic", damage * 1.33, multiplier)
+            statAdvance(player, "stat.defence", damage.toDouble(), multiplier)
+        } else {
+            statAdvance(player, "stat.magic", damage * 2.0, multiplier)
+        }
         statAdvance(player, "stat.hitpoints", damage * 1.33, multiplier)
     }
 

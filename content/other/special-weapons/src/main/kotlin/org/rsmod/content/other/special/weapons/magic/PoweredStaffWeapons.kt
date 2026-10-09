@@ -84,14 +84,14 @@ constructor(
             message = "Your trident has no charges! You need to charge it with runes.",
         )
 
-        // Sanguinesti staff: 1/5 chance to deal 8 extra damage and heal half the damage dealt.
+        // Sanguinesti staff: 1/6 chance to heal half the damage dealt.
         register(
             "obj.sanguinesti_staff",
             staff(
                 PoweredStaffSpec(
                     name = "Sanguinesti staff",
                     fx = SANGUINESTI_FX,
-                    maxHit = { magic -> magic / 3 },
+                    maxHit = { magic -> magic / 3 - 1 },
                     healSpotanim = "spotanim.sanguinesti_staff_heal",
                 )
             ),
@@ -102,7 +102,7 @@ constructor(
                 PoweredStaffSpec(
                     name = "Sanguinesti staff",
                     fx = SANGUINESTI_HOLY_FX,
-                    maxHit = { magic -> magic / 3 },
+                    maxHit = { magic -> magic / 3 - 1 },
                     healSpotanim = "spotanim.sanguinesti_staff_heal_justiciar",
                 )
             ),
@@ -347,11 +347,10 @@ constructor(
                 manager.queueSplashHit(this, target, clientDelay, serverDelay)
             } else {
                 val baseMaxHit = spec.maxHit(player.magicLvl).coerceAtLeast(1)
-                var damage = attackManager.rollStaffMaxHit(player, target, baseMaxHit, multiplier)
+                val damage = attackManager.rollStaffMaxHit(player, target, baseMaxHit, multiplier)
 
                 val healSpotanim = spec.healSpotanim
-                if (healSpotanim != null && random.of(SANGUINESTI_HEAL_CHANCE) == 0) {
-                    damage += SANGUINESTI_BONUS_DAMAGE
+                if (healSpotanim != null && damage > 0 && random.of(SANGUINESTI_HEAL_CHANCE) == 0) {
                     val heal = SanguinestiHeal(amount = damage / 2, spotanim = healSpotanim)
                     queue("queue.sanguinesti_heal", serverDelay.coerceAtLeast(1), heal)
                 }
@@ -478,8 +477,7 @@ constructor(
         const val TRIDENT_MAX_CHARGES = 2_500
 
         private const val WILDERNESS_MULTIPLIER = 1.5
-        private const val SANGUINESTI_HEAL_CHANCE = 5
-        private const val SANGUINESTI_BONUS_DAMAGE = 8
+        private const val SANGUINESTI_HEAL_CHANCE = 6
         private const val STARTER_STAFF_MAX_HIT = 8
 
         private val RAT_NAME = Regex("\\brats?\\b|scurrius", RegexOption.IGNORE_CASE)

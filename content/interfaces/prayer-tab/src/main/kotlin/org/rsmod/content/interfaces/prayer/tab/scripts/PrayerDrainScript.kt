@@ -54,6 +54,9 @@ constructor(private val repo: PrayerRepository, private val bonuses: WornBonuses
 
             val sub = min(prayerLvl, prayerPointCost)
             statSub("stat.prayer", constant = sub, percent = 0)
+            if (prayerLvl == 0) {
+                triggerPrayerDepletion()
+            }
         }
     }
 

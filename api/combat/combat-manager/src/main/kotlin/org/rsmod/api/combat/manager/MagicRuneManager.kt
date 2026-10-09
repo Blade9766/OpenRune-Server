@@ -146,13 +146,25 @@ constructor(
         val sources = sourced.flatMap { it.sources }
 
         // Ensure player has enough varbits to be removed.
-        val varbitSources = sources.filterIsInstance<MagicRunes.Source.VarBitSource>()
+        val varbitSources =
+            sources
+                .filterIsInstance<MagicRunes.Source.VarBitSource>()
+                .groupBy { it.varbit }
+                .map { (varbit, list) ->
+                    MagicRunes.Source.VarBitSource(varbit, list.sumOf { it.count })
+                }
         val enoughVarBits = varbitSources.all { player.vars[it.varbit] >= it.count }
         if (!enoughVarBits) {
             return CastResult.Failure.NotEnoughVarBit
         }
 
-        val invSources = sources.filterIsInstance<MagicRunes.Source.InvSource>()
+        val invSources =
+            sources
+                .filterIsInstance<MagicRunes.Source.InvSource>()
+                .groupBy { it.slot to it.obj }
+                .map { (key, list) ->
+                    MagicRunes.Source.InvSource(key.second, key.first, list.sumOf { it.count })
+                }
 
         val consume = ArrayList<InvObj>(invSources.size)
         for (source in invSources) {

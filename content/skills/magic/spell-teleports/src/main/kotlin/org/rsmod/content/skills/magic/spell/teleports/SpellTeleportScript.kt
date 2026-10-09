@@ -106,9 +106,6 @@ constructor(
 
     private fun ProtectedAccess.processQueuedTeleport(task: PendingSpellTeleport) {
         val spell = task.teleport.resolveSpell() ?: return
-        if (!canTeleport()) {
-            return
-        }
         arrive(task)
         val endAnim = task.teleport.style.endAnim
         if (endAnim != null) anim(endAnim) else resetAnim()
@@ -142,37 +139,34 @@ constructor(
         spell: MagicSpell,
         teleport: SpellTeleport,
     ): Boolean {
-        val castSpell =
-            if (teleport == SpellTeleport.ApeAtoll) {
-                val banana = ServerCacheManager.getItem(Banana.asRSCM(RSCMType.OBJ)) ?: return false
-                val spellWithoutBanana = spell.copy(objReqs = spell.objReqs.withoutBananaReq())
-                if (!runes.canCastSpell(player, spellWithoutBanana)) {
-                    return false
-                }
-                if (!deleteBanana(banana)) {
-                    mes("You need a banana to cast this spell.")
-                    return false
-                }
-                spellWithoutBanana
-            } else {
-                spell
+        if (teleport != SpellTeleport.ApeAtoll) {
+            if (spell.objReqs.isEmpty()) {
+                return runes.canCastSpell(player, spell)
             }
-
-        if (castSpell.objReqs.isEmpty()) {
-            return runes.canCastSpell(player, castSpell)
+            return !runes.attemptCast(player, spell).isFailure()
         }
-        return !runes.attemptCast(player, castSpell).isFailure()
+
+        val banana = ServerCacheManager.getItem(Banana.asRSCM(RSCMType.OBJ)) ?: return false
+        val castSpell = spell.copy(objReqs = spell.objReqs.withoutBananaReq())
+        if (!runes.canCastSpell(player, castSpell)) {
+            return false
+        }
+        val bananaSlot = inv.indexOfFirst { it.isType(banana) }
+        if (bananaSlot == -1) {
+            mes("You need a banana to cast this spell.")
+            return false
+        }
+        if (castSpell.objReqs.isNotEmpty() && runes.attemptCast(player, castSpell).isFailure()) {
+            return false
+        }
+        return deleteBanana(banana, bananaSlot)
     }
 
     private fun List<MagicSpell.ObjRequirement>.withoutBananaReq(): List<MagicSpell.ObjRequirement> {
         return filterNot { RSCM.getReverseMapping(RSCMType.OBJ, it.obj.id).contains("banana") }
     }
 
-    private fun ProtectedAccess.deleteBanana(banana: ItemServerType): Boolean {
-        val bananaSlot = inv.indexOfFirst { it.isType(banana) }
-        if (bananaSlot == -1) {
-            return false
-        }
+    private fun ProtectedAccess.deleteBanana(banana: ItemServerType, bananaSlot: Int): Boolean {
         val transaction =
             player.invTransaction(inv, autoCommit = true) {
                 val targetInv = select(inv)
