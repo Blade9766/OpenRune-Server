@@ -91,7 +91,7 @@ constructor(
         onEnterPrelude { result, enter ->
             withInstanceEnterTransition(InstanceEnterTransition(message = ENTER_MESSAGE), enter)
             if (result is InstanceManager.Result.Created && pendingAwakened.remove(player)) {
-                manager.npcsForInstance(result.session.id).firstOrNull()?.let(::markAwakened)
+                awakenIfOrbSpent(result.session)
             }
         }
 
@@ -150,29 +150,37 @@ constructor(
 
     private suspend fun ProtectedAccess.enterInstance() {
         val owned = player.uuid?.let { manager.sessionOwnedBy(key, it) }
-        if (owned == null && tryConsumeAwakenersOrb()) {
+        if (owned == null && wantsAwakenedFight()) {
             pendingAwakened += player
         }
-        defaultInstanceEntry()
+        try {
+            defaultInstanceEntry()
+        } finally {
+            pendingAwakened -= player
+        }
     }
 
-    private suspend fun ProtectedAccess.tryConsumeAwakenersOrb(): Boolean {
+    private suspend fun ProtectedAccess.wantsAwakenedFight(): Boolean {
         if (AWAKENERS_ORB !in inv) {
             return false
         }
-        val useOrb =
-            choice2(
-                "Yes - consume an Awakener's orb.",
-                true,
-                "No - fight the normal encounter.",
-                false,
-                title = "Use an Awakener's orb to fight an Awakened Duke Sucellus?",
-            )
-        if (!useOrb) {
-            return false
+        return choice2(
+            "Yes - consume an Awakener's orb.",
+            true,
+            "No - fight the normal encounter.",
+            false,
+            title = "Use an Awakener's orb to fight an Awakened Duke Sucellus?",
+        )
+    }
+
+    private fun ProtectedAccess.awakenIfOrbSpent(session: InstanceSession) {
+        if (player.uuid !in session.occupants) {
+            return
         }
-        invDel(inv, AWAKENERS_ORB, 1)
-        return true
+        if (!invDel(inv, AWAKENERS_ORB, 1).success) {
+            return
+        }
+        manager.npcsForInstance(session.id).firstOrNull()?.let(::markAwakened)
     }
 
     private fun markAwakened(npc: Npc) {

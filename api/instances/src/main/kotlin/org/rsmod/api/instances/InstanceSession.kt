@@ -34,6 +34,9 @@ class InstanceSession(
     var startedAtTick = 0
         private set
 
+    var entered = false
+        private set
+
     fun markStarted(currentTick: Int) {
         startedAtTick = currentTick
         timeWarningsSent.clear()
@@ -52,6 +55,7 @@ class InstanceSession(
 
     fun addOccupant(player: Long) {
         occupants += player
+        entered = true
         if (state is SessionState.Reclaim) {
             state = SessionState.Active
         }

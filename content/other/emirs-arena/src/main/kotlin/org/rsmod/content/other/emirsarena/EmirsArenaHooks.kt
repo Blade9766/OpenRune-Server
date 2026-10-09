@@ -163,8 +163,7 @@ constructor(private val manager: DuelManager, private val areaChecker: AreaCheck
         get() = PlayerDeathHook.PRIORITY_SAFE_ACTIVITY
 
     override fun handleDeath(context: PlayerDeathContext): PlayerDeathHandling? {
-        val duel = manager.duelOf(context.player) ?: return null
-        if (!duel.isActive) {
+        if (!manager.diesSafely(context.player)) {
             return null
         }
         return PlayerDeathHandling(
@@ -178,8 +177,7 @@ constructor(private val manager: DuelManager, private val areaChecker: AreaCheck
     }
 
     override fun respawn(player: Player): CoordGrid? {
-        val duel = manager.duelOf(player) ?: return null
-        return if (duel.isActive) EmirsArena.LOBBY else null
+        return if (manager.diesSafely(player)) EmirsArena.LOBBY else null
     }
 
     override fun cleanup(player: Player) {

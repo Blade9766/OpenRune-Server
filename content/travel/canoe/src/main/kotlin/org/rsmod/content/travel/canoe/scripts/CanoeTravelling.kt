@@ -6,6 +6,7 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.output.ClientScripts.highlightingOff
 import org.rsmod.api.player.output.ClientScripts.highlightingOn
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -208,7 +209,10 @@ constructor(
             access.mes("Could not create region. Try again in a few seconds.")
             return
         }
-        access.startCutscene(region, type, dest)
+        if (!access.startCutscene(region, type, dest)) {
+            access.closeCutscene()
+            access.mes("You are unable to paddle away from here right now.")
+        }
     }
 
     private fun Npc.onSceneryTimer() {
@@ -268,12 +272,12 @@ constructor(
         region: Region,
         type: CutsceneType,
         dest: CanoeDestination,
-    ) {
+    ): Boolean {
         val tripDuration: Int
 
         if (type == CutsceneType.Grass) {
             tripDuration = 22
-            telejump(region.normal[0, 28, 70, 25, 35])
+            if (!paddleTo(region.normal[0, 28, 70, 25, 35])) return false
             rebuildAppearance()
             delay(1)
             anim("seq.canoeing_rowing")
@@ -285,7 +289,7 @@ constructor(
             spawnGrassScenery(region)
         } else {
             tripDuration = 11
-            telejump(region.normal[0, 28, 70, 53, 12])
+            if (!paddleTo(region.normal[0, 28, 70, 53, 12])) return false
             rebuildAppearance()
             delay(1)
             anim("seq.canoeing_rowing")
@@ -315,7 +319,7 @@ constructor(
         )
         clearHealthHud()
         delay(3)
-        telejump(dest.arrivalCoords())
+        telejump(dest.arrivalCoords(), TeleportType.Exempt)
         resetAnim()
         camReset()
         delay(1)
@@ -326,6 +330,12 @@ constructor(
         spam(dest.arrivalMessage())
         clearCanoeVars()
         closeFadeOverlay()
+        return true
+    }
+
+    private fun ProtectedAccess.paddleTo(coords: CoordGrid): Boolean {
+        telejump(coords, TeleportType.Exempt)
+        return player.coords == coords
     }
 
     private fun spawnGrassScenery(region: Region) {

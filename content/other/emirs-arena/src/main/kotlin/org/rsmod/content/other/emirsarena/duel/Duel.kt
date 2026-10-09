@@ -36,6 +36,7 @@ class Duel(val challenger: Player, val opponent: Player, val ranked: Boolean) {
     var stage: DuelStage = DuelStage.Options
     var arena: DuelArena? = null
     var winner: Player? = null
+    var drawn: Boolean = false
 
     private val accepted = BooleanArray(2)
 

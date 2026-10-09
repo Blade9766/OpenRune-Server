@@ -47,7 +47,7 @@ class EmirsArenaScript @Inject constructor(private val manager: DuelManager) : P
         onArea(EmirsArena.AREA) { manager.enterArena(player) }
         onAreaExit(EmirsArena.AREA) { manager.exitArena(player) }
         onPlayerLogout { manager.onLogout(player) }
-        onPlayerLogin { manager.recoverStake(player) }
+        onPlayerLogin { manager.onLogin(player) }
 
         // Duel options screen.
         for ((component, rule) in DuelRule.BY_COMPONENT) {

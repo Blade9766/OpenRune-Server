@@ -19,6 +19,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.statRestoreAll
 import org.rsmod.api.player.ui.ifCloseOverlay
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
+import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onCommand
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onPlayerLogin
@@ -37,13 +38,21 @@ internal object CastleWarsQueues {
 /** The game loop, moving players in and out of the arena, and cleaning up after logouts. */
 internal class CastleWarsScript
 @Inject
-constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : PluginScript() {
+constructor(
+    private val game: CastleWarsGame,
+    private val eventBus: EventBus,
+    private val objRepo: ObjRepository,
+) : PluginScript() {
     private val allStats: List<String> by lazy {
         ServerCacheManager.getStats().values.map { RSCM.getReverseMapping(RSCMType.STAT, it.id) }
     }
 
+    private val toolGroups: List<List<Int>> by lazy {
+        CastleWarsTools.GROUPS.map { group -> group.map { it.asRSCM(RSCMType.OBJ) } }
+    }
+
     private val gameItemIds: Set<Int> by lazy {
-        CastleWars.GAME_ITEMS.map { it.asRSCM(RSCMType.OBJ) }.toSet()
+        CastleWars.GAME_ITEMS.map { it.asRSCM(RSCMType.OBJ) }.toSet() - toolGroups.flatten().toSet()
     }
 
     override fun ScriptContext.startup() {
@@ -77,6 +86,7 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
         }
         game.leaveWaitingRoom(player)
         game.pendingTickets -= player
+        removeHandedOutTools(player)
     }
 
     /**
@@ -111,6 +121,7 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
             invAdd(inv, CastleWars.RUNE_POUCH, strict = false)
         }
         chargeBracelet()
+        game.broughtTools[player] = CastleWarsTools.count(heldIds(player), toolGroups)
         game.syncVars(player)
         mes("The game has begun! Take the enemy standard and capture it on your own.")
     }
@@ -168,11 +179,11 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
             telejump(game.scatter(CastleWars.LOBBY), TeleportType.Exempt)
         }
         val tickets = game.pendingTickets.remove(player) ?: return
-        val added = invAdd(inv, CastleWars.TICKET, tickets, strict = false)
-        if (added.success) {
-            mes("You receive $tickets Castle wars ${if (tickets == 1) "ticket" else "tickets"}.")
+        val noun = if (tickets == 1) "ticket" else "tickets"
+        if (invAddOrDrop(objRepo, CastleWars.TICKET, tickets)) {
+            mes("You receive $tickets Castle wars $noun.")
         } else {
-            mes("You have no room for your Castle wars tickets.")
+            mes("You have no room for your Castle wars $noun, so they have been placed at your feet.")
         }
         awardPlaudits(tickets)
     }
@@ -200,6 +211,22 @@ constructor(private val game: CastleWarsGame, private val eventBus: EventBus) : 
         }
         if (wornChanged) {
             rebuildAppearance()
+        }
+        removeHandedOutTools(player)
+    }
+
+    private fun heldIds(player: Player): List<List<Int?>> =
+        listOf(player.inv, player.worn).map { inventory -> inventory.objs.map { it?.id } }
+
+    private fun removeHandedOutTools(player: Player) {
+        val brought = game.broughtTools.remove(player) ?: return
+        val inventories = listOf(player.inv, player.worn)
+        val excess = CastleWarsTools.excess(heldIds(player), toolGroups, brought)
+        for ((index, slot) in excess) {
+            inventories[index][slot] = null
+        }
+        if (excess.any { (index, _) -> index == 1 }) {
+            player.rebuildAppearance()
         }
     }
 

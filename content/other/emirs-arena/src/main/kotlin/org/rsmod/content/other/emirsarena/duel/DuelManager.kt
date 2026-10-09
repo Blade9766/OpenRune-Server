@@ -18,6 +18,7 @@ import org.rsmod.api.player.output.GameMessage
 import org.rsmod.api.player.output.MiscOutput
 import org.rsmod.api.player.output.UpdateRun
 import org.rsmod.api.player.output.mes
+import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.stat.statRestoreAll
 import org.rsmod.api.player.ui.ifClose
@@ -108,10 +109,26 @@ constructor(
         val duel = duelOf(player) ?: return
         when (duel.stage) {
             DuelStage.Countdown,
-            DuelStage.Fighting -> finish(duel, winner = duel.other(player), loser = player, DuelEnd.Logout)
-            DuelStage.Finished -> Unit
+            DuelStage.Fighting -> {
+                finish(duel, winner = duel.other(player), loser = player, DuelEnd.Logout)
+                restore(player)
+                player.coords = EmirsArena.LOBBY
+            }
+            DuelStage.Finished -> detach(player)
             else -> cancel(duel, "${player.displayName} has left the arena.")
         }
+    }
+
+    fun onLogin(player: Player) {
+        recoverStake(player)
+        if (duelOf(player) == null && DuelArena.at(player.coords) != null) {
+            player.strongQueue(EmirsArena.LEAVE_QUEUE, 1)
+        }
+    }
+
+    fun diesSafely(player: Player): Boolean {
+        val duel = duelOf(player) ?: return false
+        return duel.isActive || duel.drawn
     }
 
     /* Challenges */
@@ -448,10 +465,48 @@ constructor(
      */
     fun finishAfterDeath(loser: Player) {
         val duel = duelOf(loser) ?: return
+        if (duel.drawn) {
+            detach(loser)
+            resetFightOp(loser)
+            return
+        }
         if (!duel.isActive) {
             return
         }
-        finish(duel, winner = duel.other(loser), loser = loser, DuelEnd.Death)
+        val other = duel.other(loser)
+        if (isDying(other)) {
+            draw(duel, first = loser)
+            return
+        }
+        finish(duel, winner = other, loser = loser, DuelEnd.Death)
+    }
+
+    private fun isDying(player: Player): Boolean =
+        player.hitpoints == 0 || DEATH_QUEUE in player.queueList
+
+    /**
+     * Both duellists died in the same fight: nobody wins, stakes go back to their owners. The
+     * second player stays attached until their own death sequence finishes, so it is still safe.
+     */
+    private fun draw(duel: Duel, first: Player) {
+        duel.stage = DuelStage.Finished
+        duel.drawn = true
+        releaseArena(duel)
+        detach(first)
+        resetFightOp(first)
+        for (player in duel.players) {
+            stakes.refund(player)
+            player.mes("The duel has ended in a draw.")
+        }
+        scoreboard.addFirst("${duel.challenger.displayName} and ${duel.opponent.displayName} drew")
+        while (scoreboard.size > EmirsArena.SCOREBOARD_SIZE) {
+            scoreboard.removeLast()
+        }
+    }
+
+    private fun resetFightOp(player: Player) {
+        val op = if (inArena(player)) "Challenge" else null
+        MiscOutput.setPlayerOp(player, EmirsArena.FIGHT_SLOT, op)
     }
 
     private fun finish(duel: Duel, winner: Player, loser: Player, end: DuelEnd) {
@@ -464,8 +519,7 @@ constructor(
 
         for (player in duel.players) {
             detach(player)
-            val op = if (inArena(player)) "Challenge" else null
-            MiscOutput.setPlayerOp(player, EmirsArena.FIGHT_SLOT, op)
+            resetFightOp(player)
         }
 
         // The loser is either mid-death (already being moved and restored by the death sequence)
@@ -616,6 +670,7 @@ constructor(
 
     private companion object {
         private const val FULL_SPECIAL_ENERGY = 1000
+        private const val DEATH_QUEUE = "queue.death"
         private const val OPPONENT_PANEL_X = 140
         private const val OPPONENT_PANEL_Y = 2
 
