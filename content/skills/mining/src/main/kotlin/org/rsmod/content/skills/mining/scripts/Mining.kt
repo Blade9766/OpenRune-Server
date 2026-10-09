@@ -9,7 +9,6 @@ import dtx.core.ArgMap
 import dtx.core.RollResult
 import dtx.core.flatten
 import jakarta.inject.Inject
-import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.config.objParam
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.droptable.DropRollItem
@@ -58,6 +57,10 @@ constructor(
     private val invisibleLvls: InvisibleLevels,
     private val mapClock: MapClock,
 ) : PluginScript() {
+    private val minedOreCounts = HashMap<CoordGrid, Int>()
+    private val depletionThresholds = HashMap<CoordGrid, Int>()
+    private val gloveSavedCounts = HashMap<CoordGrid, Int>()
+
     override fun ScriptContext.startup() {
         onOpContentLoc1("content.rock") { attempt(it.loc, it.type) }
         onOpContentLoc2("content.rock") { prospect(it.type) }
@@ -283,14 +286,11 @@ constructor(
         if (data.hasDepleteRange) {
             val range = data.depleteRange
             val threshold =
-                player.attr
-                    .getOrPut(DEPLETION_THRESHOLD_ATTR) { mutableMapOf() }
-                    .getOrPut(rock.coords) {
-                        random.of(range.first, range.last) + gloveExtras
-                    }
-            val counts = player.attr.getOrPut(MINED_ORE_COUNT_ATTR) { mutableMapOf() }
-            val newCount = (counts[rock.coords] ?: 0) + 1
-            counts[rock.coords] = newCount
+                depletionThresholds.getOrPut(rock.coords) {
+                    random.of(range.first, range.last) + gloveExtras
+                }
+            val newCount = (minedOreCounts[rock.coords] ?: 0) + 1
+            minedOreCounts[rock.coords] = newCount
             return newCount >= threshold
         }
         return handleGloveDeplete(rock, gloveExtras)
@@ -303,20 +303,19 @@ constructor(
         if (extras <= 0) {
             return true
         }
-        val counts = player.attr.getOrPut(DEPLETE_GLOVE_COUNT_ATTR) { mutableMapOf() }
-        val current = counts[rock.coords] ?: 0
+        val current = gloveSavedCounts[rock.coords] ?: 0
         return if (current != extras) {
-            counts[rock.coords] = current + 1
+            gloveSavedCounts[rock.coords] = current + 1
             false
         } else {
             true
         }
     }
 
-    private fun ProtectedAccess.clearDepleteState(rock: BoundLocInfo) {
-        player.attr[MINED_ORE_COUNT_ATTR]?.remove(rock.coords)
-        player.attr[DEPLETION_THRESHOLD_ATTR]?.remove(rock.coords)
-        player.attr[DEPLETE_GLOVE_COUNT_ATTR]?.remove(rock.coords)
+    private fun clearDepleteState(rock: BoundLocInfo) {
+        minedOreCounts.remove(rock.coords)
+        depletionThresholds.remove(rock.coords)
+        gloveSavedCounts.remove(rock.coords)
     }
 
     private fun ProtectedAccess.resolveMineItem(data: MiningRocksRow): String? {
@@ -402,10 +401,6 @@ constructor(
         private const val PROSPECT_DELAY = 4
         private const val INFERNAL_SMITHING_REQ = 85
         private const val SONG_OF_THE_ELVES = "quest_songoftheelves"
-
-        private val MINED_ORE_COUNT_ATTR = AttributeKey<MutableMap<CoordGrid, Int>>()
-        private val DEPLETION_THRESHOLD_ATTR = AttributeKey<MutableMap<CoordGrid, Int>>()
-        private val DEPLETE_GLOVE_COUNT_ATTR = AttributeKey<MutableMap<CoordGrid, Int>>()
 
         val ItemServerType.pickaxeLevelReq: Int by objParam(params.levelrequire)
         val ItemServerType.pickaxeAnim: SequenceServerType by objParam(params.skill_anim)

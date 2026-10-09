@@ -118,7 +118,7 @@ constructor(
         }
 
         var cutLogs = false
-        val despawn: Boolean
+        var despawn: Boolean
 
         if (actionDelay < mapClock) {
             actionDelay = mapClock + 3
@@ -147,8 +147,10 @@ constructor(
                     grantsExperience = true,
                     source = SkillingProductSource.Woodcutting(tree, logs),
                 )
-            if (awardSkillingProduct(product) == SkillingAwardResult.Success) {
-                spam("You get some ${logs.name.lowercase()}.")
+            when (awardSkillingProduct(product)) {
+                SkillingAwardResult.Success -> spam("You get some ${logs.name.lowercase()}.")
+                SkillingAwardResult.InventoryFull -> despawn = false
+                SkillingAwardResult.Cancelled -> Unit
             }
         }
 

@@ -11,12 +11,15 @@ object SlayerRewardsPoints {
     fun getPoints(player: Player): Int = player.vars["varbit.slayer_points"]
 
     fun setPoints(player: Player, amount: Int) {
-        VarPlayerIntMapSetter.set(player, "varbit.slayer_points", amount.coerceAtLeast(0))
+        VarPlayerIntMapSetter.set(player, "varbit.slayer_points", amount.coerceIn(0, MAX_POINTS))
     }
 
-    fun addPoints(player: Player, amount: Int) {
-        if (amount <= 0) return
-        setPoints(player, getPoints(player) + amount)
+    fun addPoints(player: Player, amount: Int): Int {
+        if (amount <= 0) return 0
+        val current = getPoints(player)
+        val updated = (current.toLong() + amount).coerceAtMost(MAX_POINTS.toLong()).toInt()
+        setPoints(player, updated)
+        return (updated - current).coerceAtLeast(0)
     }
 
     fun spendPoints(player: Player, amount: Int): Boolean {
@@ -41,6 +44,8 @@ object SlayerRewardsPoints {
         VarPlayerIntMapSetter.set(player, "varp.if1", player.vars["varp.slayer_count"])
         VarPlayerIntMapSetter.set(player, "varp.if2", player.vars["varp.slayer_target"])
     }
+
+    const val MAX_POINTS = 64_000
 
     private const val SLAYER_REWARDS_SETPOINTS_CS = 409
     private const val SLAYER_REWARDS_TASKS_INIT_CS = 328

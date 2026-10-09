@@ -22,6 +22,7 @@ import org.rsmod.api.table.slayer.SlayerMasterTaskRow
 import org.rsmod.api.table.slayer.SlayerMastersRow
 import org.rsmod.api.table.slayer.SlayerTaskRow
 import org.rsmod.api.table.slayer.SlayerUnlockRow
+import org.rsmod.content.slayer.rewards.SlayerRewardsPoints
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 
@@ -124,7 +125,7 @@ object SlayerTaskManager {
 
         val master = getCurrentAssignedMaster(player) ?: return clearAssignedTask(player)
 
-        val pointsToAdd =
+        val pointsEarned =
             if (MortimerAssignment.isMortimer(master)) {
                 MortimerAssignment.onTaskComplete(player)
             } else {
@@ -148,10 +149,7 @@ object SlayerTaskManager {
                 }
             }
 
-        if (pointsToAdd > 0) {
-            val currentPoints = player.vars["varbit.slayer_points"]
-            VarPlayerIntMapSetter.set(player, "varbit.slayer_points", currentPoints + pointsToAdd)
-        }
+        val pointsToAdd = SlayerRewardsPoints.addPoints(player, pointsEarned)
 
         if (wasBossTask) {
             player.statAdvance("stat.slayer", SlayerBossTasks.BOSS_COMPLETION_BONUS_XP)
@@ -289,10 +287,6 @@ object SlayerTaskManager {
     fun slayerStreak(access: ProtectedAccess): Int = access.vars["varbit.slayer_streak"]
 
     fun slayerWildyStreak(access: ProtectedAccess): Int = access.vars["varbit.slayer_wildy_streak"]
-
-    fun setSlayerStreak(access: ProtectedAccess, value: Int) {
-        VarPlayerIntMapSetter.set(access.player, "varbit.slayer_streak", value)
-    }
 
     fun rollAssignment(
         protected: ProtectedAccess,
@@ -636,6 +630,7 @@ object SlayerTaskManager {
         konarAreaId: Int? = null,
     ) {
         val player = protected.player
+        resetStreakOnTaskSkip(player, master)
         VarPlayerIntMapSetter.set(player, "varbit.slayer_master", master.masterId)
         VarPlayerIntMapSetter.set(player, "varp.slayer_count_original", amount)
         VarPlayerIntMapSetter.set(player, "varp.slayer_count", amount)
@@ -655,10 +650,20 @@ object SlayerTaskManager {
         }
 
         recordLastAssignment(player, master.masterId, task.task.id, assignedKonarArea, amount)
+    }
 
-        if (master.masterId == TURAEL_MASTER_ID) {
-            VarPlayerIntMapSetter.set(player, "varbit.slayer_streak", 0)
-        }
+    private fun resetStreakOnTaskSkip(player: Player, newMaster: SlayerMastersRow) {
+        if (newMaster.masterId != TURAEL_MASTER_ID) return
+        if (player.vars["varp.slayer_target"] == 0) return
+        val previous = getCurrentAssignedMaster(player)
+        if (previous?.masterId == TURAEL_MASTER_ID) return
+        val streak =
+            if (previous != null && isWildernessMaster(previous)) {
+                "varbit.slayer_wildy_streak"
+            } else {
+                "varbit.slayer_streak"
+            }
+        VarPlayerIntMapSetter.set(player, streak, 0)
     }
 
     private fun recordLastAssignment(player: Player, masterId: Int, taskId: Int, konarAreaId: Int, count: Int) {

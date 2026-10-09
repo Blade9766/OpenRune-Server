@@ -6,6 +6,7 @@ import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.script.onOpNpc4
 import org.rsmod.content.skills.farming.data.FarmingPatches
 import org.rsmod.content.skills.farming.state.FarmingStore
+import org.rsmod.content.skills.farming.state.PatchState
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -40,16 +41,9 @@ class GardenerScript @Inject constructor(private val store: FarmingStore) : Plug
         val patch = FarmingPatches.forLoc(patchLoc) ?: return
         val state = store.state(player, patch)
         val crop = state.crop
-        if (crop == null) {
-            startDialogue(npc) { chatNpc(neutral, "There's nothing growing in that patch yet.") }
-            return
-        }
-        if (state.dead) {
-            startDialogue(npc) { chatNpc(sad, "I'm afraid that crop is already beyond saving.") }
-            return
-        }
-        if (state.protectedByFarmer) {
-            startDialogue(npc) { chatNpc(happy, "Don't worry, I'm already watching that one.") }
+        val refusal = protectionRefusal(state)
+        if (crop == null || refusal != null) {
+            startDialogue(npc) { chatNpc(neutral, refusal ?: NOTHING_GROWING) }
             return
         }
         val payment = crop.protection
@@ -83,6 +77,10 @@ class GardenerScript @Inject constructor(private val store: FarmingStore) : Plug
                 chatPlayer(neutral, "No thanks.")
                 return@startDialogue
             }
+            val current = store.state(player, patch)
+            if (current.cropKey != crop.key || protectionRefusal(current) != null) {
+                return@startDialogue
+            }
             if (invDel(inv, payment.obj, payment.count).failure) {
                 return@startDialogue
             }
@@ -93,22 +91,40 @@ class GardenerScript @Inject constructor(private val store: FarmingStore) : Plug
 
     private fun ProtectedAccess.awaitingProtection(patchLoc: String): Boolean {
         val patch = FarmingPatches.forLoc(patchLoc) ?: return false
-        val state = store.state(player, patch)
-        return state.crop != null && !state.dead && !state.protectedByFarmer
+        return protectionRefusal(store.state(player, patch)) == null
     }
 
     private class Gardener(val npc: String, val first: List<String>, val second: List<String>)
 
-    private companion object {
+    internal companion object {
+        const val NOTHING_GROWING = "There's nothing growing in that patch yet."
+        const val ALREADY_DEAD = "I'm afraid that crop is already beyond saving."
+        const val DISEASED =
+            "That patch is diseased. You'll need to cure it before I can look after it for you."
+        const val FULLY_GROWN =
+            "That patch is already fully grown! I don't know what you want me to do with it!"
+        const val ALREADY_WATCHING = "Don't worry, I'm already watching that one."
+
+        fun protectionRefusal(state: PatchState): String? {
+            val crop = state.crop ?: return NOTHING_GROWING
+            return when {
+                state.dead -> ALREADY_DEAD
+                state.diseased -> DISEASED
+                state.stage >= crop.cycles -> FULLY_GROWN
+                state.protectedByFarmer -> ALREADY_WATCHING
+                else -> null
+            }
+        }
+
         /**
          * The op each patch hangs off comes from the gardener's own menu: "Pay (north-west)" and
          * friends are ops three and four, in the order the cache lists them, so the compass
          * direction has to match how the two patches actually sit relative to each other.
          */
-        fun gardener(npc: String, first: String, second: String? = null) =
+        private fun gardener(npc: String, first: String, second: String? = null) =
             Gardener(npc, listOf(first), listOfNotNull(second))
 
-        val GARDENERS =
+        private val GARDENERS =
             listOf(
                 // Pay (north-west) / Pay (south-east)
                 gardener("npc.elstan", "loc.farming_veg_patch_1", "loc.farming_veg_patch_2"),

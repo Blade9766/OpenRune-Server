@@ -109,6 +109,7 @@ constructor(
     private suspend fun ProtectedAccess.primary(loc: BoundLocInfo) {
         val patch = patchesByLocId[loc.id] ?: return
         val state = store.state(player, patch)
+        transmit(patch, state)
         val crop = state.crop
         when {
             crop == null && state.weeds < PatchKind.WEEDED -> rake(patch)
@@ -189,6 +190,7 @@ constructor(
 
     private suspend fun ProtectedAccess.useOn(loc: BoundLocInfo, used: ItemServerType) {
         val patch = patchesByLocId[loc.id] ?: return
+        transmit(patch, store.state(player, patch))
         val obj = RSCM.getReverseMapping(RSCMType.OBJ, used.id)
         val compost = Compost.forObj(obj)
         when {

@@ -91,39 +91,38 @@ constructor(
         if (!canLay(kind, tile)) {
             return
         }
-        invDel(inv, item)
-        if (!layTrap(kind, tile)) {
-            invAdd(inv, item)
-        }
+        layTrap(kind, tile) { invDel(inv, item).success }
     }
 
     private suspend fun ProtectedAccess.layFromGround(kind: TrapKind, obj: Obj) {
-        val item = kind.item ?: return
         val tile = obj.coords
         if (!objRegistry.isValid(player, obj) || !canLay(kind, tile)) {
             return
         }
-        objRepo.del(obj)
-        if (!layTrap(kind, tile)) {
-            invAddOrDrop(objRepo, item)
-        }
+        layTrap(kind, tile) { objRegistry.isValid(player, obj) && objRepo.del(obj) }
     }
 
-    private suspend fun ProtectedAccess.layTrap(kind: TrapKind, tile: CoordGrid): Boolean {
+    private suspend fun ProtectedAccess.layTrap(
+        kind: TrapKind,
+        tile: CoordGrid,
+        takeTrap: () -> Boolean,
+    ) {
         stopAction()
         mes("You begin setting up the trap.")
         anim(LAY_SEQ)
         delay(LAY_CYCLES)
         if (!traps.isTileFree(tile) || !traps.hasRoomFor(player, kind, tile)) {
             mes("You can't lay a trap here.")
-            return false
+            return
+        }
+        if (!takeTrap()) {
+            return
         }
         traps.lay(player, kind, tile)
         if (coords == tile) {
             collision.firstStepDestination(tile, STEP_DIRECTIONS)?.let(::walk)
         }
         faceSquare(tile)
-        return true
     }
 
     private fun ProtectedAccess.canLay(kind: TrapKind, tile: CoordGrid): Boolean {
@@ -171,14 +170,18 @@ constructor(
             mes("Someone has already set up a trap here.")
             return
         }
-        val spent = takeMaterials(kind) ?: return
+        if (!hasMaterials(kind)) {
+            return
+        }
         stopAction()
         mes("You begin setting up the trap.")
         anim(if (kind.family == TrapFamily.Net) NET_SET_SEQ else LAY_SEQ)
         traps.showSetting(base, kind)
         delay(LAY_CYCLES)
         if (!traps.isBaseFree(base) || !traps.hasRoomFor(player, kind, base.coords)) {
-            spent.forEach { invAddOrDrop(objRepo, it) }
+            return
+        }
+        if (!takeMaterials(kind)) {
             return
         }
         val trap = traps.place(player, kind, base)
@@ -186,30 +189,41 @@ constructor(
         faceSquare(base.coords)
     }
 
-    private fun ProtectedAccess.takeMaterials(kind: TrapKind): List<String>? =
+    private fun ProtectedAccess.hasMaterials(kind: TrapKind): Boolean =
         when (kind.family) {
             TrapFamily.Net -> {
-                if (!inv.contains("obj.rope") || !inv.contains("obj.net")) {
+                val has = TrapManager.NET_MATERIALS.all { inv.contains(it) }
+                if (!has) {
                     mes("You need a rope and a small fishing net to set up this trap.")
-                    null
-                } else {
-                    TrapManager.NET_MATERIALS.onEach { invDel(inv, it) }
                 }
+                has
             }
             TrapFamily.Deadfall -> {
-                val log = DEADFALL_LOGS.firstOrNull { inv.contains(it) }
-                if (KNIVES.none { inv.contains(it) } || log == null) {
+                val has = KNIVES.any { inv.contains(it) } && DEADFALL_LOGS.any { inv.contains(it) }
+                if (!has) {
                     mes("You need a knife and some logs to set up this trap.")
-                    null
-                } else if (random.of(LOG_KEEP_ROLL) == 0) {
+                }
+                has
+            }
+            TrapFamily.Laid -> true
+        }
+
+    private fun ProtectedAccess.takeMaterials(kind: TrapKind): Boolean {
+        if (!hasMaterials(kind)) {
+            return false
+        }
+        when (kind.family) {
+            TrapFamily.Net -> TrapManager.NET_MATERIALS.forEach { invDel(inv, it) }
+            TrapFamily.Deadfall -> {
+                val log = DEADFALL_LOGS.first { inv.contains(it) }
+                if (random.of(LOG_KEEP_ROLL) == 0) {
                     invDel(inv, log)
-                    listOf(log)
-                } else {
-                    emptyList()
                 }
             }
-            TrapFamily.Laid -> emptyList()
+            TrapFamily.Laid -> Unit
         }
+        return true
+    }
 
     private fun returnedItems(kind: TrapKind): List<String> =
         when (kind.family) {
@@ -243,7 +257,7 @@ constructor(
             return
         }
         traps.remove(trap)
-        returned.forEach { invAdd(inv, it) }
+        returned.forEach { invAddOrDrop(objRepo, it) }
         mes("You dismantle the trap.")
     }
 
@@ -280,7 +294,7 @@ constructor(
         }
         traps.remove(trap)
         for ((obj, count, rare) in loot) {
-            invAdd(inv, obj, count)
+            invAddOrDrop(objRepo, obj, count)
             if (rare) {
                 prey.rareMessage?.let(::mes)
             }
@@ -294,7 +308,7 @@ constructor(
         if (relay) {
             relay(trap)
         } else {
-            returned.forEach { (obj, count) -> invAdd(inv, obj, count) }
+            returned.forEach { (obj, count) -> invAddOrDrop(objRepo, obj, count) }
         }
     }
 
@@ -305,18 +319,12 @@ constructor(
             Triple(obj, random.of(loot.min, loot.max), rare)
         }
 
-    private suspend fun ProtectedAccess.relay(old: Trap) {
-        val returned = returnedItems(old.kind)
+    private fun ProtectedAccess.relay(old: Trap) {
         if (player.hunterLvl < old.kind.levelReq || !isRelayFree(old)) {
-            returned.forEach { invAddOrDrop(objRepo, it) }
+            returnedItems(old.kind).forEach { invAddOrDrop(objRepo, it) }
             return
         }
         anim(if (old.kind.family == TrapFamily.Net) NET_SET_SEQ else LAY_SEQ)
-        delay(LAY_CYCLES)
-        if (!isRelayFree(old)) {
-            returned.forEach { invAddOrDrop(objRepo, it) }
-            return
-        }
         stepOff(traps.relay(player, old))
     }
 
