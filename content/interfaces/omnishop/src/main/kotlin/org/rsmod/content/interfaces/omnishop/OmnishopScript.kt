@@ -117,21 +117,23 @@ class OmnishopScript : PluginScript() {
             mes("You can't sell this item to this shop.")
             return
         }
-        val quantity = minOf(requested, inv.physicalCount(obj.internalName))
+        var quantity = minOf(requested, inv.physicalCount(obj.internalName))
         if (quantity == 0) return
-        val payouts = stock.sellCosts().filter { it.second > 0 }.map { it.first to it.second.toLong() * quantity }
-        for ((currency, amount) in payouts) {
-            val varp = currency.varp
-            val held = if (varp != null) player.vars[varp].toLong() else 0L
-            if (held + amount > Int.MAX_VALUE) {
+        val prices = stock.sellCosts().filter { it.second > 0 }
+        for ((currency, price) in prices) {
+            val room = Int.MAX_VALUE.toLong() - heldPayoutCount(currency)
+            val fits = (room / price).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
+            if (fits == 0) {
                 mes("You can't hold any more ${currency.pluralName}.")
                 return
             }
+            quantity = minOf(quantity, fits)
         }
+        val payouts = prices.map { (currency, price) -> currency to price * quantity }
         val objCredits =
             payouts.mapNotNull { (currency, amount) ->
                 if (currency.varp != null) return@mapNotNull null
-                currency.objs.firstOrNull()?.let { it.id to amount.toInt() }
+                currency.objs.firstOrNull()?.let { it.id to amount }
             }
         val result =
             player.invTransaction(inv) {
@@ -147,13 +149,22 @@ class OmnishopScript : PluginScript() {
         }
         for ((currency, amount) in payouts) {
             val varp = currency.varp ?: continue
-            VarPlayerIntMapSetter.set(player, varp, player.vars[varp] + amount.toInt())
+            VarPlayerIntMapSetter.set(player, varp, player.vars[varp] + amount)
         }
     }
 
+    private fun ProtectedAccess.heldPayoutCount(currency: OmnishopCurrency): Long {
+        val varp = currency.varp
+        if (varp != null) return player.vars[varp].toLong()
+        val obj = currency.objs.firstOrNull() ?: return 0L
+        return inv.physicalCount(obj.internalName).toLong()
+    }
+
     private fun ProtectedAccess.currencyCount(currency: OmnishopCurrency): Int {
-        val varp = currency.varp ?: return currency.objs.sumOf { inv.physicalCount(it.internalName) }
-        return player.vars[varp]
+        val varp = currency.varp
+        if (varp != null) return player.vars[varp]
+        val total = currency.objs.sumOf { inv.physicalCount(it.internalName).toLong() }
+        return total.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
     internal data class InfoArgs(val shop: Int, val index: Int) : IfScriptArgs

@@ -18,6 +18,7 @@ import org.rsmod.content.skills.crafting.interfaces.hasSilverCraftingBars
 import org.rsmod.content.skills.crafting.interfaces.openGoldCrafting
 import org.rsmod.content.skills.crafting.interfaces.openSilverCrafting
 import org.rsmod.content.skills.openSkillMulti
+import org.rsmod.content.skills.smithing.coalbag.CoalBag
 import org.rsmod.content.skills.smithing.hasCannonballFurnaceMould
 import org.rsmod.content.skills.smithing.openCannonballFurnaceMenu
 import org.rsmod.content.skills.smithing.util.SmithingBonuses
@@ -230,10 +231,12 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
         if (invDel(inv, primary, primaryAmt).failure) {
             return
         }
+        val bagCoalBefore = CoalBag.storedAmount(player)
         if (requiresSecondary && invDel(inv, secondary.internalName, effectiveSecondaryAmt).failure) {
             invAdd(inv, primary, primaryAmt)
             return
         }
+        val secondaryFromBag = (bagCoalBefore - CoalBag.storedAmount(player)).coerceAtLeast(0)
 
         val catalystUsed =
             shouldConsumeSmithingCatalyst(player, inv, bar, regularFurnace) &&
@@ -252,7 +255,7 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
             if (invAdd(inv, bar.output.internalName, outputCount).failure) {
                 invAdd(inv, primary, primaryAmt)
                 if (requiresSecondary) {
-                    invAdd(inv, secondary.internalName, effectiveSecondaryAmt)
+                    refundSecondary(secondary.internalName, effectiveSecondaryAmt, secondaryFromBag)
                 }
                 if (catalystUsed) {
                     invAdd(inv, SmithingBonuses.SMITHING_CATALYST, 1)
@@ -269,6 +272,16 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
             }
         } else {
             mes("The ore is too impure and you fail to refine it.")
+        }
+    }
+
+    private fun ProtectedAccess.refundSecondary(secondary: String, amount: Int, fromBag: Int) {
+        if (fromBag > 0) {
+            CoalBag.addStored(player, fromBag)
+        }
+        val fromInv = amount - fromBag
+        if (fromInv > 0) {
+            invAdd(inv, secondary, fromInv, ignoreVirtualStorage = true)
         }
     }
 

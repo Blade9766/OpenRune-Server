@@ -233,8 +233,10 @@ constructor(
 
         val tab = selectedTab
 
-        val placeholder = placeholder(objType)
-        val containedObjSlot = bank.indexOfFirst { it?.id == obj.id || it?.id == placeholder.id }
+        val bankType = untransform(uncert(objType))
+        val placeholder = placeholder(bankType)
+        val containedObjSlot =
+            bank.indexOfFirst { it?.id == bankType.id || it?.id == placeholder.id }
         val prioritySlot =
             if (containedObjSlot != -1) {
                 containedObjSlot
@@ -273,6 +275,7 @@ constructor(
                     this.intoCapacity = bankCapacity
                     this.count = count
                     this.uncert = true
+                    this.untransform = true
                     this.strict = false
                 }
             }
@@ -295,8 +298,7 @@ constructor(
 
         // Cheap way of checking if obj has taken a new slot in bank.
         val expectedSlot = tabSlots.last + 1
-        val expectedObj = uncert(obj)
-        if (bank[expectedSlot]?.id == expectedObj.id) {
+        if (prioritySlot == null && bank[expectedSlot]?.id == bankType.id) {
             tab.increaseSize(this)
         }
 
@@ -1160,13 +1162,14 @@ constructor(
         if (op == IfButtonOp.Op2) {
             val type = getInvObj(obj)
             val deposited = invDeposit(wornSlot, obj.count, worn)
-            if (deposited) {
+            if (deposited && worn[wornSlot] !== obj) {
                 val wearpos = Wearpos[type.wearpos1]
                 checkNotNull(wearpos) {
                     "Wearpos should not be null for worn obj: " +
                         "wornSlot=$wornSlot, obj=$obj, type=$type"
                 }
                 WornUnequipOp.notifyWornUnequip(player, wearpos, type, eventBus)
+                setBankWornBonuses()
             }
             return
         }

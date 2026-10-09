@@ -460,6 +460,9 @@ constructor(
     fun confirm(access: ProtectedAccess) {
         val player = access.player
         val slot = setupSlot(player) ?: return
+        if (!acceptingChanges(player)) {
+            return
+        }
         val item = setupItem(player)
         if (item == null) {
             player.mes("You must choose an item first.")
@@ -558,6 +561,14 @@ constructor(
         return true
     }
 
+    private fun acceptingChanges(player: Player): Boolean {
+        if (saveDisabled) {
+            player.mes("The Grand Exchange is unavailable right now. Please try again later.")
+            return false
+        }
+        return true
+    }
+
     private fun canTrade(player: Player, item: ItemServerType, type: GeOfferType): Boolean {
         if (item.id == coinsId || !item.stockmarket || !item.tradeable || item.isCert) {
             player.mes("You can't trade that item on the Grand Exchange.")
@@ -574,6 +585,9 @@ constructor(
 
     fun abort(player: Player) {
         val offer = selectedOffer(player) ?: return
+        if (!acceptingChanges(player)) {
+            return
+        }
         if (!exchange.abort(offer)) {
             player.mes("That offer has already finished.")
             return
@@ -585,6 +599,9 @@ constructor(
     fun modify(access: ProtectedAccess) {
         val player = access.player
         val offer = selectedOffer(player) ?: return
+        if (!acceptingChanges(player)) {
+            return
+        }
         val type = offer.type
         val remaining = offer.remaining
         exchange.abort(offer)
@@ -631,6 +648,9 @@ constructor(
     }
 
     fun collectAll(player: Player, toBank: Boolean) {
+        if (!acceptingChanges(player)) {
+            return
+        }
         val mode = if (toBank) CollectMode.Bank else CollectMode.Default
         var any = false
         for (slot in 0 until GeConfig.SLOT_COUNT) {
@@ -649,6 +669,9 @@ constructor(
     }
 
     private fun collectBox(player: Player, offer: GeOffer, box: Int, mode: CollectMode) {
+        if (!acceptingChanges(player)) {
+            return
+        }
         if (box == GeConfig.COLLECT_BOX_COINS) {
             collectCoins(player, offer, mode == CollectMode.Bank)
         } else {

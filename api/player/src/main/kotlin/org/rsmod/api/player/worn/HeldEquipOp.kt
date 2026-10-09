@@ -51,7 +51,8 @@ constructor(private val eventBus: EventBus, private val restrictions: PlayerRest
                         ServerCacheManager.getItems().values.firstOrNull { it.id == id.id }
                     }
                 }
-            val unequipPrimary = into[primaryWearpos.slot] != null
+            val previousPrimary = into[primaryWearpos.slot]
+            val unequipPrimary = previousPrimary != null
 
             val transaction =
                 player.invTransaction(inventory, into) {
@@ -98,7 +99,13 @@ constructor(private val eventBus: EventBus, private val restrictions: PlayerRest
                 return HeldEquipResult.Fail.NotEnoughInvSpace(message)
             }
 
-            for (wearpos in allWearpos) {
+            val mergedPrimary =
+                previousPrimary != null &&
+                    objType.isStackable &&
+                    into[primaryWearpos.slot]?.id == previousPrimary.id
+            val changedWearpos = if (mergedPrimary) unequipWearpos else allWearpos
+
+            for (wearpos in changedWearpos) {
                 val wornType = if (wearpos == primaryWearpos) objType else unequipObjs[wearpos]
                 if (wornType != null) {
                     val change = HeldEquipEvents.WearposChange(player, wearpos, wornType)
@@ -107,13 +114,18 @@ constructor(private val eventBus: EventBus, private val restrictions: PlayerRest
             }
 
             for ((wearpos, type) in unequipObjs) {
+                if (mergedPrimary && wearpos == primaryWearpos) {
+                    continue
+                }
                 val unequipType = type ?: continue
                 val unequip = HeldEquipEvents.Unequip(player, wearpos, unequipType)
                 eventBus.publish(unequip)
             }
 
-            val equip = HeldEquipEvents.Equip(player, invSlot, primaryWearpos, objType)
-            eventBus.publish(equip)
+            if (!mergedPrimary) {
+                val equip = HeldEquipEvents.Equip(player, invSlot, primaryWearpos, objType)
+                eventBus.publish(equip)
+            }
 
             player.rebuildAppearance()
         }
