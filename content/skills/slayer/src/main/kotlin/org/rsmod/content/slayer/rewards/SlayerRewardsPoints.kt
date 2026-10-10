@@ -11,13 +11,14 @@ object SlayerRewardsPoints {
     fun getPoints(player: Player): Int = player.vars["varbit.slayer_points"]
 
     fun setPoints(player: Player, amount: Int) {
-        VarPlayerIntMapSetter.set(player, "varbit.slayer_points", amount.coerceIn(0, MAX_POINTS))
+        VarPlayerIntMapSetter.set(player, "varbit.slayer_points", amount.coerceAtLeast(0))
     }
 
     fun addPoints(player: Player, amount: Int): Int {
         if (amount <= 0) return 0
         val current = getPoints(player)
-        val updated = (current.toLong() + amount).coerceAtMost(MAX_POINTS.toLong()).toInt()
+        val capped = (current.toLong() + amount).coerceAtMost(MAX_POINTS.toLong()).toInt()
+        val updated = maxOf(current, capped)
         setPoints(player, updated)
         return (updated - current).coerceAtLeast(0)
     }

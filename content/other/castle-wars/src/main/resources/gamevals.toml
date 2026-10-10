@@ -6,6 +6,10 @@ castlewars_xp_disabled = 65447
 castlewars_bracelet_charges = 65448
 castlewars_bracelet_paused = 65769
 castlewars_bracelet_active = 65770
+castlewars_tools_recorded = 66900
+castlewars_brought_tinderboxes = 66901
+castlewars_brought_pickaxes = 66902
+castlewars_brought_buckets = 66903
 
 [gamevals.queue]
 castlewars_enter_game = 65437

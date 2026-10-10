@@ -85,11 +85,8 @@ class MiningProductPrepareScript @Inject constructor(private val random: GameRan
         }
         val bar = ORE_TO_BAR[product.item] ?: return
         val smithXp = BAR_SMITH_XP[bar] ?: return
-        if (product.grantsExperience && product.experience > 0.0) {
-            product.player.statAdvance(product.skill, product.experience)
-        }
         product.player.statAdvance("stat.smithing", smithXp / 2)
-        product.cancelled = true
+        product.consumed = true
     }
 
     private fun isSoftClayRock(data: MiningRocksRow): Boolean {

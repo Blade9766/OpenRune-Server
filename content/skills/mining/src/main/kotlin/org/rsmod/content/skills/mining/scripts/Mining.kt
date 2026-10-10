@@ -60,7 +60,6 @@ constructor(
 ) : PluginScript() {
     private val minedOreCounts = HashMap<CoordGrid, Int>()
     private val depletionThresholds = HashMap<CoordGrid, Int>()
-    private val gloveSavedCounts = HashMap<CoordGrid, Int>()
 
     override fun ScriptContext.startup() {
         onOpContentLoc1("content.rock") { attempt(it.loc, it.type) }
@@ -184,7 +183,7 @@ constructor(
                     return
                 }
                 SkillingAwardResult.Cancelled -> Unit
-                SkillingAwardResult.Success -> {
+                SkillingAwardResult.Success -> if (!product.consumed) {
                     spam(
                         "You manage to mine some ${getInvObj(InvObj(product.item)).name.lowercase()}.",
                     )
@@ -283,40 +282,21 @@ constructor(
         if (data.isInfinite) {
             return false
         }
-        val gloveExtras = player.miningGloveExtras(data)
-        if (data.hasDepleteRange) {
-            val range = data.depleteRange
-            val threshold =
-                depletionThresholds.getOrPut(rock.coords) {
-                    random.of(range.first, range.last) + gloveExtras
-                }
-            val newCount = (minedOreCounts[rock.coords] ?: 0) + 1
-            minedOreCounts[rock.coords] = newCount
-            return newCount >= threshold
-        }
-        return handleGloveDeplete(rock, gloveExtras)
-    }
-
-    private fun ProtectedAccess.handleGloveDeplete(
-        rock: BoundLocInfo,
-        extras: Int,
-    ): Boolean {
-        if (extras <= 0) {
-            return true
-        }
-        val current = gloveSavedCounts[rock.coords] ?: 0
-        return if (current != extras) {
-            gloveSavedCounts[rock.coords] = current + 1
-            false
-        } else {
-            true
-        }
+        val baseThreshold =
+            if (data.hasDepleteRange) {
+                val range = data.depleteRange
+                depletionThresholds.getOrPut(rock.coords) { random.of(range.first, range.last) }
+            } else {
+                1
+            }
+        val newCount = (minedOreCounts[rock.coords] ?: 0) + 1
+        minedOreCounts[rock.coords] = newCount
+        return newCount >= baseThreshold + player.miningGloveExtras(data)
     }
 
     private fun clearDepleteState(rock: BoundLocInfo) {
         minedOreCounts.remove(rock.coords)
         depletionThresholds.remove(rock.coords)
-        gloveSavedCounts.remove(rock.coords)
     }
 
     private fun ProtectedAccess.resolveMineItem(data: MiningRocksRow): String? {

@@ -317,8 +317,6 @@ constructor(
     /** Tickets are handed out once the player is back in the lobby, where they have protected access. */
     val pendingTickets: MutableMap<Player, Int> = HashMap()
 
-    val broughtTools: MutableMap<Player, List<Int>> = HashMap()
-
     /* Var syncing */
 
     fun markDirty() {

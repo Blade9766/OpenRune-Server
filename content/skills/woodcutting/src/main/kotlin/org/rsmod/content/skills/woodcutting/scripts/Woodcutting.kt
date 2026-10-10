@@ -121,6 +121,7 @@ constructor(
 
         var cutLogs = false
         var despawn: Boolean
+        val countsYields = !type.hasDespawnTimer && type.treeFixedYields > 0
 
         if (actionDelay < mapClock) {
             actionDelay = mapClock + 3
@@ -132,8 +133,8 @@ constructor(
         if (type.hasDespawnTimer) {
             treeSwingDespawnTick(tree, type)
             despawn = cutLogs && isTreeDespawnRequired(tree)
-        } else if (type.treeFixedYields > 0) {
-            despawn = cutLogs && countYield(tree, type.treeFixedYields)
+        } else if (countsYields) {
+            despawn = false
         } else {
             despawn = cutLogs && random.of(1, 255) > type.treeDepleteChance
         }
@@ -151,10 +152,19 @@ constructor(
                     grantsExperience = true,
                     source = SkillingProductSource.Woodcutting(tree, logs),
                 )
-            when (awardSkillingProduct(product)) {
-                SkillingAwardResult.Success -> spam("You get some ${logs.name.lowercase()}.")
-                SkillingAwardResult.InventoryFull -> despawn = false
-                SkillingAwardResult.Cancelled -> Unit
+            val awarded =
+                when (awardSkillingProduct(product)) {
+                    SkillingAwardResult.Success -> {
+                        spam("You get some ${logs.name.lowercase()}.")
+                        true
+                    }
+                    SkillingAwardResult.InventoryFull -> false
+                    SkillingAwardResult.Cancelled -> true
+                }
+            if (!awarded) {
+                despawn = false
+            } else if (countsYields) {
+                despawn = countYield(tree, type.treeFixedYields)
             }
         }
 

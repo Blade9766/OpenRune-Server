@@ -27,6 +27,30 @@ varp = "varp.castlewars_lanthus"
 startBit = 12
 endBit = 12
 
+[[varbit]]
+id = "varbit.castlewars_tools_recorded"
+varp = "varp.castlewars_lanthus"
+startBit = 13
+endBit = 13
+
+[[varbit]]
+id = "varbit.castlewars_brought_tinderboxes"
+varp = "varp.castlewars_lanthus"
+startBit = 14
+endBit = 18
+
+[[varbit]]
+id = "varbit.castlewars_brought_pickaxes"
+varp = "varp.castlewars_lanthus"
+startBit = 19
+endBit = 23
+
+[[varbit]]
+id = "varbit.castlewars_brought_buckets"
+varp = "varp.castlewars_lanthus"
+startBit = 24
+endBit = 28
+
 [[npc]]
 id = "npc.castlewars_barricade_saradomin_render_under"
 inherit = "npc.castlewars_barricade_saradomin_render_under"

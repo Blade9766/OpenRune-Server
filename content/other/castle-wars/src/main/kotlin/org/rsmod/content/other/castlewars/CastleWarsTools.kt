@@ -2,8 +2,8 @@ package org.rsmod.content.other.castlewars
 
 /**
  * The supply tables hand out ordinary tinderboxes, pickaxes and buckets, which players may also
- * bring in themselves. Each group is counted on entry so that leaving only takes back the ones the
- * game handed out.
+ * bring in themselves. Each group is counted on entry into permanent varbits, so that leaving (even
+ * after a restart) only takes back the ones the game handed out.
  */
 internal object CastleWarsTools {
     val GROUPS: List<List<String>> =
@@ -12,6 +12,17 @@ internal object CastleWarsTools {
             listOf("obj.bronze_pickaxe"),
             listOf("obj.bucket_empty", "obj.bucket_water"),
         )
+
+    val BROUGHT_VARBITS: List<String> =
+        listOf(
+            "varbit.castlewars_brought_tinderboxes",
+            "varbit.castlewars_brought_pickaxes",
+            "varbit.castlewars_brought_buckets",
+        )
+
+    const val RECORDED_VARBIT: String = "varbit.castlewars_tools_recorded"
+
+    const val MAX_RECORDED: Int = 31
 
     fun count(inventories: List<List<Int?>>, groups: List<List<Int>>): List<Int> =
         groups.map { group -> inventories.sumOf { slots -> slots.count { it != null && it in group } } }

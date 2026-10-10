@@ -99,6 +99,7 @@ constructor(
         if (inside || hasGameItems(player)) {
             player.strongQueue(CastleWarsQueues.LEAVE_GAME, 1)
         } else {
+            removeHandedOutTools(player)
             game.clearVars(player)
         }
     }
@@ -121,7 +122,7 @@ constructor(
             invAdd(inv, CastleWars.RUNE_POUCH, strict = false)
         }
         chargeBracelet()
-        game.broughtTools[player] = CastleWarsTools.count(heldIds(player), toolGroups)
+        recordBroughtTools(player)
         game.syncVars(player)
         mes("The game has begun! Take the enemy standard and capture it on your own.")
     }
@@ -218,8 +219,27 @@ constructor(
     private fun heldIds(player: Player): List<List<Int?>> =
         listOf(player.inv, player.worn).map { inventory -> inventory.objs.map { it?.id } }
 
+    private fun recordBroughtTools(player: Player) {
+        val brought = CastleWarsTools.count(heldIds(player), toolGroups)
+        for ((index, varbit) in CastleWarsTools.BROUGHT_VARBITS.withIndex()) {
+            val count = brought.getOrElse(index) { 0 }.coerceAtMost(CastleWarsTools.MAX_RECORDED)
+            VarPlayerIntMapSetter.set(player, varbit, count)
+        }
+        VarPlayerIntMapSetter.set(player, CastleWarsTools.RECORDED_VARBIT, 1)
+    }
+
+    private fun hasToolRecord(player: Player): Boolean =
+        player.vars[CastleWarsTools.RECORDED_VARBIT] != 0
+
     private fun removeHandedOutTools(player: Player) {
-        val brought = game.broughtTools.remove(player) ?: return
+        if (!hasToolRecord(player)) {
+            return
+        }
+        val brought = CastleWarsTools.BROUGHT_VARBITS.map { player.vars[it] }
+        for (varbit in CastleWarsTools.BROUGHT_VARBITS) {
+            VarPlayerIntMapSetter.set(player, varbit, 0)
+        }
+        VarPlayerIntMapSetter.set(player, CastleWarsTools.RECORDED_VARBIT, 0)
         val inventories = listOf(player.inv, player.worn)
         val excess = CastleWarsTools.excess(heldIds(player), toolGroups, brought)
         for ((index, slot) in excess) {

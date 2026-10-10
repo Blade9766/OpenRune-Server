@@ -20,5 +20,6 @@ public sealed class SkillingActionContext {
         public val experienceGranted: Double,
         public val source: SkillingProductSource,
         public val isBonus: Boolean = false,
+        public val consumed: Boolean = false,
     ) : SkillingActionContext()
 }

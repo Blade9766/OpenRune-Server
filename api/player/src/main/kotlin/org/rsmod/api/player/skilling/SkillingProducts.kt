@@ -24,8 +24,7 @@ public fun ProtectedAccess.awardSkillingProduct(product: SkillingProduct): Skill
         return SkillingAwardResult.Cancelled
     }
 
-    val transaction = invAdd(inv, product.item, product.count)
-    if (!transaction.success) {
+    if (!product.consumed && !invAdd(inv, product.item, product.count).success) {
         return SkillingAwardResult.InventoryFull
     }
 
@@ -49,8 +48,7 @@ public fun Player.awardSkillingProduct(
         return SkillingAwardResult.Cancelled
     }
 
-    val transaction = invAdd(inv, product.item, product.count)
-    if (!transaction.success) {
+    if (!product.consumed && !invAdd(inv, product.item, product.count).success) {
         return SkillingAwardResult.InventoryFull
     }
 
@@ -74,5 +72,6 @@ private fun SkillingProduct.toCompleteEvent(): SkillingActionCompleteEvent =
                 experienceGranted = if (grantsExperience) experience else 0.0,
                 source = source,
                 isBonus = isBonus,
+                consumed = consumed,
             ),
     )
