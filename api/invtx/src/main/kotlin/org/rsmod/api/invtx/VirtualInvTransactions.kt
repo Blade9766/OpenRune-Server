@@ -54,26 +54,34 @@ internal fun Player.invDelWithVirtualStorage(
             }
         }
 
-    if (fromInv > 0) {
-        val invResult = raw(inv, type, fromInv, slot, true, placehold, autoCommit)
-        if (invResult.failure) {
-            return invResult
-        }
-        if (fromStorage <= 0) {
-            return invResult.withCompletedCount(count)
-        }
-        val removed = storage.removeFromStorage(this, inv, type, fromStorage)
-        if (removed < fromStorage) {
-            return invResult
-        }
-        return invResult.withCompletedCount(count)
+    if (fromStorage <= 0) {
+        return raw(inv, type, fromInv, slot, true, placehold, autoCommit)
     }
 
     val removed = storage.removeFromStorage(this, inv, type, fromStorage)
     if (removed < fromStorage) {
+        storage.storeIncoming(this, inv, type, removed)
         return raw(inv, type, count, slot, strict, placehold, autoCommit)
     }
-    return virtualOnlyTransactionResult(count, autoCommit)
+
+    val result =
+        if (fromInv > 0) {
+            val invResult = raw(inv, type, fromInv, slot, true, placehold, false)
+            if (invResult.failure) {
+                storage.storeIncoming(this, inv, type, removed)
+                return invResult
+            }
+            invResult.withCompletedCount(count)
+        } else {
+            virtualOnlyTransactionResult(count)
+        }
+    if (autoCommit) {
+        result.commitAll()
+    } else {
+        storage.storeIncoming(this, inv, type, removed)
+        result.onCommit { storage.removeFromStorage(this, inv, type, fromStorage) }
+    }
+    return result
 }
 
 internal fun Player.invAddWithVirtualStorage(
@@ -105,29 +113,37 @@ internal fun Player.invAddWithVirtualStorage(
     }
 
     val redirected = storage.storeIncoming(this, inv, type, count)
-    val toInv = count - redirected
-    if (toInv <= 0) {
-        check(redirected == count) { "Partial virtual add redirect is not supported." }
-        return virtualOnlyTransactionResult(count, autoCommit)
+    if (redirected <= 0) {
+        return raw(inv, type, count, vars, slot, strict, cert, uncert, autoCommit)
     }
-    return raw(inv, type, toInv, vars, slot, strict, cert, uncert, autoCommit)
-}
 
-private fun virtualOnlyTransactionResult(
-    count: Int,
-    autoCommit: Boolean,
-): TransactionResultList<InvObj> {
+    val toInv = count - redirected
     val result =
-        TransactionResultList<InvObj>(
-            output = { null },
-            inventories = emptyList(),
-            results = listOf(TransactionResult.Ok(requested = count, completed = count)),
-        )
+        if (toInv > 0) {
+            val invResult = raw(inv, type, toInv, vars, slot, strict, cert, uncert, false)
+            if (invResult.failure) {
+                storage.removeFromStorage(this, inv, type, redirected)
+                return invResult
+            }
+            invResult.withCompletedCount(redirected + invResult.completed())
+        } else {
+            virtualOnlyTransactionResult(count)
+        }
     if (autoCommit) {
         result.commitAll()
+    } else {
+        storage.removeFromStorage(this, inv, type, redirected)
+        result.onCommit { storage.storeIncoming(this, inv, type, redirected) }
     }
     return result
 }
+
+private fun virtualOnlyTransactionResult(count: Int): TransactionResultList<InvObj> =
+    TransactionResultList(
+        output = { null },
+        inventories = emptyList(),
+        results = listOf(TransactionResult.Ok(requested = count, completed = count)),
+    )
 
 private fun TransactionResultList<InvObj>.withCompletedCount(
     completed: Int,

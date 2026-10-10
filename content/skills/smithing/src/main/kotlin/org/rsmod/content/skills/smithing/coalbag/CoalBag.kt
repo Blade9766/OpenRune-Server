@@ -1,5 +1,7 @@
 package org.rsmod.content.skills.smithing.coalbag
 
+import org.rsmod.api.invtx.invAdd
+import org.rsmod.api.invtx.invDel
 import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.game.entity.Player
 
@@ -7,7 +9,9 @@ object CoalBag {
 
     private var Player.storedCoal by intVarBit("varbit.coal_bag_storage_count")
 
-    fun isCoal(itemInternal: String): Boolean = itemInternal == "obj.coal"
+    private const val COAL = "obj.coal"
+
+    fun isCoal(itemInternal: String): Boolean = itemInternal == COAL
 
     fun isOpenInInventory(player: Player): Boolean = "obj.coal_bag_open" in player.inv
 
@@ -33,6 +37,31 @@ object CoalBag {
         val removed = minOf(player.storedCoal, amount)
         player.storedCoal -= removed
         return removed
+    }
+
+    fun fillFromInventory(player: Player): Int {
+        val toDeposit = minOf(player.inv.physicalCount(COAL), freeSpace(player))
+        if (toDeposit <= 0) {
+            return 0
+        }
+        val removed = player.invDel(player.inv, COAL, toDeposit, ignoreVirtualStorage = true)
+        if (removed.failure) {
+            return 0
+        }
+        addStored(player, toDeposit)
+        return toDeposit
+    }
+
+    fun emptyIntoInventory(player: Player): Int {
+        val stored = storedAmount(player)
+        if (stored <= 0) {
+            return 0
+        }
+        val added =
+            player
+                .invAdd(player.inv, COAL, stored, strict = false, ignoreVirtualStorage = true)
+                .completed()
+        return removeStored(player, added)
     }
 
     fun depositUpTo(player: Player, amount: Int): Int {

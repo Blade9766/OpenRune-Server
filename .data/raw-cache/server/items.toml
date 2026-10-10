@@ -2259,6 +2259,7 @@ inherit = "obj.wild_cave_sceptre_charged_recol"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=27785
 "param.additional_spell_autocast1"=3310
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
@@ -2283,6 +2284,7 @@ inherit = "obj.wild_cave_accursed_charged_recol"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=27676
 "param.additional_spell_autocast1"=3310
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
@@ -49673,6 +49675,7 @@ id = "obj.wild_cave_accursed_uncharged_recol"
 inherit = "obj.wild_cave_accursed_uncharged_recol"
 weaponCategory="Staff"
 [item.params]
+"param.charged_variant"=27679
 "param.attackrate"=5
 
 
@@ -50099,6 +50102,7 @@ id = "obj.wild_cave_sceptre_uncharged_recol"
 inherit = "obj.wild_cave_sceptre_uncharged_recol"
 weaponCategory="Staff"
 [item.params]
+"param.charged_variant"=27788
 "param.attackrate"=5
 
 

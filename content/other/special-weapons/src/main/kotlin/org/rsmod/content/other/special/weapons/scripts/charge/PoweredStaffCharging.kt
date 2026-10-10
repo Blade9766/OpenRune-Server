@@ -316,7 +316,8 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
             }
         }
 
-        val current = charges.getCharges(inventory[slot], CHARGES_VAROBJ)
+        val target = inventory[slot] ?: return
+        val current = charges.getCharges(target, CHARGES_VAROBJ)
         if (current >= spec.max) {
             mes("Your ${spec.name} is already fully charged.")
             return
@@ -330,7 +331,7 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
             return
         }
 
-        applyCharges(spec, inventory, slot, requested)
+        applyCharges(spec, inventory, slot, target, requested)
     }
 
     /**
@@ -341,8 +342,15 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
         spec: ChargeSpec,
         inventory: Inventory,
         slot: Int,
+        target: InvObj,
         requested: Int,
     ) {
+        if (inventory[slot] != target || !charges.canAddCharges(target, CHARGES_VAROBJ, spec.max)) {
+            return
+        }
+        if (spec.cost.any { invTotal(inv, it.obj) < it.count * requested }) {
+            return
+        }
         for (cost in spec.cost) {
             val removed = invDel(inv, cost.obj, cost.count * requested)
             if (removed.failure) {
@@ -373,7 +381,11 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
             mes("Your ${spec.name} has no charges to remove.")
             return
         }
+        val target = inventory[slot]
         if (!confirmUncharge(spec)) {
+            return
+        }
+        if (inventory[slot] != target || !charges.canRemoveAllCharges(target)) {
             return
         }
         val removed = charges.removeAllCharges(inventory, slot, CHARGES_VAROBJ)
@@ -382,10 +394,11 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
 
     /** A "(full)" trident: converts to the uncharged trident and refunds the runes it held. */
     private suspend fun ProtectedAccess.unchargeFull(spec: ChargeSpec, inventory: Inventory, slot: Int) {
+        val target = inventory[slot] ?: return
         if (!confirmUncharge(spec)) {
             return
         }
-        val obj = inventory[slot] ?: return
+        val obj = inventory[slot]?.takeIf { it == target } ?: return
         inventory[slot] = InvObj(spec.uncharged, vars = obj.vars)
         refund(spec, TRIDENT_MAX_CHARGES)
     }
@@ -419,7 +432,8 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
     /* Revenant sceptres */
 
     private suspend fun ProtectedAccess.chargeSceptre(spec: ChargeSpec, inventory: Inventory, slot: Int) {
-        val current = charges.getCharges(inventory[slot], CHARGES_VAROBJ)
+        val target = inventory[slot] ?: return
+        val current = charges.getCharges(target, CHARGES_VAROBJ)
         val ether = invTotal(inv, ETHER)
         val activation = if (current == 0) REVENANT_ACTIVATION_ETHER else 0
         if (ether <= activation) {
@@ -442,6 +456,9 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
             return
         }
 
+        if (inventory[slot] != target || !charges.canAddCharges(target, CHARGES_VAROBJ, spec.max)) {
+            return
+        }
         val removed = invDel(inv, ETHER, activation + requested)
         if (removed.failure) {
             return
@@ -464,6 +481,7 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
             mes("You don't have enough inventory space to uncharge your sceptre.")
             return
         }
+        val target = inventory[slot]
         val confirmation =
             choice2(
                 "Proceed.",
@@ -473,6 +491,9 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
                 title = "Uncharge all the charges from your sceptre?",
             )
         if (!confirmation) {
+            return
+        }
+        if (inventory[slot] != target || !charges.canRemoveAllCharges(target)) {
             return
         }
         val removed = charges.removeAllCharges(inventory, slot, CHARGES_VAROBJ)
@@ -489,6 +510,7 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
     }
 
     private suspend fun ProtectedAccess.dismantleThammaron(inventory: Inventory, slot: Int) {
+        val target = inventory[slot] ?: return
         val confirmation =
             choice2(
                 "Proceed.",
@@ -500,7 +522,7 @@ constructor(private val charges: ObjChargeManager, private val objRepo: ObjRepos
         if (!confirmation) {
             return
         }
-        val obj = inventory[slot] ?: return
+        val obj = inventory[slot]?.takeIf { it == target } ?: return
         val removed = invDel(inventory, getInvObj(obj).internalName, count = 1, slot = slot)
         if (removed.failure) {
             return

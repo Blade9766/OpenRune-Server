@@ -9,6 +9,8 @@ public data class TransactionResultList<T>(
     public var commited: Boolean = false
         private set
 
+    private val commitActions = ArrayList<() -> Unit>(0)
+
     public val size: Int
         get() = results.size
 
@@ -21,7 +23,14 @@ public data class TransactionResultList<T>(
     public fun commitAll() {
         check(!commited) { "Transaction already commited!" }
         inventories.commitAll()
+        commitActions.forEach { it() }
         commited = true
+    }
+
+    /** Runs [action] when this result is committed, alongside its inventory changes. */
+    public fun onCommit(action: () -> Unit) {
+        check(!commited) { "Transaction already commited!" }
+        commitActions += action
     }
 
     public fun single(): TransactionResult = results.single()

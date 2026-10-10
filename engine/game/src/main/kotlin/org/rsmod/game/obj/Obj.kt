@@ -36,6 +36,7 @@ public class Obj(
     public val creationCycle: Int,
     public val receiverId: Long,
     public val ownerId: Long = NULL_OBSERVER_ID,
+    public val vars: Int = 0,
 ) {
     public val x: Int
         get() = coords.x
@@ -126,7 +127,8 @@ public class Obj(
             "count=$count, " +
             "scope=$scope, " +
             "creationCycle=$creationCycle, " +
-            "receiverId=$nullableReceiverId" +
+            "receiverId=$nullableReceiverId, " +
+            "vars=$vars" +
             ")"
 
     public companion object {
@@ -141,10 +143,16 @@ public class Obj(
         }
 
         public fun fromPvp(killer: Player, target: Player, obj: InvObj): Obj {
-            return fromPvp(killer, target, obj.id, obj.count)
+            return fromPvp(killer, target, obj.id, obj.count, obj.vars)
         }
 
-        private fun fromPvp(killer: Player, target: Player, obj: Int, count: Int): Obj {
+        private fun fromPvp(
+            killer: Player,
+            target: Player,
+            obj: Int,
+            count: Int,
+            vars: Int = 0,
+        ): Obj {
             val entity = ObjEntity(obj, count, ObjScope.Private.id)
             return Obj(
                 coords = target.coords,
@@ -152,6 +160,7 @@ public class Obj(
                 creationCycle = killer.currentMapClock,
                 receiverId = killer.observerId(),
                 ownerId = target.observerId(),
+                vars = vars,
             )
         }
 
@@ -160,10 +169,16 @@ public class Obj(
         }
 
         public fun fromPvn(killer: Player, target: Npc, obj: InvObj): Obj {
-            return fromPvn(killer, target.coords, obj.id, obj.count)
+            return fromPvn(killer, target.coords, obj.id, obj.count, obj.vars)
         }
 
-        private fun fromPvn(killer: Player, coords: CoordGrid, obj: Int, count: Int): Obj {
+        private fun fromPvn(
+            killer: Player,
+            coords: CoordGrid,
+            obj: Int,
+            count: Int,
+            vars: Int = 0,
+        ): Obj {
             val entity = ObjEntity(obj, count, ObjScope.Private.id)
             return Obj(
                 coords = coords,
@@ -171,6 +186,7 @@ public class Obj(
                 creationCycle = killer.currentMapClock,
                 receiverId = killer.observerId(),
                 ownerId = killer.observerId(),
+                vars = vars,
             )
         }
 
@@ -183,7 +199,6 @@ public class Obj(
             return fromOwner(player, coords, obj.id, count)
         }
 
-
         public fun fromOwner(
             player: Player,
             coords: CoordGrid,
@@ -194,10 +209,16 @@ public class Obj(
         }
 
         public fun fromOwner(player: Player, coords: CoordGrid, obj: InvObj): Obj {
-            return fromOwner(player, coords, obj.id, obj.count)
+            return fromOwner(player, coords, obj.id, obj.count, obj.vars)
         }
 
-        private fun fromOwner(player: Player, coords: CoordGrid, obj: Int, count: Int): Obj {
+        private fun fromOwner(
+            player: Player,
+            coords: CoordGrid,
+            obj: Int,
+            count: Int,
+            vars: Int = 0,
+        ): Obj {
             val entity = ObjEntity(obj, count, ObjScope.Private.id)
             return Obj(
                 coords = coords,
@@ -205,6 +226,7 @@ public class Obj(
                 creationCycle = player.currentMapClock,
                 receiverId = player.observerId(),
                 ownerId = player.observerId(),
+                vars = vars,
             )
         }
 
@@ -218,12 +240,18 @@ public class Obj(
         }
 
         public fun fromServer(clock: MapClock, coords: CoordGrid, obj: InvObj): Obj {
-            return fromServer(clock, coords, obj.id, obj.count)
+            return fromServer(clock, coords, obj.id, obj.count, obj.vars)
         }
 
-        private fun fromServer(clock: MapClock, coords: CoordGrid, obj: Int, count: Int): Obj {
+        private fun fromServer(
+            clock: MapClock,
+            coords: CoordGrid,
+            obj: Int,
+            count: Int,
+            vars: Int = 0,
+        ): Obj {
             val entity = ObjEntity(obj, count, ObjScope.Temp.id)
-            return Obj(coords, entity, clock.cycle, NULL_OBSERVER_ID)
+            return Obj(coords, entity, clock.cycle, NULL_OBSERVER_ID, vars = vars)
         }
 
         private fun Player.observerId(): Long {

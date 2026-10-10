@@ -25,11 +25,12 @@ class LootingBagTakeHook @Inject constructor() : PlayerObjTakeRedirectHook {
         if (LootingBags.rejection(InvObj(obj.type, obj.count), objType) != null) {
             return false
         }
-        return player.invAdd(player.lootingBag, obj.type, obj.count, autoCommit = false).success
+        return player.invAdd(player.lootingBag, obj.type, obj.count, obj.vars, autoCommit = false)
+            .success
     }
 
     override fun take(player: Player, obj: Obj, objType: ItemServerType): Boolean {
-        val result = player.invAdd(player.lootingBag, obj.type, obj.count)
+        val result = player.invAdd(player.lootingBag, obj.type, obj.count, obj.vars)
         if (result.success) {
             player.saveLootingBag()
         }

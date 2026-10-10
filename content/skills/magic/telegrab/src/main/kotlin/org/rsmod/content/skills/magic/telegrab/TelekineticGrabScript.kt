@@ -50,7 +50,7 @@ constructor(
             mes(denial)
             return
         }
-        if (!player.invAdd(inv, obj.type, obj.count, autoCommit = false).success) {
+        if (!player.invAdd(inv, obj.type, obj.count, vars = obj.vars, autoCommit = false).success) {
             mes(Constants.dm_take_invspace)
             return
         }
@@ -70,7 +70,7 @@ constructor(
 
         delay(TRAVEL_TICKS)
         spotanimMap(worldRepo, IMPACT_SPOTANIM, obj.coords)
-        if (!player.invAdd(inv, obj.type, obj.count, autoCommit = false).success) {
+        if (!player.invAdd(inv, obj.type, obj.count, vars = obj.vars, autoCommit = false).success) {
             mes(Constants.dm_take_invspace)
             return
         }
@@ -78,7 +78,7 @@ constructor(
             mes(Constants.dm_take_taken)
             return
         }
-        player.invAdd(inv, obj.type, obj.count)
+        player.invAdd(inv, obj.type, obj.count, vars = obj.vars)
     }
 
     private val travelSpotanim = SpotanimType(TRAVEL_SPOTANIM.asRSCM(RSCMType.SPOTANIM))

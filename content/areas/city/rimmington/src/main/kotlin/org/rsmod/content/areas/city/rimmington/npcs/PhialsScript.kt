@@ -1,12 +1,20 @@
 package org.rsmod.content.areas.city.rimmington.npcs
 
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import kotlin.math.min
+import org.rsmod.api.invtx.add
+import org.rsmod.api.invtx.delete
+import org.rsmod.api.invtx.invTransaction
+import org.rsmod.api.invtx.select
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpcU
+import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.isType
+import org.rsmod.game.type.uncert
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -81,27 +89,50 @@ class PhialsScript : PluginScript() {
         noteType: ItemServerType,
         count: Int,
     ): String? {
-        val affordable = inv.count("obj.coins") / FEE
-        if (affordable == 0) {
+        if (inv[invSlot]?.isType(noteType) != true) {
+            return null
+        }
+        if (inv.physicalCount(COINS) < FEE) {
             mes("You don't have enough coins to pay for that.")
             return null
         }
-        val space = inv.freeSpace() + if (inv.count("obj.coins") == affordable * FEE) 1 else 0
-        val amount = minOf(count, affordable, space)
-        if (amount == 0) {
+        if (player.exchangeNotes(invSlot, noteType, count) == 0) {
             mes("You don't have enough inventory space.")
             return null
         }
-        invDel(inv, "obj.coins", amount * FEE)
-        val item = ocUncert(noteType)
-        invDel(inv, noteType.internalName, amount, slot = invSlot)
-        invAdd(inv, item.internalName, amount)
         soundSynth("synth.turn_book_page")
-        return item.internalName
+        return ocUncert(noteType).internalName
     }
 
     private companion object {
         const val PHIALS = "npc.uncerter_rimmington"
-        const val FEE = 5
     }
 }
+
+/**
+ * Swaps up to [count] notes in [invSlot] for their unnoted obj at [FEE] coins each, as one
+ * transaction. Returns how many were exchanged; `0` leaves the inventory untouched.
+ */
+internal fun Player.exchangeNotes(invSlot: Int, noteType: ItemServerType, count: Int): Int {
+    val held = inv[invSlot]?.takeIf { it.isType(noteType) }?.count ?: return 0
+    val coins = inv.physicalCount(COINS)
+    val unnoted = uncert(noteType)
+    val upper = minOf(count, held, coins / FEE)
+    val maxSlots = if (unnoted.isStackable) upper else inv.freeSpace() + 2
+    for (amount in minOf(upper, maxSlots) downTo 1) {
+        val exchange =
+            invTransaction(inv) {
+                val target = select(inv)
+                delete(target, COINS.asRSCM(RSCMType.OBJ), amount * FEE)
+                delete(target, noteType.id, amount, slot = invSlot)
+                add(target, unnoted.id, amount)
+            }
+        if (exchange.success) {
+            return amount
+        }
+    }
+    return 0
+}
+
+internal const val FEE = 5
+private const val COINS = "obj.coins"
