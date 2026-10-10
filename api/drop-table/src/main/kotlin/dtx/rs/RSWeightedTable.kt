@@ -30,12 +30,12 @@ public class RSWeightedTable<T, R>(
     }
 
     public override val maxRoll: Double
-        get() = tableEntries.maxOf { it.weight }
+        get() = tableEntries.maxOfOrNull { it.weight } ?: 0.0
 
     override fun selectResult(target: T, otherArgs: ArgMap): RollResult<R> {
         val entries = selectEntries(target, otherArgs)
 
-        if (tableEntries.isEmpty()) {
+        if (entries.isEmpty()) {
             return RollResult.Nothing()
         }
 
@@ -43,7 +43,10 @@ public class RSWeightedTable<T, R>(
             return tableEntries.first().roll(target, otherArgs)
         }
 
-        val localMax = entries.maxOf { it.rangeEnd }
+        val localMax = entries.last().rangeEnd
+        if (localMax <= 0) {
+            return RollResult.Nothing()
+        }
 
         if (entries.any { it.boosted }) {
             val multiplier = RateBoosts.multiplierFor(target, otherArgs)
