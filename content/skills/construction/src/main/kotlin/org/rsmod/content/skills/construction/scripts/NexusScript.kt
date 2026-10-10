@@ -7,10 +7,12 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.magic.MagicSpell
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.player.output.ClientScripts
 import org.rsmod.api.player.output.UpdateInventory
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.vars.resyncVar
+import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onIfModalDrag
 import org.rsmod.api.script.onIfModalPauseButton
@@ -83,6 +85,7 @@ constructor(
         onIfModalButton(CLICK_TEXT) { edit { leftClick = 0 } }
         onIfModalButton(DONE) { if (working().sameAs(saved(player))) ifClose() }
         onIfModalButton(CONFIRM) { save() }
+        onIfClose(MENU) { ClientScripts.chatDefaultRestoreInput(player) }
         onIfModalPauseButton(MENU_OPTIONS) { setScryMode(it.comsub == SCRY_MODE_ROW) }
         for (rows in listOf(MENU_ROWS, MENU_KEYS)) {
             onIfModalPauseButton(rows) { pickRow(it.comsub, secondPlace = false) }

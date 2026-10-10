@@ -34,7 +34,7 @@ constructor(private val rules: TearsOfGuthixRules, private val streams: TearStre
         player.togCollecting = true
         access.invAdd(access.worn, STONE_BOWL, slot = Wearpos.RightHand.slot)
         access.rebuildAppearance()
-        access.ifOpenOverlay(PANEL)
+        access.ifOpenOverlay(PANEL, PANEL_TARGET)
         access.telejump(CHAMBER_ENTRY, TeleportType.Exempt)
         streams.advance()
         player.softTimer(TIMER, 1)
@@ -130,6 +130,7 @@ constructor(private val rules: TearsOfGuthixRules, private val streams: TearStre
 
     companion object {
         const val PANEL = "interface.tog_sidepanel"
+        const val PANEL_TARGET = "component.toplevel_osrs_stretch:overlay_hud"
         const val TIMER = "timer.tog_tears"
         const val DRINK_QUEUE = "queue.tog_drink"
         const val LEAN_FORWARD_SEQ = "seq.tog_lean_forward_bowl"

@@ -8,6 +8,7 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.player.music.MusicPlayer
+import org.rsmod.api.player.output.ClientScripts
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.ui.ifCloseOverlay
@@ -234,6 +235,7 @@ constructor(private val musicPlayer: MusicPlayer, private val eventBus: EventBus
     private fun Player.closeColourPicker(input: Int) {
         settingsColourModalOpened = 0
         ifCloseOverlay("interface.colour_pallet", eventBus)
+        ClientScripts.chatDefaultRestoreInput(this)
         if (input == COLOUR_PALLET_CANCELLED) {
             return
         }

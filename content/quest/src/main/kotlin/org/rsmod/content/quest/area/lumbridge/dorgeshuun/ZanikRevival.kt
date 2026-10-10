@@ -212,7 +212,7 @@ constructor(
     private suspend fun ProtectedAccess.beginCollecting() {
         player.dttdCollectingTears = true
         player.dttdTearsCollected = 0
-        ifOpenOverlay(TEARS_PANEL)
+        ifOpenOverlay(TEARS_PANEL, TEARS_PANEL_TARGET)
         ifSetText(TEARS_COUNT, "0")
         telejump(CHAMBER_ENTRY, TeleportType.Exempt)
     }
@@ -359,6 +359,7 @@ constructor(
         const val ROCKS_TO_MINE = "loc.tog_climbing_rocks_down"
 
         const val TEARS_PANEL = "interface.tog_sidepanel"
+        const val TEARS_PANEL_TARGET = "component.toplevel_osrs_stretch:overlay_hud"
         const val TEARS_COUNT = "component.tog_sidepanel:count"
 
         const val PICKUP_SEQ = "seq.human_pickupfloor"

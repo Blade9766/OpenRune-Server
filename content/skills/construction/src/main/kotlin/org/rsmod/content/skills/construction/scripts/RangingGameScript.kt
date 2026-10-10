@@ -70,7 +70,7 @@ constructor(
         val seq = fire(game) ?: return
         val entry = score ?: HouseGames.Score().also { round.scores[player] = it }
         if (entry.shots == 0) {
-            player.ifOpenOverlay(SCOREBOARD, eventBus)
+            player.ifOpenOverlay(SCOREBOARD, SCOREBOARD_TARGET, eventBus)
         }
         anim(seq)
         delay(SHOT_TICKS)
@@ -200,6 +200,7 @@ constructor(
     private companion object {
         const val RANGED = "stat.ranged"
         const val SCOREBOARD = "interface.poh_ranging"
+        const val SCOREBOARD_TARGET = "component.toplevel_osrs_stretch:overlay_hud"
         const val PLAYER = "player"
         const val SHOTS = "shots"
         const val SCORE = "score"
