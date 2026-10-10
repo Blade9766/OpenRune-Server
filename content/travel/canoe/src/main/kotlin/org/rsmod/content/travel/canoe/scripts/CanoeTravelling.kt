@@ -7,6 +7,7 @@ import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.output.ClientScripts.chatDefaultRestoreInput
 import org.rsmod.api.player.output.ClientScripts.highlightingOff
 import org.rsmod.api.player.output.ClientScripts.highlightingOn
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -16,6 +17,7 @@ import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.region.RegionRepository
 import org.rsmod.api.repo.region.RegionTemplate
 import org.rsmod.api.script.onAiTimer
+import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.game.entity.Npc
@@ -60,6 +62,8 @@ class CanoeTravelling @Inject private constructor(private val cutscene: CanoeCut
         }
 
         onIfModalButton("component.canoe_map_lum:destination_6") { selectWildernessPond() }
+
+        onIfClose("interface.canoe_map_lum") { chatDefaultRestoreInput(player) }
     }
 
     private fun ProtectedAccess.openDestinationModal(canoe: Canoe) {
