@@ -55,7 +55,12 @@ public val overheadProtectionPrayerVarbits: List<String> =
 
 public fun Player.lockOverheads(cycles: Int) {
     require(cycles > 0) { "`cycles` must be greater than 0. (cycles=$cycles)" }
+    disableOverheadPrayers()
+    overheadLockExpiration = currentMapClock + cycles
+}
 
+/** Turns off the protection overheads, leaving every other prayer on. */
+public fun Player.disableOverheadPrayers() {
     val hadProtection = protectFromMelee != 0 || protectFromMissiles != 0 || protectFromMagic != 0
     protectFromMelee = 0
     protectFromMissiles = 0
@@ -70,8 +75,6 @@ public fun Player.lockOverheads(cycles: Int) {
             clearSoftTimer("timer.prayer_drain")
         }
     }
-
-    overheadLockExpiration = currentMapClock + cycles
 }
 
 public val Player.overheadsLocked: Boolean
@@ -123,6 +126,20 @@ public fun Player.isInPvpCombat(): Boolean {
 public fun Player.isInPvnCombat(): Boolean {
     return vars["varp.lastcombat"] + constants.combat_activecombat_delay >= currentMapClock
 }
+
+/**
+ * `true` while something stops this player leaving the world as they are - combat, most commonly.
+ * Shared with the world-type switch, which discards the same state a logout would.
+ *
+ * [Player.preventLogoutUntil] alone is not enough: it is only set when the player takes a hit or
+ * retaliates, so an aggressor who is never hit back would slip through.
+ */
+public fun Player.isLogoutBlocked(): Boolean =
+    currentMapClock <= preventLogoutUntil || isInCombat()
+
+/** Why [isLogoutBlocked] is `true`, phrased for the player. */
+public fun Player.logoutBlockedMessage(): String =
+    preventLogoutMessage ?: "You can't log out until 10 seconds after the end of combat."
 
 public fun Player.subjectPronoun(): String {
     appearance.pronoun = vars["varbit.settings_transmit_pronouns"]

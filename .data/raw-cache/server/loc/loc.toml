@@ -54,6 +54,36 @@ inherit = "loc.bookcase"
 contentGroup = "content.bookcase"
 
 [[object]]
+id = "loc.gauntlet_tree"
+inherit = "loc.gauntlet_tree"
+contentGroup = "content.tree"
+
+[object.params]
+"param.levelrequire" = 1
+"param.woodcutting_axe_success_rates" = "enum.gauntlet_tree_axes"
+"param.woodcutting_fixed_yields" = 3
+"param.respawn_time" = 2147483647
+"param.deplete_chance" = 0
+"param.skill_productitem" = "obj.gauntlet_bark"
+"param.skill_xp" = 100
+"param.next_loc_stage" = "loc.gauntlet_tree_depleted"
+
+[[object]]
+id = "loc.gauntlet_tree_hm"
+inherit = "loc.gauntlet_tree_hm"
+contentGroup = "content.tree"
+
+[object.params]
+"param.levelrequire" = 1
+"param.woodcutting_axe_success_rates" = "enum.gauntlet_tree_axes"
+"param.woodcutting_fixed_yields" = 3
+"param.respawn_time" = 2147483647
+"param.deplete_chance" = 0
+"param.skill_productitem" = "obj.gauntlet_bark_hm"
+"param.skill_xp" = 100
+"param.next_loc_stage" = "loc.gauntlet_tree_depleted_hm"
+
+[[object]]
 id = "loc.tree"
 inherit = "loc.tree"
 contentGroup = "content.tree"
@@ -734,6 +764,11 @@ inherit = "loc.fai_varrock_posh_bookcase_short_east_offset"
 contentGroup = "content.bookcase"
 
 [[object]]
+id = "loc.fat_cow"
+inherit = "loc.fat_cow"
+contentGroup = "content.dairy_cow"
+
+[[object]]
 id = "loc.fat_cow_fawest"
 inherit = "loc.fat_cow_fawest"
 contentGroup = "content.dairy_cow"
@@ -1038,6 +1073,19 @@ contentGroup = "content.ladder_up"
 id = "loc.laddermiddle"
 inherit = "loc.laddermiddle"
 contentGroup = "content.ladder_option"
+
+[[object]]
+id = "loc.laddertop_directional"
+inherit = "loc.laddertop_directional"
+contentGroup = "content.ladder_down"
+
+[object.params]
+"param.climb_anim" = "seq.human_pickupfloor"
+
+[[object]]
+id = "loc.ladder_directional"
+inherit = "loc.ladder_directional"
+contentGroup = "content.ladder_up"
 
 [[object]]
 id = "loc.ladder_from_cellar"
@@ -1523,6 +1571,26 @@ inherit = "loc.hos_cooking_range_02"
 contentGroup = "content.cooking_range_hosidius"
 
 # Mining rocks (data in dbtable.mining_rocks; locs only keep content group)
+
+[[object]]
+id = "loc.gauntlet_range"
+inherit = "loc.gauntlet_range"
+contentGroup = "content.cooking_range_standard"
+
+[[object]]
+id = "loc.gauntlet_range_hm"
+inherit = "loc.gauntlet_range_hm"
+contentGroup = "content.cooking_range_standard"
+
+[[object]]
+id = "loc.gauntlet_rock"
+inherit = "loc.gauntlet_rock"
+contentGroup = "content.rock"
+
+[[object]]
+id = "loc.gauntlet_rock_hm"
+inherit = "loc.gauntlet_rock_hm"
+contentGroup = "content.rock"
 
 [[object]]
 id = "loc.clayrock1"
@@ -2133,3 +2201,251 @@ contentGroup = "content.minnow_rowboat_to_island"
 id = "loc.minnow_rowboat_leave"
 inherit = "loc.minnow_rowboat_leave"
 contentGroup = "content.minnow_rowboat_to_guild"
+
+# Dwarven Mine
+
+[[object]]
+id = "loc.crate2"
+inherit = "loc.crate2"
+contentGroup = "content.empty_crate"
+
+[object.params]
+"param.game_message" = "You search the crate but find nothing."
+
+[[object]]
+id = "loc.crate_old"
+inherit = "loc.crate_old"
+contentGroup = "content.empty_crate"
+
+[object.params]
+"param.game_message" = "You search the crate but find nothing."
+
+[[object]]
+id = "loc.boxes3"
+inherit = "loc.boxes3"
+contentGroup = "content.empty_boxes"
+
+[object.params]
+"param.game_message" = "There is nothing interesting in these boxes."
+
+[[object]]
+id = "loc.dwarfrock_book_cart"
+inherit = "loc.dwarfrock_book_cart"
+contentGroup = "content.empty_crate"
+
+[object.params]
+"param.game_message" = "You search the cart but find nothing."
+
+[[object]]
+id = "loc.fai_dwarf_trapdoor_down"
+inherit = "loc.fai_dwarf_trapdoor_down"
+contentGroup = "content.dungeonladder_down"
+
+[object.params]
+"param.climb_anim" = "seq.human_pickupfloor"
+
+[[object]]
+id = "loc.ladder_from_cellar_directional"
+inherit = "loc.ladder_from_cellar_directional"
+contentGroup = "content.dungeonladder_up"
+
+# Falador
+
+[[object]]
+id = "loc.fai_falador_poor_door"
+inherit = "loc.fai_falador_poor_door"
+contentGroup = "content.closed_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_open"
+
+[[object]]
+id = "loc.fai_falador_poor_door_open"
+inherit = "loc.fai_falador_poor_door_open"
+contentGroup = "content.opened_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door"
+
+[[object]]
+id = "loc.fai_falador_poor_door_closed_m"
+inherit = "loc.fai_falador_poor_door_closed_m"
+contentGroup = "content.closed_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_open_m"
+
+[[object]]
+id = "loc.fai_falador_poor_door_open_m"
+inherit = "loc.fai_falador_poor_door_open_m"
+contentGroup = "content.opened_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_closed_m"
+
+[[object]]
+id = "loc.fai_falador_poor_door_taller"
+inherit = "loc.fai_falador_poor_door_taller"
+contentGroup = "content.closed_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_open_taller"
+
+[[object]]
+id = "loc.fai_falador_poor_door_open_taller"
+inherit = "loc.fai_falador_poor_door_open_taller"
+contentGroup = "content.opened_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_taller"
+
+[[object]]
+id = "loc.fai_falador_poor_castle_door"
+inherit = "loc.fai_falador_poor_castle_door"
+contentGroup = "content.closed_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_castle_door_open"
+
+[[object]]
+id = "loc.fai_falador_poor_castle_door_open"
+inherit = "loc.fai_falador_poor_castle_door_open"
+contentGroup = "content.opened_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_castle_door"
+
+[[object]]
+id = "loc.fai_falador_poor_door_flip"
+inherit = "loc.fai_falador_poor_door_flip"
+contentGroup = "content.closed_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_open_flip"
+
+[[object]]
+id = "loc.fai_falador_poor_door_open_flip"
+inherit = "loc.fai_falador_poor_door_open_flip"
+contentGroup = "content.opened_single_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_poor_door_flip"
+
+[[object]]
+id = "loc.fai_falador_castledoubledoorl"
+inherit = "loc.fai_falador_castledoubledoorl"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_opencastledoubledoorl"
+
+[[object]]
+id = "loc.fai_falador_opencastledoubledoorl"
+inherit = "loc.fai_falador_opencastledoubledoorl"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_castledoubledoorl"
+
+[[object]]
+id = "loc.fai_falador_castledoubledoorr"
+inherit = "loc.fai_falador_castledoubledoorr"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_opencastledoubledoorr"
+
+[[object]]
+id = "loc.fai_falador_opencastledoubledoorr"
+inherit = "loc.fai_falador_opencastledoubledoorr"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_castledoubledoorr"
+
+[[object]]
+id = "loc.fai_falador_double_door_l"
+inherit = "loc.fai_falador_double_door_l"
+contentGroup = "content.closed_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_double_door_l_open"
+
+[[object]]
+id = "loc.fai_falador_double_door_l_open"
+inherit = "loc.fai_falador_double_door_l_open"
+contentGroup = "content.opened_left_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_double_door_l"
+
+[[object]]
+id = "loc.fai_falador_double_door_r"
+inherit = "loc.fai_falador_double_door_r"
+contentGroup = "content.closed_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_double_door_r_open"
+
+[[object]]
+id = "loc.fai_falador_double_door_r_open"
+inherit = "loc.fai_falador_double_door_r_open"
+contentGroup = "content.opened_right_door"
+
+[object.params]
+"param.next_loc_stage" = "loc.fai_falador_double_door_r"
+
+[[object]]
+id = "loc.fai_falador_spiralstairs"
+inherit = "loc.fai_falador_spiralstairs"
+contentGroup = "content.spiralstaircase_up"
+
+[[object]]
+id = "loc.fai_falador_castle_spiralstairs"
+inherit = "loc.fai_falador_castle_spiralstairs"
+contentGroup = "content.spiralstaircase_up"
+
+[[object]]
+id = "loc.fai_falador_spiralstairstop"
+inherit = "loc.fai_falador_spiralstairstop"
+contentGroup = "content.spiralstaircase_down"
+
+[[object]]
+id = "loc.fai_falador_castle_spiralstairstop"
+inherit = "loc.fai_falador_castle_spiralstairstop"
+contentGroup = "content.spiralstaircase_down"
+
+[[object]]
+id = "loc.fai_falador_ladder"
+inherit = "loc.fai_falador_ladder"
+contentGroup = "content.ladder_up"
+
+[[object]]
+id = "loc.fai_falador_ladder_taller"
+inherit = "loc.fai_falador_ladder_taller"
+contentGroup = "content.ladder_up"
+
+[[object]]
+id = "loc.fai_falador_castle_ladder_up"
+inherit = "loc.fai_falador_castle_ladder_up"
+contentGroup = "content.ladder_up"
+
+[[object]]
+id = "loc.fai_falador_ladder_top"
+inherit = "loc.fai_falador_ladder_top"
+contentGroup = "content.ladder_down"
+
+[[object]]
+id = "loc.fai_falador_ladder_top_forceapproach_north"
+inherit = "loc.fai_falador_ladder_top_forceapproach_north"
+contentGroup = "content.ladder_down"
+
+[[object]]
+id = "loc.fai_falador_castle_laddertop"
+inherit = "loc.fai_falador_castle_laddertop"
+contentGroup = "content.ladder_down"
+
+[[object]]
+id = "loc.duke_sucellus_salt"
+inherit = "loc.duke_sucellus_salt"
+contentGroup = "content.rock"

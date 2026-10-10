@@ -219,6 +219,12 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.disease_immunity"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
 id = "varp.poison_severity"
 scope = "Perm"
 transmit = "Never"
@@ -831,5 +837,77 @@ transmit = "Never"
 [[varp]]
 isServerOnly = true
 id = "varp.overhead_lock_expiration"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.drop_rate_multiplier"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+[[varp]]
+id = "varp.wilderness_boss_fee_nowarn"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+id = "varp.barrows_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.barrows_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.dom_loot_claimed"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.gauntlet_reward_tier"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.gauntlet_flags"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.gauntlet_points"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hpbar_open_generation"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.aggression_tolerance_start"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.aggression_tolerance_anchor"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.aggression_tolerance_seen"
 scope = "Temp"
 transmit = "Never"

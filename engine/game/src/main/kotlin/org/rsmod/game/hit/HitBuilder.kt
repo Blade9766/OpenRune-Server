@@ -1,5 +1,6 @@
 package org.rsmod.game.hit
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.types.ItemServerType
 
 public class HitBuilder(
@@ -21,9 +22,21 @@ public class HitBuilder(
     private val targetMaxDamageThreshold: Int,
     private val sourceMaxDamageThreshold: Int,
 ) {
+    /**
+     * Percentage (0-100) of a protection prayer's damage block that this hit ignores. `0` (the
+     * default) preserves the prayer's normal full block.
+     */
+    public var penetration: Int = 0
+
     public fun isRighthandObj(type: ItemServerType): Boolean = type.id == righthandType
 
     public fun isSecondaryObj(type: ItemServerType): Boolean = type.id == secondaryType
+
+    public fun righthandType(): ItemServerType? =
+        righthandType?.let { ServerCacheManager.getItem(it) }
+
+    public fun secondaryType(): ItemServerType? =
+        secondaryType?.let { ServerCacheManager.getItem(it) }
 
     public fun build(): Hit {
         val hitmark = buildHitmark()

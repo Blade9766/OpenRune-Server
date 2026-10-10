@@ -1,26 +1,18 @@
 package org.rsmod.api.bosses.spec
 
 sealed interface Selector {
-    data class WeightedRandom(
-        val entries: List<WeightedRef> = emptyList(),
-        val noRepeatBias: Double = 0.5,
-    ) : Selector {
-        constructor(vararg entries: WeightedRef, noRepeatBias: Double = 0.5) :
-            this(entries.toList(), noRepeatBias)
+    data class WeightedRandom(val entries: List<WeightedRef> = emptyList()) : Selector {
+        constructor(vararg entries: WeightedRef) : this(entries.toList())
     }
 
     data class Rotation(val sequence: List<String>, val randomStart: Boolean = false) : Selector
-
-    data class Conditional(
-        val branches: List<Pair<Condition, String>>,
-        val fallback: String,
-    ) : Selector
 }
 
 data class WeightedRef(
     val ability: String,
     val weight: Int = 1,
     val cooldown: Int = 0,
+    val persistCooldown: Boolean = false,
     val requires: Condition = Condition.Always,
 )
 

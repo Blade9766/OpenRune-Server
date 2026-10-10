@@ -45,6 +45,9 @@ class RspCycle(
 
     private var knownBuildArea: CoordGrid = CoordGrid.NULL
 
+    /** Set by [forceSceneRebuild]; cleared once [rebuildArea] has acted on it. */
+    private var pendingSceneRebuild: Boolean = false
+
     private var knownCachedSpeed: MoveSpeed = MoveSpeed.Stationary
 
     private var knownFaceEntity: Int? = -1
@@ -52,6 +55,8 @@ class RspCycle(
     private var knownRegionUid: Int? = null
 
     private var cachedRegionZoneProvider: RebuildRegionV2.RebuildRegionZoneProvider? = null
+
+    private var knownNpcViewDistance: Int? = null
 
     private val playerInfo
         get() = infos.playerInfo
@@ -67,6 +72,13 @@ class RspCycle(
         player.queueRebuildLogin()
     }
 
+    override fun forceSceneRebuild() {
+        // A flag, not a cleared `knownBuildArea`: `NULL` there means "login rebuild already sent".
+        pendingSceneRebuild = true
+        knownRegionUid = null
+        cachedRegionZoneProvider = null
+    }
+
     private fun Player.queueRebuildLogin() {
         val rebuild = RebuildLoginV2(x shr 3, z shr 3, worldId, playerInfo)
         session.queue(rebuild)
@@ -76,6 +88,7 @@ class RspCycle(
         player.updateMoveSpeed()
         player.updateCoords()
         player.rebuildArea()
+        player.syncNpcViewDistance()
         player.applyExactMove()
         player.applyPublicMessage()
         player.applyFacePathingEntity()
@@ -83,6 +96,7 @@ class RspCycle(
         player.applyAnim()
         player.applySpotanims()
         player.applySay()
+        player.applyTinting()
         player.applyHeadbars()
         player.applyHitmarks()
         player.syncAppearance()
@@ -176,16 +190,25 @@ class RspCycle(
     }
 
     private fun Player.rebuildArea() {
-        val recalcBuildArea = knownBuildArea != buildArea && buildArea != CoordGrid.NULL
+        val staleBuildArea = pendingSceneRebuild || knownBuildArea != buildArea
+        val recalcBuildArea = staleBuildArea && buildArea != CoordGrid.NULL
         if (recalcBuildArea) {
             val zone = ZoneKey.from(buildArea)
             val area = BuildArea(zone.x, zone.z)
             infos.updateRootBuildArea(area)
         }
 
-        if (!recalcBuildArea) {
+        val forceRegionRebuild =
+            regionRebuildPending && regionUid != null && knownBuildArea != CoordGrid.NULL
+        if (forceRegionRebuild) {
+            knownRegionUid = null
+            cachedRegionZoneProvider = null
+        }
+
+        if (!recalcBuildArea && !forceRegionRebuild) {
             return
         }
+        pendingSceneRebuild = false
 
         // Skip log-in rebuild as RebuildLogin is already sent.
         if (knownBuildArea == CoordGrid.NULL) {
@@ -222,6 +245,23 @@ class RspCycle(
         knownBuildArea = buildArea
         cachedRegionZoneProvider = zoneProvider
         session.queue(rebuild)
+    }
+
+    private fun Player.syncNpcViewDistance() {
+        val distance = npcViewDistance
+        if (distance == knownNpcViewDistance) {
+            return
+        }
+        val npcInfo = infos.npcInfo
+        if (distance == null) {
+            npcInfo.resetRenderDistance()
+            npcInfo.setZoneSearchRadius(DEFAULT_NPC_ZONE_SEARCH_RADIUS)
+        } else {
+            npcInfo.setRenderDistance(distance)
+            val radius = (distance + ZONE_SIZE - 1) / ZONE_SIZE
+            npcInfo.setZoneSearchRadius(maxOf(DEFAULT_NPC_ZONE_SEARCH_RADIUS, radius))
+        }
+        knownNpcViewDistance = distance
     }
 
     private fun createRegionZoneProvider(region: Region): RebuildRegionV2.RebuildRegionZoneProvider {
@@ -288,6 +328,18 @@ class RspCycle(
     private fun Player.applySay() {
         val text = pendingSay ?: return
         playerExtendedInfo.setSay(text)
+    }
+
+    private fun Player.applyTinting() {
+        val tint = pendingTinting ?: return
+        playerExtendedInfo.setTinting(
+            startTime = tint.startCycle,
+            endTime = tint.endCycle,
+            hue = tint.hue and 0xFF,
+            saturation = tint.saturation and 0xFF,
+            lightness = tint.lightness and 0xFF,
+            weight = tint.weight and 0xFF,
+        )
     }
 
     private fun Player.applyExactMove() {
@@ -432,5 +484,10 @@ class RspCycle(
             val objType = getInvObj(obj)
             info.setWornObj(wearpos.slot, obj.id, objType.wearpos2, objType.wearpos3)
         }
+    }
+
+    private companion object {
+        private const val ZONE_SIZE = 8
+        private const val DEFAULT_NPC_ZONE_SEARCH_RADIUS = 3
     }
 }

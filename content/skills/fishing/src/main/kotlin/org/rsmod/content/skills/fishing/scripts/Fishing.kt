@@ -24,10 +24,9 @@ import org.rsmod.api.table.cooking.CookingFoodsRow
 import org.rsmod.api.table.fishing.FishingMethodRow
 import org.rsmod.api.table.fishing.FishingSpotDefRow
 import org.rsmod.api.table.fishing.FishingSpotRow
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.fishing.FishRow
 import org.rsmod.content.skills.fishing.FishingCatchLogic
-import org.rsmod.content.skills.fishing.HeronPet.rollHeron
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.fishing.Gate
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Npc
@@ -116,7 +115,11 @@ constructor(
      * Op entry point. Validates the attempt, plays the animation, and hands the catch cycle over to
      * a weak queue so that anything which interrupts the player also stops the fishing.
      */
-    private fun ProtectedAccess.fish(npc: Npc, spot: FishingSpotDefRow, method: FishingMethodRow) {
+    private suspend fun ProtectedAccess.fish(
+        npc: Npc,
+        spot: FishingSpotDefRow,
+        method: FishingMethodRow,
+    ) {
         if (method.tool == HARPOON && !hasMethodTool(method) && carrying(DRAGON_HARPOON)) {
             mes("You need a Fishing level of $DRAGON_HARPOON_LEVEL to use the dragon harpoon.")
         }
@@ -124,12 +127,17 @@ constructor(
         val attempt = prepare(spot, method, verbose = true) ?: return
 
         startAnim(attempt)
+        if (attempt.active.tool == SMALL_NET) {
+            spam("You cast out your net...")
+        } else if (attempt.active.tool in FISHING_RODS) {
+            spam("You cast out your line...<br>You attempt to catch a fish.")
+        }
 
         clearWeakQueue(CATCH_QUEUE)
         weakQueue(CATCH_QUEUE, rollDelay(attempt.bait), FishTask(npc, npc.uid, spot, method))
     }
 
-    private fun ProtectedAccess.attemptCatch(task: FishTask) {
+    private suspend fun ProtectedAccess.attemptCatch(task: FishTask) {
         // The spot can despawn or hop to another tile while the cycle is running.
         if (task.npc.uid != task.uid) {
             return
@@ -156,7 +164,7 @@ constructor(
      * Returns `null` when the attempt cannot go ahead; [verbose] controls whether the reason is
      * reported, since the queue re-checks every cycle and should stay silent.
      */
-    private fun ProtectedAccess.prepare(
+    private suspend fun ProtectedAccess.prepare(
         spot: FishingSpotDefRow,
         method: FishingMethodRow,
         verbose: Boolean,
@@ -176,7 +184,7 @@ constructor(
 
         when (FishingCatchLogic.attemptGate(active.bait, hasMethodTool(active), hasBait, unlocked)) {
             Gate.NoTool -> {
-                if (verbose) mes(active.msg)
+                if (verbose) mesbox(active.msg)
                 return null
             }
             Gate.NoBait -> {
@@ -267,14 +275,13 @@ constructor(
                 source = SkillingProductSource.Fishing(type),
             )
         val item = product.item
-        rollHeron(item, sharkLureRarity(if (caught.fishId == rawSharkId.asRSCM()) lures else 0))
         if (awardSkillingProduct(product) != SkillingAwardResult.Success) {
             return
         }
 
         val name = type.name.lowercase()
         val article = if (active.article == "some") "some" else if (name.firstOrNull() in vowels) "an" else "a"
-        spam("You catch $article $name.")
+        spam("You catch $article $name")
         if (infernalHarpoon) {
             cookInfernalCatch(item, product.count)
         }
@@ -423,15 +430,6 @@ constructor(
             else -> 0.25
         }
 
-    /** Shark lures make the heron 4x, 5x or 6x rarer depending on how many are spent. */
-    private fun sharkLureRarity(lures: Int): Int =
-        when (lures) {
-            5 -> 6
-            3 -> 5
-            1 -> 4
-            else -> 1
-        }
-
     /**
      * The infernal harpoon cooks and destroys one in three catches, awarding half of the Cooking
      * experience the fish would have given when cooked normally. Fish with no Cooking entry are
@@ -457,6 +455,7 @@ constructor(
 
         private const val CATCH_CYCLE = 5
         private const val ANIM_REFRESH = 4
+        private const val SMALL_NET = "obj.net"
         private const val HARPOON = "obj.harpoon"
         private const val DRAGON_HARPOON = "obj.dragon_harpoon"
         private const val DRAGON_HARPOON_LEVEL = 61
@@ -470,6 +469,9 @@ constructor(
         private const val CRYSTAL_HARPOON_BONUS = 35
         private const val SONG_OF_THE_ELVES = "quest_songoftheelves"
 
+        private const val FISHING_ROD = "obj.fishing_rod"
+        private const val FLY_FISHING_ROD = "obj.fly_fishing_rod"
+        private const val OILY_FISHING_ROD = "obj.oily_fishing_rod"
         private const val BARBARIAN_ROD = "obj.brut_fishing_rod"
         private const val SANDWORMS = "obj.piscarilius_sandworms"
         private const val SPIRIT_FLAKES = "obj.spirit_flakes"
@@ -485,5 +487,8 @@ constructor(
         private const val RADAS_BLESSING_4 = "obj.zeah_blessing_elite"
 
         private val SHARK_LURE_QUANTITIES = listOf(1, 3, 5)
+
+        private val FISHING_RODS =
+            setOf(FISHING_ROD, FLY_FISHING_ROD, OILY_FISHING_ROD, BARBARIAN_ROD)
     }
 }

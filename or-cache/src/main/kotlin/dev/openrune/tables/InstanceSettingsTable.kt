@@ -48,9 +48,9 @@ object InstanceSettingsTable {
             column(MAX_PLAYERS, 20)
             column(TIME_LIMIT_MINUTES, 0)
             column(GRACE_MINUTES, 10)
-            columnRSCM(BOSS_NPC, "npc.rat_boss_normal","npc.rat_boss_instance")
+            columnRSCM(BOSS_NPC, "npc.rat_boss_normal", "npc.rat_boss_instance")
             column(BOSS_NAME, "Scurrius")
-            column(RECOMMENDED_COMBAT, 60,90)
+            column(RECOMMENDED_COMBAT, 60, 90)
             column(TEAM_SIZE, 20)
             column(LOOT_MULTIPLIER, "x1.0")
             column(DESCRIPTION, "King of the rats.")
@@ -68,7 +68,7 @@ object InstanceSettingsTable {
             column(GRACE_MINUTES, 10)
             columnRSCM(BOSS_NPC, "npc.king_dragon")
             column(BOSS_NAME, "King Black Dragon")
-            column(RECOMMENDED_COMBAT, 80,90)
+            column(RECOMMENDED_COMBAT, 80, 90)
             column(TEAM_SIZE, 1)
             column(LOOT_MULTIPLIER, "x1.0")
             column(DESCRIPTION, "King of the dragons.")
@@ -158,7 +158,7 @@ object InstanceSettingsTable {
             column(GRACE_MINUTES, 5)
             columnRSCM(BOSS_NPC, "npc.cowboss")
             column(BOSS_NAME, "Brutus")
-            column(RECOMMENDED_COMBAT, 30,30)
+            column(RECOMMENDED_COMBAT, 30, 30)
             column(TEAM_SIZE, 1)
             column(LOOT_MULTIPLIER, "x1.0")
             column(
@@ -202,10 +202,104 @@ object InstanceSettingsTable {
             columnRSCM(EXIT_OBJECT, "loc.vardorvis_exit")
         }
 
+        row("dbrow.instance_muspah") {
+            column(KEY, "muspah")
+            columnCoord(EXIT_COORD, CoordGrid(2909, 10317, 0))
+            columnCoord(ENTER_COORD, CoordGrid(2859, 4259, 0))
+            column(FEE, 0)
+            column(MAX_PLAYERS, 1)
+            column(TIME_LIMIT_MINUTES, 0)
+            column(GRACE_MINUTES, 10)
+            columnRSCM(BOSS_NPC, "npc.muspah")
+            column(BOSS_NAME, "Phantom Muspah")
+            column(RECOMMENDED_COMBAT, 90, 126)
+            column(TEAM_SIZE, 1)
+            column(LOOT_MULTIPLIER, "x1.0")
+            column(DESCRIPTION, "A phantom creature bound between the mortal and abyssal planes.")
+            columnRSCM(ENTER_OBJECT, "loc.ghorrock_dungeon_cave_entry")
+            columnRSCM(EXIT_OBJECT, "loc.ghorrock_dungeon_cave_exit")
+        }
+
+        row("dbrow.instance_whisperer") {
+            column(KEY, "whisperer")
+            columnCoord(EXIT_COORD, CoordGrid(2656, 6393, 0))
+            columnCoord(ENTER_COORD, CoordGrid(2656, 6382, 0))
+            column(FEE, 0)
+            column(MAX_PLAYERS, 1)
+            column(TIME_LIMIT_MINUTES, 0)
+            column(GRACE_MINUTES, 10)
+            columnRSCM(BOSS_NPC, "npc.whisperer_spawn", "npc.whisperer")
+            column(BOSS_NAME, "The Whisperer")
+            column(RECOMMENDED_COMBAT, 100, 126)
+            column(TEAM_SIZE, 1)
+            column(LOOT_MULTIPLIER, "x1.0")
+            column(DESCRIPTION, "A siren corrupted by the blackstone, submerged in the sunken cathedral.")
+            columnRSCM(ENTER_OBJECT, "loc.dt2_vault_whisperer_statue_normal")
+            columnRSCM(EXIT_OBJECT, "loc.whisperer_exit")
+        }
+
+        row("dbrow.instance_duke_sucellus") {
+            column(KEY, "duke_sucellus")
+            columnCoord(EXIT_COORD, CoordGrid(3039, 6432, 0))
+            columnCoord(ENTER_COORD, CoordGrid(3039, 6435, 0))
+            column(FEE, 0)
+            column(MAX_PLAYERS, 1)
+            column(TIME_LIMIT_MINUTES, 0)
+            column(GRACE_MINUTES, 10)
+            columnRSCM(BOSS_NPC, "npc.duke_sucellus_asleep", "npc.duke_sucellus_awake")
+            column(BOSS_NAME, "Duke Sucellus")
+            column(RECOMMENDED_COMBAT, 100, 126)
+            column(TEAM_SIZE, 1)
+            column(LOOT_MULTIPLIER, "x1.0")
+            column(DESCRIPTION, "The frozen, slumbering duke of the Ghorrock asylum.")
+            columnRSCM(ENTER_OBJECT, "loc.dt2_ghorrock_gate_boss")
+            columnRSCM(EXIT_OBJECT, "loc.duke_sucellus_escape")
+        }
+
+        row("dbrow.instance_doom_of_mokhaiotl") {
+            column(KEY, "doom_of_mokhaiotl")
+            columnCoord(EXIT_COORD, CoordGrid(1311, 9556, 0))
+            columnCoord(ENTER_COORD, CoordGrid(1311, 9559, 0))
+            column(FEE, 0)
+            column(MAX_PLAYERS, 1)
+            column(TIME_LIMIT_MINUTES, 0)
+            column(GRACE_MINUTES, 10)
+            columnRSCM(BOSS_NPC, "npc.dom_boss")
+            column(BOSS_NAME, "Doom of Mokhaiotl")
+            column(RECOMMENDED_COMBAT, 100, 126)
+            column(TEAM_SIZE, 1)
+            column(LOOT_MULTIPLIER, "x1.0")
+            column(DESCRIPTION, "The delving demon of the Ruins of Mokhaiotl.")
+            columnRSCM(ENTER_OBJECT, "loc.dom_entrance")
+            columnRSCM(EXIT_OBJECT, "loc.dom_entrance_exit")
+        }
+
+        row("dbrow.instance_leviathan") {
+            column(KEY, "leviathan")
+            columnCoord(EXIT_COORD, CoordGrid(2064, 6436, 0))
+            columnCoord(ENTER_COORD, CoordGrid(2067, 6370, 0))
+            column(FEE, 0)
+            column(MAX_PLAYERS, 1)
+            column(TIME_LIMIT_MINUTES, 0)
+            column(GRACE_MINUTES, 10)
+            columnRSCM(BOSS_NPC, "npc.leviathan")
+            column(BOSS_NAME, "The Leviathan")
+            column(RECOMMENDED_COMBAT, 100, 126)
+            column(TEAM_SIZE, 1)
+            column(LOOT_MULTIPLIER, "x1.0")
+            column(DESCRIPTION, "A colossal sea serpent lurking beneath the waters of the Scar.")
+            columnRSCM(ENTER_OBJECT, "loc.dt2_scar_boat_camp")
+            columnRSCM(
+                EXIT_OBJECT,
+                "loc.dt2_scar_boat_island_escape",
+                "loc.dt2_scar_boat_island_leave",
+            )
+        }
+
         row("dbrow.instance_amoxliatl") {
             column(KEY, "amoxliatl")
             columnCoord(EXIT_COORD, CoordGrid(1602, 9631, 0))
-            columnCoord(ENTER_COORD, CoordGrid(1376, 4511, 0))
+            columnCoord(ENTER_COORD, CoordGrid(1371, 4511, 0))
             column(FEE, 0)
             column(MAX_PLAYERS, 1)
             column(TIME_LIMIT_MINUTES, 0)

@@ -74,6 +74,7 @@ import org.rsmod.api.player.isOutOfCombat
 import org.rsmod.api.player.mapMultiway
 import org.rsmod.api.player.midiJingle
 import org.rsmod.api.player.midiSong
+import org.rsmod.api.player.output.CamShakeAxis
 import org.rsmod.api.player.output.Camera
 import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.output.ClientScripts
@@ -106,11 +107,13 @@ import org.rsmod.api.player.ui.ifChatNpcSpecific
 import org.rsmod.api.player.ui.ifChatPlayer
 import org.rsmod.api.player.ui.ifChoice
 import org.rsmod.api.player.ui.ifClose
+import org.rsmod.api.player.ui.ifCloseChat
 import org.rsmod.api.player.ui.ifCloseSub
 import org.rsmod.api.player.ui.ifConfirmDestroy
 import org.rsmod.api.player.ui.ifConfirmOverlay
 import org.rsmod.api.player.ui.ifConfirmOverlayClose
 import org.rsmod.api.player.ui.ifDoubleobjbox
+import org.rsmod.api.player.ui.ifLevelUpDisplay
 import org.rsmod.api.player.ui.ifMenu
 import org.rsmod.api.player.ui.ifMesbox
 import org.rsmod.api.player.ui.ifObjbox
@@ -124,6 +127,7 @@ import org.rsmod.api.player.ui.ifOpenSub
 import org.rsmod.api.player.ui.ifSetAnim
 import org.rsmod.api.player.ui.ifSetEvents
 import org.rsmod.api.player.ui.ifSetHide
+import org.rsmod.api.player.ui.ifSetModel
 import org.rsmod.api.player.ui.ifSetNpcHead
 import org.rsmod.api.player.ui.ifSetObj
 import org.rsmod.api.player.ui.ifSetPlayerHead
@@ -2219,6 +2223,18 @@ public class ProtectedAccess(
      *   the coroutine suspension.
      * @see [resumePauseButtonWithProtectedAccess]
      */
+    public suspend fun levelUpDisplay(layer: ComponentType, title: String, text: String) {
+        player.ifLevelUpDisplay(layer, title, text, constants.cm_pausebutton, context.eventBus)
+        val modal = player.ui.getModalOrNull("component.chatbox:chatmodal")
+        val input = coroutine.pause(ResumePauseButtonInput::class)
+        resumePauseButtonWithProtectedAccess(input, modal, "component.levelup_display:continue")
+    }
+
+    /**
+     * @throws ProtectedAccessLostException if the player could not retain protected access after
+     *   the coroutine suspension.
+     * @see [resumePauseButtonWithProtectedAccess]
+     */
     public suspend fun objbox(obj: InvObj, text: String) {
         objbox(obj, zoom = 400, text)
     }
@@ -3262,6 +3278,10 @@ public class ProtectedAccess(
         player.ifCloseSub(interf, context.eventBus)
     }
 
+    public fun ifCloseChat() {
+        player.ifCloseChat(context.eventBus)
+    }
+
     public fun ifOpenSide(interf: String) {
         player.ifOpenSide(interf, context.eventBus)
     }
@@ -3718,6 +3738,57 @@ public class ProtectedAccess(
 
     override fun toString(): String {
         return "ProtectedAccess(player=$player, coroutine=$coroutine)"
+    }
+    public fun camMoveToV3(
+        dest: CoordGrid,
+        height: Int,
+        rate: Int,
+        rate2: Int,
+        heightRelative: Boolean = false,
+    ) {
+        Camera.camMoveToV3(player, dest, height, rate, rate2, heightRelative)
+    }
+
+    public fun camLookAtV3(
+        dest: CoordGrid,
+        height: Int,
+        rate: Int,
+        rate2: Int,
+        heightRelative: Boolean = false,
+    ) {
+        Camera.camLookAtV3(player, dest, height, rate, rate2, heightRelative)
+    }
+
+    public fun camShake(axis: CamShakeAxis, random: Int, amplitude: Int, rate: Int) {
+        Camera.camShake(player, axis, random, amplitude, rate)
+    }
+
+    public fun camShakeReset(axis: CamShakeAxis) {
+        Camera.camShakeReset(player, axis)
+    }
+
+    public fun camShakeResetAll() {
+        Camera.camShakeResetAll(player)
+    }
+
+    public fun camUnlock(unlock: Boolean) {
+        Camera.camUnlock(player, unlock)
+    }
+
+    public fun maxDrawDistance(enabled: Boolean) {
+        Cinematic.setMaxDrawDistance(player, enabled)
+    }
+
+    public fun syncDrawDistance() {
+        Cinematic.syncDrawDistance(player)
+    }
+
+    public fun closeFadeOverlayNow() {
+        Cinematic.closeFadeOverlay(player, context.eventBus)
+    }
+
+    public fun ifSetModel(target: String, model: Int) {
+        player.ifSetModel(target, model)
     }
 }
 

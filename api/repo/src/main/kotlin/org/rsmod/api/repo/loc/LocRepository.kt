@@ -49,12 +49,12 @@ constructor(
         // despawn entry in [addDurations] when the new [locReg.add] returned [NormalMapLoc], so the
         // stale timer could never remove the visible loc and no new timer was scheduled.
         clearTimedDespawnAt(loc.coords, loc.layer)
+        delDurations.removeExisting(loc)
 
         if (add.shouldDespawn() && duration != Int.MAX_VALUE) {
             val revertCycle = mapClock + duration
             val validator = add.regionValidator()
             val locDuration = LocCycleDuration(loc, revertCycle, validator, onDespawn)
-            delDurations.removeExisting(loc)
             addDurations.add(locDuration)
         }
 
@@ -152,11 +152,13 @@ constructor(
         }
     }
 
+    public fun findPendingRespawn(coords: CoordGrid, layer: Int): LocInfo? =
+        delDurations.firstOrNull { it.loc.coords == coords && it.loc.layer == layer }?.loc
+
     public fun findAll(zone: ZoneKey): Sequence<LocInfo> = locReg.findAll(zone)
 
     public fun findAll(coords: CoordGrid): Sequence<LocInfo> =
         findAll(ZoneKey.from(coords)).filter { it.coords == coords }
-
 
     public fun findLoc(coords: CoordGrid, type: String): Boolean =
         locReg.findType(coords, type.asRSCM(RSCMType.LOC)) != null
@@ -191,6 +193,7 @@ constructor(
     }
 
     private fun processDelDurations() {
+        val triggered = mutableListOf<() -> Unit>()
         val iterator = delDurations.iterator()
         while (iterator.hasNext()) {
             val duration = iterator.next()
@@ -199,13 +202,15 @@ constructor(
             }
             if (duration.isValid()) {
                 locReg.add(duration.loc)
-                duration.onTrigger?.invoke()
+                duration.onTrigger?.let(triggered::add)
             }
             iterator.remove()
         }
+        triggered.forEach { it() }
     }
 
     private fun processAddDurations() {
+        val triggered = mutableListOf<() -> Unit>()
         val iterator = addDurations.iterator()
         while (iterator.hasNext()) {
             val duration = iterator.next()
@@ -214,10 +219,11 @@ constructor(
             }
             if (duration.isValid()) {
                 locReg.del(duration.loc)
-                duration.onTrigger?.invoke()
+                duration.onTrigger?.let(triggered::add)
             }
             iterator.remove()
         }
+        triggered.forEach { it() }
     }
 
     private fun LocCycleDuration.shouldTrigger(): Boolean = mapClock >= triggerCycle

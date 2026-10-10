@@ -11,6 +11,7 @@ import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.table.FiremakingColoredLogsRow
 import org.rsmod.api.table.cooking.CookingFoodsRow
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.Material
 import org.rsmod.content.skills.SkillMultiConfig
 import org.rsmod.content.skills.SkillMultiEntry
@@ -59,7 +60,8 @@ class CookingEvents @Inject constructor(
         rangeTypeByContent.forEach { (content, rangeType) ->
             foods.forEach { food ->
                 onOpContentMixedLocU(content, food.raw.internalName) {
-                    cookFood(food, CookingSurface.Range(rangeType, it.type.internalName))
+                    val surface = CookingSurface.Range(rangeType, it.type.internalName)
+                    if (canUseRange(surface)) cookFood(food, surface)
                 }
             }
         }
@@ -71,11 +73,19 @@ class CookingEvents @Inject constructor(
         }
         rangeTypeByContent.forEach { (content, rangeType) ->
             onOpContentLoc1(content) {
-                openCookingMenu(CookingSurface.Range(rangeType, it.type.internalName))
+                val surface = CookingSurface.Range(rangeType, it.type.internalName)
+                if (canUseRange(surface)) openCookingMenu(surface)
             }
         }
 
         onPlayerQueueWithArgs<CookTask>("queue.cooking_cook") { processCookTick(it.args) }
+    }
+
+    private suspend fun ProtectedAccess.canUseRange(surface: CookingSurface.Range): Boolean {
+        if (surface.rangeType != RangeType.LUMBRIDGE) return true
+        if (QuestRequirements.hasCompleted(player, "quest_cooksassistant")) return true
+        startDialogue { chatNpcSpecific("Cook", "npc.cook", angry, "Hey, who said you could use that?") }
+        return false
     }
 
     private fun ProtectedAccess.burnReduction(surface: CookingSurface, food: CookingFoodsRow): Int {
@@ -122,7 +132,11 @@ class CookingEvents @Inject constructor(
             }
 
         if (cookable.isEmpty()) {
-            mes("You have nothing to cook on this ${if (surface is CookingSurface.Range) "range" else "fire"}.")
+            if (surface is CookingSurface.Range) {
+                mesbox("You haven't got anything to cook.")
+            } else {
+                mes("You have nothing to cook on this fire.")
+            }
             return
         }
 
@@ -170,7 +184,7 @@ class CookingEvents @Inject constructor(
             return
         }
         anim(cookAnim(surface))
-        weakQueue("queue.cooking_cook", 4, CookTask(food, surface, amount, 0))
+        weakQueue("queue.cooking_cook", food.cookTicks ?: DEFAULT_COOK_TICKS, CookTask(food, surface, amount, 0))
     }
 
     private fun ProtectedAccess.processCookTick(task: CookTask) {
@@ -188,7 +202,8 @@ class CookingEvents @Inject constructor(
         val cooked = task.cooked + 1
         if (cooked < task.amount && inv.contains(food.raw.internalName)) {
             anim(cookAnim(task.surface))
-            weakQueue("queue.cooking_cook", 4, CookTask(food, task.surface, task.amount, cooked))
+            val delay = maxOf(food.cookTicks ?: DEFAULT_COOK_TICKS, MIN_REQUEUE_TICKS)
+            weakQueue("queue.cooking_cook", delay, CookTask(food, task.surface, task.amount, cooked))
         }
     }
 
@@ -213,4 +228,11 @@ class CookingEvents @Inject constructor(
         val amount: Int,
         val cooked: Int,
     )
+
+    private companion object {
+        const val DEFAULT_COOK_TICKS = 4
+
+        // A queue added mid-processing is decremented on the same tick, so delay 1 re-fires instantly.
+        const val MIN_REQUEUE_TICKS = 2
+    }
 }

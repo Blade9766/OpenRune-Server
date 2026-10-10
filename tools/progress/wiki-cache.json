@@ -218,16 +218,15 @@
     "Slayer": {
       "sections": [
         "Introduction",
+        "Slayer Masters",
+        "Slayer equipment",
+        "Slayer tasks",
+        "Bosses",
         "Slayer Partners",
         "Assigning a partner",
         "Receiving a task",
         "Getting kills",
         "Reward points",
-        "Slayer Masters",
-        "Slayer equipment",
-        "Slayer monsters",
-        "Where to slay monsters",
-        "Boss Slayer",
         "Slayer reward points",
         "Collection log",
         "Temporary boosts",
@@ -405,9 +404,10 @@
         "Quests",
         "Quests requiring Cooking",
         "Quests rewarding Cooking experience",
-        "Diaries Requiring Cooking",
+        "Diaries requiring Cooking",
         "Skill choice",
         "Level up messages",
+        "Changes",
         "See also"
       ],
       "image": "https://oldschool.runescape.wiki/images/Cooking_icon.png?a0156"
@@ -517,7 +517,6 @@
         "Werewolf Skullball",
         "Wintertodt Pillars",
         "Shortcuts",
-        "Other",
         "Official worlds",
         "Collection log",
         "Temporary boosts",
@@ -645,6 +644,7 @@
         "Phials for unnoting",
         "Training methods",
         "Mahogany Homes",
+        "Repair Kits and Hull Parts",
         "Notable milestones",
         "Rooms",
         "POH locations",
@@ -972,7 +972,7 @@
       "image": "https://oldschool.runescape.wiki/images/thumb/Gadderanks.png/48px-Gadderanks.png?63d5a"
     },
     "Lowerniel Drakan": {
-      "image": "https://oldschool.runescape.wiki/images/thumb/Lowerniel_Drakan_%28The_Blood_Moon_Rises%2C_final_battle%29.png/48px-Lowerniel_Drakan_%28The_Blood_Moon_Rises%2C_final_battle%29.png?ece55"
+      "image": "https://oldschool.runescape.wiki/images/thumb/Lowerniel_Drakan.png/48px-Lowerniel_Drakan.png?b887a"
     },
     "K'ril Tsutsaroth": {
       "image": "https://oldschool.runescape.wiki/images/thumb/K%27ril_Tsutsaroth.png/48px-K%27ril_Tsutsaroth.png?73bda"
@@ -1362,7 +1362,7 @@
       "image": "https://oldschool.runescape.wiki/images/thumb/Wrathmaw-_the_Wilderness_World_Boss_-_Summer_Summit_2024_%281%29.png/48px-Wrathmaw-_the_Wilderness_World_Boss_-_Summer_Summit_2024_%281%29.png?ecf88"
     },
     "The Fractured Archive": {
-      "image": "https://oldschool.runescape.wiki/images/thumb/The_Fractured_Archive_logo.png/48px-The_Fractured_Archive_logo.png?072fb"
+      "image": "https://oldschool.runescape.wiki/images/thumb/The_Fractured_Archive_logo.png/48px-The_Fractured_Archive_logo.png?2eb86"
     },
     "Golem crafting": {
       "image": "https://oldschool.runescape.wiki/images/thumb/Golem_crafting.png/48px-Golem_crafting.png?5d9bc"
@@ -1450,6 +1450,9 @@
     },
     "Vale Totems": {
       "image": "https://oldschool.runescape.wiki/images/thumb/Vale_Totems_%28minigame%29.png/48px-Vale_Totems_%28minigame%29.png?91627"
+    },
+    "Pete Kayer's Challenges": {
+      "image": "https://oldschool.runescape.wiki/images/thumb/Pete_Kayer%27s_Challenges.png/48px-Pete_Kayer%27s_Challenges.png?6949d"
     }
   },
   "categories": {
@@ -1663,6 +1666,7 @@
       "Mess",
       "Nightmare Zone",
       "Pest Control",
+      "Pete Kayer's Challenges",
       "Pyramid Plunder",
       "Rat Pits",
       "Rogues' Den",
@@ -1684,5 +1688,5 @@
       "Volcanic Mine"
     ]
   },
-  "fetched": "2026-09-14"
+  "fetched": "2026-10-09"
 }

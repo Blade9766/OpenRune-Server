@@ -15,7 +15,6 @@ import org.rsmod.api.instances.events.InstancePlayerLeaveUnboundEvent
 import org.rsmod.api.instances.events.InstanceStartedEvent
 import org.rsmod.api.instances.events.InstanceTimeTickEvent
 import org.rsmod.api.instances.region.InstanceAreaResolver
-import org.rsmod.api.instances.region.OsrsInstancing
 import org.rsmod.api.instances.region.enterCoord
 import org.rsmod.api.instances.region.localCoord
 import org.rsmod.api.instances.timer.InstanceKillTimer
@@ -33,7 +32,6 @@ import org.rsmod.game.damage.DamageContributions
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
-import org.rsmod.game.entity.npc.NpcUid
 import org.rsmod.game.region.Region
 import org.rsmod.map.CoordGrid
 import org.rsmod.routefinder.collision.CollisionFlagMap
@@ -58,7 +56,10 @@ constructor(
     private val ownerIndex = HashMap<Long, InstanceId>()
     private val playerIndex = HashMap<Long, InstanceId>()
     private val spawnedNpcs = HashMap<InstanceId, MutableList<Npc>>()
-    private val npcInstanceIndex = HashMap<NpcUid, InstanceId>()
+
+    // Keyed by slot, not uid: `changeType`/transmog reassigns an npc's uid, which would
+    // otherwise orphan this entry under the pre-transmog uid for the rest of the npc's life.
+    private val npcInstanceIndex = HashMap<Int, InstanceId>()
 
     public sealed interface Result {
         public data class Created(val session: InstanceSession, val enter: CoordGrid) : Result
@@ -217,7 +218,7 @@ constructor(
     public fun contributionsFor(id: InstanceId): DamageContributions? =
         sessionForId(id)?.damageContributions
 
-    public fun instanceForNpc(npc: Npc): InstanceId? = npcInstanceIndex[npc.uid]
+    public fun instanceForNpc(npc: Npc): InstanceId? = npcInstanceIndex[npc.slotId]
 
     public fun npcsForInstance(id: InstanceId): List<Npc> = spawnedNpcs[id] ?: emptyList()
 
@@ -407,11 +408,10 @@ constructor(
     private fun reconcileOccupants(currentTick: Int) {
         for (session in sessions.values.toList()) {
             val region = regions[session.id] ?: continue
-            val center = session.enterCoord(region)
             val leavers =
                 session.occupants.filter { occupant ->
                     val player = playerList.firstOrNull { it.uuid == occupant }
-                    player == null || player.coords.chebyshevDistance(center) > REGION_RADIUS
+                    player == null || !player.coords.isWithin(region.southWest, region.northEast)
                 }
             for (occupant in leavers) {
                 val player = playerList.firstOrNull { it.uuid == occupant } ?: continue
@@ -741,13 +741,13 @@ constructor(
     }
 
     private fun indexNpc(instanceId: InstanceId, npc: Npc) {
-        if (npc.uid == NpcUid.NULL) return
-        npcInstanceIndex[npc.uid] = instanceId
+        if (!npc.isSlotAssigned) return
+        npcInstanceIndex[npc.slotId] = instanceId
     }
 
     private fun untagAndDelete(npc: Npc) {
-        if (npc.uid != NpcUid.NULL) {
-            npcInstanceIndex.remove(npc.uid)
+        if (npc.isSlotAssigned) {
+            npcInstanceIndex.remove(npc.slotId)
         }
         if (!npc.isSlotAssigned) {
             return
@@ -774,7 +774,9 @@ constructor(
             player.username.equals(name, ignoreCase = true)
 
     private companion object {
-        private const val REGION_RADIUS = OsrsInstancing.PADDING_BETWEEN_INSTANCES
         private const val SERVER_OWNER_ID: Long = 0L
     }
 }
+
+private fun CoordGrid.isWithin(southWest: CoordGrid, northEast: CoordGrid): Boolean =
+    x in southWest.x..northEast.x && z in southWest.z..northEast.z

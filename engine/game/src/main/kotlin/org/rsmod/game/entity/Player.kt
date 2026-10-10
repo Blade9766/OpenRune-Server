@@ -30,6 +30,7 @@ import org.rsmod.game.entity.player.Appearance
 import org.rsmod.game.entity.player.PlayerUid
 import org.rsmod.game.entity.player.PublicMessage
 import org.rsmod.game.entity.util.EntityFaceAngle
+import org.rsmod.game.entity.util.EntityTinting
 import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.headbar.Headbar
 import org.rsmod.game.hero.HeroPoints
@@ -49,6 +50,7 @@ import org.rsmod.game.timer.PlayerTimerMap
 import org.rsmod.game.ui.UserInterfaceMap
 import org.rsmod.game.vars.VarPlayerIntMap
 import org.rsmod.game.vars.VarPlayerStrMap
+import org.rsmod.game.world.WorldType
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.square.MapSquareKey
 import org.rsmod.map.zone.ZoneKey
@@ -163,6 +165,16 @@ public class Player(
      */
     public var characterId: Int by Delegates.notNull()
 
+    /**
+     * The world type this character's save was loaded from.
+     *
+     * _This value is **always** expected to be set on login._
+     */
+    public var worldType: WorldType by Delegates.notNull()
+
+    /** Blocks background saves while this player's state is deliberately inconsistent. */
+    public var persistenceSuspended: Boolean = false
+
     // Currently unsure of the exact requirements for this value's use case, however, it should
     // **always** be set on login (like the other player identifiers).
     /** _This value is **always** expected to be set on login._ */
@@ -182,7 +194,9 @@ public class Player(
     public var followCoord: CoordGrid = CoordGrid.NULL
     public var buildArea: CoordGrid = CoordGrid.NULL
     public val visibleZoneKeys: IntList = IntArrayList()
+    public var regionRebuildPending: Boolean = false
     public var lastMapBuildComplete: Int = Int.MIN_VALUE
+    public var npcViewDistance: Int? = null
 
     public val activeAreas: ShortArraySet = ShortArraySet()
     public val pendingAreas: ShortArrayList = ShortArrayList()
@@ -199,6 +213,7 @@ public class Player(
 
     public var publicMessage: PublicMessage? = null
     public var pendingSay: String? = null
+    public var pendingTinting: EntityTinting? = null
     public var pendingRunWeight: Boolean = false
     public val pendingStatUpdates: BitSet = BitSet()
     public val activeHitmarks: LongArrayList = LongArrayList()
@@ -427,6 +442,11 @@ public class Player(
     }
 
     @InternalApi
+    public fun engineQueueAdvanceCombat(level: Int) {
+        engineQueueList.add(EngineQueueType.AdvanceCombat, args = level, label = level)
+    }
+
+    @InternalApi
     public fun engineQueueMapzone(square: MapSquareKey) {
         engineQueueList.add(EngineQueueType.Mapzone, args = square, label = square.id)
     }
@@ -490,6 +510,10 @@ public class Player(
 
     public fun say(text: String) {
         pendingSay = text
+    }
+
+    public fun tint(tinting: EntityTinting) {
+        pendingTinting = tinting
     }
 
     public fun showHeadbar(headbar: Headbar) {
