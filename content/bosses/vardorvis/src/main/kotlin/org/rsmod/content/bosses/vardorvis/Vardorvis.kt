@@ -19,7 +19,6 @@ import org.rsmod.api.config.refs.done.hitmark_groups
 import org.rsmod.api.npc.heal
 import org.rsmod.api.npc.interact.AiPlayerInteractions
 import org.rsmod.api.npc.opPlayer2
-import org.rsmod.api.player.events.PlayerHitEvents
 import org.rsmod.api.player.hit.queueHit
 import org.rsmod.api.player.isValidTarget
 import org.rsmod.api.player.lockOverheads
@@ -29,7 +28,6 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onNpcHit
 import org.rsmod.game.entity.Npc
-import org.rsmod.game.entity.NpcList
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.npc.NpcStateEvents
 import org.rsmod.game.entity.util.EntityExactMove
@@ -50,7 +48,6 @@ class Vardorvis
 @Inject
 constructor(
     deps: BossDeps,
-    private val npcList: NpcList,
     private val locRepo: LocRepository,
     private val aiPlayerInteractions: AiPlayerInteractions,
     private val strangle: VardorvisStrangle,
@@ -100,8 +97,6 @@ constructor(
                 }
             }
         }
-
-        onEvent<PlayerHitEvents.Impact> { lifestealOnImpact(bossIds, this) }
     }
 
     private fun raiseArenaBarrier(npc: Npc) {
@@ -178,17 +173,10 @@ constructor(
                 val fx = ARENA_BARRIER_DESPAWN_FX[barrierVariant(loc.coords.x - centre.x, loc.coords.z - centre.z)]
                 deps.worldRepo.spotanimMap(SpotanimType(fx.asRSCM(RSCMType.SPOTANIM)), loc.coords)
             } else {
+                locRepo.add(loc, Int.MAX_VALUE)
                 locRepo.del(loc, Int.MAX_VALUE)
             }
         }
-    }
-
-    private fun lifestealOnImpact(bossIds: Set<Int>, event: PlayerHitEvents.Impact) {
-        val hit = event.hit
-        if (!hit.isFromNpc || hit.damage <= 0) return
-        val source = hit.resolveNpcSource(npcList) ?: return
-        if (source.type.id !in bossIds) return
-        source.heal(hit.damage / 2, showHitsplat = true)
     }
 
     private fun registerHeadGaze() {
@@ -198,7 +186,7 @@ constructor(
             val inRange =
                 target.isValidTarget() &&
                     target.coords.chebyshevDistance(npc.coords) <= HEAD_GAZE_RANGE
-            val belowHp = npc.hitpoints in 1 until HEAD_GAZE_HP_THRESHOLD
+            val belowHp = npc.hitpoints in 1 until HEAD_GAZE_HP_THRESHOLD * hpScale(npc)
             if (ready && inRange && belowHp) {
                 npc.vars["varn.vardorvis_next_head_gaze"] =
                     now + HEAD_GAZE_MIN_INTERVAL + deps.random.of(HEAD_GAZE_INTERVAL_SPREAD)
@@ -438,7 +426,7 @@ constructor(
 
     private fun runDash(npc: Npc, target: Player) {
         val awakened = isAwakened(npc)
-        val darts = VardorvisDash.count(npc.hitpoints)
+        val darts = VardorvisDash.count(npc.hitpoints, hpScale(npc))
 
         val plan = VardorvisDash.plan(darts, deps.random::of)
 
@@ -553,11 +541,19 @@ constructor(
             if (player.coords !in tiles) continue
             var damage = deps.random.of(max + 1)
             if (player.vars[PROTECT_FROM_MELEE] != 0) damage /= 2
-            player.queueHit(npc, HIT_DELAY, HitType.Melee, damage, deps.playerHitModifier)
+            val hit = player.queueHit(npc, HIT_DELAY, HitType.Melee, damage, deps.playerHitModifier)
+            val heal = hit.damage / 2
+            if (heal > 0) {
+                deps.worldQueues.add(HIT_DELAY) {
+                    if (npc.isSlotAssigned && npc.hitpoints > 0) npc.heal(heal, showHitsplat = true)
+                }
+            }
         }
     }
 
     private fun isAwakened(npc: Npc): Boolean = npc.vars["varn.awakened_state"] == 1
+
+    private fun hpScale(npc: Npc): Int = if (isAwakened(npc)) AWAKENED_HP_SCALE else 1
 
     private fun CoordGrid.inArenaInterior(centre: CoordGrid): Boolean {
         val dx = x - centre.x
@@ -658,6 +654,7 @@ constructor(
                     hit {
                         damage(Accuracy(npcMaxHit()))
                         type(Melee)
+                        lifesteal(MELEE_LIFESTEAL_PERCENT)
                     }
                     include(external(MAYBE_HEAD_GAZE))
                 }
@@ -833,6 +830,8 @@ constructor(
             "You've been injured and can't use protection prayers!"
 
         private const val ENRAGE_HP_FRACTION = 0.33
+        private const val AWAKENED_HP_SCALE = 2
+        private const val MELEE_LIFESTEAL_PERCENT = 50
 
         private fun String.npcId(): Int? =
             ServerCacheManager.getNpc(this.asRSCM(RSCMType.NPC))?.id

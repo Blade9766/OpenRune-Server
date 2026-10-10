@@ -70,6 +70,24 @@ constructor(
 
     fun allFights(): Collection<SireFight> = fights.values
 
+    fun heroStillFighting(fight: SireFight): Boolean =
+        fight.hero.isValidTarget() &&
+            fight.chamber.contains(fight.hero.coords) &&
+            now - fight.heroLastHitSire < SireAttackHook.CLAIM_TICKS
+
+    /**
+     * Makes [attacker] the fight's hero when it is the same account (relogged) or the current hero
+     * has stopped fighting; returns whether [attacker] is now the hero.
+     */
+    private fun claim(fight: SireFight, attacker: Player): Boolean {
+        if (attacker === fight.hero) return true
+        if (!sameAccount(attacker, fight.hero) && heroStillFighting(fight)) return false
+        fight.hero = attacker
+        return true
+    }
+
+    private fun sameAccount(a: Player, b: Player): Boolean = a.uuid != null && a.uuid == b.uuid
+
     /* Hits on the Sire */
 
     /**
@@ -83,7 +101,7 @@ constructor(
             if (attacker == null || type == HitType.Melee) return 0
             fight = wake(sire, attacker)
         }
-        if (attacker != null && attacker === fight.hero) {
+        if (attacker != null && claim(fight, attacker)) {
             fight.heroLastActive = now
             fight.heroLastHitSire = now
         }
@@ -184,7 +202,7 @@ constructor(
         if (attacker == null) return damage
         if (type == HitType.Melee && !halberd) return 0
         val fight = SireChamber.containing(lung.coords)?.let(::fightIn)
-        if (fight != null && attacker === fight.hero) fight.heroLastActive = now
+        if (fight != null && claim(fight, attacker)) fight.heroLastActive = now
         if (fight != null && fight.tentaclesStunned(now)) {
             return if (damage > 0) maxOf(damage, attacker.vars[MAX_HIT_VARP] / 2) else 0
         }
@@ -312,6 +330,11 @@ constructor(
 
     fun step(fight: SireFight) {
         val time = now
+        if (!fight.hero.isValidTarget()) {
+            deps.playerList
+                .firstOrNull { it !== fight.hero && sameAccount(it, fight.hero) && it.isValidTarget() }
+                ?.let { fight.hero = it }
+        }
         val hero = fight.hero
         // An npc idle off its spawn tile for 500 cycles is teleported home; the Sire stands still for
         // whole phases, and only a reset or its death may send it back to the throne.

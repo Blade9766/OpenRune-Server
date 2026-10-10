@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -351,6 +352,32 @@ class AbyssalSireFightTest {
         assertEquals(NpcAttackValidateResult.Deny(SireAttackHook.BUSY_MESSAGE), hook.validate(other, f.sire))
         f.tick(SireAttackHook.CLAIM_TICKS + 1)
         assertEquals(NpcAttackValidateResult.Pass, hook.validate(other, f.sire))
+    }
+
+    @Test fun `a relogged hero picks the fight back up instead of resetting it`() {
+        val f = f2()
+        val fight = checkNotNull(f.fight())
+        f.hero.loggingOut = true
+        val relogged = f.newPlayer(2, f.hero.coords)
+        relogged.uuid = f.hero.uuid
+        f.tick(1)
+        assertSame(relogged, fight.hero)
+        assertSame(fight, f.fight())
+    }
+
+    @Test fun `another player takes over a fight its hero walked away from`() {
+        val f = f2()
+        val fight = checkNotNull(f.fight())
+        val other = f.newPlayer(2, f.chamber.rowThree.translateX(2))
+        f.hit(HitType.Ranged, 0)
+        f.fights.modifySireHit(f.sire, other, HitType.Ranged, 1, false)
+        assertSame(f.hero, fight.hero)
+
+        f.hero.coords = CoordGrid(3039, 4800)
+        f.fights.modifySireHit(f.sire, other, HitType.Ranged, 1, false)
+        assertSame(other, fight.hero)
+        f.tick(SireFights.HERO_LOST_TICKS - 1)
+        assertSame(fight, f.fight())
     }
 
     /** A fight already in phase 2, attacks held off. */

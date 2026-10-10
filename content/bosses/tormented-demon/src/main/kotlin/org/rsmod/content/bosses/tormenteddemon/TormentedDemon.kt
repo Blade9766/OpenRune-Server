@@ -178,9 +178,7 @@ constructor(deps: BossDeps, private val routeFactory: RouteFactory) : BossPlugin
         target.spotanim("spotanim.entangle_impact", height = 124)
         val restoreSpeed = target.varMoveSpeed
         target.setActiveMoveSpeed(MoveSpeed.Walk)
-        deps.worldQueues.add(FIRE_BOMB_BIND_TICKS) {
-            if (target.isValidTarget()) target.setActiveMoveSpeed(restoreSpeed)
-        }
+        deps.worldQueues.add(FIRE_BOMB_BIND_TICKS) { target.setActiveMoveSpeed(restoreSpeed) }
 
         for (landingTile in listOf(primaryTile, secondaryTile)) {
             deps.worldRepo.spotanimMap(

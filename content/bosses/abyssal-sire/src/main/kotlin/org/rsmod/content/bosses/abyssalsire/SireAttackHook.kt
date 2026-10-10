@@ -7,7 +7,6 @@ import org.rsmod.api.bosses.runtime.BossDeps
 import org.rsmod.api.config.refs.BaseParams
 import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcAttackValidateResult
-import org.rsmod.api.player.isValidTarget
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.table.slayer.SlayerTaskRow
 import org.rsmod.content.bosses.abyssalsire.SireFights.Companion.LUNG
@@ -35,17 +34,12 @@ class SireAttackHook @Inject constructor(private val fights: SireFights, private
         if (!onTask(player)) return NpcAttackValidateResult.Deny(OFF_TASK_MESSAGE)
         if (sire) {
             val fight = fights.fightOf(npc)
-            if (fight != null && fight.hero !== player && heroStillFighting(fight)) {
+            if (fight != null && fight.hero !== player && fights.heroStillFighting(fight)) {
                 return NpcAttackValidateResult.Deny(BUSY_MESSAGE)
             }
         }
         return NpcAttackValidateResult.Pass
     }
-
-    private fun heroStillFighting(fight: SireFight): Boolean =
-        fight.hero.isValidTarget() &&
-            fight.chamber.contains(fight.hero.coords) &&
-            deps.mapClock.cycle - fight.heroLastHitSire < CLAIM_TICKS
 
     companion object {
         const val SLAYER = "stat.slayer"

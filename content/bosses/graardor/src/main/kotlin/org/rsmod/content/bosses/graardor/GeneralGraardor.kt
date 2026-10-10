@@ -49,10 +49,15 @@ class GeneralGraardor @Inject constructor(deps: BossDeps) : BossPluginScript(dep
             val ranged =
                 ability("ranged") {
                     anim("seq.godwars_bandos_ranged")
-                    projectile(
-                        spotanim = "spotanim.godwars_bandos_proj",
-                        travel = "projanim.godwars_bandos_ranged",
-                        hit = Effect.Hit(damage = Roll(15..35), type = Ranged)
+                    include(
+                        onEach(
+                            playersIn(CHAMBER),
+                            Effect.Projectile(
+                                spotanim = "spotanim.godwars_bandos_proj",
+                                travel = "projanim.godwars_bandos_ranged",
+                                hit = Effect.Hit(damage = Roll(15..35), type = Ranged),
+                            ),
+                        )
                     )
                 }
 
@@ -68,5 +73,7 @@ class GeneralGraardor @Inject constructor(deps: BossDeps) : BossPluginScript(dep
         private const val GENERAL = "npc.godwars_bandos_avatar"
         private const val BODYGUARD_CATEGORY = "category.godwars_bandos_bodyguard"
         private const val BODYGUARD_SEARCH_RADIUS = 10
+
+        private val CHAMBER = area(spawnTile(-8, -7), spawnTile(4, 11))
     }
 }

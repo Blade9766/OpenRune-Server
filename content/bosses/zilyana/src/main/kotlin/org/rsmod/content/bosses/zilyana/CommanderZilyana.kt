@@ -57,7 +57,7 @@ class CommanderZilyana @Inject constructor(deps: BossDeps) : BossPluginScript(de
             phase("combat") {
                 weightedSelectorRandom {
                     +random(melee, weight = 3, requires = WithinMeleeRange)
-                    +random(magic, weight = 2)
+                    +random(magic, weight = 2, requires = WithinMeleeRange)
                 }
             }
         }

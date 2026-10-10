@@ -21,7 +21,6 @@ import org.rsmod.api.invtx.invMoveAll
 import org.rsmod.api.invtx.invTransfer
 import org.rsmod.api.market.MarketPrices
 import org.rsmod.api.npc.access.StandardNpcAccess
-import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.boolVarp
 import org.rsmod.api.random.GameRandom
@@ -49,23 +48,14 @@ constructor(
     /** Returns true when this kill rolled a unique. */
     fun roll(access: StandardNpcAccess): Boolean {
         val npc = access.npc
-        val player = killer(access)
-        if (player == null) {
-            println("[DoomLoot] roll aborted: no killer for npc=${npc.id}")
-            return false
-        }
+        val player = killer(access) ?: return false
         return rollFor(player, npc, recordStats = true)
     }
 
     fun rollFor(player: Player, npc: Npc, recordStats: Boolean): Boolean {
         val level = delves.currentLevel(player)
-        debug(player, "roll start level=$level npc=${npc.id}")
         if (recordStats) stats.complete(player, level)
-        val table = registry.forNpc(BOSS_TABLE)
-        if (table == null) {
-            debug(player, "roll aborted: no drop table for $BOSS_TABLE")
-            return false
-        }
+        val table = registry.forNpc(BOSS_TABLE) ?: return false
         val result = table.roll(player, ArgMap(KillRollContext.npc with npc)).flatten()
         val drops =
             when (result) {
@@ -73,15 +63,12 @@ constructor(
                 is RollResult.ListOf -> result.results
                 else -> emptyList()
             }
-        debug(player, "table result=${result::class.simpleName} drops=${drops.size}")
         var unique = false
         for (drop in drops) unique = award(player, drop, level) || unique
         if (level >= TEARS_FROM_LEVEL) {
             val tears = minOf(TEARS_BASE + TEARS_STEP * (level - TEARS_FROM_LEVEL), TEARS_CAP)
             add(player, "obj.demon_tear", tears)
-            debug(player, "tears +$tears")
         }
-        debug(player, "earned slots used=${earned(player).objs.count { it != null }}")
         return unique
     }
 
@@ -112,23 +99,15 @@ constructor(
     }
 
     private fun award(player: Player, drop: DropRollItem, level: Int): Boolean {
-        if (drop.isNothing || !drop.condition(player)) {
-            debug(player, "skipped drop nothing=${drop.isNothing} obj=${drop.obj}")
-            return false
-        }
+        if (drop.isNothing || !drop.condition(player)) return false
         val base = drop.rollCount(random)
         val multiplier = QUANTITY_MULTIPLIER[minOf(level, QUANTITY_MULTIPLIER.size) - 1]
         val count = base + (base * multiplier).toInt()
         val obj = drop.transformObj(player) ?: drop.obj
-        val added = add(player, obj, count.coerceAtLeast(1))
-        debug(player, "award $obj base=$base count=${count.coerceAtLeast(1)} success=$added")
+        add(player, obj, count.coerceAtLeast(1))
         var unique = obj in UNIQUES
         for (bonus in drop.bonusDrops) unique = award(player, bonus, level) || unique
         return unique
-    }
-
-    private fun debug(player: Player, message: String) {
-        player.mes("[DoomLoot] $message")
     }
 
     fun earned(player: Player): Inventory = player.invMap.getOrPut(EARNED_INV)

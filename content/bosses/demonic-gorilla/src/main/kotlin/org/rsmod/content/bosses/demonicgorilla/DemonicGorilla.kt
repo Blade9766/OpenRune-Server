@@ -18,7 +18,6 @@ import org.rsmod.api.player.events.PlayerHitEvents
 import org.rsmod.api.script.onEvent
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.NpcList
-import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.npc.NpcStateEvents
 import org.rsmod.game.hit.Hit
 import org.rsmod.game.hit.HitType
@@ -261,7 +260,7 @@ class DemonicGorilla @Inject constructor(private val deps: BossDeps, private val
     private companion object {
         private const val ATTACK_RATE = 5
         private const val RANGED_MAGIC_AP_RANGE = 7
-        private const val MAX_HIT = 30
+        private const val MAX_HIT = 31
         private const val MELEE_HIT_DELAY = 1
 
         private const val MISS_STREAK_THRESHOLD = 3

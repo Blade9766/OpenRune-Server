@@ -52,6 +52,29 @@ constructor(
                 }
                 .minByOrNull { it.coords.chebyshevDistance(npc.coords) }
 
+    /**
+     * Walks [npc] to [dest] with combat interactions ignored so nothing can cancel the walk, then
+     * runs [onArrival]. Falls back to a timeout in case the route is replaced before it completes;
+     * a death or respawn in between skips [onArrival].
+     */
+    private fun scriptedWalk(npc: Npc, dest: CoordGrid, onArrival: () -> Unit) {
+        val encounter = deps.encounter(npc)
+        var finished = false
+        val finish = {
+            if (!finished) {
+                finished = true
+                if (npc.hitpoints > 0 && deps.encounterRegistry.isActive(encounter)) {
+                    npc.ignoreCombatInteractions = false
+                    onArrival()
+                }
+            }
+        }
+        npc.ignoreCombatInteractions = true
+        npc.walkTo(routeFactory, dest, onArrival = finish)
+        val timeout = npc.coords.chebyshevDistance(dest) + SCRIPTED_WALK_SLACK_TICKS
+        deps.worldQueues.add(timeout) { finish() }
+    }
+
     private fun engageRanged(npc: Npc, preferred: Player) {
         val target = resolveTarget(npc, preferred) ?: return
         npc.apRangeOverride = ENGAGE_AP_RANGE
@@ -110,10 +133,7 @@ constructor(
             val pile = CHEESE_PILES.random()
             val cheeseTile = CoordGrid(npc.coords.level, npc.coords.mx, npc.coords.mz, pile.first, pile.second)
             npc.resetFaceEntity()
-            // Ignore combat interaction so walkTo can't be cancelled
-            npc.ignoreCombatInteractions = true
-            npc.walkTo(routeFactory, cheeseTile) {
-                npc.ignoreCombatInteractions = false
+            scriptedWalk(npc, cheeseTile) {
                 deps.encounter(npc).transitionTo("feeding", deps.mapClock.cycle)
                 engageRanged(npc, target)
                 // Lock facing on cheese pile
@@ -125,9 +145,7 @@ constructor(
             // Force walk to center of arena
             val centreTile = CoordGrid(npc.coords.level, npc.coords.mx, npc.coords.mz, 33, 10)
             npc.resetFaceEntity()
-            npc.ignoreCombatInteractions = true
-            npc.walkTo(routeFactory, centreTile) {
-                npc.ignoreCombatInteractions = false
+            scriptedWalk(npc, centreTile) {
                 deps.encounter(npc).transitionTo("enraged", deps.mapClock.cycle)
                 engageRanged(npc, target)
             }
@@ -285,6 +303,7 @@ constructor(
         private const val HEAL_AMOUNT = 5
 
         private const val ENGAGE_AP_RANGE = 15
+        private const val SCRIPTED_WALK_SLACK_TICKS = 10
         private const val ARENA_RADIUS = 25
         private const val SCATTER_RADIUS = 7
         private const val WINDUP_TICKS = 3

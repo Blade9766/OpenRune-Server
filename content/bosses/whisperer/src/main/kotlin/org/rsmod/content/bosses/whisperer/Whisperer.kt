@@ -386,7 +386,8 @@ constructor(
         deps.worldQueues.add(nextActionIn) { boss.movementLocked = false }
     }
 
-    private fun enraging(boss: Npc): Boolean = deps.encounter(boss).lethalHandled
+    private fun enraging(boss: Npc): Boolean =
+        boss.isSlotAssigned && deps.encounter(boss).lethalHandled
 
     private fun beginSpecial(boss: Npc, target: Player, despawn: () -> Unit) {
         specialCleanups[boss] = {
@@ -573,6 +574,7 @@ constructor(
     }
 
     private fun landSoulSiphon(boss: Npc, target: Player) {
+        if (!target.isValidTarget()) return
         target.mes(SOUL_LANDED_MESSAGE)
         target.finishNpcHit(
             boss,
@@ -918,6 +920,7 @@ constructor(
         deps.worldQueues.add(ENRAGE_PULL_DELAY) { pullIntoShadowRealm(boss, players) }
         deps.worldQueues.add(ENRAGE_ATTACK_DELAY) {
             if (!boss.isSlotAssigned) return@add
+            boss.hitpoints = ENRAGE_HITPOINTS.coerceAtMost(boss.baseHitpointsLvl)
             encounter.invulnerable = false
             encounter.busyUntil = 0
             encounter.transitionTo(ENRAGED_PHASE, deps.mapClock.cycle)

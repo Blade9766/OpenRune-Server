@@ -6,10 +6,10 @@ import kotlin.math.atan2
 internal object VardorvisDash {
     data class Mark(val dx: Int, val dz: Int, val delayCc: Int)
 
-    fun count(hitpoints: Int): Int =
+    fun count(hitpoints: Int, hpScale: Int = 1): Int =
         when {
-            hitpoints > TWO_DART_HP -> 1
-            hitpoints > THREE_DART_HP -> 2
+            hitpoints > TWO_DART_HP * hpScale -> 1
+            hitpoints > THREE_DART_HP * hpScale -> 2
             else -> 3
         }
 

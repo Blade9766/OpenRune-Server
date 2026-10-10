@@ -21,6 +21,7 @@ import org.rsmod.api.combat.commons.player.finishNpcHit
 import org.rsmod.api.config.refs.done.hitmark_groups
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.npc.heal
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.events.PlayerHitEvents
 import org.rsmod.api.player.isValidTarget
@@ -105,7 +106,7 @@ constructor(
         for (formId in liveFormIds) {
             val type = ServerCacheManager.getNpc(formId) ?: continue
             onNpcHit(type) {
-                if (formId == soulsplitId) {
+                if (formId == soulsplitId && npc.vars["varn.muspah_shield_broken"] == 0) {
                     applyShieldHit(npc, hit)
                     resolveSoulsplitShield(npc)
                 }
@@ -140,7 +141,7 @@ constructor(
     private fun onSoulsplitHit(hit: Hit) {
         if (!hit.isFromNpc) return
         val npc = hit.resolveNpcSource(npcList) ?: return
-        if (npc.visType.id != soulsplitId) return
+        if (npc.visType.id != soulsplitId || npc.vars["varn.muspah_shield_broken"] == 1) return
         drainShield(npc, SOULSPLIT_HIT_SELF_DRAIN)
         soulSplitHeal(npc, hit.damage)
         resolveSoulsplitShield(npc)
@@ -437,7 +438,8 @@ constructor(
         if (visId !in liveFormIds || !hit.isFromPlayer) return
         val attacker = hit.sourceUid?.let { PlayerUid(it).resolve(deps.playerList) }
 
-        if (visId == soulsplitId) {
+        val shieldUp = npc.vars["varn.muspah_shield_broken"] == 0
+        if (visId == soulsplitId && shieldUp) {
             val sourceUid = hit.sourceUid
             if (attacker != null && sourceUid != null && hit.damage > 0) {
                 fightFor(npc).pendingShieldHits += PendingShieldHit(sourceUid, hit.damage)
@@ -446,7 +448,7 @@ constructor(
             return
         }
 
-        if (visId == finalId) return
+        if (visId == finalId || visId == soulsplitId) return
 
         val hpAfterHit = npc.hitpoints - hit.damage
         if (npc.vars["varn.muspah_final_triggered"] == 1 || hpAfterHit < FINAL_PHASE_HP_THRESHOLD) {
@@ -737,13 +739,17 @@ constructor(
         deps.worldQueues.add(SPIKE_PRE_DELAY) {
             if (!npc.isValidTarget()) return@add
             val spawnSpot = SpotanimType(SPIKE_SPAWN_SPOTANIM.asRSCM(RSCMType.SPOTANIM))
-            tiles.forEach {
-                locRepo.add(it, SPIKE_TELEGRAPH_LOC, Int.MAX_VALUE, LocAngle.West, LocShape.CentrepieceStraight)
-                deps.worldRepo.spotanimMap(spawnSpot, it)
-            }
+            val telegraphs =
+                tiles.map {
+                    deps.worldRepo.spotanimMap(spawnSpot, it)
+                    locRepo.add(it, SPIKE_TELEGRAPH_LOC, Int.MAX_VALUE, LocAngle.West, LocShape.CentrepieceStraight)
+                }
             shakeCameraNear(npc)
             deps.worldQueues.add(SPIKE_SOLIDIFY_DELAY) {
-                if (!npc.isValidTarget()) return@add
+                if (!npc.isAliveInWorld()) {
+                    telegraphs.forEach { locRepo.del(it, Int.MAX_VALUE) }
+                    return@add
+                }
                 tiles.forEach { spawnSpike(npc, it) }
             }
         }
@@ -773,7 +779,7 @@ constructor(
         deps.collision.addCollisionFlag(coord, CollisionFlag.BLOCK_PLAYERS)
 
         deps.worldQueues.add(1) {
-            if (!locRepo.findLoc(coord, SPIKE_LOC)) return@add
+            if (!locRepo.findLoc(coord, SPIKE_LOC) || !npc.isAliveInWorld()) return@add
             val occupant = deps.playerList.firstOrNull { it.coords == coord && it.hitpoints > 0 }
             if (occupant != null) {
                 triggerSpikeHit(npc, occupant, coord)
@@ -784,8 +790,13 @@ constructor(
     private fun triggerSpikeHit(npc: Npc, player: Player, coord: CoordGrid) {
         val damage = SPIKE_DAMAGE_MIN + deps.random.of(SPIKE_DAMAGE_MAX - SPIKE_DAMAGE_MIN + 1)
         player.finishNpcHit(npc, 1, HitType.Typeless, damage, deps.playerHitModifier)
-        npc.heal((damage * SPIKE_HEAL_FRACTION).toInt(), showHitsplat = true)
+        healFromSpike(npc, damage)
         knockbackPlayer(player, coord)
+    }
+
+    private fun healFromSpike(npc: Npc, damage: Int) {
+        if (!npc.isAliveInWorld() || npc.visType.id == soulsplitId) return
+        npc.heal((damage * SPIKE_HEAL_FRACTION).toInt(), showHitsplat = true)
     }
 
     private fun knockbackPlayer(player: Player, coord: CoordGrid): CoordGrid {
@@ -884,7 +895,7 @@ constructor(
         val occupant = deps.playerList.firstOrNull { it.coords == coord && it.hitpoints > 0 } ?: return
         val damage = HOMING_SPIKE_DAMAGE_MIN + deps.random.of(HOMING_SPIKE_DAMAGE_MAX - HOMING_SPIKE_DAMAGE_MIN + 1)
         occupant.finishNpcHit(npc, 1, HitType.Typeless, damage, deps.playerHitModifier)
-        npc.heal((damage * SPIKE_HEAL_FRACTION).toInt(), showHitsplat = true)
+        healFromSpike(npc, damage)
         knockbackPlayer(occupant, coord)
     }
 
