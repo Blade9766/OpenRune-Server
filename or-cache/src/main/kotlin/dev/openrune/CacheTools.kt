@@ -9,13 +9,13 @@ import dev.openrune.cache.tools.cacheTool
 import dev.openrune.cache.tools.cs2.PackCs2
 import dev.openrune.cache.tools.cs2.UnpackDefaultCs2
 import dev.openrune.cache.tools.iftype.PackIfType
-import dev.openrune.cache.tools.tasks.impl.PackModels
-import dev.openrune.cache.tools.tasks.impl.PackSprites
-import dev.openrune.cache.tools.tasks.impl.PackWorldMap
 import dev.openrune.cache.tools.incremental.CacheVerification
 import dev.openrune.cache.tools.incremental.IncrementalSession
 import dev.openrune.cache.tools.tasks.CacheTask
 import dev.openrune.cache.tools.tasks.TaskType
+import dev.openrune.cache.tools.tasks.impl.PackModels
+import dev.openrune.cache.tools.tasks.impl.PackSprites
+import dev.openrune.cache.tools.tasks.impl.PackWorldMap
 import dev.openrune.codegen.startEnumGeneration
 import dev.openrune.codegen.startGeneration
 import dev.openrune.definition.GameValGroupTypes
@@ -34,6 +34,7 @@ import dev.openrune.map.packing.MapPackers
 import dev.openrune.pack.PluginPacks
 import dev.openrune.tables.CollectionLogCategoriesTable
 import dev.openrune.tables.DidYouKnow
+import dev.openrune.tables.GauntletRoomSlotsTable
 import dev.openrune.tables.InstanceSettingsTable
 import dev.openrune.tables.PickableObjects
 import dev.openrune.tables.SettingConfigs
@@ -224,6 +225,7 @@ fun tablesToPack(): List<DBTable> = listOf(
     SettingConfigs.settings(),
     DidYouKnow.didYouknow(),
     InstanceSettingsTable.instanceSettings(),
+    GauntletRoomSlotsTable.table(),
     CollectionLogCategoriesTable.collectionLogCategories(),
     ShopCurrencyTable.shopCurrencies(),
 )

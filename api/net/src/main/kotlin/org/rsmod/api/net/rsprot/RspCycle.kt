@@ -45,6 +45,9 @@ class RspCycle(
 
     private var knownBuildArea: CoordGrid = CoordGrid.NULL
 
+    /** Set by [forceSceneRebuild]; cleared once [rebuildArea] has acted on it. */
+    private var pendingSceneRebuild: Boolean = false
+
     private var knownCachedSpeed: MoveSpeed = MoveSpeed.Stationary
 
     private var knownFaceEntity: Int? = -1
@@ -67,6 +70,13 @@ class RspCycle(
     fun init(player: Player) {
         player.updateCoords()
         player.queueRebuildLogin()
+    }
+
+    override fun forceSceneRebuild() {
+        // A flag, not a cleared `knownBuildArea`: `NULL` there means "login rebuild already sent".
+        pendingSceneRebuild = true
+        knownRegionUid = null
+        cachedRegionZoneProvider = null
     }
 
     private fun Player.queueRebuildLogin() {
@@ -180,16 +190,25 @@ class RspCycle(
     }
 
     private fun Player.rebuildArea() {
-        val recalcBuildArea = knownBuildArea != buildArea && buildArea != CoordGrid.NULL
+        val staleBuildArea = pendingSceneRebuild || knownBuildArea != buildArea
+        val recalcBuildArea = staleBuildArea && buildArea != CoordGrid.NULL
         if (recalcBuildArea) {
             val zone = ZoneKey.from(buildArea)
             val area = BuildArea(zone.x, zone.z)
             infos.updateRootBuildArea(area)
         }
 
-        if (!recalcBuildArea) {
+        val forceRegionRebuild =
+            regionRebuildPending && regionUid != null && knownBuildArea != CoordGrid.NULL
+        if (forceRegionRebuild) {
+            knownRegionUid = null
+            cachedRegionZoneProvider = null
+        }
+
+        if (!recalcBuildArea && !forceRegionRebuild) {
             return
         }
+        pendingSceneRebuild = false
 
         // Skip log-in rebuild as RebuildLogin is already sent.
         if (knownBuildArea == CoordGrid.NULL) {

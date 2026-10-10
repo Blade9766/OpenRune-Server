@@ -164,12 +164,15 @@ internal enum class PotionEffectData(
     RESTORE_POTION(
         key = "restore_potion",
         kind = "stat_restore",
+        skills = listOf(
+            "stat.attack",
+            "stat.strength",
+            "stat.defence",
+            "stat.ranged",
+            "stat.magic",
+        ),
         base = 10,
         percent = 30,
-        excludedSkills = listOf(
-            "stat.hitpoints",
-            "stat.prayer",
-        ),
     ),
     PRAYER_RESTORE(
         key = "prayer_restore",
@@ -188,7 +191,7 @@ internal enum class PotionEffectData(
     ENERGY_RESTORE(
         key = "energy_restore",
         kind = "run_energy",
-        amount = 10,
+        amount = 15,
     ),
     SUPER_ENERGY_RESTORE(
         key = "super_energy_restore",
@@ -256,6 +259,7 @@ internal enum class PotionEffectData(
             "dbrow.effect_superantipoison",
         ),
         curesDisease = true,
+        duration = minutes(15),
     ),
     SARADOMIN_BREW(
         key = "saradomin_brew",
@@ -565,7 +569,25 @@ internal enum class PotionEffectData(
         key = "moonlight_potion",
         kind = "handler",
         handler = "moonlight_potion",
-    );
+    ),
+    MAGIC_ESSENCE_BOOST(
+        key = "magic_essence_boost",
+        kind = "flat_stat_boost",
+        skills = listOf("stat.magic"),
+        amount = 3,
+    ),
+    GAUNTLET_ENERGY(
+        key = "gauntlet_energy",
+        kind = "run_energy",
+        amount = 40,
+    ),
+    EGNIOL(
+        key = "egniol",
+        kind = "compound",
+        effects = listOf("dbrow.effect_prayer_restore", "dbrow.effect_gauntlet_energy"),
+        stamina = true,
+        duration = minutes(2),
+    )
 }
 
 private fun seconds(value: Int): Int =
