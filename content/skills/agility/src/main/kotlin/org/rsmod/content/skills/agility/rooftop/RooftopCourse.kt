@@ -44,7 +44,7 @@ enum class RooftopCourse(
             "obj.mm2_kruk_greegree",
         ),
     ),
-    Wilderness("Wilderness", 49, 0, 1),
+    Wilderness("Wilderness", 52, 0, 1),
     Falador("Falador", 50, 1, 5),
     Seers("Seers' Village", 60, 1, 3),
     Pollnivneach("Pollnivneach", 70, 1, 3),

@@ -106,9 +106,14 @@ constructor(private val rumours: RumourTracker, private val areaChecker: AreaChe
         }
 
     private fun ProtectedAccess.recharge() {
-        val slot = inv.indexOfFirst { obj -> Whistle.forObj(obj)?.let { it.capacity > 0 } == true }
-        if (slot == -1) {
+        val chargeable = inv.indices.filter { Whistle.forObj(inv[it])?.let { w -> w.capacity > 0 } == true }
+        if (chargeable.isEmpty()) {
             mes("You don't have a quetzal whistle that needs charging.")
+            return
+        }
+        val slot = chargeable.firstOrNull { slot -> charges(inv[slot]!!) < Whistle.forObj(inv[slot])!!.capacity }
+        if (slot == null) {
+            mes("Your quetzal whistle is already fully charged.")
             return
         }
         val obj = inv[slot] ?: return

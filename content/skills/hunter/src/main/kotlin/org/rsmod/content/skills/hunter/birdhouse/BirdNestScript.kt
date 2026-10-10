@@ -1,5 +1,8 @@
 package org.rsmod.content.skills.hunter.birdhouse
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.random.GameRandom
@@ -23,7 +26,8 @@ class BirdNestScript @Inject constructor(private val random: GameRandom) : Plugi
     }
 
     private fun ProtectedAccess.search(nest: String, slot: Int, reward: String, what: String) {
-        if (reward !in player.inv && inv.freeSpace() == 0) {
+        val stacksOntoHeld = reward in player.inv && ServerCacheManager.getItem(reward.asRSCM(RSCMType.OBJ))?.isStackable == true
+        if (!stacksOntoHeld && inv.freeSpace() == 0) {
             mes("You need a free inventory space to search the nest.")
             return
         }

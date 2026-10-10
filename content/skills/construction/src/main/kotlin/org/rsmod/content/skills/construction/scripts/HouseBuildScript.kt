@@ -500,6 +500,11 @@ constructor(
         delay(Construction.BUILD_CYCLE)
         resetAnim()
 
+        val needsCan = !free && option.wateringCan
+        if (needsCan && !hasWateringCan()) {
+            mes("You need a watering can with some water in it to plant that.")
+            return
+        }
         val taken =
             when {
                 free -> true
@@ -508,6 +513,9 @@ constructor(
             }
         if (!taken) {
             return
+        }
+        if (needsCan) {
+            drainWateringCan()
         }
         val index = group.options.indexOf(option)
         val cell = registry.cellOf(house, loc.coords)
@@ -702,6 +710,15 @@ constructor(
     }
 
     private fun ProtectedAccess.hasWateringCan(): Boolean = Construction.WATERING_CANS.any { inv.contains(it) }
+
+    private fun ProtectedAccess.drainWateringCan() {
+        if (inv.contains(Construction.GRICOLLERS_CAN)) {
+            return
+        }
+        val can = Construction.WATERING_CANS.lastOrNull { it != Construction.GRICOLLERS_CAN && inv.contains(it) }
+        val drained = can?.let(Construction::drainedWateringCan) ?: return
+        invReplace(inv, can, 1, drained)
+    }
 
     private fun ProtectedAccess.hasMaterials(materials: List<Material>): Boolean =
         materials.all { invTotal(inv, it.obj) >= it.count }

@@ -110,22 +110,9 @@ class ElderChaosDruid : PluginScript() {
         }
 
         val exchangeFee = exchangeCount * 50
-        val takeFeeAndNote = invDel(
-            inv = inv,
-            type1 = "obj.coins",
-            count1 = exchangeFee,
-            type2 = objType.internalName,
-            count2 = exchangeCount
-        )
-        if (takeFeeAndNote.failure) {
-            startDialogue(npc) {
-                chatNpcNoTurn(neutral, "I charge 50 coins for exchanging each banknote.")
-            }
-            return
-        }
-
-        val add = invAdd(inv = inv, type = uncertInternal, count = exchangeCount)
-        if (add.failure) {
+        if (!exchangeNotes(objType.internalName, uncertInternal, exchangeCount, exchangeFee)) {
+            val reason = if (inv.count("obj.coins") < exchangeFee) "I charge 50 coins for exchanging each banknote." else "Your inventory is too full."
+            startDialogue(npc) { chatNpcNoTurn(neutral, reason) }
             return
         }
     }
@@ -159,5 +146,4 @@ class ElderChaosDruid : PluginScript() {
             else -> countDialog("Enter amount:").coerceIn(0, maxExchange)
         }
     }
-
 }

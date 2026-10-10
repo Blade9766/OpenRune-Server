@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.prayer.ecto
 
+import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.content.skills.prayer.items.ZealotRobes.shouldConsume
@@ -30,6 +31,10 @@ class EctoWorshipEvents : PluginScript() {
             )
             return
         }
+        if (ectoTokens + TOKENS_PER_WORSHIP > MAX_UNCLAIMED_TOKENS) {
+            mes("The ghost disciples are holding too many of your ecto-tokens. Collect them first.")
+            return
+        }
 
         anim("seq.ahoy_prayer")
 
@@ -42,6 +47,11 @@ class EctoWorshipEvents : PluginScript() {
         }
 
         statAdvance("stat.prayer", recipe.xp)
-        ectoTokens += 5
+        ectoTokens += TOKENS_PER_WORSHIP
+    }
+
+    private companion object {
+        const val TOKENS_PER_WORSHIP = 5
+        const val MAX_UNCLAIMED_TOKENS = 1000
     }
 }

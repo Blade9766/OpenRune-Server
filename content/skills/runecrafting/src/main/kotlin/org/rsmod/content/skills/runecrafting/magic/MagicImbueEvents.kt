@@ -13,6 +13,7 @@ import org.rsmod.api.script.onPlayerQueue
 import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.content.skills.runecrafting.magic.MagicImbue.activate
 import org.rsmod.content.skills.runecrafting.magic.MagicImbue.deactivate
+import org.rsmod.content.skills.runecrafting.magic.MagicImbue.isActive
 import org.rsmod.content.skills.runecrafting.magicImbueActive
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -44,6 +45,10 @@ class MagicImbueEvents @Inject constructor(
             ServerCacheManager.getItem("obj.82_magic_imbue".asRSCM(RSCMType.OBJ))
                 ?: return
         val spell = spells.getObjSpell(spellObj) ?: return
+        if (player.isActive()) {
+            mes("You can only cast Magic Imbue every 12 seconds.")
+            return
+        }
 
         val result = runes.attemptCast(player, spell)
         if (result.isFailure()) {

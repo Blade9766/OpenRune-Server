@@ -20,6 +20,7 @@ import org.rsmod.content.skills.construction.house.mountTrophy
 import org.rsmod.content.skills.construction.house.mountedTrophies
 import org.rsmod.content.skills.construction.house.showTrophy
 import org.rsmod.game.entity.Npc
+import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -128,11 +129,15 @@ constructor(
             mes("You need a Construction level of ${trophy.level} to mount that.")
             return
         }
+        if (player.hasMounted(trophy)) {
+            mes("You already have that trophy mounted.")
+            return
+        }
         val combat = trophy.skill == null && acceptsCombatXp(trophy)
         anim(Construction.BUILD_ANIM)
         delay(Construction.BUILD_CYCLE)
         resetAnim()
-        if (invDel(inv, obj).failure) {
+        if (player.hasMounted(trophy) || invDel(inv, obj).failure) {
             return
         }
         player.mountTrophy(kind, trophy.bit)
@@ -145,6 +150,9 @@ constructor(
         mes("You mount the ${trophy.label.lowercase()} on the display.")
         houses.rebuild(this)
     }
+
+    private fun Player.hasMounted(trophy: Trophy): Boolean =
+        mountedTrophies(trophy.kind) and (1 shl trophy.bit) != 0
 
     private suspend fun ProtectedAccess.acceptsCombatXp(trophy: Trophy): Boolean =
         choice2(

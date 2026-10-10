@@ -79,7 +79,7 @@ constructor(private val worldRepo: WorldRepository, private val locRepo: LocRepo
         spotanimMap(worldRepo, "spotanim.poh_bone_sacrifice", task.altar.coords)
 
         val burners = if (task.chaos) 0 else litBurnersAround(task.altar)
-        statAdvance("stat.prayer", task.row.exp * multiplier(task, burners))
+        statAdvance("stat.prayer", task.row.exp / 10.0 * multiplier(task, burners))
 
         if (shouldConsumeBone(task).not()) {
             mes("The Dark Lord spares your sacrifice, but rewards you for your efforts.")

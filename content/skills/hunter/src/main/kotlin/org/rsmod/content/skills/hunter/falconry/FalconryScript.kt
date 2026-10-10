@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.hunter.falconry
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.aconverted.SpotanimType
@@ -258,24 +259,39 @@ constructor(
             mes("This isn't your falcon.")
             return
         }
+        if (!hasSpaceFor(catch.kebbit.loot)) {
+            mes("You don't have enough inventory space to retrieve the falcon's catch.")
+            return
+        }
         faceEntitySquare(falcon)
         anim(RETRIEVE_SEQ)
         delay(1)
         if (catches[player.uid] !== catch) {
             return
         }
+        if (!hasSpaceFor(catch.kebbit.loot)) {
+            mes("You don't have enough inventory space to retrieve the falcon's catch.")
+            return
+        }
         catches.remove(player.uid)
         HintArrows.hintStop(player)
         npcRepo.del(falcon, Int.MAX_VALUE)
         for (obj in catch.kebbit.loot) {
-            if (inv.freeSpace() > 0) {
-                invAdd(inv, obj)
-            }
+            invAdd(inv, obj)
         }
         player.worn[Wearpos.RightHand.slot] = InvObj(FALCON_GLOVE)
         statAdvance(TrapManager.STAT, catch.kebbit.xp * xpMods.get(player, TrapManager.STAT))
         mes("You retrieve the falcon as well as the fur of the dead kebbit.")
         rumours.onCatch(player, catch.kebbit.name)
+    }
+
+    private fun ProtectedAccess.hasSpaceFor(loot: List<String>): Boolean {
+        val needed =
+            loot.count { obj ->
+                val type = ServerCacheManager.getItem(obj.asRSCM(RSCMType.OBJ))
+                type?.isStackable != true || obj !in player.inv
+            }
+        return inv.freeSpace() >= needed
     }
 
     private fun abandon(uid: PlayerUid) {

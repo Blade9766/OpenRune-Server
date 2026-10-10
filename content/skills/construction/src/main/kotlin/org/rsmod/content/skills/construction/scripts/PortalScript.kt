@@ -17,6 +17,7 @@ import org.rsmod.api.table.QuestRow
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.construction.data.Portals
 import org.rsmod.content.skills.construction.data.Portals.Destination
+import org.rsmod.content.skills.construction.house.ActiveHouse
 import org.rsmod.content.skills.construction.house.HouseAccess
 import org.rsmod.content.skills.construction.house.HouseRegistry
 import org.rsmod.map.CoordGrid
@@ -159,7 +160,14 @@ constructor(
                 3,
                 title = "Direct which portal?",
             )
+        if (!hasFrame(house, space)) {
+            mes("There is no portal frame built in that space.")
+            return
+        }
         val destination = pickDestination() ?: return
+        if (!hasFrame(house, space)) {
+            return
+        }
         val varbit = Portals.VARBITS[space - 1]
         if (player.vars[varbit] == destination.stored) {
             mes("That portal already leads to ${destination.label}.")
@@ -186,6 +194,9 @@ constructor(
         mes("You direct portal $space to ${destination.label}.")
         houses.rebuild(this)
     }
+
+    private fun ProtectedAccess.hasFrame(house: ActiveHouse, space: Int): Boolean =
+        registry.roomAt(house, player.coords)?.furniture?.containsKey("portal_$space") == true
 
     private fun ProtectedAccess.spaceLabel(space: Int): String {
         val current = Destination.of(player.vars[Portals.VARBITS[space - 1]])

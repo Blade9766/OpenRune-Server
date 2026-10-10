@@ -133,6 +133,11 @@ class TackleBoxScript @Inject constructor() : PluginScript() {
             mes("You can only do that while your bank is open.")
             return
         }
+        val moved = storeAllEquipment()
+        mes(if (moved > 0) "You store your fishing equipment in the tackle box." else "You have no fishing equipment to store.")
+    }
+
+    private fun ProtectedAccess.storeAllEquipment(): Int {
         val box = player.tackleBox
         var moved = 0
         for (slot in inv.indices) {
@@ -143,11 +148,11 @@ class TackleBoxScript @Inject constructor() : PluginScript() {
             }
             val result = invMoveFromSlot(from = inv, into = box, fromSlot = slot, count = obj.count, strict = false)
             if (result[0].isOk()) {
-                moved += obj.count
+                moved += obj.count - (inv[slot]?.count ?: 0)
             }
         }
-        mes(if (moved > 0) "You store your fishing equipment in the tackle box." else "You have no fishing equipment to store.")
         UpdateInventory.updateInvFull(player, box)
+        return moved
     }
 
     private fun ProtectedAccess.depositHeld(type: ItemServerType, slot: Int) {
@@ -219,19 +224,8 @@ class TackleBoxScript @Inject constructor() : PluginScript() {
         }
 
     private fun ProtectedAccess.fillBox() {
-        val box = player.tackleBox
-        var moved = 0
-        for (name in storable) {
-            val count = invTotal(inv, name)
-            if (count == 0 || !box.hasRoomFor(name.asRSCM(RSCMType.OBJ))) {
-                continue
-            }
-            invDel(inv, name, count)
-            invAdd(box, name, count)
-            moved += count
-        }
+        val moved = storeAllEquipment()
         mes(if (moved > 0) "You fill the tackle box with your fishing equipment." else "You have no fishing equipment to store.")
-        UpdateInventory.updateInvFull(player, box)
     }
 
     private fun Inventory.hasRoomFor(objId: Int): Boolean {
@@ -244,17 +238,26 @@ class TackleBoxScript @Inject constructor() : PluginScript() {
     }
 
     private fun ProtectedAccess.emptyBox() {
-        var emptied = false
         val box = player.tackleBox
-        for (name in storable) {
-            val count = invTotal(box, name)
-            if (count > 0) {
-                invDel(box, name, count)
-                invAdd(inv, name, count)
+        if (box.isEmpty()) {
+            mes("The tackle box is already empty.")
+            return
+        }
+        var emptied = false
+        for (slot in box.indices) {
+            val obj = box[slot] ?: continue
+            val result = invMoveFromSlot(from = box, into = inv, fromSlot = slot, count = obj.count, strict = false)
+            if (result[0].isOk()) {
                 emptied = true
             }
         }
-        mes(if (emptied) "You empty the tackle box." else "The tackle box is already empty.")
+        mes(
+            when {
+                box.isEmpty() -> "You empty the tackle box."
+                emptied -> "You empty what you can from the tackle box into your inventory."
+                else -> "Your inventory is too full."
+            }
+        )
         UpdateInventory.updateInvFull(player, box)
     }
 

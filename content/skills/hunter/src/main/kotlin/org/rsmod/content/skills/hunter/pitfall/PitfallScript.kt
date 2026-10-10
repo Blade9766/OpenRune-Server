@@ -296,7 +296,9 @@ constructor(
         if (fur != null && tatty != null) {
             loot += if (statRandom(TrapManager.STAT, creature.furLow, creature.furHigh, invisibleLevels)) fur else tatty
         }
-        if (inv.freeSpace() < loot.size) {
+        val splinters = creature.splinters
+        val needed = loot.size + if (splinters != null && splinters !in inv) 1 else 0
+        if (inv.freeSpace() < needed) {
             mes("You don't have enough inventory space to do that.")
             return
         }
@@ -305,9 +307,13 @@ constructor(
         if (state(player, pit) != state) {
             return
         }
+        if (inv.freeSpace() < needed) {
+            mes("You don't have enough inventory space to do that.")
+            return
+        }
         setState(player, pit, Pits.EMPTY)
         loot.forEach { invAdd(inv, it) }
-        creature.splinters?.let { invAdd(inv, it, random.of(2, 6)) }
+        splinters?.let { invAdd(inv, it, random.of(2, 6)) }
         statAdvance(TrapManager.STAT, creature.xp * xpMods.get(player, TrapManager.STAT))
         mes("You've caught a ${creature.displayName}.")
         rumours.onCatch(player, creature.name)

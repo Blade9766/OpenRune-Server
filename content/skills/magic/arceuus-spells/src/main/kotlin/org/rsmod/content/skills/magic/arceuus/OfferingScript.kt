@@ -77,7 +77,7 @@ constructor(private val spells: MagicSpellRegistry, private val runes: MagicRune
             if (invDel(inv, row.item.internalName, 1, slot).failure) {
                 continue
             }
-            xp += row.exp * XP_MULTIPLIER
+            xp += row.exp / 10.0 * XP_MULTIPLIER
             restore += if (row.item.id in doublePrayerRestoreIds) 2 else 1
         }
 

@@ -180,6 +180,10 @@ constructor(
     private suspend fun ProtectedAccess.perform(move: ObstacleMove, failure: ObstacleFailure?): Boolean {
         when (move) {
             is ObstacleMove.Climb -> {
+                if (failure != null) {
+                    fall(failure, move.seq)
+                    return false
+                }
                 val ticks = move.ticks ?: seqGlideTicks(move.seq, fallback = 2)
                 climbTo(move.dest, move.seq, ticks)
             }

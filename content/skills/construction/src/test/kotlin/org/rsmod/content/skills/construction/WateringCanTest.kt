@@ -4,6 +4,7 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -30,6 +31,14 @@ class WateringCanTest {
         val built = RoomType.PARLOUR.hotspots.flatMap { it.options }
         assertTrue(built.none { it.wateringCan })
         Construction.WATERING_CANS.forEach { it.asRSCM(RSCMType.OBJ) }
+    }
+
+    @Test
+    fun `planting drains one dose and gricollers can is never drained`() {
+        assertEquals("obj.watering_can_7", Construction.drainedWateringCan("obj.watering_can_8"))
+        assertEquals("obj.watering_can_0", Construction.drainedWateringCan("obj.watering_can_1"))
+        assertNull(Construction.drainedWateringCan(Construction.GRICOLLERS_CAN))
+        Construction.WATERING_CANS.mapNotNull(Construction::drainedWateringCan).forEach { it.asRSCM(RSCMType.OBJ) }
     }
 
     companion object {

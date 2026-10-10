@@ -101,12 +101,13 @@ constructor(
             return
         }
 
-        if (!targetObj.isAlchable()) {
+        val baseType = ocUncert(targetObj)
+        if (!baseType.isAlchable()) {
             mes("You can not cast alchemy on that.")
             return
         }
 
-        val coins = alchemy.coinValue(targetObj)
+        val coins = alchemy.coinValue(baseType)
         if (!replaceWithCoins(targetSlot, targetObj, coins, autoCommit = false)) {
             mes("You don't have enough inventory space to do that.")
             return
@@ -136,8 +137,8 @@ constructor(
         }
 
         actionDelay = mapClock + alchemy.castDelay
-        PathingEntityCommon.anim(player, RSCM.getReverseMapping(RSCMType.SEQ,alchemy.castingAnim), delay = 0, priority = 0)
-        player.spotanim(RSCM.getReverseMapping(RSCMType.SPOTANIM,alchemy.castingSpotanim), height = AlchemySpotanimHeight)
+        PathingEntityCommon.anim(player, RSCM.getReverseMapping(RSCMType.SEQ, alchemy.castingAnim), delay = 0, priority = 0)
+        player.spotanim(RSCM.getReverseMapping(RSCMType.SPOTANIM, alchemy.castingSpotanim), height = AlchemySpotanimHeight)
         soundSynth(alchemy.sound, delay = AlchemySoundDelay)
         runClientScript(ToplevelSidebuttonSwitch, SpellbookSideTab)
         statAdvance("stat.magic", spell.castXp)
