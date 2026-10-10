@@ -69,7 +69,7 @@ internal class CastleWarsLobbyScript @Inject constructor(private val game: Castl
         soundSynth("synth.teleport_all")
         telejump(game.scatter(team.waitingRoom), TeleportType.Exempt)
         game.joinWaitingRoom(player, team)
-        ifOpenOverlay(CastleWarsScript.WAITING_OVERLAY)
+        ifOpenOverlay(CastleWarsScript.WAITING_OVERLAY, CastleWarsScript.OVERLAY_TARGET)
         game.syncVars(player)
         when {
             punished == CastleWars.GUTHIX_NPC -> mes("Guthix doesn't approve of your choice of equipment!")

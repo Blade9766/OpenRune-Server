@@ -114,7 +114,7 @@ constructor(
         rebuildAppearance()
         player.ifCloseOverlay(WAITING_OVERLAY, eventBus)
         telejump(game.scatter(team.spawnRoom), TeleportType.Exempt)
-        ifOpenOverlay(team.overlay)
+        ifOpenOverlay(team.overlay, OVERLAY_TARGET)
         MiscOutput.setPlayerOp(player, ATTACK_SLOT, "Attack", priority = true)
         MiscOutput.setPlayerOp(player, CastleWars.TAKE_FROM_SLOT, CastleWars.TAKE_FROM_OP)
         if (!inv.contains(CastleWars.RUNE_POUCH)) {
@@ -232,6 +232,7 @@ constructor(
 
     companion object {
         const val WAITING_OVERLAY: String = "interface.castlewars_waitingroom"
+        const val OVERLAY_TARGET: String = "component.toplevel_osrs_stretch:overlay_hud"
         const val ATTACK_SLOT: Int = 1
         const val FOLLOW_OP: String = "Follow"
         const val PLAUDITS: String = "varp.castlewars_plaudits"
