@@ -10,6 +10,7 @@ dependencies {
     testImplementation(projects.api.registry)
     testImplementation(libs.fastutil)
     testImplementation(libs.mockk)
+    testImplementation(projects.content.generic.genericLocs)
     implementation(projects.api.pluginCommons)
     implementation(projects.api.registry)
     implementation(projects.api.scriptAdvanced)

@@ -2,6 +2,7 @@ package org.rsmod.api.death.plugin
 
 import org.rsmod.api.death.NpcDeathDropHook
 import org.rsmod.api.death.NpcDeathKillHook
+import org.rsmod.api.death.NpcDropReceiveHook
 import org.rsmod.api.death.PlayerDeathCleanupHook
 import org.rsmod.api.death.PlayerDeathDropCoordsHook
 import org.rsmod.api.death.PlayerDeathHook
@@ -20,6 +21,7 @@ public class DeathDropHooksModule : PluginModule() {
     override fun bind() {
         newSetBinding<NpcDeathDropHook>()
         newSetBinding<NpcDeathKillHook>()
+        newSetBinding<NpcDropReceiveHook>()
         newSetBinding<PlayerDeathCleanupHook>()
         newSetBinding<PlayerDeathDropCoordsHook>()
         newSetBinding<PlayerDeathHook>()

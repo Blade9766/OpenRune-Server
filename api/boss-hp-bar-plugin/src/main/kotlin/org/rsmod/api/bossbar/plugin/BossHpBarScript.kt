@@ -40,6 +40,7 @@ public class BossHpBarScript @Inject constructor(
     internal var Player.bossHudBaseHp by intVarBit("varbit.hpbar_hud_basehp")
     internal var Player.bossHudNpcID by intVarp("varp.hpbar_hud_npc")
     internal var Player.bossHudBarSize by intVarBit("varbit.hpbar_hud_boss")
+    private var Player.bossHudOpenGeneration by intVarp("varp.hpbar_open_generation")
 
     override fun ScriptContext.startup() {
         onEvent<InstancePlayerJoinUnboundEvent> {
@@ -88,6 +89,7 @@ public class BossHpBarScript @Inject constructor(
     public fun onOpen(player: Player, npc: Npc) {
         if (player.bossHudDisabled) return
 
+        player.bossHudOpenGeneration++
         player.bossHudNpcID = npc.visType.id
         player.bossHudBaseHp = npc.baseHitpointsLvl
         player.bossHudCurrentHp = npc.hitpoints
@@ -127,8 +129,12 @@ public class BossHpBarScript @Inject constructor(
         }
         player.runClientScript(2889, commonComponents, 0)
         val uid = player.uid
+        val generation = player.bossHudOpenGeneration
         worldQueues.add(CLOSE_HIDE_DELAY) {
-            uid.resolve(playerList)?.ifSetHide("component.hpbar_hud:hp", true)
+            val current = uid.resolve(playerList)
+            if (current != null && current.bossHudOpenGeneration == generation) {
+                current.ifSetHide("component.hpbar_hud:hp", true)
+            }
         }
     }
 

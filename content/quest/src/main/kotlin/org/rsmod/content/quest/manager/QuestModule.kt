@@ -13,6 +13,7 @@ import org.rsmod.api.player.hook.PlayerObjTakeRedirectHook
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
+import org.rsmod.api.player.hook.SpadeDigHook
 import org.rsmod.api.weapons.WeaponMap
 import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.ardougne.QuestDoors
@@ -176,6 +177,7 @@ import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.area.lumbridge.losttribe.TreatySigning
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
 import org.rsmod.content.quest.area.lumbridge.tearsofguthix.TearsOfGuthixQuest
+import org.rsmod.content.quest.area.lumbridge.xmarksthespot.XMarksTheSpotQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarHooks
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarTravel
@@ -539,5 +541,8 @@ public class QuestModule : PluginModule() {
         addSetBinding<SpellQuestRequirement>(PolicySpellQuestRequirement::class.java)
         bindInstance<PiratesTreasureQuest>()
         bindInstance<FaladorParkDig>()
+        bindInstance<XMarksTheSpotQuest>()
+        addSetBinding<SpadeDigHook>(XMarksTheSpotQuest::class.java)
+        addSetBinding<SpadeDigHook>(SpadeDigging::class.java)
     }
 }

@@ -6,6 +6,7 @@ import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ProjAnimType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
+import org.rsmod.api.combat.commons.npc.NpcAttackHook
 import org.rsmod.api.combat.commons.npc.attackRate
 import org.rsmod.api.combat.commons.player.finishNpcHit
 import org.rsmod.api.combat.formulas.AccuracyFormulae
@@ -32,6 +33,7 @@ constructor(
     private val maxHits: MaxHitFormulae,
     private val worldRepo: WorldRepository,
     private val hitModifier: PlayerHitModifier,
+    private val attackHooks: Set<NpcAttackHook>,
 ) {
     fun attack(access: StandardNpcAccess, target: Player, attack: CombatAttack.NpcAttack) {
         when (attack) {
@@ -171,6 +173,7 @@ constructor(
         val attackAnim =
             RSCM.getReverseMapping(RSCMType.SEQ, npc.visType.param(params.attack_anim).id)
         anim(attackAnim)
+        attackHooks.forEach { it.onAttack(npc, target) }
         // Attack sounds are area sounds so that everyone nearby hears the npc strike, not only its
         // target.
         val attackSound = npc.visType.paramOrNull(params.attack_sound) ?: return false

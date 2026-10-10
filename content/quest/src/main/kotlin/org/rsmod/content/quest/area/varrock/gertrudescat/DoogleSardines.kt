@@ -1,5 +1,9 @@
 package org.rsmod.content.quest.area.varrock.gertrudescat
 
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
+import org.rsmod.api.invtx.invTransaction
+import org.rsmod.api.invtx.select
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.script.onOpLoc1
@@ -9,11 +13,6 @@ import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Compa
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/**
- * Seasoning a raw sardine with doogle leaves, and the empty crates and barrels scattered
- * around the lumber yard. The kitten itself hides in the mewing crates handled by
- * [LumberYardCrates].
- */
 class DoogleSardines : PluginScript() {
     override fun ScriptContext.startup() {
         onOpHeldU(RAW_SARDINE, DOOGLE_LEAVES) { seasonSardine() }
@@ -21,14 +20,31 @@ class DoogleSardines : PluginScript() {
         onOpLoc1(EMPTY_BARREL) { searchEmpty("barrel") }
     }
 
-    private suspend fun ProtectedAccess.seasonSardine() {
-        val removed = invDel(inv, RAW_SARDINE, 1, DOOGLE_LEAVES, 1)
-        if (removed.failure) {
+    private fun ProtectedAccess.seasonSardine() {
+        val seasoned =
+            player.invTransaction(inv) {
+                val inventory = select(inv)
+                delete {
+                    from = inventory
+                    obj = RAW_SARDINE.asRSCM(RSCMType.OBJ)
+                    strictCount = 1
+                }
+                delete {
+                    from = inventory
+                    obj = DOOGLE_LEAVES.asRSCM(RSCMType.OBJ)
+                    strictCount = 1
+                }
+                insert {
+                    into = inventory
+                    obj = SEASONED_SARDINE.asRSCM(RSCMType.OBJ)
+                    strictCount = 1
+                }
+            }
+        if (seasoned.failure) {
             return
         }
-        invAdd(inv, SEASONED_SARDINE)
         anim("seq.human_pickuptable")
-        mes("You rub the doogle leaves all over the sardine.")
+        mes("You rub the doogle leaves over the sardine.")
     }
 
     private suspend fun ProtectedAccess.searchEmpty(what: String) {

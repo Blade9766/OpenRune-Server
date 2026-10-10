@@ -49,6 +49,7 @@ import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.route.BoundValidator
 import org.rsmod.content.generic.locs.passages.GenericPassageScript
+import org.rsmod.content.generic.locs.spade.SpadeScript
 import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.goblinvillage.goblindiplomacy.GoblinDyes
 import org.rsmod.content.quest.area.morytania.ghostsahoy.GhostsAhoyQuest.Companion.AK_HARANU
@@ -816,7 +817,7 @@ class GhostsAhoyInteractionTest {
             val passages = unused<GenericPassageScript>()
             val scripts = ScriptContext(events, CheatCommandMap(), EngineQueueCache())
             for (script in listOf(
-                ahoy, robin, lobster, spade, TreasureMap(ahoy, spade), Velorina(ahoy), Necrovarus(ahoy, objRepo),
+                ahoy, robin, lobster, SpadeScript(setOf(spade)), TreasureMap(ahoy, spade), Velorina(ahoy), Necrovarus(ahoy, objRepo),
                 OldCrone(ahoy), GhostInnkeeper(ahoy), Petition(ahoy), AkHaranu(ahoy), OldMan(ahoy), GhostCaptain(ahoy),
                 NettleTea(), ModelShip(ahoy), shipwreck, TempleRobes(ahoy, passages),
                 Ectophial(validator, unused()), PhasmatysBarrier(ahoy), GoblinDyes(),

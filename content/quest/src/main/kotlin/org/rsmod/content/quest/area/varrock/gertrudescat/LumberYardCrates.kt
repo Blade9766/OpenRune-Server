@@ -13,10 +13,6 @@ import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/**
- * The six invisible "Crate" npcs around the lumber yard that mew now and then and can be
- * searched. Once Fluffs has eaten the sardine, one of them (fixed per player) holds her kitten.
- */
 class LumberYardCrates
 @Inject
 constructor(
@@ -42,26 +38,23 @@ constructor(
         anim("seq.human_pickuptable")
         delay(1)
 
-        val stage = gertrudesCat.stage(player)
-        if (stage != STAGE_GAVE_SARDINE || inv.count(FLUFFS_KITTEN) > 0) {
+        if (gertrudesCat.stage(player) != STAGE_GAVE_SARDINE || inv.count(FLUFFS_KITTEN) > 0) {
             mes("You search the crate but find nothing.")
             return
         }
-        if (crateIndex(npc) != gertrudesCat.kittenCrate.get(player)) {
-            mes("You search the crate but find nothing. The mewing seems to be coming from somewhere else.")
+        if (crateIndex(npc) != player.fluffsKittenCrate) {
+            mes("You search the crate but find nothing.")
             return
         }
-        if (inv.freeSpace() < 1) {
+        if (invAdd(inv, FLUFFS_KITTEN).failure) {
             mes("You find a kitten, but you have no room in your pack to carry it.")
             return
         }
-        invAdd(inv, FLUFFS_KITTEN)
         npc.say("Mew!")
         soundSynth(MEW_SOUND)
         mes("You find a kitten! You carefully place it in your backpack.")
     }
 
-    /** Which of [CRATES] this npc is, by the spawn tile it stands closest to. */
     private fun crateIndex(npc: Npc): Int =
         CRATES.indices.minByOrNull { npc.coords.chebyshevDistance(CRATES[it]) } ?: -1
 
@@ -73,7 +66,6 @@ constructor(
         private const val MEW_MAX_TICKS = 45
         private const val MEW_RADIUS = 8
 
-        /** Spawn tiles of the mewing crate npcs, in the order the kitten crate is picked from. */
         val CRATES =
             listOf(
                 CoordGrid(3298, 3514, 0),

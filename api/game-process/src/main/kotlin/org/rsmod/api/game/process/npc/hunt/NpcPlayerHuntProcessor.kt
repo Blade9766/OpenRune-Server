@@ -7,6 +7,7 @@ import dev.openrune.types.hunt.HuntType
 import jakarta.inject.Inject
 import org.rsmod.api.config.constants
 import org.rsmod.api.hunt.Hunt
+import org.rsmod.api.npc.aggression.AggressionTolerance as EnrolledAggressionTolerance
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.random.CoreRandom
 import org.rsmod.api.random.GameRandom
@@ -22,7 +23,8 @@ constructor(
     @CoreRandom private val random: GameRandom,
     private val mapClock: MapClock,
     private val hunt: Hunt,
-    private val tolerance: AggressionTolerance,
+    private val tolerance: EnrolledAggressionTolerance,
+    private val squareTolerance: AggressionTolerance,
 ) {
     public fun process(npc: Npc) {
         if (!npc.isValidTarget() || npc.isDelayed) {
@@ -65,6 +67,10 @@ constructor(
                 continue
             }
 
+            if (tolerance.isTolerant(this, player)) {
+                continue
+            }
+
             if (mode.checkNotBusy && player.isBusy) {
                 continue
             }
@@ -79,7 +85,7 @@ constructor(
                 }
                 // Monsters that respect the level rule also tire of a player who has stayed in
                 // their area for ten minutes; the always-aggressive modes never do.
-                if (tolerance.isTolerant(player, mapClock.cycle)) {
+                if (squareTolerance.isTolerant(player, mapClock.cycle)) {
                     continue
                 }
             }

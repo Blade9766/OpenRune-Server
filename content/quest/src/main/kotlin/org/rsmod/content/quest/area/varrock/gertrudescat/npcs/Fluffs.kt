@@ -21,12 +21,13 @@ import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Compa
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Companion.STAGE_KITTEN_RETURNED
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest.Companion.STAGE_STARTED
 import org.rsmod.content.quest.area.varrock.gertrudescat.LumberYardCrates
+import org.rsmod.content.quest.area.varrock.gertrudescat.fluffsKittenCrate
+import org.rsmod.content.quest.area.varrock.gertrudescat.metFluffs
 import org.rsmod.game.entity.Npc
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/** Fluffs, Gertrude's cat, hiding on the upper floor of the lumber yard's shed. */
 class Fluffs
 @Inject
 constructor(
@@ -40,35 +41,29 @@ constructor(
     private val kittenId = FLUFFS_KITTEN.asRSCM(RSCMType.OBJ)
 
     override fun ScriptContext.startup() {
-        onOpNpc1(FLUFFS) { pickUp(it.npc) }
-        onOpNpc3(FLUFFS) { stroke(it.npc) }
+        onOpNpc1(FLUFFS) { handle(it.npc) }
+        onOpNpc3(FLUFFS) { handle(it.npc) }
         onOpNpc4(FLUFFS) { talkTo(it.npc) }
         onOpNpcU(FLUFFS) { useItem(it.npc, it.objType, it.invSlot) }
     }
 
     private suspend fun ProtectedAccess.talkTo(npc: Npc) {
-        arriveDelay()
-        faceEntitySquare(npc)
-        npc.facePlayer(player)
-        noteFound()
+        approach(npc)
         npc.say("Miaoww")
         soundSynth(MEOW_SOUND)
     }
 
-    private suspend fun ProtectedAccess.pickUp(npc: Npc) {
-        hiss(npc)
-    }
-
-    private suspend fun ProtectedAccess.stroke(npc: Npc) {
-        hiss(npc)
-    }
-
-    /** Fluffs won't be handled until she is content, and hints at what she wants next. */
-    private suspend fun ProtectedAccess.hiss(npc: Npc) {
+    private suspend fun ProtectedAccess.approach(npc: Npc) {
         arriveDelay()
         faceEntitySquare(npc)
         npc.facePlayer(player)
-        noteFound()
+        if (gertrudesCat.stage(player) >= STAGE_STARTED) {
+            player.metFluffs = true
+        }
+    }
+
+    private suspend fun ProtectedAccess.handle(npc: Npc) {
+        approach(npc)
         val stage = gertrudesCat.stage(player)
         if (stage >= STAGE_KITTEN_RETURNED) {
             npc.say("Purr...")
@@ -89,15 +84,12 @@ constructor(
                 stage < STAGE_GAVE_MILK -> "Maybe the cat is thirsty?"
                 stage < STAGE_GAVE_SARDINE -> "Maybe the cat is hungry?"
                 else -> "The cat seems afraid to leave. In the distance you can hear kittens mewing..."
-            },
+            }
         )
     }
 
     private suspend fun ProtectedAccess.useItem(npc: Npc, objType: ItemServerType, slot: Int) {
-        arriveDelay()
-        faceEntitySquare(npc)
-        npc.facePlayer(player)
-        noteFound()
+        approach(npc)
         when (objType.id) {
             milkId -> giveMilk(npc)
             sardineId -> giveSardine(npc, slot)
@@ -106,7 +98,7 @@ constructor(
         }
     }
 
-    private suspend fun ProtectedAccess.giveMilk(npc: Npc) {
+    private fun ProtectedAccess.giveMilk(npc: Npc) {
         val stage = gertrudesCat.stage(player)
         if (stage < STAGE_STARTED) {
             mes("The cat eyes the bucket suspiciously and backs away.")
@@ -119,12 +111,12 @@ constructor(
         if (invReplace(inv, BUCKET_OF_MILK, 1, BUCKET_EMPTY).failure) {
             return
         }
+        gertrudesCat.quest.setQuestStage(this, STAGE_GAVE_MILK)
         anim("seq.human_pickupfloor")
         npc.anim("seq.cat_paw")
         npc.say("Mew!")
         soundSynth(MEW_SOUND)
         mes("Fluffs laps up the milk.")
-        gertrudesCat.quest.advanceQuestStage(access = this, amount = STAGE_GAVE_MILK - stage)
     }
 
     private suspend fun ProtectedAccess.giveSardine(npc: Npc, slot: Int) {
@@ -140,47 +132,46 @@ constructor(
         if (invDel(inv, SEASONED_SARDINE, 1, slot = slot).failure) {
             return
         }
+        player.fluffsKittenCrate = random.of(LumberYardCrates.CRATES.indices)
+        gertrudesCat.quest.setQuestStage(this, STAGE_GAVE_SARDINE)
         anim("seq.human_pickupfloor")
         npc.anim("seq.cat_paw")
         npc.say("Mew!")
         soundSynth(MEW_SOUND)
         mes("Fluffs gobbles up the sardine.")
-        gertrudesCat.kittenCrate.set(player, random.of(LumberYardCrates.CRATES.indices))
-        gertrudesCat.quest.advanceQuestStage(this)
         delay(2)
         mes("The cat still seems afraid to leave. In the distance you can hear kittens mewing...")
     }
 
-    /** Fluffs is reunited with her kitten and the two of them head home. */
     private suspend fun ProtectedAccess.returnKitten(npc: Npc, slot: Int) {
-        val stage = gertrudesCat.stage(player)
-        if (stage != STAGE_GAVE_SARDINE) {
+        if (gertrudesCat.stage(player) != STAGE_GAVE_SARDINE) {
             mes("Fluffs doesn't seem interested in that right now.")
             return
         }
         if (invDel(inv, FLUFFS_KITTEN, 1, slot = slot).failure) {
             return
         }
+        gertrudesCat.quest.setQuestStage(this, STAGE_KITTEN_RETURNED)
         anim("seq.human_pickupfloor")
         val kitten = Npc(KITTEN, kittenTile(npc))
         npcRepo.add(kitten, KITTEN_VISIBLE_TICKS)
         kitten.facePlayer(player)
-
         npc.say("Purr...")
         kitten.say("Purr...")
         soundSynth(PURR_SOUND)
-        gertrudesCat.quest.advanceQuestStage(this)
-        delay(3)
-
-        npc.walk(HOME_TILE)
-        kitten.walk(HOME_TILE.translate(-1, 0))
-        delay(4)
-        mes("Fluffs has run off home with her kitten.")
-        if (kitten.isSlotAssigned) {
-            npcRepo.del(kitten, Int.MAX_VALUE)
-        }
-        if (npc.isSlotAssigned) {
-            npcRepo.hide(npc, FLUFFS_AWAY_TICKS)
+        try {
+            delay(3)
+            npc.walk(HOME_TILE)
+            kitten.walk(HOME_TILE.translate(-1, 0))
+            delay(4)
+            mes("Fluffs has run off home with her kitten.")
+        } finally {
+            if (kitten.isSlotAssigned) {
+                npcRepo.del(kitten, Int.MAX_VALUE)
+            }
+            if (npc.isSlotAssigned) {
+                npcRepo.hide(npc, FLUFFS_AWAY_TICKS)
+            }
         }
     }
 
@@ -195,13 +186,6 @@ constructor(
         return candidates.firstOrNull { it != player.coords && !mapBlocked(it) } ?: npc.coords
     }
 
-    /** Remembers that the player has met Fluffs, which unlocks Gertrude's sardine advice. */
-    private fun ProtectedAccess.noteFound() {
-        if (gertrudesCat.stage(player) >= STAGE_STARTED && !gertrudesCat.foundFluffs.get(player)) {
-            gertrudesCat.foundFluffs.set(player, true)
-        }
-    }
-
     private companion object {
         const val FLUFFS = "npc.gertrudescat"
         const val KITTEN = "npc.lostkitten"
@@ -211,12 +195,9 @@ constructor(
         const val HISS_SOUND = "synth.cat_hiss"
         const val PURR_SOUND = "synth.purr"
 
-        /** Beside the top of the shed ladder; Fluffs and her kitten head here to "go home". */
         val HOME_TILE = CoordGrid(3309, 3510, 1)
 
         const val KITTEN_VISIBLE_TICKS = 20
-
-        /** How long Fluffs stays away from the shed after running home. */
         const val FLUFFS_AWAY_TICKS = 100
     }
 }

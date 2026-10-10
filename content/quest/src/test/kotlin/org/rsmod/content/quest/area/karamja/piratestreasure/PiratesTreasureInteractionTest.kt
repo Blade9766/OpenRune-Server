@@ -49,6 +49,7 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.route.BoundValidator
+import org.rsmod.content.generic.locs.spade.SpadeScript
 import org.rsmod.content.quest.area.SpadeDigging
 import org.rsmod.content.quest.area.karamja.piratestreasure.PiratesTreasureQuest.Companion.BANANA
 import org.rsmod.content.quest.area.karamja.piratestreasure.PiratesTreasureQuest.Companion.BANANA_CRATE
@@ -509,7 +510,7 @@ class PiratesTreasureInteractionTest {
                 AiPlayerInteractions(events, players), clock, collision)
             val scripts = ScriptContext(events, CheatCommandMap(), EngineQueueCache())
             with(treasure) { scripts.startup() }
-            with(spade) { scripts.startup() }
+            with(SpadeScript(setOf(spade))) { scripts.startup() }
             with(dig) { scripts.startup() }
             with(RedbeardFrank(treasure, objRepo)) { scripts.startup() }
             with(Luthas(objRepo)) { scripts.startup() }
