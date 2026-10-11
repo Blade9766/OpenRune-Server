@@ -13,6 +13,7 @@ import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerRestrictions
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
 import org.rsmod.api.player.hook.PlayerTeleportValidator
+import org.rsmod.api.player.music.MusicAreaTrackHook
 import org.rsmod.api.player.music.MusicPlayer
 import org.rsmod.api.player.protect.ProtectedAccessContextFactory
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
@@ -28,6 +29,7 @@ public object PlayerModule : ExtendedModule() {
         newSetBinding<PlayerObjTakeRedirectHook>()
         newSetBinding<PlayerRestrictionHook>()
         newSetBinding<PlayerLoginVarsHook>()
+        newSetBinding<MusicAreaTrackHook>()
         bindInstance<PlayerRestrictions>()
         bindInstance<MusicPlayer>()
         bindInstance<ProtectedAccessContextFactory>()

@@ -11,6 +11,8 @@ moveRestrict = "Indoors"
 [[npc]]
 id = "npc.hetty"
 inherit = "npc.hetty"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 moveRestrict = "Indoors"
 
 [[npc]]

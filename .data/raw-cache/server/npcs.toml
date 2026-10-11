@@ -129,6 +129,8 @@ respawnDir = "West"
 [[npc]]
 id = "npc.lumbridge_guide"
 inherit = "npc.lumbridge_guide"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 wanderRange = 0
 respawnDir = "West"
 
@@ -376,6 +378,10 @@ contentGroup = "content.duckling"
 [[npc]]
 id = "npc.man"
 inherit = "npc.man"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -393,6 +399,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.man2"
 inherit = "npc.man2"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -410,6 +420,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.man3"
 inherit = "npc.man3"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -427,6 +441,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.man_indoor"
 inherit = "npc.man_indoor"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -444,6 +462,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.woman"
 inherit = "npc.woman"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -461,6 +483,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.woman2"
 inherit = "npc.woman2"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -478,6 +504,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.woman3"
 inherit = "npc.woman3"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -5925,6 +5955,9 @@ respawnDir = "North"
 [[npc]]
 id = "npc.fai_falador_guard1"
 inherit = "npc.fai_falador_guard1"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 [npc.params]
 "param.attack_anim"="seq.human_sword_stab"
@@ -5932,6 +5965,9 @@ moveRestrict = "Outdoors"
 [[npc]]
 id = "npc.fai_falador_guard1_f"
 inherit = "npc.fai_falador_guard1_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 [npc.params]
 "param.attack_anim"="seq.human_sword_stab"
@@ -6004,11 +6040,15 @@ moveRestrict = "Indoors"
 [[npc]]
 id = "npc.partyroom_pete"
 inherit = "npc.partyroom_pete"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 moveRestrict = "Indoors"
 
 [[npc]]
 id = "npc.falador_man4"
 inherit = "npc.falador_man4"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 moveRestrict = "Indoors"
 
 [[npc]]
@@ -6059,41 +6099,65 @@ moveRestrict = "Outdoors"
 [[npc]]
 id = "npc.fai_falador_guard1_variant02"
 inherit = "npc.fai_falador_guard1_variant02"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard2"
 inherit = "npc.fai_falador_guard2"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard2_f"
 inherit = "npc.fai_falador_guard2_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard3"
 inherit = "npc.fai_falador_guard3"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard3_f"
 inherit = "npc.fai_falador_guard3_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard4_f"
 inherit = "npc.fai_falador_guard4_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard5"
 inherit = "npc.fai_falador_guard5"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard6"
 inherit = "npc.fai_falador_guard6"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]

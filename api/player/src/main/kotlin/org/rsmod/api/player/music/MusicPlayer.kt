@@ -22,7 +22,11 @@ import org.rsmod.game.entity.Player
 
 public class MusicPlayer
 @Inject
-internal constructor(private val random: GameRandom, private val repo: MusicRepository) {
+internal constructor(
+    private val random: GameRandom,
+    private val repo: MusicRepository,
+    private val areaTrackHooks: Set<@JvmSuppressWildcards MusicAreaTrackHook>,
+) {
     private var Player.playMode by enumVarp<MusicPlayMode>("varp.musicplay")
     private val Player.areaMode by enumVarBit<MusicAreaMode>("varbit.music_area_mode")
 
@@ -382,6 +386,12 @@ internal constructor(private val random: GameRandom, private val repo: MusicRepo
     // when using the modern music area mode. This playlist will always keep the first music track
     // the same and shuffle the rest.
     private fun playShuffled(player: Player, musicList: List<Music>) {
+        val override =
+            areaTrackHooks.firstNotNullOfOrNull { it.overrideAreaTrack(player, musicList) }
+        if (override != null) {
+            unlockAndPlay(player, override)
+            return
+        }
         if (player.musicPlaylist == 0) {
             player.musicPlaylist = MusicPlaylist.create(random).packed
         }
