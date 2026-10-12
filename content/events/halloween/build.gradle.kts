@@ -12,4 +12,5 @@ dependencies {
     testImplementation(projects.api.invStorage)
     testImplementation(projects.api.registry)
     testImplementation(libs.fastutil)
+    testImplementation(libs.netty.buffer)
 }

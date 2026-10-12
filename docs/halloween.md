@@ -17,14 +17,27 @@ While it is live, `HalloweenWorld` puts the Great cauldron and three costumed ch
 Varrock west bank and sends a Generous Treater to one of five Varrock spots every 5–12 minutes,
 for about 3 minutes at a time. Turning the event off removes them again.
 
-It also decorates 16 towns (Lumbridge, Varrock, Falador, Draynor, Edgeville, Al Kharid, Port Sarim,
-Rimmington, Barbarian Village, Taverley, Burthorpe, Catherby, Seers', Camelot, Ardougne, Yanille)
-with Jagex's 2022 decorations: jack-o'-lanterns, turnip lanterns, candy bowls, scarecrows,
-gravestones and hay bales. The tiles live in `dbtable.halloween_decorations` and were picked from
-the map collision by `DecorationPlacementGenerator` (a test that runs only with
-`HALLOWEEN_DECOR_OUT=<file>` set). Placement rules: outdoors, clear of doors, stairs, banks and
-anvils, five tiles apart, and solid pieces only against a wall where every neighbouring path stays
-connected. To re-pick, edit the town list in the generator, run it, and paste the output.
+It also decorates 33 towns and cities across Misthalin, Asgarnia, Kandarin, Morytania, Karamja,
+the Fremennik lands and Kourend with about 5,200 autumn and Halloween pieces, laid in four passes:
+
+- **Landmarks**: lanterns and leaves in a ring around fountains, wells, statues, signposts and
+  stalls.
+- **Decorations**: Jagex's 2022 jack-o'-lanterns, turnip lanterns, candy bowls and skull piles,
+  plus solid pieces against walls (2022 and 2024 scarecrows, gravestones, hay bales, big lanterns).
+- **Pumpkin patches**: clusters of 2-3 of the 2024 growing pumpkins in seven colours. Their
+  Harvest option just says they're decoration.
+- **Fall leaves**: walk-over leaf piles (ground decoration, no collision), paths included.
+
+The pieces live in the pack's `halloween_decorations.txt` (one line per piece: town, loc, x, z,
+shape, angle), and `dbtable.halloween_decorations` gets one row per town. `HalloweenWorld` puts up
+one town per tick when the season starts, so the load is spread out. The file is written by
+`DecorationPlacementGenerator`, a test that runs only with
+`HALLOWEEN_DECOR_OUT=<path to halloween_decorations.txt>` set. Placement rules: outdoors only,
+clear of doors, gates, stairs, banks, altars and shops. Solid pieces stand one tile out from a
+building wall with no other object around them (their models overhang the tile), and only where
+every neighbouring path stays connected. Existing ground decoration such as grass tufts only
+blocks leaf piles, since both share the tile's ground decoration slot. To change towns or
+density, edit the generator's town list and constants and re-run it.
 
 ## Music
 

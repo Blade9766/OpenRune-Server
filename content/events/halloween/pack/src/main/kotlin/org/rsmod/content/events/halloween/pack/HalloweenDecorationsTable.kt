@@ -1,202 +1,52 @@
 package org.rsmod.content.events.halloween.pack
 
+import dev.openrune.definition.constants.ConstantProvider
 import dev.openrune.definition.dbtables.dbTable
 import dev.openrune.definition.util.VarType
-import dev.openrune.pack.columnCoord
 import org.rsmod.map.CoordGrid
 
 /**
- * Halloween decorations put up in towns for October. Tiles were picked from the map collision:
- * outdoors, clear of doors, stairs and banks, and solid pieces only against walls where they
- * leave every neighbouring path connected.
+ * Autumn and Halloween decorations put up in towns for October, one row per town. The pieces come
+ * from `halloween_decorations.txt`, written by `DecorationPlacementGenerator` from the map
+ * collision.
  */
 object HalloweenDecorationsTable {
-    const val LOC = 0
-    const val COORDS = 1
-    const val ANGLE = 2
+    const val PIECES = 0
+
+    private const val RESOURCE = "/halloween_decorations.txt"
 
     fun decorations() =
         dbTable("dbtable.halloween_decorations", serverOnly = true) {
-            column("loc", LOC, VarType.LOC)
-            column("coords", COORDS, VarType.COORDGRID)
-            column("angle", ANGLE, VarType.INT)
+            column("pieces", PIECES, VarType.LOC, VarType.COORDGRID, VarType.INT, VarType.INT)
 
-            fun decoration(row: String, loc: String, coords: CoordGrid, angle: Int) {
-                row("dbrow.$row") {
-                    columnRSCM(LOC, loc)
-                    columnCoord(COORDS, coords)
-                    column(ANGLE, angle)
+            for ((town, pieces) in readPieces()) {
+                row("dbrow.halloween_decorations_$town") {
+                    column(PIECES, pieces.flatten())
                 }
             }
-
-            decoration("halloween_decoration_lumbridge_1", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3223, 3230, 0), 0)
-            decoration("halloween_decoration_lumbridge_2", "loc.hw22_lantern_pumpkin01_lit01_small02_yellow01", CoordGrid(3243, 3239, 0), 1)
-            decoration("halloween_decoration_lumbridge_3", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3233, 3233, 0), 0)
-            decoration("halloween_decoration_lumbridge_4", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3223, 3209, 0), 1)
-            decoration("halloween_decoration_lumbridge_5", "loc.hw22_decoration_skeleton01_gravestone01", CoordGrid(3218, 3218, 0), 2)
-            decoration("halloween_decoration_lumbridge_6", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(3218, 3230, 0), 3)
-            decoration("halloween_decoration_lumbridge_7", "loc.hw22_bundle_hay01_bale01", CoordGrid(3226, 3217, 0), 0)
-            decoration("halloween_decoration_lumbridge_8", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(3240, 3202, 0), 3)
-            decoration("halloween_decoration_lumbridge_9", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3231, 3210, 0), 0)
-            decoration("halloween_decoration_lumbridge_10", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(3216, 3240, 0), 3)
-            decoration("halloween_decoration_lumbridge_11", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3207, 3240, 0), 2)
-            decoration("halloween_decoration_lumbridge_12", "loc.hw22_bundle_hay01_bale01", CoordGrid(3211, 3231, 0), 1)
-            decoration("halloween_decoration_varrock_1", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3272, 3496, 0), 0)
-            decoration("halloween_decoration_varrock_2", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(3196, 3493, 0), 1)
-            decoration("halloween_decoration_varrock_3", "loc.hw22_decoration_candy01_bowl01", CoordGrid(3266, 3423, 0), 2)
-            decoration("halloween_decoration_varrock_4", "loc.hw22_lantern_pumpkin01_lit01_small02_yellow01", CoordGrid(3228, 3452, 0), 1)
-            decoration("halloween_decoration_varrock_5", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3283, 3470, 0), 2)
-            decoration("halloween_decoration_varrock_6", "loc.hw22_bundle_hay01_stack01", CoordGrid(3191, 3503, 0), 2)
-            decoration("halloween_decoration_varrock_7", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(3245, 3440, 0), 2)
-            decoration("halloween_decoration_varrock_8", "loc.hw22_decoration_skeleton01_gravestone01", CoordGrid(3230, 3466, 0), 2)
-            decoration("halloween_decoration_varrock_9", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(3225, 3420, 0), 0)
-            decoration("halloween_decoration_varrock_10", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3187, 3455, 0), 0)
-            decoration("halloween_decoration_varrock_11", "loc.hw22_lantern_pumpkin01_lit01_small02_yellow01", CoordGrid(3193, 3448, 0), 3)
-            decoration("halloween_decoration_varrock_12", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(3285, 3477, 0), 0)
-            decoration("halloween_decoration_varrock_13", "loc.hw22_decoration_candy01_bowl01", CoordGrid(3282, 3482, 0), 0)
-            decoration("halloween_decoration_varrock_14", "loc.hw22_decoration_candy01_bowl01", CoordGrid(3283, 3406, 0), 3)
-            decoration("halloween_decoration_varrock_15", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3183, 3478, 0), 2)
-            decoration("halloween_decoration_varrock_16", "loc.hw22_decoration_skeleton01_gravestone01", CoordGrid(3236, 3444, 0), 1)
-            decoration("halloween_decoration_varrock_17", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3265, 3494, 0), 3)
-            decoration("halloween_decoration_varrock_18", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3235, 3438, 0), 0)
-            decoration("halloween_decoration_falador_1", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(2997, 3357, 0), 1)
-            decoration("halloween_decoration_falador_2", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(2978, 3320, 0), 0)
-            decoration("halloween_decoration_falador_3", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2982, 3383, 0), 3)
-            decoration("halloween_decoration_falador_4", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3050, 3333, 0), 0)
-            decoration("halloween_decoration_falador_5", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(2977, 3362, 0), 1)
-            decoration("halloween_decoration_falador_6", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(3058, 3344, 0), 2)
-            decoration("halloween_decoration_falador_7", "loc.hw22_lantern_pumpkin01_alt01_lit01_small02", CoordGrid(3002, 3373, 0), 3)
-            decoration("halloween_decoration_falador_8", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(3064, 3333, 0), 2)
-            decoration("halloween_decoration_falador_9", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3022, 3369, 0), 3)
-            decoration("halloween_decoration_falador_10", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(3048, 3393, 0), 1)
-            decoration("halloween_decoration_falador_11", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(3065, 3360, 0), 3)
-            decoration("halloween_decoration_falador_12", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(2986, 3327, 0), 2)
-            decoration("halloween_decoration_falador_13", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3057, 3350, 0), 3)
-            decoration("halloween_decoration_falador_14", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(3004, 3356, 0), 2)
-            decoration("halloween_decoration_falador_15", "loc.hw22_lantern_turnip01_lit01_large01", CoordGrid(3023, 3374, 0), 3)
-            decoration("halloween_decoration_falador_16", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(2999, 3366, 0), 3)
-            decoration("halloween_decoration_draynor_1", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(3084, 3236, 0), 0)
-            decoration("halloween_decoration_draynor_2", "loc.hw22_lantern_pumpkin01_lit01_small02_yellow01", CoordGrid(3106, 3269, 0), 2)
-            decoration("halloween_decoration_draynor_3", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3104, 3255, 0), 1)
-            decoration("halloween_decoration_draynor_4", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(3093, 3263, 0), 0)
-            decoration("halloween_decoration_draynor_5", "loc.hw22_bundle_hay01_stack01", CoordGrid(3086, 3276, 0), 3)
-            decoration("halloween_decoration_draynor_6", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3077, 3248, 0), 3)
-            decoration("halloween_decoration_draynor_7", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3113, 3238, 0), 3)
-            decoration("halloween_decoration_draynor_8", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3079, 3275, 0), 2)
-            decoration("halloween_decoration_draynor_9", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3095, 3250, 0), 1)
-            decoration("halloween_decoration_draynor_10", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(3090, 3235, 0), 2)
-            decoration("halloween_decoration_edgeville_1", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(3090, 3483, 0), 0)
-            decoration("halloween_decoration_edgeville_2", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(3109, 3481, 0), 3)
-            decoration("halloween_decoration_edgeville_3", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3105, 3510, 0), 0)
-            decoration("halloween_decoration_edgeville_4", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(3089, 3493, 0), 0)
-            decoration("halloween_decoration_edgeville_5", "loc.hw22_lantern_pumpkin01_alt01_lit01_small02", CoordGrid(3105, 3488, 0), 2)
-            decoration("halloween_decoration_edgeville_6", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(3091, 3505, 0), 1)
-            decoration("halloween_decoration_edgeville_7", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(3075, 3484, 0), 0)
-            decoration("halloween_decoration_edgeville_8", "loc.hw22_bundle_hay01_stack01", CoordGrid(3076, 3515, 0), 3)
-            decoration("halloween_decoration_al_kharid_1", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3318, 3153, 0), 2)
-            decoration("halloween_decoration_al_kharid_2", "loc.hw22_decoration_skeleton01_gravestone01", CoordGrid(3284, 3211, 0), 2)
-            decoration("halloween_decoration_al_kharid_3", "loc.hw22_bundle_hay01_stack01", CoordGrid(3300, 3181, 0), 0)
-            decoration("halloween_decoration_al_kharid_4", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3275, 3204, 0), 3)
-            decoration("halloween_decoration_al_kharid_5", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3272, 3155, 0), 0)
-            decoration("halloween_decoration_al_kharid_6", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(3283, 3200, 0), 0)
-            decoration("halloween_decoration_al_kharid_7", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(3295, 3173, 0), 1)
-            decoration("halloween_decoration_al_kharid_8", "loc.hw22_lantern_pumpkin01_lit01_small02_yellow01", CoordGrid(3315, 3213, 0), 1)
-            decoration("halloween_decoration_al_kharid_9", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3285, 3182, 0), 2)
-            decoration("halloween_decoration_al_kharid_10", "loc.hw22_decoration_candy01_bowl01", CoordGrid(3294, 3196, 0), 0)
-            decoration("halloween_decoration_al_kharid_11", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(3298, 3204, 0), 3)
-            decoration("halloween_decoration_al_kharid_12", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3265, 3200, 0), 3)
-            decoration("halloween_decoration_port_sarim_1", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3035, 3193, 0), 3)
-            decoration("halloween_decoration_port_sarim_2", "loc.hw22_lantern_turnip01_lit01_large01", CoordGrid(3053, 3238, 0), 0)
-            decoration("halloween_decoration_port_sarim_3", "loc.hw22_lantern_pumpkin01_alt01_lit01_small02", CoordGrid(3018, 3233, 0), 1)
-            decoration("halloween_decoration_port_sarim_4", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3045, 3203, 0), 1)
-            decoration("halloween_decoration_port_sarim_5", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(3028, 3218, 0), 1)
-            decoration("halloween_decoration_port_sarim_6", "loc.hw22_bundle_hay01_stack01", CoordGrid(3028, 3199, 0), 2)
-            decoration("halloween_decoration_port_sarim_7", "loc.hw22_bundle_hay01_bale01", CoordGrid(3014, 3254, 0), 0)
-            decoration("halloween_decoration_port_sarim_8", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(3045, 3193, 0), 1)
-            decoration("halloween_decoration_port_sarim_9", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(3037, 3245, 0), 2)
-            decoration("halloween_decoration_port_sarim_10", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(3036, 3203, 0), 0)
-            decoration("halloween_decoration_rimmington_1", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2984, 3196, 0), 3)
-            decoration("halloween_decoration_rimmington_2", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(2973, 3198, 0), 0)
-            decoration("halloween_decoration_rimmington_3", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2967, 3225, 0), 2)
-            decoration("halloween_decoration_rimmington_4", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(2963, 3199, 0), 0)
-            decoration("halloween_decoration_rimmington_5", "loc.hw22_bundle_hay01_stack01", CoordGrid(2953, 3196, 0), 3)
-            decoration("halloween_decoration_rimmington_6", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(2952, 3213, 0), 0)
-            decoration("halloween_decoration_rimmington_7", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2982, 3217, 0), 2)
-            decoration("halloween_decoration_rimmington_8", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2948, 3228, 0), 0)
-            decoration("halloween_decoration_barbarian_village_1", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3086, 3419, 0), 3)
-            decoration("halloween_decoration_barbarian_village_2", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3085, 3426, 0), 0)
-            decoration("halloween_decoration_barbarian_village_3", "loc.hw22_lantern_pumpkin01_lit01_small03", CoordGrid(3099, 3434, 0), 3)
-            decoration("halloween_decoration_barbarian_village_4", "loc.hw22_decoration_candy01_bowl01", CoordGrid(3076, 3422, 0), 1)
-            decoration("halloween_decoration_barbarian_village_5", "loc.hw22_bundle_hay01_bale01", CoordGrid(3085, 3435, 0), 3)
-            decoration("halloween_decoration_barbarian_village_6", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(3095, 3412, 0), 2)
-            decoration("halloween_decoration_barbarian_village_7", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(3090, 3430, 0), 0)
-            decoration("halloween_decoration_barbarian_village_8", "loc.hw22_bundle_hay01_bale01", CoordGrid(3096, 3405, 0), 1)
-            decoration("halloween_decoration_taverley_1", "loc.hw22_bundle_hay01_stack01", CoordGrid(2879, 3411, 0), 1)
-            decoration("halloween_decoration_taverley_2", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(2893, 3443, 0), 1)
-            decoration("halloween_decoration_taverley_3", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(2879, 3430, 0), 0)
-            decoration("halloween_decoration_taverley_4", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2923, 3435, 0), 1)
-            decoration("halloween_decoration_taverley_5", "loc.hw22_bundle_hay01_stack01", CoordGrid(2880, 3451, 0), 1)
-            decoration("halloween_decoration_taverley_6", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(2934, 3413, 0), 1)
-            decoration("halloween_decoration_taverley_7", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2912, 3416, 0), 3)
-            decoration("halloween_decoration_taverley_8", "loc.hw22_decoration_skeleton01_gravestone01", CoordGrid(2902, 3406, 0), 0)
-            decoration("halloween_decoration_taverley_9", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2924, 3441, 0), 1)
-            decoration("halloween_decoration_taverley_10", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2918, 3423, 0), 3)
-            decoration("halloween_decoration_burthorpe_1", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2887, 3556, 0), 3)
-            decoration("halloween_decoration_burthorpe_2", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2935, 3537, 0), 0)
-            decoration("halloween_decoration_burthorpe_3", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2914, 3529, 0), 0)
-            decoration("halloween_decoration_burthorpe_4", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2904, 3530, 0), 1)
-            decoration("halloween_decoration_burthorpe_5", "loc.hw22_bundle_hay01_stack01", CoordGrid(2922, 3534, 0), 2)
-            decoration("halloween_decoration_burthorpe_6", "loc.hw22_lantern_turnip01_lit01_large01", CoordGrid(2918, 3540, 0), 1)
-            decoration("halloween_decoration_burthorpe_7", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(2908, 3547, 0), 3)
-            decoration("halloween_decoration_burthorpe_8", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2888, 3549, 0), 3)
-            decoration("halloween_decoration_catherby_1", "loc.hw22_bundle_hay01_bale01", CoordGrid(2814, 3420, 0), 0)
-            decoration("halloween_decoration_catherby_2", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2803, 3454, 0), 2)
-            decoration("halloween_decoration_catherby_3", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2810, 3430, 0), 3)
-            decoration("halloween_decoration_catherby_4", "loc.hw22_lantern_pumpkin01_alt01_lit01_small02", CoordGrid(2826, 3427, 0), 3)
-            decoration("halloween_decoration_catherby_5", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(2802, 3436, 0), 1)
-            decoration("halloween_decoration_catherby_6", "loc.hw22_bundle_hay01_stack01", CoordGrid(2814, 3415, 0), 0)
-            decoration("halloween_decoration_catherby_7", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2797, 3421, 0), 0)
-            decoration("halloween_decoration_catherby_8", "loc.hw22_bundle_hay01_bale01", CoordGrid(2801, 3428, 0), 0)
-            decoration("halloween_decoration_seers_village_1", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2727, 3478, 0), 1)
-            decoration("halloween_decoration_seers_village_2", "loc.hw22_bundle_hay01_stack01", CoordGrid(2718, 3481, 0), 2)
-            decoration("halloween_decoration_seers_village_3", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2708, 3500, 0), 0)
-            decoration("halloween_decoration_seers_village_4", "loc.hw22_bundle_hay01_stack01", CoordGrid(2742, 3474, 0), 1)
-            decoration("halloween_decoration_seers_village_5", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2742, 3498, 0), 3)
-            decoration("halloween_decoration_seers_village_6", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2745, 3468, 0), 1)
-            decoration("halloween_decoration_seers_village_7", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2712, 3461, 0), 2)
-            decoration("halloween_decoration_seers_village_8", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(2715, 3503, 0), 1)
-            decoration("halloween_decoration_seers_village_9", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(2693, 3474, 0), 2)
-            decoration("halloween_decoration_seers_village_10", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2745, 3485, 0), 1)
-            decoration("halloween_decoration_camelot_1", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2760, 3473, 0), 3)
-            decoration("halloween_decoration_camelot_2", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(2772, 3478, 0), 3)
-            decoration("halloween_decoration_camelot_3", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(2768, 3470, 0), 0)
-            decoration("halloween_decoration_camelot_4", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2754, 3477, 0), 2)
-            decoration("halloween_decoration_camelot_5", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2765, 3487, 0), 3)
-            decoration("halloween_decoration_camelot_6", "loc.hw22_bundle_hay01_bale01", CoordGrid(2750, 3486, 0), 2)
-            decoration("halloween_decoration_ardougne_1", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2645, 3295, 0), 1)
-            decoration("halloween_decoration_ardougne_2", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(2667, 3307, 0), 1)
-            decoration("halloween_decoration_ardougne_3", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2678, 3291, 0), 0)
-            decoration("halloween_decoration_ardougne_4", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2614, 3281, 0), 2)
-            decoration("halloween_decoration_ardougne_5", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2617, 3300, 0), 2)
-            decoration("halloween_decoration_ardougne_6", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2633, 3335, 0), 0)
-            decoration("halloween_decoration_ardougne_7", "loc.hw22_bundle_hay01_bale01", CoordGrid(2627, 3302, 0), 3)
-            decoration("halloween_decoration_ardougne_8", "loc.hw22_lantern_pumpkin01_alt01_lit01_small02", CoordGrid(2651, 3329, 0), 1)
-            decoration("halloween_decoration_ardougne_9", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2632, 3297, 0), 0)
-            decoration("halloween_decoration_ardougne_10", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2678, 3320, 0), 0)
-            decoration("halloween_decoration_ardougne_11", "loc.hw22_bundle_hay01_stack01", CoordGrid(2610, 3288, 0), 1)
-            decoration("halloween_decoration_ardougne_12", "loc.hw22_lantern_pumpkin01_lit01_large01_white01", CoordGrid(2669, 3297, 0), 0)
-            decoration("halloween_decoration_ardougne_13", "loc.hw22_lantern_pumpkin01_lit01_small02_blue01", CoordGrid(2676, 3297, 0), 0)
-            decoration("halloween_decoration_ardougne_14", "loc.hw22_bundle_hay01_bale01", CoordGrid(2642, 3287, 0), 0)
-            decoration("halloween_decoration_ardougne_15", "loc.hw22_lantern_pumpkin01_lit01_large01_red01", CoordGrid(2620, 3316, 0), 0)
-            decoration("halloween_decoration_yanille_1", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(2588, 3101, 0), 0)
-            decoration("halloween_decoration_yanille_2", "loc.hw22_lantern_pumpkin01_lit01_small02", CoordGrid(2609, 3078, 0), 3)
-            decoration("halloween_decoration_yanille_3", "loc.hw22_lantern_pumpkin01_lit01_small02_yellow01", CoordGrid(2543, 3081, 0), 1)
-            decoration("halloween_decoration_yanille_4", "loc.hw22_lantern_pumpkin01_lit01_large01", CoordGrid(2598, 3083, 0), 2)
-            decoration("halloween_decoration_yanille_5", "loc.hw22_decoration_skeleton01_gravestone01", CoordGrid(2572, 3078, 0), 2)
-            decoration("halloween_decoration_yanille_6", "loc.hw22_lantern_pumpkin01_lit01_large01_yellow01", CoordGrid(2571, 3093, 0), 1)
-            decoration("halloween_decoration_yanille_7", "loc.hw22_decoration_reaper01_scarecrow01", CoordGrid(2578, 3102, 0), 3)
-            decoration("halloween_decoration_yanille_8", "loc.hw22_lantern_turnip01_lit01_small01", CoordGrid(2574, 3085, 0), 2)
-            decoration("halloween_decoration_yanille_9", "loc.hw22_lantern_turnip01_lit01_medium01", CoordGrid(2539, 3110, 0), 1)
-            decoration("halloween_decoration_yanille_10", "loc.hw22_lantern_pumpkin01_lit01_small02_red01", CoordGrid(2588, 3106, 0), 2)
         }
+
+    private fun readPieces(): Map<String, List<List<Any>>> {
+        val text =
+            checkNotNull(HalloweenDecorationsTable::class.java.getResource(RESOURCE)) { RESOURCE }
+                .readText()
+        return text
+            .lineSequence()
+            .map(String::trim)
+            .filter { it.isNotEmpty() && !it.startsWith("#") }
+            .map { it.split(' ') }
+            .groupBy(
+                keySelector = { it[0] },
+                valueTransform = { (_, loc, x, z, shape, angle) ->
+                    listOf(
+                        ConstantProvider.getMapping(loc),
+                        CoordGrid(x.toInt(), z.toInt(), 0).packed,
+                        shape.toInt(),
+                        angle.toInt(),
+                    )
+                },
+            )
+    }
+
+    private operator fun <T> List<T>.component6(): T = this[5]
 }

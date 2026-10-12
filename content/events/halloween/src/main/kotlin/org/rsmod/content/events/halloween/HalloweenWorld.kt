@@ -35,6 +35,7 @@ constructor(
     private var cauldron: LocInfo? = null
     private val children = mutableListOf<Npc>()
     private val decorations = mutableListOf<LocInfo>()
+    private val pendingTowns = ArrayDeque<HalloweenDecorationsRow>()
 
     private var treater: Npc? = null
     private var treaterLeavesAt = 0
@@ -48,6 +49,7 @@ constructor(
     fun tick() {
         if (season.isActive) {
             if (cauldron == null) spawnDecorations()
+            decorateNextTown()
             tickGenerousTreater()
         } else if (cauldron != null) {
             despawnAll()
@@ -72,16 +74,8 @@ constructor(
         for ((type, coords) in CHILDREN) {
             spawnNpc(type, coords)?.let(children::add)
         }
-        for (row in HalloweenDecorationsRow.all()) {
-            decorations +=
-                locRepo.add(
-                    row.coords,
-                    row.loc.internalName,
-                    Int.MAX_VALUE,
-                    LocAngle[row.angle],
-                    LocShape.CentrepieceStraight,
-                )
-        }
+        pendingTowns.clear()
+        pendingTowns.addAll(HalloweenDecorationsRow.all())
         nextTreaterAt = clock.cycle + random.of(TREATER_MIN_GAP, TREATER_MAX_GAP)
     }
 
@@ -90,9 +84,18 @@ constructor(
         cauldron = null
         children.forEach { npcRepo.del(it, Int.MAX_VALUE) }
         children.clear()
+        pendingTowns.clear()
         decorations.forEach { locRepo.del(it, Int.MAX_VALUE) }
         decorations.clear()
         removeTreater()
+    }
+
+    private fun decorateNextTown() {
+        val town = pendingTowns.removeFirstOrNull() ?: return
+        for ((loc, coords, shape, angle) in town.pieces) {
+            decorations +=
+                locRepo.add(coords, loc.internalName, Int.MAX_VALUE, LocAngle[angle], LocShape[shape])
+        }
     }
 
     private fun tickGenerousTreater() {
