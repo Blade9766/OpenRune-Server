@@ -49,16 +49,16 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.guaranteedTreats(npc: Npc, lines: List<String>) {
-        startDialogue(npc) { chatNpc(happy, random.pick(lines)) }
         addTreats(GUARANTEED_TREATS)
+        startDialogue(npc) { chatNpc(happy, random.pick(lines)) }
     }
 
     private suspend fun ProtectedAccess.rollOutcome(npc: Npc) {
         val roll = random.of(100)
         when {
             roll < TREAT_CHANCE -> {
-                startDialogue(npc) { chatNpc(happy, random.pick(TREAT_LINES)) }
                 addTreats(random.of(MIN_TREATS, MAX_COMMON_TREATS))
+                startDialogue(npc) { chatNpc(happy, random.pick(TREAT_LINES)) }
             }
             roll < JUNK_CHANCE && inv.hasFreeSpace() -> junkTrick(npc)
             roll < TRANSFORM_CHANCE -> transformTrick(npc)
@@ -69,10 +69,10 @@ constructor(
     private suspend fun ProtectedAccess.junkTrick(npc: Npc) {
         val junk = HalloweenTrickEnums.halloween_trick_junk.mapNotNull { it.value }
         val obj = random.pick(junk)
-        startDialogue(npc) { chatNpc(laugh, random.pick(JUNK_LINES)) }
         invAdd(inv, obj.internalName)
         val article = if (obj.internalName == WOOL) "some" else "a"
         mes("You receive $article ${obj.name}.")
+        startDialogue(npc) { chatNpc(laugh, random.pick(JUNK_LINES)) }
     }
 
     private suspend fun ProtectedAccess.transformTrick(npc: Npc) {

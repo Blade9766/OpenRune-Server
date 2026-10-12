@@ -59,8 +59,8 @@ constructor(private val season: HalloweenSeason, private val world: HalloweenWor
             return
         }
         player.generousClaimed = visit
-        startDialogue(npc) { chatNpc(happy, random.pick(TREAT_LINES)) }
         addTreats(GENEROUS_TREATS)
+        startDialogue(npc) { chatNpc(happy, random.pick(TREAT_LINES)) }
     }
 
     private suspend fun Dialogue.whatAreYouDoing() {
