@@ -1,0 +1,43 @@
+[clientscript,transmog_draw]
+def_component $grid = transmog:grid;
+cc_deleteall($grid);
+def_int $size = inv_size(transmog_results);
+def_int $slot = 0;
+def_int $count = 0;
+def_int $id = 0;
+def_int $x = 0;
+def_int $y = 0;
+def_string $name = "";
+def_obj $obj = null;
+while ($slot < $size) {
+    $obj = inv_getobj(transmog_results, $slot);
+    if ($obj ! null) {
+        $id = calc($slot * 2);
+        $x = calc($slot % 6 * 46 + 4);
+        $y = calc($slot / 6 * 40 + 2);
+        $count = calc($slot + 1);
+        $name = oc_name($obj);
+
+        cc_create($grid, ^iftype_graphic, $id);
+        cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 36, ^setsize_abs, ^setsize_abs);
+        cc_setgraphic("miscgraphics,0");
+
+        cc_create($grid, ^iftype_graphic, calc($id + 1));
+        cc_setposition(calc($x + 2), calc($y + 2), ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        cc_setobject_nonum($obj, 1);
+        cc_setop(1, "Wear");
+        cc_setopbase("<col=ff9040><$name></col>");
+    }
+    $slot = calc($slot + 1);
+}
+def_int $scrollheight = calc(($count + 5) / 6 * 40 + 4);
+if ($scrollheight < if_getheight($grid)) {
+    $scrollheight = if_getheight($grid);
+}
+if_setscrollsize(0, $scrollheight, $grid);
+if_setscrollpos(0, 0, $grid);
+~scrollbar_vertical(transmog:scrollbar, $grid, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

@@ -240,8 +240,14 @@ constructor(
         onCommand("maxhit", "Toggle always max hit", ::maxhit)
         onCommand("boltproc", "Toggle enchanted bolt effects on every shot", ::boltProc)
         onCommand("openbank", "Open the bank from anywhere", ::bank, aliases = listOf("bank"))
-        onCommand("transmog", "Transmog player to NPC appearance (no args to reset)", ::transmog) {
-            invalidArgs = "Use as ::transmog npcNameOrId (ex: goblin or 126) or ::transmog to reset"
+        onCommand(
+            "npctransmog",
+            "Transmog player to NPC appearance (no args to reset)",
+            ::transmog,
+            aliases = listOf("transmognpc"),
+        ) {
+            invalidArgs =
+                "Use as ::npctransmog npcNameOrId (ex: goblin or 126) or ::npctransmog to reset"
         }
         onCommand("gamemode", "Set account gamemode (normal|ironman|uim|hcim)", ::gamemode) {
             invalidArgs = "Use as ::gamemode normal|ironman|uim|hcim"

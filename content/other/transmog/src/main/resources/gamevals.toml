@@ -1,0 +1,12 @@
+[gamevals.interface]
+transmog = 1107
+
+[gamevals.clientscript]
+transmog_init = 45700
+transmog_slots = 45706
+transmog_presets = 45712
+transmog_search_stop = 45730
+
+[gamevals.inv]
+transmog_results = 1110
+transmog_slots = 1111

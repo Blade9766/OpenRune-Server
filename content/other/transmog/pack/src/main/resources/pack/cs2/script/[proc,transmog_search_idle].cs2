@@ -1,0 +1,11 @@
+[proc,transmog_search_idle]
+def_component $searchtext = transmog:searchtext;
+if_setop(1, "Search", $searchtext);
+if_setonop("transmog_search_op", $searchtext);
+if_setonmouseover("searchbar_mouseover($searchtext, null)", $searchtext);
+if_setonmouseleave("searchbar_mouseleave($searchtext, null)", $searchtext);
+if_setonkey(null, $searchtext);
+if_setontimer(null, transmog:grid);
+~chatdefault_restoreinput;
+if_setcolour(0xff981f, $searchtext);
+~searchbar_set_text($searchtext);

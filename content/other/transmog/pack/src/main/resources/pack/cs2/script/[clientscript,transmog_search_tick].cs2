@@ -1,0 +1,6 @@
+[clientscript,transmog_search_tick](int $deadline)
+if (clientclock < $deadline) {
+    return;
+}
+if_setontimer(null, transmog:grid);
+if_runscript*(ifscript_3414196760, transmog:searchtext, -1)(0, 0, %settings_search_string);

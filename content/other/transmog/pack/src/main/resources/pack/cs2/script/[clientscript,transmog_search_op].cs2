@@ -1,0 +1,15 @@
+[clientscript,transmog_search_op]
+def_component $searchtext = transmog:searchtext;
+~chatdefault_stopinput;
+%settings_search_string = "";
+if_setop(1, "", $searchtext);
+if_setonop(null, $searchtext);
+if_setonmouseover(null, $searchtext);
+if_setonmouseleave(null, $searchtext);
+if_setcolour(0xff981f, $searchtext);
+~searchbar_set_text($searchtext);
+if_setonkey("transmog_search_key(event_keycode, event_keychar)", $searchtext);
+if (~on_mobile = true) {
+    ~keyboard_show(0, 50);
+}
+if_runscript*(ifscript_3414196760, transmog:searchtext, -1)(0, 0, %settings_search_string);

@@ -1,0 +1,22 @@
+[proc,transmog_slot_name](int $slot)(string)
+switch_int ($slot) {
+    case 0 :
+        return("Head");
+    case 1 :
+        return("Cape");
+    case 2 :
+        return("Neck");
+    case 3 :
+        return("Weapon");
+    case 4 :
+        return("Body");
+    case 5 :
+        return("Shield");
+    case 7 :
+        return("Legs");
+    case 9 :
+        return("Hands");
+    case 10 :
+        return("Feet");
+}
+return("");
