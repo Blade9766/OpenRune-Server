@@ -161,7 +161,8 @@ class HalloweenItemsScript @Inject constructor(private val season: HalloweenSeas
         }
         val found = random.pick(missing)
         invAdd(inv, found)
-        mes("You rummage through the cauldron and find a ${obj(found).name}.")
+        val article = if (found == WOOL) "some" else "a"
+        mes("You rummage through the cauldron and find $article ${obj(found).name}.")
     }
 
     private fun ProtectedAccess.stats() {
@@ -179,6 +180,7 @@ class HalloweenItemsScript @Inject constructor(private val season: HalloweenSeas
 
         const val CHARM = "obj.hw22_trick_charm"
         const val SPOOKY_CAULDRON = "loc.hw22_trick_junk_source"
+        const val WOOL = "obj.hw22_trick_wool"
         const val CHARM_USES = 3
 
         val CAULDRON_OBJS = (0..4).map { "obj.hw22_treat_cauldron_$it" }
