@@ -245,7 +245,11 @@ class DecorationPlacementGenerator {
                 "${town.key}: area=$area landmarks=${landmarks.size}/$landmarkLights " +
                     "solids=$solids lights=$lights patches=$patches leaves=$leaves",
             )
+            val fountains = landmarks.filter { "fountain" in it.name }
             for (p in pieces) {
+                val byFountain =
+                    fountains.any { max(abs(it.x - p.x), abs(it.z - p.z)) <= FOUNTAIN_CLEARANCE }
+                if ("scarecrow" in p.loc && byFountain) continue
                 rows.appendLine("${town.key} ${p.loc} ${p.x} ${p.z} ${p.shape} ${p.angle}")
             }
         }
@@ -263,6 +267,7 @@ class DecorationPlacementGenerator {
 
         const val LANDMARK_LIGHTS = 6
         const val LANDMARK_LEAVES = 6
+        const val FOUNTAIN_CLEARANCE = 5
         const val PLAZA_TILES = 23
         const val SOLID_SPACING = 6
         const val LIGHT_SPACING = 4
