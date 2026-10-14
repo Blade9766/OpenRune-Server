@@ -1,0 +1,217 @@
+id = "Skeleton (Tarn's Lair) Level 42 and 59 drops"
+npcs = ["npc.lotr_skeleton_lvl_25", "npc.lotr_skeleton_lvl_22", "npc.lotr_skeleton_lvl_21"]
+
+[main]
+total = 128
+name = "Skeleton (Tarn's Lair) Level 42 and 59 drops"
+
+[[main.entries]]
+weight = 8
+obj = "obj.steel_full_helm"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.bronze_axe"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.bronze_knife_p"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.steel_mace"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.oak_longbow"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.iron_dart"
+count = 5
+
+[[main.entries]]
+weight = 3
+obj = "obj.steel_2h_sword"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.bronze_scimitar"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.iron_warhammer"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.steel_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.mithril_mace"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.black_warhammer"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.black_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.mithril_chainbody"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.waterrune"
+count = 4
+
+[[main.entries]]
+weight = 3
+obj = "obj.astralrune"
+count = 2
+
+[[main.entries]]
+weight = 3
+obj = "obj.steel_arrow"
+count = 9
+
+[[main.entries]]
+weight = 3
+obj = "obj.mcannonball"
+count = 6
+
+[[main.entries]]
+weight = 5
+obj = "obj.coins"
+count = 39
+
+[[main.entries]]
+weight = 5
+obj = "obj.coins"
+count = 89
+
+[[main.entries]]
+weight = 5
+obj = "obj.coins"
+count = 100
+
+[[main.entries]]
+weight = 3
+obj = "obj.coins"
+count = 12
+
+[[main.entries]]
+weight = 3
+obj = "obj.coins"
+count = 53
+
+[[main.entries]]
+weight = 2
+obj = "obj.coins"
+count = 12
+
+[[main.entries]]
+weight = 2
+obj = "obj.coins"
+count = 84
+
+[[main.entries]]
+weight = 1
+obj = "obj.coins"
+count = 181
+
+[[main.entries]]
+weight = 5
+obj = "obj.nails_bronze"
+count = 17
+
+[[main.entries]]
+weight = 5
+obj = "obj.bullseye_lantern_nolens"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.3dosecombat"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.1dosefisherspotion"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.vial_water"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.stringstar"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.stafforb"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.gold_bar"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.iron_ore"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.ring_of_dueling_3"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.torch_unlit"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.nostringstar"
+count = 1
+
+[[main.entries]]
+weight = 2
+shared = "herb"
+
+[[main.entries]]
+weight = 2
+shared = "gem"
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_skeleton"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 121
+obj = "obj.trail_clue_easy_simple001"
+count = 1
+clue_scroll_box = true

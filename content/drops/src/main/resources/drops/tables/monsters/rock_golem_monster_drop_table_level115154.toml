@@ -1,0 +1,95 @@
+id = "Rock Golem (monster) Level 115 and 154 drops"
+npcs = ["npc.fairy2_golemguardian_5", "npc.fairy2_golemguardian_6"]
+
+[main]
+total = 128
+name = "Rock Golem (monster) Level 115 and 154 drops"
+
+[[main.entries]]
+weight = 4
+obj = "obj.bronze_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.rune_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 30
+obj = "obj.earthrune"
+count = 5
+
+[[main.entries]]
+weight = 4
+obj = "obj.earthrune"
+count = 42
+
+[[main.entries]]
+weight = 4
+obj = "obj.chaosrune"
+count = 2
+
+[[main.entries]]
+weight = 7
+obj = "obj.bronze_bar"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.iron_bar"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.tin_ore"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.copper_ore"
+count = 1
+
+[[main.entries]]
+weight = 25
+obj = "obj.coal"
+count = 1
+
+[[main.entries]]
+weight = 4
+obj = "obj.iron_ore"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.mithril_ore"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.adamantite_ore"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.runite_ore"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.hammer"
+count = 1
+
+[[main.entries]]
+weight = 13
+obj = "obj.dwarven_stout"
+count = 1
+
+[[main.entries]]
+weight = 2
+shared = "gem"

@@ -1,0 +1,18 @@
+id = "Rat Drops (Stronghold of Security)"
+npcs = ["npc.sos_war_rat", "npc.sos_fam_rat"]
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.rats_tail"
+count = 1
+quest = "quest_witchspotion"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 4
+obj = "obj.rag_rat_bone"
+count = 1
+quest = "quest_ragandboneman2"
+quest_mode = "during"

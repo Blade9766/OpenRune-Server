@@ -2,25 +2,22 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
-import org.rsmod.content.drops.shouldDropLootingBag
-import org.rsmod.content.drops.hasCompletedQuest
-import org.rsmod.content.drops.isOnQuest
 import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.nothing
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.isOnQuest
+import org.rsmod.content.drops.shouldDropLootingBag
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
 @JvmField
 public val iceGiantDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Ice giant Drops",
-    npcs = npcs("npc.ice_giant_tapoyauik", "npc.ice_giant_tapoyauik02", "npc.icegiant", "npc.icegiant2", "npc.icegiant3", "npc.icegiant_low_wanderrange", "npc.icegiant_low_wanderrange2", "npc.wild_cave_icegiant", "npc.wild_cave_icegiant2", "npc.wild_cave_icegiant3"),
+    npcs = npcs("npc.ice_giant_tapoyauik", "npc.ice_giant_tapoyauik02", "npc.icegiant", "npc.icegiant2", "npc.icegiant3", "npc.icegiant_low_wanderrange", "npc.icegiant_low_wanderrange2"),
     mainTable = rsPlayerWeightedTable(total = 128) {
         name("Ice giant Drops")
         5 weight "obj.iron_2h_sword" count 1

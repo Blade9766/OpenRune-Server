@@ -1,0 +1,16 @@
+id = "Dungeon rat Drops (short tail)"
+npcs = ["npc.dungeon_rat2", "npc.dungeon_rat3"]
+
+[[guaranteed]]
+obj = "obj.rats_tail"
+count = 1
+quest = "quest_witchspotion"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.rag_giant_rat_bone"
+count = 1
+quest = "quest_ragandboneman1"
+quest_mode = "during"

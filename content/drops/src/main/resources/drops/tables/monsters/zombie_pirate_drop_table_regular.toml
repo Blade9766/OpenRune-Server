@@ -1,0 +1,165 @@
+id = "Zombie pirate Regular drops"
+npcs = ["npc.wildy_zombie_pirate_1", "npc.wildy_zombie_pirate_2", "npc.wildy_zombie_pirate_3", "npc.wildy_zombie_pirate_4", "npc.wildy_zombie_pirate_5"]
+
+[main]
+total = 1260
+name = "Zombie pirate Regular drops"
+
+[[main.entries]]
+weight = 4
+obj = "obj.bloodrune"
+count = "30..60"
+
+[[main.entries]]
+weight = 4
+obj = "obj.deathrune"
+count = "30..90"
+
+[[main.entries]]
+weight = 4
+obj = "obj.chaosrune"
+count = "30..90"
+
+[[main.entries]]
+weight = 4
+obj = "obj.mindrune"
+count = "30..90"
+
+[[main.entries]]
+weight = 8
+obj = "obj.battlestaff"
+count = "1..3"
+
+[[main.entries]]
+weight = 6
+obj = "obj.adamant_platebody"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.rune_med_helm"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.rune_warhammer"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.rune_battleaxe"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.rune_longsword"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.rune_sword"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.rune_mace"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.dragon_dagger"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.dragon_longsword"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.dragon_scimitar"
+count = 1
+
+[[main.entries]]
+weight = 12
+obj = "obj.blighted_sack_icebarrage"
+count = "10..30"
+
+[[main.entries]]
+weight = 12
+obj = "obj.cert_blighted_anglerfish"
+count = "5..15"
+
+[[main.entries]]
+weight = 12
+obj = "obj.cert_blighted_mantaray"
+count = "5..15"
+
+[[main.entries]]
+weight = 12
+obj = "obj.cert_blighted_karambwan"
+count = "5..15"
+
+[[main.entries]]
+weight = 12
+obj = "obj.cert_blighted_4dose2restore"
+count = "1..3"
+
+[[main.entries]]
+weight = 1071
+nothing = true
+
+[[main.entries]]
+weight = 12
+obj = "obj.coins"
+count = "1000..8000"
+
+[[main.entries]]
+weight = 16
+obj = "obj.zombie_pirate_wildy_key"
+count = 1
+
+[[main.entries]]
+weight = 8
+obj = "obj.adamant_seed"
+count = "5..10"
+
+[[main.entries]]
+weight = 12
+obj = "obj.mcannonball"
+count = "20..100"
+
+[[main.entries]]
+weight = 12
+obj = "obj.cert_gold_ore"
+count = "5..15"
+
+[[main.separate_rolls]]
+numerator = 3
+denominator = 200000
+
+[[main.separate_rolls.entries]]
+weight = 3
+obj = "obj.wilderness_blip_blocking_scroll"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 3
+obj = "obj.looting_bag"
+count = 1
+should_drop_looting_bag = true
+
+[[tertiary]]
+numerator = 1
+denominator = 4
+obj = "obj.rag_zombie_bone"
+count = 1
+quest = "quest_ragandboneman2"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_zombie"
+count = 1

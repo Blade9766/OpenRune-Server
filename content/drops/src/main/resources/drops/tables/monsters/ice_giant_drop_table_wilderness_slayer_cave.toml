@@ -1,0 +1,143 @@
+id = "Ice giant Wilderness Slayer Cave drops"
+npcs = ["npc.wild_cave_icegiant", "npc.wild_cave_icegiant2", "npc.wild_cave_icegiant3"]
+
+[main]
+total = 62
+name = "Ice giant Wilderness Slayer Cave drops"
+
+[[main.entries]]
+weight = 4
+obj = "obj.mithril_axe"
+count = 1
+
+[[main.entries]]
+weight = 4
+obj = "obj.adamant_sword"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.mithril_platelegs"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_dagger"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_mace"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_sq_shield"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.rune_dagger"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.adamant_arrow"
+count = "5..14"
+
+[[main.entries]]
+weight = 4
+obj = "obj.naturerune"
+count = 6
+
+[[main.entries]]
+weight = 3
+obj = "obj.deathrune"
+count = 5
+
+[[main.entries]]
+weight = 2
+obj = "obj.lawrune"
+count = 3
+
+[[main.entries]]
+weight = 2
+obj = "obj.bloodrune"
+count = 5
+
+[[main.entries]]
+weight = 1
+obj = "obj.cosmicrune"
+count = 4
+
+[[main.entries]]
+weight = 1
+obj = "obj.chaosrune"
+count = 15
+
+[[main.entries]]
+weight = 1
+obj = "obj.deathrune"
+count = 3
+
+[[main.entries]]
+weight = 6
+obj = "obj.coins"
+count = 100
+
+[[main.entries]]
+weight = 3
+obj = "obj.jug_wine"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.cert_mithril_ore"
+count = 3
+
+[[main.entries]]
+weight = 4
+shared = "gem"
+
+[[main.entries]]
+weight = 14
+nothing = true
+
+[[tertiary]]
+numerator = 1
+denominator = 3
+obj = "obj.looting_bag"
+count = 1
+should_drop_looting_bag = true
+
+[[tertiary]]
+numerator = 1
+denominator = 21
+obj = "obj.arceuus_corpse_giant"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 400
+obj = "obj.dorgesh_construction_bone"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_giant"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5013
+obj = "obj.dorgesh_construction_bone_curved"
+count = 1
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (14 weight)

@@ -693,7 +693,15 @@ internal fun wikiPageTypeName(wikiPage: String): String =
 internal fun tableNameSuffix(tableName: String): String? =
     when {
         tableName.equals("Drops", ignoreCase = true) -> null
-        else -> Regex("""(\d+)""").find(tableName)?.groupValues?.get(1)
+        Regex("""(?i)^Drop table (\d+)$""").matches(tableName) ->
+            Regex("""(\d+)""").find(tableName)?.groupValues?.get(1)
+        else ->
+            tableName
+                .replace(Regex("""(?i)\bdrops\b|\bmembers only\b|\band\b"""), " ")
+                .split(Regex("""[^A-Za-z0-9]+"""))
+                .filter { it.isNotBlank() }
+                .joinToString("") { it.replaceFirstChar(Char::uppercase) }
+                .takeIf { it.isNotBlank() }
     }
 
 /** Suffix for multi-variant `==Drops==` sections (e.g. Wilderness Slayer Cave). */

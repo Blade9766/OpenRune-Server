@@ -1,0 +1,179 @@
+id = "Obor Members' worlds drops"
+npcs = ["npc.hillgiant_boss"]
+
+[main]
+total = 135
+name = "Obor Members' worlds drops"
+
+[[main.entries]]
+weight = 5
+obj = "obj.iron_full_helm"
+count = 1
+
+[[main.entries]]
+weight = 4
+obj = "obj.iron_dagger"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.iron_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.steel_longsword"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.iron_arrow"
+count = 3
+
+[[main.entries]]
+weight = 3
+obj = "obj.firerune"
+count = 15
+
+[[main.entries]]
+weight = 3
+obj = "obj.waterrune"
+count = 7
+
+[[main.entries]]
+weight = 3
+obj = "obj.lawrune"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.steel_arrow"
+count = 10
+
+[[main.entries]]
+weight = 2
+obj = "obj.mindrune"
+count = 3
+
+[[main.entries]]
+weight = 2
+obj = "obj.cosmicrune"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.naturerune"
+count = 6
+
+[[main.entries]]
+weight = 1
+obj = "obj.chaosrune"
+count = 2
+
+[[main.entries]]
+weight = 1
+obj = "obj.deathrune"
+count = 2
+
+[[main.entries]]
+weight = 14
+obj = "obj.coins"
+count = 38
+
+[[main.entries]]
+weight = 10
+obj = "obj.coins"
+count = 52
+
+[[main.entries]]
+weight = 8
+obj = "obj.coins"
+count = 15
+
+[[main.entries]]
+weight = 6
+obj = "obj.coins"
+count = 8
+
+[[main.entries]]
+weight = 2
+obj = "obj.coins"
+count = 88
+
+[[main.entries]]
+weight = 11
+obj = "obj.limpwurt_root"
+count = 1
+
+[[main.entries]]
+weight = 6
+obj = "obj.beer"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.body_talisman"
+count = 1
+
+[[main.entries]]
+weight = 1
+nothing = true
+
+[[main.entries]]
+weight = 7
+shared = "herb"
+
+[[main.entries]]
+weight = 3
+shared = "gem"
+
+[[main.entries]]
+weight = 18
+shared = "seed"
+
+[[main.entries]]
+weight = 8
+nothing = true
+
+[[main.separate_rolls]]
+numerator = 1
+denominator = 16
+
+[[main.separate_rolls.entries]]
+weight = 1
+obj = "obj.hillgiant_boss_key"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 25
+obj = "obj.arceuus_corpse_giant"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 400
+obj = "obj.dorgesh_construction_bone"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_giant"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5013
+obj = "obj.dorgesh_construction_bone_curved"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 50
+obj = "obj.trail_clue_beginner"
+count = 1
+clue_scroll_box = true
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (8 weight)

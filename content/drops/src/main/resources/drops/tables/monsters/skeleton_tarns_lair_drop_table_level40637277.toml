@@ -1,0 +1,222 @@
+id = "Skeleton (Tarn's Lair) Level 40, 63, 72 and 77 drops"
+npcs = ["npc.lotr_skeleton_lvl_77", "npc.lotr_skeleton_lvl_13", "npc.lotr_skeleton_miner1", "npc.lotr_skeleton_possesed_1"]
+
+[main]
+total = 128
+name = "Skeleton (Tarn's Lair) Level 40, 63, 72 and 77 drops"
+
+[[main.entries]]
+weight = 8
+obj = "obj.iron_med_helm"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.bronze_axe"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.bronze_mace"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.iron_spear"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.leather_armour"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.iron_axe"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.iron_dagger"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.iron_dart_p"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.leather_vambraces"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.bronze_platebody"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.iron_mace"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.steel_warhammer"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.steel_platebody"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.mithril_scimitar"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.black_longsword"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.mithril_platelegs"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.airrune"
+count = 9
+
+[[main.entries]]
+weight = 3
+obj = "obj.lawrune"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.xbows_crossbow_bolts_iron"
+count = 7
+
+[[main.entries]]
+weight = 3
+obj = "obj.mithril_arrow"
+count = 7
+
+[[main.entries]]
+weight = 3
+obj = "obj.adamant_arrow"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.iron_arrow"
+count = 14
+
+[[main.entries]]
+weight = 5
+obj = "obj.2dose1agility"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.3doseantipoison"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.3dose1attack"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.weapon_poison"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.coins"
+count = 61
+
+[[main.entries]]
+weight = 5
+obj = "obj.coins"
+count = 112
+
+[[main.entries]]
+weight = 5
+obj = "obj.coins"
+count = 6
+
+[[main.entries]]
+weight = 3
+obj = "obj.coins"
+count = 98
+
+[[main.entries]]
+weight = 2
+obj = "obj.coins"
+count = 184
+
+[[main.entries]]
+weight = 1
+obj = "obj.coins"
+count = 126
+
+[[main.entries]]
+weight = 5
+obj = "obj.arrow_shaft"
+count = 12
+
+[[main.entries]]
+weight = 5
+obj = "obj.amulet_mould"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.necklace_of_minigames_2"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.unstrung_yew_longbow"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.silver_bar"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.gold_ore"
+count = 1
+
+[[main.entries]]
+weight = 1
+shared = "herb"
+
+[[main.entries]]
+weight = 2
+shared = "gem"
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_skeleton"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 121
+obj = "obj.trail_medium_emote_exp1"
+count = 1
+clue_scroll_box = true

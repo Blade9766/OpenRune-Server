@@ -1,0 +1,51 @@
+id = "Rock Golem (monster) Level 13, 27, 46, and 76 drops"
+npcs = ["npc.fairy2_golemguardian_1", "npc.fairy2_golemguardian_2", "npc.fairy2_golemguardian_3", "npc.fairy2_golemguardian_4"]
+
+[main]
+total = 78
+name = "Rock Golem (monster) Level 13, 27, 46, and 76 drops"
+
+[[main.entries]]
+weight = 30
+obj = "obj.earthrune"
+count = 5
+
+[[main.entries]]
+weight = 4
+obj = "obj.earthrune"
+count = 42
+
+[[main.entries]]
+weight = 4
+obj = "obj.chaosrune"
+count = 2
+
+[[main.entries]]
+weight = 7
+obj = "obj.bronze_bar"
+count = 1
+
+[[main.entries]]
+weight = 4
+obj = "obj.iron_ore"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.tin_ore"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.copper_ore"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.hammer"
+count = 1
+
+[[main.entries]]
+weight = 13
+obj = "obj.dwarven_stout"
+count = 1

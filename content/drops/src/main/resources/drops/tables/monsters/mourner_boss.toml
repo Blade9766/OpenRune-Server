@@ -1,0 +1,8 @@
+id = "Mourner (boss) Drops"
+npcs = ["npc.mournerstew2_vis"]
+
+[[guaranteed]]
+obj = "obj.mournerkeytw"
+count = 1
+quest = "quest_biohazard"
+quest_mode = "during"

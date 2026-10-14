@@ -299,11 +299,14 @@ object WikiText {
         return null
     }
 
-    fun extractNpcInfoboxSources(wikitext: String): String = extractInfoboxSources(wikitext, npcInfoboxStart)
+    fun extractNpcInfoboxSources(wikitext: String): String = extractNpcInfoboxBlocks(wikitext).joinToString("\n")
 
-    fun extractSlayerInfoboxSources(wikitext: String): String = extractInfoboxSources(wikitext, slayerInfoboxStart)
+    fun extractNpcInfoboxBlocks(wikitext: String): List<String> = extractInfoboxBlocks(wikitext, npcInfoboxStart)
 
-    private fun extractInfoboxSources(wikitext: String, startPattern: Regex): String {
+    fun extractSlayerInfoboxSources(wikitext: String): String =
+        extractInfoboxBlocks(wikitext, slayerInfoboxStart).joinToString("\n")
+
+    private fun extractInfoboxBlocks(wikitext: String, startPattern: Regex): List<String> {
         val blocks = mutableListOf<String>()
         var searchFrom = 0
         while (searchFrom < wikitext.length) {
@@ -314,7 +317,7 @@ object WikiText {
             }
             searchFrom = match.range.last + 1
         }
-        return blocks.joinToString("\n")
+        return blocks
     }
 
     internal fun extractBalancedTemplate(source: String, startIndex: Int): String? {
