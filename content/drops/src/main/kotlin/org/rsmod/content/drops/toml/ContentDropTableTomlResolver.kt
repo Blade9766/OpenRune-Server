@@ -85,6 +85,13 @@ constructor(
                 player.shouldDropBrimstoneKey(npc, areaChecker)
             }
         }
+        hooks.area?.let { area ->
+            val existing = config.killCondition
+            config.killCondition = { player, npc, areaChecker ->
+                areaChecker.inArea(area, npc.coords) &&
+                    (existing == null || existing(player, npc, areaChecker))
+            }
+        }
         if (hooks.clueScrollBox) {
             val scrollObj = config.obj
             config.transformObj = { player -> player.clueScrollTransformObj(scrollObj) }

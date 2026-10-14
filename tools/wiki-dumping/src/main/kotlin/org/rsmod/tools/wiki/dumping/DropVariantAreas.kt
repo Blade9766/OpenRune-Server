@@ -5,6 +5,7 @@ object DropVariantAreas {
     private val variantKeywordsToArea =
         listOf(
             "catacombs of kourend" to "area.catacombs_of_kourend",
+            "chasm of fire" to "area.chasm_of_fire",
             "stronghold slayer cave" to "area.stronghold_slayer_dungeon",
             "slayer tower" to "area.slayer_tower",
             "karuulm slayer dungeon" to "area.karuulm_slayer_dungeon",

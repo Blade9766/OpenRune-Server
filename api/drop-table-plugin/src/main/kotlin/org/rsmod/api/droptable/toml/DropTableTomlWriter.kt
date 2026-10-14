@@ -162,6 +162,7 @@ public object DropTableTomlWriter {
         if (hooks.requireWilderness) {
             sb.appendLine("require_wilderness = true")
         }
+        hooks.area?.takeIf { it.isNotBlank() }?.let { sb.appendLine("area = ${quote(it)}") }
         hooks.quest?.takeIf { it.isNotBlank() }?.let { quest ->
             sb.appendLine("quest = ${quote(quest)}")
             hooks.questMode?.takeIf { it.isNotBlank() }?.let { mode ->
@@ -183,6 +184,7 @@ public object DropTableTomlWriter {
             clueScrollBox = clueScrollBox,
             quest = quest,
             questMode = questMode,
+            area = area,
         )
 
     private fun TomlWeightedEntry.toHooks(): TomlDropHooks =
@@ -192,6 +194,7 @@ public object DropTableTomlWriter {
             clueScrollBox = clueScrollBox,
             quest = quest,
             questMode = questMode,
+            area = area,
         )
 
     private fun TomlChanceEntry.toHooks(): TomlDropHooks =
@@ -204,5 +207,6 @@ public object DropTableTomlWriter {
             requireWilderness = requireWilderness,
             quest = quest,
             questMode = questMode,
+            area = area,
         )
 }

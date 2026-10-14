@@ -47,6 +47,23 @@ public val lesserDemonDropTableLevel828794: RSDropTable<Player, DropRollItem> = 
             // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Lesser Demon Champion hasn't been previously killed in the Champions' Challenge.
              true
         }
+        1 outOf 123 chance DropRollItem("obj.yama_special_contract", 1, condition = { player ->
+            // Drops Need Manual: 5x more likely to drop when the corresponding sigil is active and the kill condition is met.
+             true
+        }, killCondition = { player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords) })
+        1 outOf 123 chance DropRollItem("obj.yama_2h_contract", 1, condition = { player ->
+            // Drops Need Manual: 2x more likely to drop when the corresponding sigil is active and the kill condition is met.
+             true
+        }, killCondition = { player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords) })
+        1 outOf 123 weight "obj.yama_heavyranged_contract" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords)
+        }
+        1 outOf 123 weight "obj.yama_binding_contract" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords)
+        }
+        1 outOf 123 weight "obj.yama_spell_contract" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords)
+        }
     },
 )
 

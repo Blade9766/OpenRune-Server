@@ -20,4 +20,7 @@ dependencies {
     implementation(projects.engine.game)
     implementation(projects.engine.map)
     implementation(projects.engine.plugin)
+    testImplementation(libs.jackson.dataformat.toml)
+    testImplementation(libs.jackson.module.kotlin)
+    testImplementation(libs.mockk)
 }

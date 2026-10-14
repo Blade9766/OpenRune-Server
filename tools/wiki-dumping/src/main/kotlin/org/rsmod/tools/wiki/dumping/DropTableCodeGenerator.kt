@@ -38,6 +38,7 @@ data class ResolvedDropEntry(
     val brimstoneCombatRoll: Boolean = false,
     val brimstoneKonarBonus: Boolean = false,
     val boosted: Boolean = false,
+    val area: String? = null,
 )
 
 data class ResolvedBonusDrop(
@@ -536,6 +537,7 @@ object DropTableCodeGenerator {
             bonusDrops = bonusDrops,
             brimstoneCombatRoll = brimstoneCombatRoll,
             brimstoneKonarBonus = brimstoneKonarBonus,
+            area = drop.area,
         )
 
     private suspend fun resolveBonusDrops(
@@ -631,7 +633,11 @@ object DropTableCodeGenerator {
         appendLine("$indent}")
     }
 
-    private fun ResolvedDropEntry.canUseItemChainSyntax(): Boolean = bonusDrops.isEmpty()
+    private fun ResolvedDropEntry.canUseItemChainSyntax(clueRollModifier: ClueTertiaryRollModifier? = null): Boolean =
+        bonusDrops.isEmpty() && (area == null || !hasPlayerModifier(clueRollModifier))
+
+    private fun ResolvedDropEntry.hasPlayerModifier(clueRollModifier: ClueTertiaryRollModifier?): Boolean =
+        conditionBody(clueRollModifier) != null || wikiNotes.hasTransformItem || wikiNotes.hasCondition
 
     private fun formatDropCount(count: Int, countMax: Int?, parenthesizeRange: Boolean = false): String =
         if (countMax != null && countMax > count) {
@@ -929,7 +935,7 @@ object DropTableCodeGenerator {
         useRollable: Boolean = true,
         clueRollModifier: ClueTertiaryRollModifier? = null,
     ) {
-        if (entry.canUseItemChainSyntax()) {
+        if (entry.canUseItemChainSyntax(clueRollModifier)) {
             appendObjectDropLine(entry, indent, header, lineSuffix, clueRollModifier)
             return
         }
@@ -1090,12 +1096,19 @@ object DropTableCodeGenerator {
     private fun ringOfWealthConditionBody(requireWealth: Boolean, requireWilderness: Boolean): String =
         "player -> ${ringOfWealthConditionExpression(requireWealth, requireWilderness)}"
 
-    private fun ResolvedDropEntry.killConditionBody(): String? =
-        if (requiresBrimstoneKeyCondition()) {
-            "player, npc, areaChecker -> player.shouldDropBrimstoneKey(npc, areaChecker)"
-        } else {
-            null
+    private fun ResolvedDropEntry.killConditionBody(): String? {
+        val checks =
+            buildList {
+                area?.let { add("areaChecker.inArea(${it.kotlinString()}, npc.coords)") }
+                if (requiresBrimstoneKeyCondition()) {
+                    add("player.shouldDropBrimstoneKey(npc, areaChecker)")
+                }
+            }
+        if (checks.isEmpty()) {
+            return null
         }
+        return "player, npc, areaChecker -> ${checks.joinToString(" && ")}"
+    }
 
     private fun StringBuilder.appendDropRollLine(
         prefix: String,
@@ -1133,12 +1146,14 @@ object DropTableCodeGenerator {
         val count = dropSpecCount()
         val countMax = dropSpecCountMax()
         val needsLootingBagCondition = requiresLootingBagCondition()
-        val needsBrimstoneKeyCondition = requiresBrimstoneKeyCondition()
         val questRequirement = wikiNotes.questRequirements.firstOrNull()
         val needsQuestCondition = questRequirement != null
-        val wealthConditionBody = clueRollModifier?.let { modifier ->
-            ringOfWealthConditionExpression(modifier.requireRingOfWealth, modifier.requireWilderness)
-        }
+        val wealthConditionBody =
+            clueRollModifier
+                ?.takeIf { it.requireRingOfWealth || it.excludeRingOfWealth }
+                ?.let { modifier ->
+                    ringOfWealthConditionExpression(modifier.requireRingOfWealth, modifier.requireWilderness)
+                }
 
         val innerIndent = indent + "    "
         return buildString {
@@ -1157,12 +1172,7 @@ object DropTableCodeGenerator {
                 append("$innerIndent true\n")
                 append("$indent}")
             }
-            if (needsBrimstoneKeyCondition) {
-                append(
-                    ", killCondition = { player, npc, areaChecker -> " +
-                        "player.shouldDropBrimstoneKey(npc, areaChecker) }",
-                )
-            }
+            killConditionBody()?.let { append(", killCondition = { $it }") }
             if (wikiNotes.hasTransformItem) {
                 append(", transformObj = { player ->\n")
                 if (isClueScrollBoxTransform()) {

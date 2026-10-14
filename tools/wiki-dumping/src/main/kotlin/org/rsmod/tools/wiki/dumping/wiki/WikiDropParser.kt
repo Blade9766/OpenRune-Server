@@ -1,5 +1,7 @@
 package org.rsmod.tools.wiki.dumping.wiki
 
+import org.rsmod.tools.wiki.dumping.DropVariantAreas
+
 enum class WikiDropSection {
     Guaranteed,
     Main,
@@ -15,6 +17,7 @@ data class ParsedWikiDrop(
     val wikiNotes: WikiDropNotes = WikiDropNotes(),
     val isNothing: Boolean = false,
     val isNoted: Boolean = false,
+    val area: String? = null,
 )
 
 data class ParsedNpcDropTable(
@@ -629,10 +632,17 @@ object WikiDropParser {
 
         for ((heading, sectionBody) in subsections) {
             val section = classifySection(heading)
-            if (section == WikiDropSection.Tertiary && isOtherLocationTertiary(sectionBody, primaryDropVersion)) {
+            if (section != WikiDropSection.Tertiary) {
+                parsed += parseTemplatesInSection(sectionBody, section, heading)
                 continue
             }
-            parsed += parseTemplatesInSection(sectionBody, section, heading)
+            val location = otherLocationTertiaryVersion(sectionBody, primaryDropVersion)
+            if (location == null) {
+                parsed += parseTemplatesInSection(sectionBody, section, heading)
+                continue
+            }
+            val area = DropVariantAreas.areasForVariant(location).singleOrNull() ?: continue
+            parsed += parseTemplatesInSection(sectionBody, section, heading).map { it.copy(area = area) }
         }
 
         return parsed
@@ -642,13 +652,16 @@ object WikiDropParser {
         tableHeadDropVersionPattern.find(body)?.groupValues?.get(1)?.trim()
 
     /**
-     * Location-only tertiaries (`===Chasm of Fire tertiary===`, `===Catacombs tertiary===`) carry
-     * their own dropversion; the drop DSL has no per-roll area gate, so they are left out rather
-     * than rolled everywhere.
+     * Location-only tertiaries (`===Chasm of Fire tertiary===`) carry their own dropversion. They
+     * are gated to that version's area, or left out when it maps to no single area so they are
+     * never rolled everywhere.
      */
-    private fun isOtherLocationTertiary(subsectionBody: String, primaryDropVersion: String?): Boolean {
-        val version = tableHeadDropVersion(subsectionBody) ?: return false
-        return primaryDropVersion != null && !version.equals(primaryDropVersion, ignoreCase = true)
+    private fun otherLocationTertiaryVersion(subsectionBody: String, primaryDropVersion: String?): String? {
+        val version = tableHeadDropVersion(subsectionBody) ?: return null
+        if (primaryDropVersion == null || version.equals(primaryDropVersion, ignoreCase = true)) {
+            return null
+        }
+        return version
     }
 
     private fun parseDropTableSections(wikitext: String): List<Pair<String, String>> {
