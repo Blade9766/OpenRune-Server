@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
+import org.rsmod.api.player.jingleGroup
 
 @ResourceLock("ServerCacheManager")
 class LevelUpStatCacheTest {
@@ -70,6 +71,13 @@ class LevelUpStatCacheTest {
         assertEquals(id("advance_carpentry2"), jingle("construction", 20))
         assertEquals(id("advance_sailing"), jingle("sailing", 98))
         assertEquals(id("advance_sailing2"), jingle("sailing", 99))
+    }
+
+    @Test
+    fun `jingle gamevals resolve to their archive group`() {
+        assertEquals(90, jingleGroup(id("death")))
+        assertEquals(291, jingleGroup(id("advance_attack")))
+        assertEquals(31, jingleGroup(id("combat_level_up")))
     }
 
     companion object {

@@ -2,6 +2,7 @@ package org.rsmod.api.stats.plugin.levelup
 
 import dev.openrune.ServerCacheManager
 import dev.openrune.types.StatType
+import org.rsmod.api.player.jingleGroup
 import org.rsmod.api.player.midiJingle
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.advanced.onAdvanceCombat
@@ -27,7 +28,7 @@ public class LevelUpScript : PluginScript() {
         mes(LevelUpText.message(stat.label, level, maxed = level >= type.maxLevel))
         spotanim(fireworks(level, type.maxLevel), height = FIREWORKS_HEIGHT)
         soundSynth(FIREWORKS_SYNTH)
-        player.midiJingle(jingle)
+        player.midiJingle(jingleGroup(jingle))
 
         if (vars[POPUP_DISABLED_VARBIT] == 0) {
             levelUpDisplay(
