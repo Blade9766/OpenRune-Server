@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.ResourceLock
-import org.rsmod.api.player.jingleGroup
 
 @ResourceLock("ServerCacheManager")
 class LevelUpStatCacheTest {
@@ -21,8 +20,6 @@ class LevelUpStatCacheTest {
         unlocks: Boolean = false,
         guideList: Boolean = true,
     ): Int = stat(name).jingle.select(level, maxLevel = 99, unlocks, guideList)
-
-    private fun id(jingle: String): Int = "jingle.$jingle".asRSCM(RSCMType.JINGLE)
 
     @Test
     fun `every skill has a distinct stat and levelup_display layer`() {
@@ -43,41 +40,34 @@ class LevelUpStatCacheTest {
 
     @Test
     fun `unlock levels play the second jingle only with the guide list enabled`() {
-        assertEquals(id("advance_woodcutting"), jingle("woodcutting", 14))
-        assertEquals(id("advance_woodcutting2"), jingle("woodcutting", 15, unlocks = true))
+        assertEquals(69, jingle("woodcutting", 14))
+        assertEquals(70, jingle("woodcutting", 15, unlocks = true))
         assertEquals(
-            id("advance_woodcutting"),
+            69,
             jingle("woodcutting", 15, unlocks = true, guideList = false),
         )
-        assertEquals(id("farming_levelup_2"), jingle("farming", 15, unlocks = true))
+        assertEquals(11, jingle("farming", 15, unlocks = true))
     }
 
     @Test
     fun `smithing follows the guide list setting alone`() {
-        assertEquals(id("advance_smithing2"), jingle("smithing", 2))
-        assertEquals(id("advance_smithing"), jingle("smithing", 2, guideList = false))
+        assertEquals(64, jingle("smithing", 2))
+        assertEquals(63, jingle("smithing", 2, guideList = false))
     }
 
     @Test
     fun `special jingle rules`() {
-        assertEquals(id("advance_agility"), jingle("agility", 62, unlocks = true))
-        assertEquals(id("advance_hitpoints"), jingle("hitpoints", 49))
-        assertEquals(id("advance_hitpoints2"), jingle("hitpoints", 50))
-        assertEquals(id("advance_strength"), jingle("strength", 2))
-        assertEquals(id("advance_strength2"), jingle("strength", 99))
-        assertEquals(id("advance_hunting"), jingle("hunter", 2))
-        assertEquals(id("advance_hunting2"), jingle("hunter", 3))
-        assertEquals(id("advance_carpentry"), jingle("construction", 11))
-        assertEquals(id("advance_carpentry2"), jingle("construction", 20))
-        assertEquals(id("advance_sailing"), jingle("sailing", 98))
-        assertEquals(id("advance_sailing2"), jingle("sailing", 99))
-    }
-
-    @Test
-    fun `jingle gamevals resolve to their archive group`() {
-        assertEquals(90, jingleGroup(id("death")))
-        assertEquals(291, jingleGroup(id("advance_attack")))
-        assertEquals(31, jingleGroup(id("combat_level_up")))
+        assertEquals(28, jingle("agility", 62, unlocks = true))
+        assertEquals(47, jingle("hitpoints", 49))
+        assertEquals(48, jingle("hitpoints", 50))
+        assertEquals(65, jingle("strength", 2))
+        assertEquals(66, jingle("strength", 99))
+        assertEquals(49, jingle("hunter", 2))
+        assertEquals(50, jingle("hunter", 3))
+        assertEquals(31, jingle("construction", 11))
+        assertEquals(32, jingle("construction", 20))
+        assertEquals(830, jingle("sailing", 98))
+        assertEquals(831, jingle("sailing", 99))
     }
 
     companion object {

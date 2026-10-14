@@ -65,7 +65,7 @@ constructor(
         handleDeathDrops(player, deathCoords)
 
         midiSong("midi.stop_music")
-        player.midiJingle("jingle.death")
+        player.midiJingle(DEATH_JINGLE_GROUP)
         mes("Oh dear, you are dead!")
         telejump(randomRespawn ?: respawn, TeleportType.Exempt)
         resetAnim()
@@ -173,5 +173,12 @@ constructor(
         private const val DEATH_SOUND_RADIUS = 10
 
         private val DEFAULT_RESPAWN = CoordGrid(0, 50, 50, 21, 18)
+
+        /**
+         * Js5 archive 11 group of the death jingle. The `jingle.death` gameval id is not the group
+         * id the client plays (see [org.rsmod.api.player.midiJingle]); this number was confirmed
+         * in-game by ear with the `::jingle` command.
+         */
+        private const val DEATH_JINGLE_GROUP = 90
     }
 }

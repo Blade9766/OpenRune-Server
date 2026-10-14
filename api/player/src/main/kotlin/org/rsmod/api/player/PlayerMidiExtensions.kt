@@ -11,27 +11,21 @@ public var Player.musicClocks: Int by intVarBit("varbit.music_curr_clocks")
 
 /** @see [MidiJingle] */
 public fun Player.midiJingle(jingle: String) {
-    midiJingle(jingleGroup(jingle.asRSCM(RSCMType.JINGLE)))
+    musicClocks = 0 // Client restarts music when a jingle is played.
+    client.write(MidiJingle(jingle.asRSCM(RSCMType.JINGLE)))
 }
 
-/** Plays the jingle stored as js5 archive 11 group [group]; see [jingleGroup]. */
+/**
+ * Plays the jingle stored as js5 archive 11 group [group].
+ *
+ * The client looks a jingle up by its archive group, which is not the id the `jingle.*` gameval
+ * resolves to (the sound gameval table numbers music and jingles in its own space), so a jingle
+ * whose group has been identified by ear or by duration is played through this overload.
+ */
 public fun Player.midiJingle(group: Int) {
     musicClocks = 0 // Client restarts music when a jingle is played.
     client.write(MidiJingle(group))
 }
-
-/**
- * Converts a `jingle.*` gameval id to the js5 archive 11 group the client plays.
- *
- * The jingle gameval table numbers music tracks and jingles in one space: music keeps its archive 6
- * group, and jingles follow after the last music track, so their group is the id minus
- * [JINGLE_GAMEVAL_OFFSET]. The few jingles whose id falls inside the music range already equal
- * their group.
- */
-public fun jingleGroup(gamevalId: Int): Int =
-    if (gamevalId >= JINGLE_GAMEVAL_OFFSET) gamevalId - JINGLE_GAMEVAL_OFFSET else gamevalId
-
-private const val JINGLE_GAMEVAL_OFFSET = 886
 
 /** @see [MidiSongV2] */
 public fun Player.midiSong(

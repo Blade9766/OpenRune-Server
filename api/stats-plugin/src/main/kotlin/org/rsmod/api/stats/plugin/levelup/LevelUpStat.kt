@@ -21,7 +21,9 @@ internal class LevelUpStat(row: StatComponentsRow) {
     companion object {
         const val COMBAT_LABEL: String = "Combat"
         const val COMBAT_LAYER: String = "component.levelup_display:combat"
-        const val COMBAT_JINGLE: String = "jingle.combat_level_up"
+
+        /** Js5 archive 11 group of the combat level-up jingle; see [StatComponentsRow]. */
+        const val COMBAT_JINGLE: Int = 300
 
         val all: List<LevelUpStat> by lazy { StatComponentsRow.all().map(::LevelUpStat) }
 
