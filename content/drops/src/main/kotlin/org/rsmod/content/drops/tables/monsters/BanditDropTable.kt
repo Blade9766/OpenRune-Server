@@ -7,6 +7,7 @@ import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
@@ -55,7 +56,11 @@ public val banditDropTableLevel130: RSDropTable<Player, DropRollItem> = RSDropTa
              player.clueScrollTransformObj("obj.trail_clue_hard_map001")
         }
         // Drops Need Manual (rate): Drop rate is improved within the Wilderness Slayer Cave.
-        1 outOf 90 weight "obj.slayer_wilderness_key" count 1
-        1 outOf 196 weight "obj.slayer_enchantment" count 1
+        1 outOf 196 weight "obj.slayer_enchantment" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
+        1 outOf 90 weight "obj.slayer_wilderness_key" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
     },
 )

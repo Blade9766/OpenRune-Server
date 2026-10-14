@@ -84,5 +84,18 @@ denominator = 5000
 obj = "obj.champions_challenge_earthwarrior"
 count = 1
 
+[[tertiary]]
+numerator = 1
+denominator = 277
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 352
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
 
 # Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (18 weight)

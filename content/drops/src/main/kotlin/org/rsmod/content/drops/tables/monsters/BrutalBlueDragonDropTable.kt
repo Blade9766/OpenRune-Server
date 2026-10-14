@@ -1,18 +1,19 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.npcs
 import dtx.rs.areas
+import dtx.rs.npcs
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.content.drops.brimstoneKeyRoll
+import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.darkTotemPieceObj
 import org.rsmod.content.drops.hasCompletedQuest
 import org.rsmod.content.drops.isOnQuest
-import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -81,5 +82,14 @@ public val brutalBlueDragonDropTable: RSDropTable<Player, DropRollItem> = RSDrop
         1 outOf 712 weight "obj.trail_elite_emote_exp1" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_elite_emote_exp1")
         }
+        1 outOf 170 weight "obj.cata_shard" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords)
+        }
+        1 outOf 255 chance DropRollItem(
+            "obj.cata_totem1",
+            1,
+            killCondition = { _, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords) },
+            transformObj = { player -> player.darkTotemPieceObj() },
+        )
     },
 )

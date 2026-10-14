@@ -6,6 +6,8 @@ import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
+import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
@@ -64,6 +66,21 @@ public val lesserDemonDropTableLevel828794: RSDropTable<Player, DropRollItem> = 
         1 outOf 123 weight "obj.yama_spell_contract" count 1 killCondition {
             player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords)
         }
+        1 outOf 275 weight "obj.cata_shard" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords)
+        }
+        1 outOf 413 chance DropRollItem(
+            "obj.cata_totem1",
+            1,
+            killCondition = { _, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords) },
+            transformObj = { player -> player.darkTotemPieceObj() },
+        )
+        1 outOf 256 weight "obj.slayer_enchantment" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
+        1 outOf 98 weight "obj.slayer_wilderness_key" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
     },
 )
 
@@ -99,6 +116,12 @@ public val lesserDemonDropTableWildernessSlayerCave: RSDropTable<Player, DropRol
         1 outOf 5000 weight "obj.champions_challenge_lesserdemon" count 1 condition { player ->
             // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Lesser Demon Champion hasn't been previously killed in the Champions' Challenge.
              true
+        }
+        1 outOf 232 weight "obj.slayer_enchantment" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
+        1 outOf 83 weight "obj.slayer_wilderness_key" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
         }
     },
 )

@@ -133,6 +133,20 @@ weight = 1
 obj = "obj.dust_battlestaff"
 count = 1
 
+[[tertiary]]
+numerator = 1
+denominator = 246
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 370
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true
 
 # Unknown wiki drop rate: Dragon chainbody [main/Weapons and armour/1/{{#expr:128*256}}]
 # Unknown wiki drop rate: Nothing [main/Other/255/{{#expr:128*256}}]

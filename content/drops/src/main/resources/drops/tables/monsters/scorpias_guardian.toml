@@ -14,5 +14,18 @@ denominator = 25
 obj = "obj.arceuus_corpse_scorpion"
 count = 1
 
+[[tertiary]]
+numerator = 1
+denominator = 264
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 426
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
 
 # Unknown wiki drop rate: Clue scroll (beginner) [tertiary/Tertiary/Unknown]

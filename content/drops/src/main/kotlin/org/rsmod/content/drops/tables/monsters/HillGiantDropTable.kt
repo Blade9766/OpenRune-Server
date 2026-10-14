@@ -9,6 +9,8 @@ import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
@@ -69,6 +71,21 @@ public val hillGiantDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
         1 outOf 5013 weight "obj.dorgesh_construction_bone_curved" count 1
         1 outOf 50 weight "obj.trail_clue_beginner" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_beginner")
+        }
+        1 outOf 310 weight "obj.cata_shard" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords)
+        }
+        1 outOf 465 chance DropRollItem(
+            "obj.cata_totem1",
+            1,
+            killCondition = { _, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords) },
+            transformObj = { player -> player.darkTotemPieceObj() },
+        )
+        1 outOf 292 weight "obj.slayer_enchantment" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
+        1 outOf 911 weight "obj.slayer_wilderness_key" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
         }
     },
 )

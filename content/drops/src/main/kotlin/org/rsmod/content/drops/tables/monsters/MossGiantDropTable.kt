@@ -1,19 +1,21 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.npcs
 import dtx.rs.areas
+import dtx.rs.npcs
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
-import org.rsmod.content.drops.shouldDropLootingBag
+import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.darkTotemPieceObj
 import org.rsmod.content.drops.hasCompletedQuest
 import org.rsmod.content.drops.isOnQuest
-import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.nothing
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.onWildernessSlayerTask
+import org.rsmod.content.drops.shouldDropLootingBag
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -65,6 +67,21 @@ public val mossGiantDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
         1 outOf 5013 weight "obj.dorgesh_construction_bone_curved" count 1
         1 outOf 45 weight "obj.trail_clue_beginner" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_beginner")
+        }
+        1 outOf 293 weight "obj.cata_shard" count 1 killCondition {
+            player, npc, areaChecker -> (areaChecker.inArea("area.catacombs_of_kourend", npc.coords) || areaChecker.inArea("area.giantsden", npc.coords))
+        }
+        1 outOf 440 chance DropRollItem(
+            "obj.cata_totem1",
+            1,
+            killCondition = { _, npc, areaChecker -> (areaChecker.inArea("area.catacombs_of_kourend", npc.coords) || areaChecker.inArea("area.giantsden", npc.coords)) },
+            transformObj = { player -> player.darkTotemPieceObj() },
+        )
+        1 outOf 272 weight "obj.slayer_enchantment" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
+        1 outOf 533 weight "obj.slayer_wilderness_key" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
         }
     },
 )

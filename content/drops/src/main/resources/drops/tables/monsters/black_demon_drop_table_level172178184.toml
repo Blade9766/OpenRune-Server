@@ -178,6 +178,34 @@ obj = "obj.yama_spell_contract"
 count = 1
 area = "area.chasm_of_fire"
 
+[[tertiary]]
+numerator = 1
+denominator = 226
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 340
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true
+
+[[tertiary]]
+numerator = 1
+denominator = 195
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 82
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
 
 # Drops need manual rate (konar_key): Brimstone key drop rates for level 172, 178, and 184 black demons are , , and respectively.
 # Drops need manual rate (yama contracts): Glyphic Attenuation is 5x and the other contracts 2x more likely when the demon's Chasm of Fire sigil is active and its kill condition is met.

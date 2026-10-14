@@ -169,6 +169,34 @@ obj = "obj.yama_spell_contract"
 count = 1
 area = "area.chasm_of_fire"
 
+[[tertiary]]
+numerator = 1
+denominator = 256
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 385
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true
+
+[[tertiary]]
+numerator = 1
+denominator = 249
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 96
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
 
 # Drops need manual (konar_key): Only dropped if killed on a Slayer task given by Konar quo Maten.
 # Drops need manual rate (konar_key): Brimstone key drop rates for level 92, 100, 101 and 113 greater demons are 1/112, 1/100, 1/99 and 1/97 respectively.

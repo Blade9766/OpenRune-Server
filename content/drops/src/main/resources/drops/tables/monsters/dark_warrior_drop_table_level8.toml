@@ -109,3 +109,17 @@ denominator = 15
 obj = "obj.looting_bag"
 count = 1
 should_drop_looting_bag = true
+
+[[tertiary]]
+numerator = 1
+denominator = 307
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 1655
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
