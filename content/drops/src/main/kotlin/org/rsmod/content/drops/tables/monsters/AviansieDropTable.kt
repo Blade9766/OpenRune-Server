@@ -1,18 +1,16 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
-import org.rsmod.api.area.checker.isInWilderness
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.ringNothing
 import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.api.droptable.wearingRingOfWealth
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.hasCompletedDiary
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
@@ -37,9 +35,8 @@ public val aviansieDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
         2 weight "obj.bloodrune" count 11
         1 weight "obj.mindrune" count 5
         1 weight "obj.chaosrune" count 16
-        30 weight "obj.adamantite_bar" count 4 condition { player ->
-            // Drops Need Manual: Aviansie in the God Wars Dungeon drop unnoted bars until completion of the Fremennik Diary#Hard
-             true
+        30 weight "obj.adamantite_bar" count 4 killTransformObj { player, npc, areaChecker ->
+            if (player.hasCompletedDiary("varbit.fremennik_diary_hard_complete") && areaChecker.inArea("area.godwars_dungeon", npc.coords)) "obj.cert_adamantite_bar" else null
         }
         10 weight "obj.silver_ore" count 1
         1 weight "obj.xbows_crossbow_limbs_runite" count 1
@@ -51,9 +48,12 @@ public val aviansieDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
         3 weight SharedDropTables.gem
     },
     tertiaries = rsPlayerTertiaryTable {
-        // Drops Need Manual (rate): Aviansie in the God Wars Dungeon drop the ensouled head at a rate of 1/35, while those in the Wilderness God Wars Dungeon drop it at a rate of 1/20.
-        1 outOf 35 weight "obj.arceuus_corpse_aviansie" count 1
-        // Drops Need Manual (rate): Brimstone key drop rates for levels 69, 71, 73, 79, 83, 84, 89, 92, 94, 97, 131, 137, and 148 are 1/292, 1/268, 1/245, 1/188, 1/157, 1/151, 1/124, 1/112, 1/101, 1/107, 1/93, 1/92, and 1/90, respectively.
+        1 outOf 35 weight "obj.arceuus_corpse_aviansie" count 1 killCondition { _, npc, areaChecker ->
+            !areaChecker.inArea("area.wilderness_dungeons", npc.coords)
+        }
+        1 outOf 20 weight "obj.arceuus_corpse_aviansie" count 1 killCondition { _, npc, areaChecker ->
+            areaChecker.inArea("area.wilderness_dungeons", npc.coords)
+        }
         onBuilder { brimstoneKeyRoll() }
         1 outOf 121 weight "obj.trail_clue_hard_map001" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_hard_map001")

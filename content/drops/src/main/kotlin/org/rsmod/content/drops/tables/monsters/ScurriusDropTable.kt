@@ -4,6 +4,7 @@ import dtx.rs.RSDropTable
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
@@ -50,5 +51,31 @@ public val scurriusDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
         1 outOf 400 weight "obj.dorgesh_construction_bone" count 1
         1 outOf 5013 weight "obj.dorgesh_construction_bone_curved" count 1
         1 outOf 3000 weight "obj.scurriuspet" count 1
+    },
+)
+
+/** Public Scurrius: every other player who damaged it rolls this instead of the MVP table. */
+@JvmField
+public val scurriusNonMvpDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
+    tableIdentifier = "Scurrius Drops (non-MVP)",
+    npcs = npcs("npc.rat_boss_normal"),
+    mainTable = rsPlayerWeightedTable(total = 33) {
+        name("Scurrius Drops (non-MVP)")
+        3 weight "obj.adamant_arrow" count 20..35
+        3 weight "obj.rune_arrow" count 20..35
+        3 weight "obj.chaosrune" count 40..70
+        3 weight "obj.deathrune" count 30..50
+        3 weight "obj.lawrune" count 5..15
+        3 weight "obj.trout" count 1..3
+        3 weight "obj.tuna" count 1..3
+        3 weight "obj.lobster" count 1..3
+        1 weight "obj.shark" count 1
+        3 weight "obj.1doserangerspotion" count 1
+        3 weight "obj.1dose2strength" count 1
+        1 weight "obj.cheese" count 1
+        1 weight nothing()
+    },
+    tertiaries = rsPlayerTertiaryTable {
+        1 outOf 33 weight "obj.rat_boss_spine" count 1
     },
 )

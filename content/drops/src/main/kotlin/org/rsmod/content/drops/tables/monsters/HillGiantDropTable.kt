@@ -26,13 +26,11 @@ public val hillGiantDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     mainTable = rsPlayerWeightedTable(total = 134) {
         name("Hill Giant Drops")
         4 weight "obj.iron_dagger" count 1
-        5 weight "obj.iron_med_helm" count 1 condition { player ->
-            // Drops Need Manual: Only dropped by giants on the Giants' Plateau.
-             true
+        5 weight "obj.iron_med_helm" count 1 killCondition { player, npc, areaChecker ->
+            npc.type.internalName.startsWith("npc.gh_giant")
         }
-        5 weight "obj.iron_full_helm" count 1 condition { player ->
-            // Drops Need Manual: Only dropped by giants not on the Giants' Plateau.
-             true
+        5 weight "obj.iron_full_helm" count 1 killCondition { player, npc, areaChecker ->
+            !npc.type.internalName.startsWith("npc.gh_giant")
         }
         3 weight "obj.iron_kiteshield" count 1
         2 weight "obj.steel_scimitar" count 1

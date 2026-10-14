@@ -5,9 +5,11 @@ import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.ringNothing
+import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.needsClueKey
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -16,6 +18,11 @@ import org.rsmod.game.entity.Player
 public val barbarianDropTableLevel8910: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Barbarian Level 8, 9, and 10 drops",
     npcs = npcs("npc.barbarianwoman_varrock", "npc.fai_barbarian_10", "npc.fai_barbarian_11", "npc.fai_barbarian_12", "npc.fai_barbarian_13", "npc.fai_barbarian_2", "npc.fai_barbarian_5", "npc.fai_barbarian_6", "npc.fai_barbarian_7", "npc.fai_barbarian_female_2", "npc.fai_barbarian_female_3", "npc.fai_barbarian_female_4"),
+    guaranteed = rsPlayerGuaranteedTable {
+        "obj.trail_clue_medium_riddle011_key" count 1 condition { player ->
+            player.needsClueKey("obj.trail_clue_medium_riddle011", "obj.trail_clue_medium_riddle011_key")
+        }
+    },
     mainTable = rsPlayerWeightedTable(total = 128) {
         name("Barbarian Level 8, 9, and 10 drops")
         6 weight "obj.bronze_axe" count 1
@@ -53,6 +60,11 @@ public val barbarianDropTableLevel8910: RSDropTable<Player, DropRollItem> = RSDr
 public val barbarianDropTableLevel1517: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Barbarian Level 15 and 17 drops",
     npcs = npcs("npc.fai_barbarian_1", "npc.fai_barbarian_14", "npc.fai_barbarian_3", "npc.fai_barbarian_4", "npc.fai_barbarian_8", "npc.fai_barbarian_female_1"),
+    guaranteed = rsPlayerGuaranteedTable {
+        "obj.trail_clue_medium_riddle011_key" count 1 condition { player ->
+            player.needsClueKey("obj.trail_clue_medium_riddle011", "obj.trail_clue_medium_riddle011_key")
+        }
+    },
     mainTable = rsPlayerWeightedTable(total = 128) {
         name("Barbarian Level 15 and 17 drops")
         6 weight "obj.iron_axe" count 1
@@ -85,9 +97,3 @@ public val barbarianDropTableLevel1517: RSDropTable<Player, DropRollItem> = RSDr
         }
     },
 )
-
-// Unmapped wiki items (Level 8, 9, and 10 drops):
-//   - Key (medium)
-
-// Unmapped wiki items (Level 15 and 17 drops):
-//   - Key (medium)

@@ -6,6 +6,7 @@ import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
+import org.rsmod.content.drops.canReceiveChampionScroll
 import org.rsmod.content.drops.darkTotemPieceObj
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
@@ -46,17 +47,10 @@ public val lesserDemonDropTableLevel828794: RSDropTable<Player, DropRollItem> = 
         }
         1 outOf 50 weight "obj.arceuus_corpse_demon" count 1
         1 outOf 5000 weight "obj.champions_challenge_lesserdemon" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Lesser Demon Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("lesserdemon")
         }
-        1 outOf 123 chance DropRollItem("obj.yama_special_contract", 1, condition = { player ->
-            // Drops Need Manual: 5x more likely to drop when the corresponding sigil is active and the kill condition is met.
-             true
-        }, killCondition = { player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords) })
-        1 outOf 123 chance DropRollItem("obj.yama_2h_contract", 1, condition = { player ->
-            // Drops Need Manual: 2x more likely to drop when the corresponding sigil is active and the kill condition is met.
-             true
-        }, killCondition = { player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords) })
+        1 outOf 123 chance DropRollItem("obj.yama_special_contract", 1, killCondition = { player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords) })
+        1 outOf 123 chance DropRollItem("obj.yama_2h_contract", 1, killCondition = { player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords) })
         1 outOf 123 weight "obj.yama_heavyranged_contract" count 1 killCondition {
             player, npc, areaChecker -> areaChecker.inArea("area.chasm_of_fire", npc.coords)
         }
@@ -114,8 +108,7 @@ public val lesserDemonDropTableWildernessSlayerCave: RSDropTable<Player, DropRol
         }
         1 outOf 50 weight "obj.arceuus_corpse_demon" count 1
         1 outOf 5000 weight "obj.champions_challenge_lesserdemon" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Lesser Demon Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("lesserdemon")
         }
         1 outOf 232 weight "obj.slayer_enchantment" count 1 killCondition {
             player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)

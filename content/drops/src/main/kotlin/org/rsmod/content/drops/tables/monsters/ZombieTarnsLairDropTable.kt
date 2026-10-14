@@ -54,10 +54,7 @@ public val zombieTarnsLairDropTableLevel4056: RSDropTable<Player, DropRollItem> 
         2 weight "obj.gold_ore" count 3
         2 weight "obj.plank_oak" count 1
         2 weight "obj.rooftile" count 1
-        2 weight "obj.unholy_symbol_mould" count 1 condition { player ->
-            // Drops Need Manual: '''Does not''' require completion of Observatory Quest in order to drop.
-             true
-        }
+        2 weight "obj.unholy_symbol_mould" count 1
         1 weight "obj.earth_orb" count 1
 
         3 weight SharedDropTables.herb

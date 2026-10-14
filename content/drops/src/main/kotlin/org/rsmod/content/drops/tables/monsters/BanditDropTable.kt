@@ -55,7 +55,6 @@ public val banditDropTableLevel130: RSDropTable<Player, DropRollItem> = RSDropTa
         1 outOf 64 weight "obj.trail_clue_hard_map001" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_hard_map001")
         }
-        // Drops Need Manual (rate): Drop rate is improved within the Wilderness Slayer Cave.
         1 outOf 196 weight "obj.slayer_enchantment" count 1 killCondition {
             player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
         }

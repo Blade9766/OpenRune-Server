@@ -1,7 +1,6 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import dtx.rs.rsWeightedTable
 import org.rsmod.api.droptable.DropRollItem
@@ -15,7 +14,6 @@ import org.rsmod.content.drops.darkTotemPieceObj
 import org.rsmod.content.drops.shouldDropBrimstoneKey
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.content.drops.tables.shared.doubleRollHerbDropTable
-import org.rsmod.content.drops.tables.shared.herbDropTable
 import org.rsmod.content.drops.tables.shared.tripleRollHerbDropTable
 import org.rsmod.game.entity.Player
 

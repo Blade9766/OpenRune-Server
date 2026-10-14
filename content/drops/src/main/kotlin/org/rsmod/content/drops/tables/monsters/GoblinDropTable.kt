@@ -37,10 +37,7 @@ public val goblinDropTable2: RSDropTable<Player, DropRollItem> = RSDropTable(
         8 weight ringNothing()
         9 weight "obj.hammer" count 1
         2 weight "obj.slice_goblin_history_book" count 1
-        10 weight "obj.goblin_armour" count 1 condition { player ->
-            // Drops Need Manual: Colour received depends on the goblin mail worn.
-             true
-        }
+        10 weight "obj.goblin_armour" count 1
         1 weight "obj.grapes" count 1
         1 weight "obj.red_cape" count 1
         1 weight "obj.tin_ore" count 1

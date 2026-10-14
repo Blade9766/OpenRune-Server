@@ -11,6 +11,7 @@ import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.isOnTreasureTrailKillStep
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -66,10 +67,9 @@ public val shellbaneGryphonDropTable: RSDropTable<Player, DropRollItem> = RSDrop
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.trail_elite_emote_exp1" count 1 condition { player ->
-            // Drops Need Manual: Guaranteed elite clue scroll and reward casket drops only occur when completing an elite clue scroll asking you to kill the Shellbane gryphon.
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         onBuilder { brimstoneKeyRoll(konarTaskBonus = true) }
         1 outOf 400 weight "obj.dorgesh_construction_bone" count 1
         1 outOf 2000 weight "obj.jar_of_feathers" count 1

@@ -2,14 +2,13 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.ringNothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
+import org.rsmod.content.drops.isOnTheOnyxCrest
 import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
-import org.rsmod.api.droptable.ringNothing
-import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -45,9 +44,8 @@ public val pirateThievingDropTable: RSDropTable<Player, DropRollItem> = RSDropTa
         1 weight SharedDropTables.gem
     },
     tertiaries = rsPlayerTertiaryTable {
-        1 outOf 6 weight "obj.motd_frag_3" count 1 condition { player ->
-            // Drops Need Manual: The fragment will only drop if the Pirate is located on The Onyx Crest.
-             true
+        1 outOf 6 weight "obj.motd_frag_3" count 1 killCondition { player, npc, areaChecker ->
+            npc.isOnTheOnyxCrest()
         }
     },
 )

@@ -8,6 +8,7 @@ import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.isOnTreasureTrailKillStep
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
@@ -47,10 +48,9 @@ public val greenDragonDropTableLevel79: RSDropTable<Player, DropRollItem> = RSDr
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.trail_elite_emote_exp1" count 1 condition { player ->
-            // Drops Need Manual: The elite clue scroll and casket are only dropped when completing an Treasure Trails/Full guide/Elite#Cryptic clues
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         1 outOf 3 weight "obj.looting_bag" count 1 condition {
             player -> player.shouldDropLootingBag()
         }
@@ -104,10 +104,9 @@ public val greenDragonDropTableWildernessSlayerCave: RSDropTable<Player, DropRol
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.trail_elite_emote_exp1" count 1 condition { player ->
-            // Drops Need Manual: The elite clue scroll and casket are only dropped when completing an Treasure Trails/Full guide/Elite#Cryptic clues
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         1 outOf 3 weight "obj.looting_bag" count 1 condition {
             player -> player.shouldDropLootingBag()
         }

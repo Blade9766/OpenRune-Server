@@ -2,12 +2,10 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
-import org.rsmod.api.droptable.rsPlayerTertiaryTable
-import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -17,19 +15,16 @@ public val muttadileDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     npcs = npcs("npc.raids_dogodile", "npc.raids_dogodile_junior", "npc.raids_dogodile_submerged"),
     guaranteed = rsPlayerGuaranteedTable {
         "obj.raids_houndmaster_book" count 1 condition { player ->
-            // Drops Need Manual: No longer dropped after reading the book.
-             true
+            player.vars["varbit.raids_book_houndmaster_read"] == 0
         }
         "obj.raids_vial_overload_strong_4" count 1
         "obj.raids_vial_prayer_strong_4" count 1
-        "obj.raids_vial_xericaid_strong_4" count 1 condition { player ->
-            // Drops Need Manual: Only dropped by the larger muttadile.
-             true
+        "obj.raids_vial_xericaid_strong_4" count 1 killCondition { player, npc, areaChecker ->
+            npc.type.internalName == "npc.raids_dogodile" || npc.type.internalName == "npc.raids_dogodile_submerged"
         }
         "obj.raids_vial_revitalisation_strong_4" count 1
-        "obj.raids_stinkhorn_mushroom" count 2 condition { player ->
-            // Drops Need Manual: Only dropped by the smaller muttadile.
-             true
+        "obj.raids_stinkhorn_mushroom" count 2 killCondition { player, npc, areaChecker ->
+            npc.type.internalName == "npc.raids_dogodile_junior"
         }
     },
     tertiaries = rsPlayerTertiaryTable {

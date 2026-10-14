@@ -1,16 +1,14 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.dropRollable
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.api.droptable.wearingRingOfWealth
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.onWildernessSlayerTask
@@ -27,7 +25,7 @@ public val crazyArchaeologistDropTable: RSDropTable<Player, DropRollItem> = RSDr
         1 outOf 256 weight "obj.odium_shard2" count 1
         1 outOf 256 weight "obj.malediction_shard2" count 1
     },
-    mainTable = rsPlayerWeightedTable(total = 132) {
+    mainTable = rsPlayerWeightedTable(total = 128) {
         name("Crazy archaeologist Drops")
         7 weight "obj.amulet_of_power" count 1
         5 weight "obj.xbows_crossbow_runite" count 2
@@ -44,11 +42,9 @@ public val crazyArchaeologistDropTable: RSDropTable<Player, DropRollItem> = RSDr
         8 weight "obj.cert_unidentified_dwarf_weed" count 4
         6 weight "obj.cert_white_berries" count 10
         6 weight "obj.cert_silver_ore" count 40
-        5 weight "obj.cert_uncut_emerald" count 6 condition { player ->
-            // Drops Need Manual: 6 uncut emeralds are dropped along with 4 uncut sapphires.
-             true
-        }
-        5 weight "obj.cert_uncut_sapphire" count 4
+        5 weight dropRollable(DropRollItem("obj.cert_uncut_emerald", 6, bonusDrops = listOf(
+            DropRollItem("obj.cert_uncut_sapphire", 4),
+        )))
         5 weight "obj.cert_dragonhide_red" count 10
         4 weight "obj.digsitesword" count 1
         4 weight "obj.muddy_key" count 1
@@ -57,6 +53,7 @@ public val crazyArchaeologistDropTable: RSDropTable<Player, DropRollItem> = RSDr
 
         4 weight SharedDropTables.rareDrop
         4 weight SharedDropTables.gem
+        1 weight nothing()
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 3 weight "obj.looting_bag" count 1 condition {

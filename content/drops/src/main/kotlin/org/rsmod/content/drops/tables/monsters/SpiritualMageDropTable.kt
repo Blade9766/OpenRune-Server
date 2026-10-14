@@ -8,6 +8,7 @@ import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.isOnTreasureTrailKillStep
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
@@ -50,10 +51,9 @@ public val spiritualMageDropTable: RSDropTable<Player, DropRollItem> = RSDropTab
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.trail_clue_master" count 1 condition { player ->
-            // Drops Need Manual: Master clue scrolls and reward caskets are only dropped when completing a master clue scroll asking you to kill a spiritual mage.
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_master" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_master" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         1 outOf 3 weight "obj.looting_bag" count 1 condition {
             player -> player.shouldDropLootingBag()
         }

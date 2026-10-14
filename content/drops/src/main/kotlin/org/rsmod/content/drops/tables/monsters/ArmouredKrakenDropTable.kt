@@ -9,6 +9,7 @@ import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.isOnSailingBountyTask
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -78,8 +79,7 @@ public val armouredKrakenDropTable: RSDropTable<Player, DropRollItem> = RSDropTa
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 2 weight "obj.sailing_armoured_kraken_tentacle" count 1 condition { player ->
-            // Drops Need Manual: Only dropped while on an applicable bounty task.
-             true
+            player.isOnSailingBountyTask()
         }
         1 outOf 10 weight "obj.sailing_armoured_kraken_ink_sac" count 1
         1 outOf 152 weight "obj.trail_elite_emote_exp1" count 1 transformObj { player ->

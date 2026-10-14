@@ -5,9 +5,11 @@ import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.ringNothing
+import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.needsClueKey
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -16,6 +18,11 @@ import org.rsmod.game.entity.Player
 public val barbarianBarbarianCampDropTableLevel910: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Barbarian (Barbarian Camp) Level 9 and 10 drops",
     npcs = npcs("npc.akd_barbarian_1", "npc.akd_barbarian_2", "npc.akd_barbarian_4", "npc.akd_barbarian_5"),
+    guaranteed = rsPlayerGuaranteedTable {
+        "obj.trail_clue_medium_riddle011_key" count 1 condition { player ->
+            player.needsClueKey("obj.trail_clue_medium_riddle011", "obj.trail_clue_medium_riddle011_key")
+        }
+    },
     mainTable = rsPlayerWeightedTable(total = 128) {
         name("Barbarian (Barbarian Camp) Level 9 and 10 drops")
         6 weight "obj.bronze_axe" count 1
@@ -56,6 +63,11 @@ public val barbarianBarbarianCampDropTableLevel910: RSDropTable<Player, DropRoll
 public val barbarianBarbarianCampDropTableLevel15: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Barbarian (Barbarian Camp) Level 15 drops",
     npcs = npcs("npc.akd_barbarian_3"),
+    guaranteed = rsPlayerGuaranteedTable {
+        "obj.trail_clue_medium_riddle011_key" count 1 condition { player ->
+            player.needsClueKey("obj.trail_clue_medium_riddle011", "obj.trail_clue_medium_riddle011_key")
+        }
+    },
     mainTable = rsPlayerWeightedTable(total = 128) {
         name("Barbarian (Barbarian Camp) Level 15 drops")
         6 weight "obj.iron_axe" count 1
@@ -90,9 +102,3 @@ public val barbarianBarbarianCampDropTableLevel15: RSDropTable<Player, DropRollI
         }
     },
 )
-
-// Unmapped wiki items (Level 9 and 10 drops):
-//   - Key (medium)
-
-// Unmapped wiki items (Level 15 drops):
-//   - Key (medium)

@@ -1,16 +1,13 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.dropRollable
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.api.droptable.wearingRingOfWealth
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.onWildernessSlayerTask
@@ -27,7 +24,7 @@ public val chaosFanaticDropTable: RSDropTable<Player, DropRollItem> = RSDropTabl
         1 outOf 256 weight "obj.odium_shard1" count 1
         1 outOf 256 weight "obj.malediction_shard1" count 1
     },
-    mainTable = rsPlayerWeightedTable(total = 133) {
+    mainTable = rsPlayerWeightedTable(total = 128) {
         name("Chaos Fanatic Drops")
         5 weight "obj.cert_battlestaff" count 5
         5 weight "obj.splitbark_body" count 1
@@ -49,11 +46,9 @@ public val chaosFanaticDropTable: RSDropTable<Player, DropRollItem> = RSDropTabl
         7 weight "obj.ring_of_life" count 1
         6 weight "obj.chaos_talisman" count 1
         6 weight "obj.cert_wine_of_zamorak" count 10
-        5 weight "obj.cert_uncut_emerald" count 6 condition { player ->
-            // Drops Need Manual: 6 uncut emeralds are dropped alongside 4 uncut sapphires.
-             true
-        }
-        5 weight "obj.cert_uncut_sapphire" count 4
+        5 weight dropRollable(DropRollItem("obj.cert_uncut_emerald", 6, bonusDrops = listOf(
+            DropRollItem("obj.cert_uncut_sapphire", 4),
+        )))
         4 weight "obj.sinister_key" count 1
         2 weight "obj.cert_blankrune_high" count 250
 

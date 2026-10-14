@@ -1,11 +1,9 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
-import org.rsmod.api.droptable.dropRollable
 import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
@@ -13,6 +11,7 @@ import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.hasCompletedDiary
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -22,9 +21,8 @@ public val ironDragonDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Iron dragon Drops",
     npcs = npcs("npc.ds2_iron_dragon", "npc.iron_dragon", "npc.iron_dragon_strongholdcave", "npc.kourend_iron_dragon"),
     guaranteed = rsPlayerGuaranteedTable {
-        "obj.iron_bar" count 5 condition { player ->
-            // Drops Need Manual: Iron bars are dropped in bank note form if players have completed the Elite Karamja Diary and are killing iron dragons in the Brimhaven Dungeon.
-             true
+        "obj.iron_bar" count 5 killTransformObj { player, npc, areaChecker ->
+            if (player.hasCompletedDiary("varbit.karamja_diary_elite_complete") && areaChecker.inArea("area.brimhaven_dungeon", npc.coords)) "obj.cert_iron_bar" else null
         }
     },
     preRoll = rsPlayerPrerollTable {

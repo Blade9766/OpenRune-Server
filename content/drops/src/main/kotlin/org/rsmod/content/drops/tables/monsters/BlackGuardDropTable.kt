@@ -23,8 +23,7 @@ public val blackGuardDropTableLevel25: RSDropTable<Player, DropRollItem> = RSDro
         2 weight "obj.bronze_battleaxe" count 1
         1 weight "obj.iron_battleaxe" count 1
         7 weight "obj.bolt" count (2..12) condition { player ->
-            // Drops Need Manual: Only dropped in members worlds.
-             true
+            player.members
         }
         4 weight "obj.chaosrune" count 2
         4 weight "obj.naturerune" count 2

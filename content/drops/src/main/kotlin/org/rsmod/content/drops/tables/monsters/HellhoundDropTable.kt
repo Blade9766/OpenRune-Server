@@ -10,6 +10,7 @@ import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.isOnTreasureTrailKillStep
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.game.entity.Player
@@ -30,10 +31,9 @@ public val hellhoundDropTableLevel122: RSDropTable<Player, DropRollItem> = RSDro
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 40 weight "obj.arceuus_corpse_hellhound" count 1
         1 outOf 1 weight "obj.trail_elite_emote_exp1" count 1 condition { player ->
-            // Drops Need Manual: Elite clue scrolls and reward caskets are only dropped when completing an elite clue scroll asking you to kill a hellhound.
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         1 outOf 3 weight "obj.looting_bag" count 1 condition {
             player -> player.shouldDropLootingBag()
         }
@@ -75,10 +75,9 @@ public val hellhoundDropTableLevel136WildernessSlayerCave: RSDropTable<Player, D
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 40 weight "obj.arceuus_corpse_hellhound" count 1
         1 outOf 1 weight "obj.trail_elite_emote_exp1" count 1 condition { player ->
-            // Drops Need Manual: Elite clue scrolls and reward caskets are only dropped when completing an elite clue scroll asking you to kill a hellhound.
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         1 outOf 3 weight "obj.looting_bag" count 1 condition {
             player -> player.shouldDropLootingBag()
         }

@@ -1,7 +1,6 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
@@ -11,8 +10,8 @@ import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.hasCompletedBarbarianTraining
 import org.rsmod.content.drops.hasCompletedQuest
-import org.rsmod.content.drops.isOnQuest
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -26,9 +25,8 @@ public val brutalBlueDragonDropTable: RSDropTable<Player, DropRollItem> = RSDrop
     },
     mainTable = rsPlayerWeightedTable(total = 140) {
         name("Brutal blue dragon Drops")
-        10 weight "obj.brut_adamant_spear" count 1 condition { player ->
-            // Drops Need Manual: Players who have not completed Barbarian training will receive the spear instead of the hasta.
-             true
+        10 weight "obj.brut_adamant_spear" count 1 transformObj { player ->
+            if (player.hasCompletedBarbarianTraining()) null else "obj.adamant_spear"
         }
         10 weight "obj.adamant_spear" count 1
         7 weight "obj.adamant_platelegs" count 1
@@ -69,9 +67,8 @@ public val brutalBlueDragonDropTable: RSDropTable<Player, DropRollItem> = RSDrop
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 20 weight "obj.arceuus_corpse_dragon" count 1
         1 outOf 33 weight "obj.scaly_bluehide" count 1
-        1 outOf 32 weight "obj.frozen_tear" count 14 condition { player ->
-            // Drops Need Manual: Only dropped in Ruins of Tapoyauik
-             true
+        1 outOf 32 weight "obj.frozen_tear" count 14 killCondition { player, npc, areaChecker ->
+            areaChecker.inArea("area.tapoyauik", npc.coords)
         }
         onBuilder { brimstoneKeyRoll() }
         1 outOf 250 weight "obj.varlamore_key_half_1" count 1

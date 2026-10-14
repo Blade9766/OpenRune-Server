@@ -2,17 +2,15 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.nothing
+import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.api.droptable.rsPlayerPrerollTable
-import org.rsmod.api.droptable.dropRollable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.nothing
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.isOnSailingBountyTask
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -53,8 +51,7 @@ public val orcaDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 2 weight "obj.sailing_orca_blubber" count 1 condition { player ->
-            // Drops Need Manual: Only dropped while on an applicable bounty task.
-             true
+            player.isOnSailingBountyTask()
         }
         1 outOf 10 weight "obj.sailing_orca_teeth" count 1
         1 outOf 123 weight "obj.trail_elite_emote_exp1" count 1 transformObj { player ->

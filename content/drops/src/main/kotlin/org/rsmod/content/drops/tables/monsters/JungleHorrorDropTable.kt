@@ -2,16 +2,15 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
-import org.rsmod.api.droptable.rsPlayerTertiaryTable
-import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.api.droptable.DropRollItem
-import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.dropRollable
 import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.ringNothing
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.rsPlayerTertiaryTable
+import org.rsmod.api.droptable.rsPlayerWeightedTable
+import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -33,10 +32,9 @@ public val jungleHorrorDropTable: RSDropTable<Player, DropRollItem> = RSDropTabl
         9 weight "obj.cert_teak_logs" count 3
         3 weight "obj.mahogany_logs" count 1
         8 weight "obj.pineapple" count 2
-        5 weight "obj.bones" count 1 condition { player ->
-            // Drops Need Manual: Always dropped with big bones
-             true
-        }
+        5 weight dropRollable(DropRollItem("obj.bones", 1, bonusDrops = listOf(
+            DropRollItem("obj.big_bones", 1),
+        )))
         3 weight "obj.big_bones" count 1
         2 weight "obj.big_bones" count 3
         2 weight ringNothing()

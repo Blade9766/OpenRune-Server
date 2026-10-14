@@ -7,6 +7,7 @@ import dtx.core.ArgMap
 import dtx.core.RollResult
 import dtx.core.flatten
 import dtx.core.with
+import dtx.rs.RSDropTable
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.area.checker.AreaChecker
@@ -23,10 +24,33 @@ import org.rsmod.api.droptable.rollCount
 import org.rsmod.api.player.output.ClientScripts
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.obj.ObjRepository
+import org.rsmod.content.drops.tables.monsters.ankouDropTableFreeToPlayWorlds
+import org.rsmod.content.drops.tables.monsters.bryophytaDropTableFreeToPlayWorlds
+import org.rsmod.content.drops.tables.monsters.farmerDropTableFreeToPlayWorlds
+import org.rsmod.content.drops.tables.monsters.oborDropTableFreeToPlayWorlds
+import org.rsmod.content.drops.tables.monsters.scurriusNonMvpDropTable
 import org.rsmod.content.interfaces.collectionlog.CollectionLog
+import org.rsmod.game.damage.DamageContributor
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.PlayerList
 import org.rsmod.map.CoordGrid
+
+/** Tables rolled for every damaging player other than the hero (who rolls the npc's main table). */
+private val PARTICIPANT_DROP_TABLES: Map<String, RSDropTable<Player, DropRollItem>> =
+    mapOf("npc.rat_boss_normal" to scurriusNonMvpDropTable)
+
+private val ONCE_PER_KILL_OBJS = setOf("obj.rat_boss_spine")
+
+private val FREE_TO_PLAY_DROP_TABLES: Map<String, RSDropTable<Player, DropRollItem>> =
+    listOf(
+            ankouDropTableFreeToPlayWorlds,
+            bryophytaDropTableFreeToPlayWorlds,
+            farmerDropTableFreeToPlayWorlds,
+            oborDropTableFreeToPlayWorlds,
+        )
+        .flatMap { table -> table.npcs.map { npc -> npc to table } }
+        .toMap()
 
 @Singleton
 public class NpcDropTableKillHook
@@ -38,16 +62,47 @@ constructor(
     private val random: GameRandom,
     private val deathDropHooks: Set<NpcDeathDropHook>,
     private val receiveHooks: Set<NpcDropReceiveHook>,
+    private val players: PlayerList,
 ) : NpcDeathKillHook {
 
     override fun onKill(context: NpcDeathKillContext) {
-        val table = registry.forNpc(context.npc, areaChecker) ?: return
+        val npc = context.npc
+        val oncePerKill = mutableSetOf<String>()
+        val freeToPlayTable = FREE_TO_PLAY_DROP_TABLES[npc.type.internalName]
+        val table =
+            if (freeToPlayTable != null && !context.hero.members) {
+                freeToPlayTable
+            } else {
+                registry.forNpc(npc, areaChecker)
+            }
+        table?.let { rollFor(it, context.hero, context, oncePerKill) }
 
-        val player = context.hero
+        val participantTable = PARTICIPANT_DROP_TABLES[npc.type.internalName] ?: return
+        for (contributor in npc.damageContributions.entries()) {
+            if (contributor !is DamageContributor.ByPlayer || contributor.damage <= 0) {
+                continue
+            }
+            val participant = contributor.resolve(players) ?: continue
+            if (participant !== context.hero) {
+                rollFor(participantTable, participant, context, oncePerKill)
+            }
+        }
+    }
+
+    private fun rollFor(
+        table: RSDropTable<Player, DropRollItem>,
+        player: Player,
+        context: NpcDeathKillContext,
+        oncePerKill: MutableSet<String>,
+    ) {
         val duration = player.lootDropDuration ?: constants.lootdrop_duration
         val dropCoords = context.dropCoords
-
         val npc = context.npc
+        val spawn = { drop: DropRollItem ->
+            if (drop.obj !in ONCE_PER_KILL_OBJS || oncePerKill.add(drop.obj)) {
+                spawnDrop(drop, dropCoords, duration, player, npc, context.lootTrackerEventId)
+            }
+        }
         when (
             val result =
                 table
@@ -60,19 +115,8 @@ constructor(
                     ).flatten()
         ) {
             is RollResult.Nothing -> Unit
-            is RollResult.Single ->
-                spawnDrop(
-                    result.result,
-                    dropCoords,
-                    duration,
-                    player,
-                    npc,
-                    context.lootTrackerEventId,
-                )
-            is RollResult.ListOf ->
-                result.results.forEach { drop ->
-                    spawnDrop(drop, dropCoords, duration, player, npc, context.lootTrackerEventId)
-                }
+            is RollResult.Single -> spawn(result.result)
+            is RollResult.ListOf -> result.results.forEach(spawn)
         }
     }
 
@@ -95,7 +139,10 @@ constructor(
                 return
             }
         }
-        val obj = drop.transformObj(receiver) ?: drop.obj
+        val obj =
+            drop.killTransformObj?.invoke(receiver, npc, areaChecker)
+                ?: drop.transformObj(receiver)
+                ?: drop.obj
         val count = drop.rollCount(random)
         CollectionLog.grant(receiver, obj, count)
         if (

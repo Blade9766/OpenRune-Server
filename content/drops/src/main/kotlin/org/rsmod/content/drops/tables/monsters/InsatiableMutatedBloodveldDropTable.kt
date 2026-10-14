@@ -1,7 +1,6 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
@@ -21,9 +20,8 @@ public val insatiableMutatedBloodveldDropTable: RSDropTable<Player, DropRollItem
     npcs = npcs("npc.superior_kourend_bloodveld"),
     guaranteed = rsPlayerGuaranteedTable {
         "obj.arceuus_corpse_bloodveld" count 1
-        "obj.prif_crystal_shard" count (6..10) condition { player ->
-            // Drops Need Manual: Crystal shards are only dropped by those found within the Iorwerth Dungeon.
-             true
+        "obj.prif_crystal_shard" count (6..10) killCondition { player, npc, areaChecker ->
+            areaChecker.inArea("area.iorwerth_dungeon", npc.coords)
         }
         "obj.konar_key" count 1 killCondition {
             player, npc, areaChecker -> player.shouldDropBrimstoneKey(npc, areaChecker)

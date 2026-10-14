@@ -7,6 +7,7 @@ import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.ringNothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
+import org.rsmod.content.drops.canReceiveChampionScroll
 import org.rsmod.content.drops.clueScrollTransformObj
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
@@ -23,8 +24,7 @@ public val skeletonDropTablePlain: RSDropTable<Player, DropRollItem> = RSDropTab
             player -> player.shouldDropLootingBag()
         }
         1 outOf 5000 weight "obj.champions_challenge_skeleton" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Skeleton Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("skeleton")
         }
         1 outOf 301 weight "obj.slayer_enchantment" count 1 killCondition {
             player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
@@ -72,8 +72,7 @@ public val skeletonDropTableUnarmed: RSDropTable<Player, DropRollItem> = RSDropT
             player -> player.shouldDropLootingBag()
         }
         1 outOf 5000 weight "obj.champions_challenge_skeleton" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Skeleton Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("skeleton")
         }
         1 outOf 100 weight "obj.trail_clue_beginner" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_beginner")
@@ -111,10 +110,7 @@ public val skeletonDropTableArmed: RSDropTable<Player, DropRollItem> = RSDropTab
         3 weight "obj.coins" count 65
         2 weight "obj.coins" count 1
         8 weight ringNothing()
-        5 weight "obj.bronze_bar" count 1 condition { player ->
-            // Drops Need Manual: For the level 25 variant, only the skeleton with round shield & warhammer drops bronze bars.
-             true
-        }
+        5 weight "obj.bronze_bar" count 1
 
         20 weight SharedDropTables.herb
         2 weight SharedDropTables.gem
@@ -124,8 +120,7 @@ public val skeletonDropTableArmed: RSDropTable<Player, DropRollItem> = RSDropTab
             player -> player.shouldDropLootingBag()
         }
         1 outOf 5000 weight "obj.champions_challenge_skeleton" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Skeleton Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("skeleton")
         }
         1 outOf 100 weight "obj.trail_clue_beginner" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_beginner")

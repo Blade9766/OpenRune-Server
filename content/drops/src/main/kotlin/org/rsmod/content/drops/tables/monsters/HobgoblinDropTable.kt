@@ -38,9 +38,8 @@ public val hobgoblinDropTableUnarmedHobgoblin: RSDropTable<Player, DropRollItem>
         4 weight "obj.coins" count 62
         3 weight "obj.coins" count 42
         1 weight "obj.coins" count 1
-        1 weight "obj.village_trade_sticks" count 1 condition { player ->
-            // Drops Need Manual: Only dropped by Hobgoblins on Karamja, in place of the regular coin drops.
-             true
+        1 weight "obj.village_trade_sticks" count 1 killCondition { player, npc, areaChecker ->
+            areaChecker.inArea("area.karamja", npc.coords)
         }
         12 weight "obj.village_trade_sticks" count 5
         16 weight "obj.village_trade_sticks" count 15
@@ -90,8 +89,7 @@ public val hobgoblinDropTableArmedHobgoblin: RSDropTable<Player, DropRollItem> =
         4 weight "obj.coins" count 62
         3 weight "obj.coins" count 42
         3 weight "obj.coins" count 1 condition { player ->
-            // Drops Need Manual: Only dropped in members worlds.
-             true
+            player.members
         }
         1 weight "obj.coins" count 1
         21 weight "obj.limpwurt_root" count 1

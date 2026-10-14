@@ -9,6 +9,7 @@ import org.rsmod.api.droptable.rsPlayerPrerollTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.isOnSailingBountyTask
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -73,8 +74,7 @@ public val stingrayDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 10 weight "obj.sailing_stingray_skin" count 1 condition { player ->
-            // Drops Need Manual: Only dropped while on an applicable bounty task.
-             true
+            player.isOnSailingBountyTask()
         }
         1 outOf 2 weight "obj.sailing_stingray_fin" count 1
         1 outOf 175 weight "obj.trail_clue_hard_map001" count 1 transformObj { player ->

@@ -10,6 +10,7 @@ import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.needsFrozenDoorPiece
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -19,8 +20,7 @@ public val generalGraardorDropTable: RSDropTable<Player, DropRollItem> = RSDropT
     npcs = npcs("npc.godwars_bandos_avatar"),
     guaranteed = rsPlayerGuaranteedTable {
         "obj.nex_frozen_key_bandos" count 1 condition { player ->
-            // Drops Need Manual: Frozen key pieces are only dropped during The Frozen Door miniquest.
-             true
+            player.needsFrozenDoorPiece("bandos")
         }
     },
     mainTable = rsPlayerWeightedTable(total = 127) {
@@ -29,10 +29,7 @@ public val generalGraardorDropTable: RSDropTable<Player, DropRollItem> = RSDropT
         8 weight "obj.rune_2h_sword" count 1
         8 weight "obj.rune_platebody" count 1
         6 weight "obj.rune_pickaxe" count 1
-        32 weight "obj.coins" count (19500..20000) condition { player ->
-            // Drops Need Manual: Coins come from rolls on multiple loot tables, including GDT and RDT.
-             true
-        }
+        32 weight "obj.coins" count 19500..20000
         8 weight "obj.cert_unidentified_snapdragon" count 3
         8 weight "obj.snapdragon_seed" count 1
         8 weight "obj.4dose2restore" count 3
@@ -40,10 +37,7 @@ public val generalGraardorDropTable: RSDropTable<Player, DropRollItem> = RSDropT
         8 weight "obj.cert_coal" count 115..120
         8 weight "obj.cert_magic_logs" count 15..20
         8 weight "obj.naturerune" count 65..70
-        1 weight "obj.coins" count (20100..20600) condition { player ->
-            // Drops Need Manual: Coins come from rolls on the unique tables, including the hilt table and the godsword shard table.
-             true
-        }
+        1 weight "obj.coins" count 20100..20600
         boosted {
             1 outOf 381 separate rsPlayerWeightedTable {
                 1 weight "obj.bandos_chestplate" count 1

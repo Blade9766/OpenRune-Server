@@ -8,6 +8,7 @@ import org.rsmod.api.droptable.nothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.isOnSlayerTaskFor
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -42,8 +43,8 @@ public val araxyteDropTableLevel96: RSDropTable<Player, DropRollItem> = RSDropTa
         10 weight nothing()
     },
     tertiaries = rsPlayerTertiaryTable {
-        // Drops Need Manual (rate): The drop rate of aranea boots is 1/1,600 while on an araxyte or spider Slayer task.
-        1 outOf 4000 weight "obj.aranea_boots" count 1
+        1 outOf 4000 weight "obj.aranea_boots" count 1 killCondition { player, npc, _ -> !player.isOnSlayerTaskFor(npc) }
+        1 outOf 1600 weight "obj.aranea_boots" count 1 killCondition { player, npc, _ -> player.isOnSlayerTaskFor(npc) }
         1 outOf 121 weight "obj.trail_clue_hard_map001" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_hard_map001")
         }
@@ -81,8 +82,8 @@ public val araxyteDropTableLevel146: RSDropTable<Player, DropRollItem> = RSDropT
         10 weight nothing()
     },
     tertiaries = rsPlayerTertiaryTable {
-        // Drops Need Manual (rate): The drop rate of aranea boots is 1/800 while on an araxyte or spider Slayer task.
-        1 outOf 2000 weight "obj.aranea_boots" count 1
+        1 outOf 2000 weight "obj.aranea_boots" count 1 killCondition { player, npc, _ -> !player.isOnSlayerTaskFor(npc) }
+        1 outOf 800 weight "obj.aranea_boots" count 1 killCondition { player, npc, _ -> player.isOnSlayerTaskFor(npc) }
         1 outOf 81 weight "obj.trail_clue_hard_map001" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_hard_map001")
         }

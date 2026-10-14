@@ -5,6 +5,7 @@ import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
+import org.rsmod.content.drops.canReceiveChampionScroll
 import org.rsmod.content.drops.isOnQuest
 import org.rsmod.game.entity.Player
 
@@ -18,12 +19,10 @@ public val nazastaroolDropTable: RSDropTable<Player, DropRollItem> = RSDropTable
             player -> player.isOnQuest("quest_ragandboneman2")
         }
         1 outOf 5000 weight "obj.champions_challenge_skeleton" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Skeleton Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("skeleton")
         }
         1 outOf 5000 weight "obj.champions_challenge_zombie" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Zombie Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("zombie")
         }
     },
 )

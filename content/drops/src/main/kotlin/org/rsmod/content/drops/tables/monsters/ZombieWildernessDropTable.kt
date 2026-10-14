@@ -1,14 +1,11 @@
 package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
-import dtx.rs.areas
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.hasCompletedQuest
 import org.rsmod.content.drops.isOnQuest
 import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
@@ -36,8 +33,7 @@ public val zombieWildernessDropTable: RSDropTable<Player, DropRollItem> = RSDrop
         2 weight "obj.coins" count 1
         1 weight "obj.coins" count 18
         42 weight "obj.fishing_bait" count 3 transformObj { player ->
-            // Drops Need Manual (item): Fishing bait is replaced by dark fishing bait on members worlds.
-             null
+            if (player.members) "obj.wilderness_fishing_bait" else null
         }
         42 weight "obj.wilderness_fishing_bait" count 3
         25 weight "obj.fishing_bait" count 4

@@ -18,20 +18,14 @@ public val mournerDropTableLevel11: RSDropTable<Player, DropRollItem> = RSDropTa
     tableIdentifier = "Mourner Level 11 drops",
     npcs = npcs("npc.mourning_overpass_mourner_vis"),
     guaranteed = rsPlayerGuaranteedTable {
-        "obj.mourning_mourner_cloak" count 1 condition { player ->
-            // Drops Need Manual: The mourner pieces and mourner letters are only dropped by the mourner's near the gates of Arandar.
-             true
-        }
+        "obj.mourning_mourner_cloak" count 1
         "obj.mourning_mourner_boots" count 1
         "obj.mourning_bloody_mourner_top" count 1 condition {
             player -> player.isOnQuest("quest_mourningsendparti")
         }
         "obj.mourning_mourner_gloves" count 1
         "obj.gasmask" count 1
-        "obj.mourning_ripped_mourner_legs" count 1 condition { player ->
-            // Drops Need Manual: Mourner trousers will be ripped and need to be repaired.
-             true
-        }
+        "obj.mourning_ripped_mourner_legs" count 1
         "obj.mourning_mourner_message" count 1
     },
 )
@@ -42,10 +36,7 @@ public val mournerDropTableLevel108: RSDropTable<Player, DropRollItem> = RSDropT
     tableIdentifier = "Mourner Level 108 drops",
     npcs = npcs("npc.mourner_hideout_guard_vis"),
     guaranteed = rsPlayerGuaranteedTable {
-        "obj.mourning_mourner_cloak" count 1 condition { player ->
-            // Drops Need Manual: The mourner pieces and mourner letters are only dropped by the mourners inside the Mourner Headquarters.
-             true
-        }
+        "obj.mourning_mourner_cloak" count 1
         "obj.mourning_mourner_boots" count 1
         "obj.mourning_bloody_mourner_top" count 1 condition {
             player -> player.isOnQuest("quest_mourningsendparti")
