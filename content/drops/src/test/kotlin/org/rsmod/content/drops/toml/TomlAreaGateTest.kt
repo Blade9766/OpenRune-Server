@@ -73,6 +73,25 @@ class TomlAreaGateTest {
         assertEquals(setOf("obj.ashes"), rolledObjs(table, ELSEWHERE_TILE))
     }
 
+    @Test
+    fun `comma-separated area rolls inside any of the listed areas`() {
+        val anyOf =
+            """
+            id = "Test giant"
+            npcs = ["npc.test"]
+
+            [[tertiary]]
+            numerator = 1
+            denominator = 1
+            obj = "obj.cata_shard"
+            area = "area.catacombs_of_kourend, area.chasm_of_fire"
+            """.trimIndent()
+        val table = DropTableTomlParser.parse(mapper.readValue(anyOf), resolver)
+
+        assertEquals(setOf("obj.cata_shard"), rolledObjs(table, CHASM_TILE))
+        assertEquals(emptySet<String>(), rolledObjs(table, ELSEWHERE_TILE))
+    }
+
     private fun rolledObjs(
         table: dtx.rs.RSDropTable<Player, DropRollItem>,
         npcCoords: CoordGrid,

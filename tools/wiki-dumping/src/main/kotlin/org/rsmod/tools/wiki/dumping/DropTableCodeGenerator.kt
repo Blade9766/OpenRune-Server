@@ -39,6 +39,8 @@ data class ResolvedDropEntry(
     val brimstoneKonarBonus: Boolean = false,
     val boosted: Boolean = false,
     val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )
 
 data class ResolvedBonusDrop(
@@ -273,6 +275,10 @@ object DropTableCodeGenerator {
             specs.any { spec ->
                 spec.tertiary.any { it.ringOfWealthClueRate()?.requiresWilderness == true }
             }
+        val needsWildernessSlayerTaskChecks =
+            specs.any { spec -> spec.allResolvedEntries().any { it.wildernessSlayerTask } }
+        val needsDarkTotemImports =
+            specs.any { spec -> spec.allResolvedEntries().any { it.darkTotemPiece } }
         builder.appendFileHeader(
             packageName = packageName,
             needsSharedDropTables =
@@ -296,6 +302,8 @@ object DropTableCodeGenerator {
             needsClueScrollTransformImports = needsClueScrollTransformImports,
             needsRingOfWealthChecks = needsRingOfWealthChecks,
             needsWildernessChecks = needsWildernessChecks,
+            needsWildernessSlayerTaskChecks = needsWildernessSlayerTaskChecks,
+            needsDarkTotemImports = needsDarkTotemImports,
         )
         for ((index, spec) in specs.withIndex()) {
             if (index > 0) {
@@ -341,6 +349,8 @@ object DropTableCodeGenerator {
         needsClueScrollTransformImports: Boolean,
         needsRingOfWealthChecks: Boolean,
         needsWildernessChecks: Boolean,
+        needsWildernessSlayerTaskChecks: Boolean,
+        needsDarkTotemImports: Boolean,
     ) {
         appendLine("package $packageName")
         appendLine()
@@ -392,6 +402,12 @@ object DropTableCodeGenerator {
         }
         if (needsWildernessChecks) {
             appendLine("import org.rsmod.api.area.checker.isInWilderness")
+        }
+        if (needsWildernessSlayerTaskChecks) {
+            appendLine("import org.rsmod.content.drops.onWildernessSlayerTask")
+        }
+        if (needsDarkTotemImports) {
+            appendLine("import org.rsmod.content.drops.darkTotemPieceObj")
         }
         if (needsNothingImports) {
             if (needsNothingPadding) {
@@ -538,6 +554,8 @@ object DropTableCodeGenerator {
             brimstoneCombatRoll = brimstoneCombatRoll,
             brimstoneKonarBonus = brimstoneKonarBonus,
             area = drop.area,
+            wildernessSlayerTask = drop.wildernessSlayerTask,
+            darkTotemPiece = drop.darkTotemPiece,
         )
 
     private suspend fun resolveBonusDrops(
@@ -634,7 +652,8 @@ object DropTableCodeGenerator {
     }
 
     private fun ResolvedDropEntry.canUseItemChainSyntax(clueRollModifier: ClueTertiaryRollModifier? = null): Boolean =
-        bonusDrops.isEmpty() && (area == null || !hasPlayerModifier(clueRollModifier))
+        bonusDrops.isEmpty() && !darkTotemPiece &&
+            (killConditionBody() == null || !hasPlayerModifier(clueRollModifier))
 
     private fun ResolvedDropEntry.hasPlayerModifier(clueRollModifier: ClueTertiaryRollModifier?): Boolean =
         conditionBody(clueRollModifier) != null || wikiNotes.hasTransformItem || wikiNotes.hasCondition
@@ -1096,12 +1115,20 @@ object DropTableCodeGenerator {
     private fun ringOfWealthConditionBody(requireWealth: Boolean, requireWilderness: Boolean): String =
         "player -> ${ringOfWealthConditionExpression(requireWealth, requireWilderness)}"
 
+    private fun areaCheckExpression(area: String): String {
+        val checks = area.split(',').map { "areaChecker.inArea(${it.trim().kotlinString()}, npc.coords)" }
+        return if (checks.size == 1) checks.single() else checks.joinToString(" || ", "(", ")")
+    }
+
     private fun ResolvedDropEntry.killConditionBody(): String? {
         val checks =
             buildList {
-                area?.let { add("areaChecker.inArea(${it.kotlinString()}, npc.coords)") }
+                area?.let { add(areaCheckExpression(it)) }
                 if (requiresBrimstoneKeyCondition()) {
                     add("player.shouldDropBrimstoneKey(npc, areaChecker)")
+                }
+                if (wildernessSlayerTask) {
+                    add("player.onWildernessSlayerTask(npc, areaChecker)")
                 }
             }
         if (checks.isEmpty()) {
@@ -1173,7 +1200,9 @@ object DropTableCodeGenerator {
                 append("$indent}")
             }
             killConditionBody()?.let { append(", killCondition = { $it }") }
-            if (wikiNotes.hasTransformItem) {
+            if (darkTotemPiece) {
+                append(", transformObj = { player -> player.darkTotemPieceObj() }")
+            } else if (wikiNotes.hasTransformItem) {
                 append(", transformObj = { player ->\n")
                 if (isClueScrollBoxTransform()) {
                     append("$innerIndent player.clueScrollTransformObj(${obj.kotlinString()})\n")

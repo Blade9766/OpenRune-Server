@@ -75,6 +75,8 @@ public data class TomlChanceEntry(
     val quest: String? = null,
     val questMode: String? = null,
     val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )
 
 public data class TomlDropHooks(
@@ -87,4 +89,6 @@ public data class TomlDropHooks(
     val quest: String? = null,
     val questMode: String? = null,
     val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )

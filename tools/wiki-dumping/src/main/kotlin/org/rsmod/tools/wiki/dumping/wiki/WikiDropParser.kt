@@ -18,6 +18,8 @@ data class ParsedWikiDrop(
     val isNothing: Boolean = false,
     val isNoted: Boolean = false,
     val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )
 
 data class ParsedNpcDropTable(
@@ -636,6 +638,10 @@ object WikiDropParser {
                 parsed += parseTemplatesInSection(sectionBody, section, heading)
                 continue
             }
+            if (heading.contains("wilderness slayer", ignoreCase = true)) {
+                parsed += parseTemplatesInSection(sectionBody, section, heading).map { it.copy(wildernessSlayerTask = true) }
+                continue
+            }
             val location = otherLocationTertiaryVersion(sectionBody, primaryDropVersion)
             if (location == null) {
                 parsed += parseTemplatesInSection(sectionBody, section, heading)
@@ -751,6 +757,8 @@ object WikiDropParser {
                         ),
                 )
         }
+
+        parsed += WikiDropTableTemplates.expand(body, subsection)
 
         return parsed
     }

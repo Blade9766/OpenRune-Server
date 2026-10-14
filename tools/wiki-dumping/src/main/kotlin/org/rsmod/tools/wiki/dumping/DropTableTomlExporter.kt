@@ -249,6 +249,8 @@ private fun ResolvedDropEntry.toTomlChanceEntry(): TomlChanceEntry =
         quest = wikiNotes.questRequirements.firstOrNull()?.questKey,
         questMode = wikiNotes.questRequirements.firstOrNull()?.toTomlQuestMode(),
         area = area,
+        wildernessSlayerTask = wildernessSlayerTask,
+        darkTotemPiece = darkTotemPiece,
     )
 
 private fun ResolvedDropEntry.toTomlChanceEntries(): List<TomlChanceEntry> {

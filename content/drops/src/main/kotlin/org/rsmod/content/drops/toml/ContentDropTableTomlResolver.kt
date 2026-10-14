@@ -13,6 +13,8 @@ import org.rsmod.api.droptable.toml.TomlDropHooks
 import org.rsmod.api.droptable.wearingRingOfWealth
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropBrimstoneKey
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
@@ -85,12 +87,23 @@ constructor(
                 player.shouldDropBrimstoneKey(npc, areaChecker)
             }
         }
-        hooks.area?.let { area ->
+        if (hooks.wildernessSlayerTask) {
             val existing = config.killCondition
             config.killCondition = { player, npc, areaChecker ->
-                areaChecker.inArea(area, npc.coords) &&
+                player.onWildernessSlayerTask(npc, areaChecker) &&
                     (existing == null || existing(player, npc, areaChecker))
             }
+        }
+        hooks.area?.let { area ->
+            val areas = area.split(',').map(String::trim)
+            val existing = config.killCondition
+            config.killCondition = { player, npc, areaChecker ->
+                areas.any { areaChecker.inArea(it, npc.coords) } &&
+                    (existing == null || existing(player, npc, areaChecker))
+            }
+        }
+        if (hooks.darkTotemPiece) {
+            config.transformObj = { player -> player.darkTotemPieceObj() }
         }
         if (hooks.clueScrollBox) {
             val scrollObj = config.obj

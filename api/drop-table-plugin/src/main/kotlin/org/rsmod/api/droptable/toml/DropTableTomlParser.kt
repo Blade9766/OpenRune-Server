@@ -280,5 +280,7 @@ public object DropTableTomlParser {
             quest = quest,
             questMode = questMode,
             area = area,
+            wildernessSlayerTask = wildernessSlayerTask,
+            darkTotemPiece = darkTotemPiece,
         )
 }

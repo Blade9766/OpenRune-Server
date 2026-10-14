@@ -163,6 +163,12 @@ public object DropTableTomlWriter {
             sb.appendLine("require_wilderness = true")
         }
         hooks.area?.takeIf { it.isNotBlank() }?.let { sb.appendLine("area = ${quote(it)}") }
+        if (hooks.wildernessSlayerTask) {
+            sb.appendLine("wilderness_slayer_task = true")
+        }
+        if (hooks.darkTotemPiece) {
+            sb.appendLine("dark_totem_piece = true")
+        }
         hooks.quest?.takeIf { it.isNotBlank() }?.let { quest ->
             sb.appendLine("quest = ${quote(quest)}")
             hooks.questMode?.takeIf { it.isNotBlank() }?.let { mode ->
@@ -208,5 +214,7 @@ public object DropTableTomlWriter {
             quest = quest,
             questMode = questMode,
             area = area,
+            wildernessSlayerTask = wildernessSlayerTask,
+            darkTotemPiece = darkTotemPiece,
         )
 }
