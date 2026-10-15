@@ -1,0 +1,103 @@
+package org.rsmod.content.other.bots.core
+
+enum class BotDestination {
+    Resource,
+    SupplySource,
+    Bank,
+    Exchange,
+}
+
+sealed class TravelStatus {
+    data object Arrived : TravelStatus()
+
+    data object Moving : TravelStatus()
+
+    data class Blocked(val reason: String) : TravelStatus()
+}
+
+sealed class GatherStatus {
+    data class Working(val gained: Int) : GatherStatus()
+
+    data object InventoryFull : GatherStatus()
+
+    data object NoResource : GatherStatus()
+
+    data object NeedsSupplies : GatherStatus()
+
+    data class Failed(val reason: String) : GatherStatus()
+}
+
+sealed class SupplyOutcome {
+    data object NotNeeded : SupplyOutcome()
+
+    data class Withdrawn(val count: Int) : SupplyOutcome()
+
+    data object Unavailable : SupplyOutcome()
+
+    data object NoSpace : SupplyOutcome()
+}
+
+sealed class DepositOutcome {
+    data class Deposited(val items: Map<Int, Int>) : DepositOutcome()
+
+    data object BankFull : DepositOutcome()
+}
+
+/**
+ * The game-facing half of a bot. Every inventory/bank method is a single atomic transaction: it
+ * either fully applies or changes nothing. Methods marked "at bank" are only called after
+ * [travel] to [BotDestination.Bank] has returned [TravelStatus.Arrived].
+ */
+interface BotActor {
+    val inventoryUsed: Int
+    val inventoryCapacity: Int
+
+    /** True while the character is mid-script (delayed or holding protected access). */
+    val isBusy: Boolean
+
+    /** Missing tool, equipment or level; the bot cannot work at all until fixed. */
+    fun requirementProblem(): String?
+
+    /** True when the role consumes something (essence) the inventory has run out of. */
+    fun needsSupplies(): Boolean
+
+    fun travel(destination: BotDestination): TravelStatus
+
+    fun gather(target: BotDestination): GatherStatus
+
+    fun stopActivity()
+
+    /** At bank: deposits everything except role tools and supplies. */
+    fun depositGathered(): DepositOutcome
+
+    /** At bank: tops up role supplies (essence). */
+    fun withdrawSupplies(): SupplyOutcome
+
+    fun bankCount(itemId: Int): Long
+
+    /** At bank: withdraws up to [count] of [itemId] as notes; returns how many moved. */
+    fun withdrawNoted(itemId: Int, count: Int): Int
+
+    /** Noted plus unnoted [itemId] currently in the inventory. */
+    fun held(itemId: Int): Int
+
+    /** Removes exactly [count] of [itemId] from the inventory, or nothing. */
+    fun takeHeld(itemId: Int, count: Int): Boolean
+
+    /** Puts [count] of [itemId] back into the inventory as notes, or nothing. */
+    fun returnHeld(itemId: Int, count: Int): Boolean
+
+    /** At bank: credits items to the bank; false (and no change) when there is no room. */
+    fun creditBank(itemId: Int, count: Int): Boolean
+
+    /** At bank: credits up to [coins] to the bank and returns how many fit. */
+    fun creditBankCoins(coins: Long): Long
+
+    fun coins(): Long
+}
+
+interface BotLog {
+    fun info(bot: BotRecord, message: String)
+
+    fun warn(bot: BotRecord, message: String)
+}

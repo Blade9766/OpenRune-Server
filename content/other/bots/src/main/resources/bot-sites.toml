@@ -1,0 +1,42 @@
+# Bot work sites. Override or add sites without rebuilding by copying this file to
+# .data/bots/bot-sites.toml (sites there replace bundled sites with the same key) and running
+# ::bot sites reload. Routes start next to the bank; keep waypoints within ~40 tiles of each
+# other and away from closed doors. Use ::bot here in-game to print your tile when recording one.
+# Every coordinate below needs a walk-through on your map before you rely on it.
+
+[[site]]
+key = "varrock_west_trees"
+role = "woodcutting"
+description = "Trees and oaks south-west of Varrock, banking at Varrock West"
+resource = { x = 3166, z = 3412, radius = 12 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.logs", "obj.oak_logs"]
+resource_route = [{ x = 3182, z = 3429 }, { x = 3172, z = 3419 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+[[site]]
+key = "varrock_east_mine"
+role = "mining"
+description = "Copper, tin and iron at the south-east Varrock mine, banking at Varrock East"
+resource = { x = 3286, z = 3366, radius = 8 }
+bank = { x = 3253, z = 3420, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.copper_ore", "obj.tin_ore", "obj.iron_ore"]
+resource_route = [{ x = 3254, z = 3405 }, { x = 3266, z = 3390 }, { x = 3282, z = 3373 }]
+exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z = 3448 }, { x = 3170, z = 3474 }]
+
+[[site]]
+key = "earth_altar"
+role = "runecrafting"
+description = "Earth runes at the ruins north-east of Varrock; essence from the bank or Aubury"
+resource = { x = 3304, z = 3475, radius = 6 }
+bank = { x = 3253, z = 3420, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.earthrune"]
+altar_loc = "loc.earth_altar"
+resource_route = [{ x = 3262, z = 3428 }, { x = 3277, z = 3430 }, { x = 3292, z = 3452 }, { x = 3302, z = 3470 }]
+exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z = 3448 }, { x = 3170, z = 3474 }]
+supply_npc = "npc.aubury"
+supply_area = { x = 3253, z = 3401, radius = 5 }
+supply_route = [{ x = 3253, z = 3410 }]

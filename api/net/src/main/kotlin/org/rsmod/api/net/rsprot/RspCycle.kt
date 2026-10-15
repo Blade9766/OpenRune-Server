@@ -36,8 +36,12 @@ import org.rsmod.game.type.getInvObj
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
 
+/**
+ * Drives a player's info protocol. A `null` [session] makes the cycle headless: the avatar is
+ * still updated (so other players see the character) but nothing is sent anywhere.
+ */
 class RspCycle(
-    private val session: Session<Player>,
+    private val session: Session<Player>?,
     private val infos: Infos,
     private val regions: RegionRegistry,
 ) : ClientCycle {
@@ -80,6 +84,7 @@ class RspCycle(
     }
 
     private fun Player.queueRebuildLogin() {
+        val session = session ?: return
         val rebuild = RebuildLoginV2(x shr 3, z shr 3, worldId, playerInfo)
         session.queue(rebuild)
     }
@@ -103,6 +108,11 @@ class RspCycle(
     }
 
     override fun flush(player: Player) {
+        val session = session
+        if (session == null) {
+            release()
+            return
+        }
         val infoPackets = infos.getPackets()
         val rootPackets = infoPackets.rootWorldInfoPackets
 
@@ -221,7 +231,7 @@ class RspCycle(
             knownBuildArea = buildArea
             knownRegionUid = null
             cachedRegionZoneProvider = null
-            session.queue(rebuild)
+            session?.queue(rebuild)
             return
         }
 
@@ -244,7 +254,7 @@ class RspCycle(
         val rebuild = RebuildRegionV2(x shr 3, z shr 3, true, zoneProvider)
         knownBuildArea = buildArea
         cachedRegionZoneProvider = zoneProvider
-        session.queue(rebuild)
+        session?.queue(rebuild)
     }
 
     private fun Player.syncNpcViewDistance() {

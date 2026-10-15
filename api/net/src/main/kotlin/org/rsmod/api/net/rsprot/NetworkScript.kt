@@ -152,8 +152,10 @@ constructor(
     }
 
     private fun SessionStateEvent.Delete.closeSession() {
-        val client = player.client as? RspClient ?: return
-        client.unregister(service, player)
+        when (val client = player.client) {
+            is RspClient -> client.unregister(service, player)
+            is HeadlessClient -> client.unregister(service, player)
+        }
     }
 
     private fun SessionStateEvent.Delete.finalizeCentralSessionIfNeeded() {
@@ -161,6 +163,9 @@ constructor(
     }
 
     private fun SessionStateEvent.Login.markDbOnlineSession() {
+        if (player.characterId <= 0) {
+            return
+        }
         val startedAt = System.nanoTime()
         try {
             database.withTransactionBlocking(player.worldType.key) { connection ->
@@ -183,11 +188,17 @@ constructor(
     }
 
     private fun SessionStateEvent.Logout.notifyCentralLogout() {
+        if (player.characterId <= 0) {
+            return
+        }
         centralActivityLogWriter.logPlayerLogout(player)
         finalizeCentralSession(player)
     }
 
     private fun finalizeCentralSession(player: Player) {
+        if (player.characterId <= 0) {
+            return
+        }
         try {
             database.withTransactionBlocking(player.worldType.key) { connection ->
                 characterRepository.clearOnlineSession(connection, player.characterId)

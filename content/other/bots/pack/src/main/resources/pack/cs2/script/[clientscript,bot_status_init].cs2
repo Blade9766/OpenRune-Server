@@ -1,0 +1,2 @@
+[clientscript,bot_status_init](component $border)
+~steelborder($border, "Bot Manager", 0);

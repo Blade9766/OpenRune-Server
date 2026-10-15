@@ -29,6 +29,11 @@ constructor(
     }
 
     public fun queueLogout(player: Player) {
+        // Server-driven characters (bots) have no account row and persist themselves.
+        if (player.accountId <= 0 || player.characterId <= 0) {
+            pendingLogouts.add(QueuedLogout(player, ::handleLogout))
+            return
+        }
         accountManager.save(player, ::queueSaveResponse)
     }
 
