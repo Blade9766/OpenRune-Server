@@ -210,7 +210,7 @@ class RagAndBoneManCacheTest {
 
     private fun qualifies(specimen: Specimen, name: String): Boolean =
         when (specimen) {
-            Specimen.GIANT_RAT -> "giant" in name && "rat" in name
+            Specimen.GIANT_RAT -> "giant" in name && "rat" in name || name == "dungeon rat"
             Specimen.UNICORN -> "unicorn" in name
             Specimen.BEAR -> "bear" in name
             Specimen.RAM -> name == "ram"
