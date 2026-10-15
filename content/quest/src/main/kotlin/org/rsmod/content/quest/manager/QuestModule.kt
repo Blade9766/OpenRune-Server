@@ -6,6 +6,7 @@ import org.rsmod.api.death.NpcAttackValidateHook
 import org.rsmod.api.death.NpcDeathKillHook
 import org.rsmod.api.death.PlayerDeathCleanupHook
 import org.rsmod.api.death.PlayerDeathHook
+import org.rsmod.api.death.PlayerDeathItemHook
 import org.rsmod.api.death.PlayerRespawnHook
 import org.rsmod.api.player.hook.PlayerInvUpdateHook
 import org.rsmod.api.player.hook.PlayerLoginVarsHook
@@ -178,6 +179,13 @@ import org.rsmod.content.quest.area.lumbridge.losttribe.TreatySigning
 import org.rsmod.content.quest.area.lumbridge.sheepshearer.SheepShearerQuest
 import org.rsmod.content.quest.area.lumbridge.tearsofguthix.TearsOfGuthixQuest
 import org.rsmod.content.quest.area.lumbridge.xmarksthespot.XMarksTheSpotQuest
+import org.rsmod.content.quest.area.lunarisle.dreammentor.CyrisusCave
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamArena
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamFight
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorHooks
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorOneiromancer
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorQuest
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamTown
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarHooks
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarTravel
@@ -466,6 +474,17 @@ public class QuestModule : PluginModule() {
         addSetBinding<PlayerTeleportValidateHook>(LunarHooks::class.java)
         addSetBinding<NpcAttackValidateHook>(LunarHooks::class.java)
         addSetBinding<PlayerDeathCleanupHook>(LunarHooks::class.java)
+        bindInstance<DreamMentorQuest>()
+        bindInstance<CyrisusCave>()
+        bindInstance<DreamArena>()
+        bindInstance<DreamFight>()
+        bindInstance<DreamTown>()
+        bindInstance<DreamMentorOneiromancer>()
+        addSetBinding<PlayerRestrictionHook>(DreamMentorHooks::class.java)
+        addSetBinding<PlayerTeleportValidateHook>(DreamMentorHooks::class.java)
+        addSetBinding<NpcAttackValidateHook>(DreamMentorHooks::class.java)
+        addSetBinding<PlayerDeathCleanupHook>(DreamMentorHooks::class.java)
+        addSetBinding<PlayerDeathItemHook>(DreamMentorHooks::class.java)
         bindInstance<FamilyCrestQuest>()
         bindInstance<Dimintheis>()
         bindInstance<Caleb>()

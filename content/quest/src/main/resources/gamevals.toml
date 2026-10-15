@@ -769,6 +769,11 @@ witchshouse_garden_watch = 133
 # Lunar Diplomacy: the Dream World rivals (the woodcutter and the racer), and the fight with Me.
 lunar_dream_rival = 134
 lunar_me_fight = 135
+# Dream Mentor: the fight in Cyrisus's dream, and his rest in the mine while the player is near.
+dream_mentor_fight = 154
+dream_mentor_cave = 155
+# Dream Mentor's Spellbook Swap: how long a borrowed spellbook lasts.
+dream_mentor_spellbook_swap = 156
 # Underground Pass: Iban reaching across his own temple for whoever walks into it.
 upass_temple = 136
 # Death to the Dorgeshuun: Zanik following the player, and Zanik riding in her crate.

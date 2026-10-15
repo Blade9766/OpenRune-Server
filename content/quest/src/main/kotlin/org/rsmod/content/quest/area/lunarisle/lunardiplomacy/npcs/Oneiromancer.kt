@@ -4,6 +4,7 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorOneiromancer
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.DreamChallenge
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest
 import org.rsmod.content.quest.area.lunarisle.lunardiplomacy.LunarDiplomacyQuest.Companion.ASTRAL_REWARD
@@ -38,6 +39,7 @@ constructor(
     private val lunar: LunarDiplomacyQuest,
     private val travel: LunarTravel,
     private val objRepo: ObjRepository,
+    private val dreamMentor: DreamMentorOneiromancer,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1(ONEIROMANCER) {
@@ -51,7 +53,7 @@ constructor(
     private suspend fun Dialogue.talk() {
         val stage = lunar.stage(player)
         when {
-            lunar.isComplete(player) -> afterQuest()
+            lunar.isComplete(player) || stage == 0 && dreamMentor.hasTopic(player) -> laterVisit()
             stage < STAGE_AT_LUNAR_ISLE -> {
                 chatPlayer(happy, "Hello.")
                 chatNpc(neutral, "Hello, traveller. I sense you have a long way still to go.")
@@ -393,6 +395,19 @@ constructor(
         chatPlayer(happy, "Thanks!")
         access.invAddOrDrop(objRepo, ASTRAL_RUNE, ASTRAL_REWARD)
         lunar.complete(access)
+    }
+
+    private suspend fun Dialogue.laterVisit() {
+        if (!dreamMentor.hasTopic(player)) {
+            afterQuest()
+            return
+        }
+        chatNpc(happy, "Hello there. What would you like to talk about?")
+        when (choice3("The state of the island.", 1, "Cyrisus.", 2, "Nothing.", 3)) {
+            1 -> afterQuest()
+            2 -> with(dreamMentor) { cyrisus() }
+            else -> chatPlayer(neutral, "Nothing, thanks.")
+        }
     }
 
     private suspend fun Dialogue.afterQuest() {

@@ -5,6 +5,7 @@ import jakarta.inject.Inject
 import kotlin.collections.any
 import kotlin.contracts.contract
 import org.rsmod.api.combat.commons.magic.MagicSpell
+import org.rsmod.api.combat.commons.magic.SpellCastHook
 import org.rsmod.api.combat.commons.magic.SpellQuestRequirement
 import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.config.refs.BaseParams
@@ -37,6 +38,7 @@ constructor(
     private val staffSubs: StaffSubstituteRepository,
     private val runeSubs: RuneSubstituteRepository,
     private val questRequirements: Set<SpellQuestRequirement>,
+    private val castHooks: Set<SpellCastHook>,
 ) {
     private val Player.spellbook by enumVarBit<Spellbook>("varbit.spellbook")
 
@@ -63,7 +65,11 @@ constructor(
         if (accessFailure != null) {
             return accessFailure
         }
-        return delReqs(player, spell)
+        val result = delReqs(player, spell)
+        if (result is CastResult.Success) {
+            castHooks.forEach { it.onCast(player, spell) }
+        }
+        return result
     }
 
     /**

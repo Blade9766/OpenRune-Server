@@ -158,7 +158,7 @@ constructor(
         objbox(ring.obj, "You've found a lunar ring!")
     }
 
-    private companion object {
+    internal companion object {
         private var Player.spellbook by enumVarBit<Spellbook>("varbit.spellbook")
         private var Player.lampOilStill by intVarBit("varbit.lamp_oil_still_state")
 
