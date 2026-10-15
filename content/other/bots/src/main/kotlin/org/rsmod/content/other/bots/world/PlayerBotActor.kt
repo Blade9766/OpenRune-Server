@@ -263,7 +263,7 @@ class PlayerBotActor(
 
     override fun takeHeld(itemId: Int, count: Int): Boolean {
         val noted = notedId(itemId)
-        val notedHeld = if (noted != null) player.inv.objs.sumOf { if (it?.id == noted) it.count else 0 } else 0
+        val notedHeld = if (noted != null) player.inv.objs.sumOf { if (it != null && it.id == noted) it.count else 0 } else 0
         val unnotedHeld = player.inv.objs.sumOf { if (it?.id == itemId) it.count else 0 }
         if (notedHeld.toLong() + unnotedHeld < count) {
             return false
