@@ -142,6 +142,8 @@ class FakeActor(
 
     override fun held(itemId: Int): Int = (inv[itemId] ?: 0) + (inv[itemId + NOTE_OFFSET] ?: 0)
 
+    override fun heldNoted(itemId: Int): Int = inv[itemId + NOTE_OFFSET] ?: 0
+
     override fun takeHeld(itemId: Int, count: Int): Boolean {
         if (held(itemId) < count) {
             return false

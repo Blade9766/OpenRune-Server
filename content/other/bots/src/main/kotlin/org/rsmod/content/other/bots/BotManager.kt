@@ -33,13 +33,20 @@ constructor(
 ) {
     private val logger = InlineLogger()
     private var nextAttempt = 0
+    private var halted = false
 
     var coordinator: BotCoordinator? = null
         private set
 
     fun tick() {
+        if (halted) return
         val coordinator = coordinator ?: start() ?: return
-        coordinator.tick(mapClock.cycle)
+        try {
+            coordinator.tick(mapClock.cycle)
+        } catch (e: Exception) {
+            halted = true
+            logger.error(e) { "Bot coordinator failed; bots are halted until restart." }
+        }
     }
 
     fun botIdOf(player: Player): Long? = world.botIdOf(player)

@@ -39,6 +39,7 @@ class BotCoordinator(
     private val records = LinkedHashMap<Long, BotRecord>()
     private val live = LinkedHashMap<Long, LiveBot>()
     private val stopping = LinkedHashMap<Long, StopRequest>()
+    private var shuttingDown = false
     private val exits = HashMap<Long, List<Long>>()
     private val spawnRetryAt = HashMap<Long, Int>()
     private val recovering = HashSet<Long>()
@@ -248,7 +249,7 @@ class BotCoordinator(
     }
 
     fun tick(cycle: Int) {
-        if (!loaded) {
+        if (!loaded || shuttingDown) {
             return
         }
         processStops()
@@ -279,6 +280,9 @@ class BotCoordinator(
      * getting removed is parked in [BotState.Error] instead of being respawned forever.
      */
     fun onExternalExit(id: Long, save: BotSave?, shutdown: Boolean) {
+        if (shutdown) {
+            shuttingDown = true
+        }
         val bot = live.remove(id) ?: return
         stopping.remove(id)
         bot.brain.stop(if (shutdown) "Server shutting down" else "Removed from the world")
@@ -302,9 +306,25 @@ class BotCoordinator(
         log.warn(record, "left the world ($reason)${if (parked) "; parked in error" else ""}")
     }
 
+    /**
+     * Saves every live bot without touching the world: this runs on the shutdown hook, off the
+     * game thread, where the engine and network layer reject player changes.
+     */
     fun shutdown() {
-        for (id in live.keys.toList()) {
-            despawn(id, "Server shutting down", keepState = false)
+        shuttingDown = true
+        for ((id, bot) in live.toList()) {
+            bot.brain.stop("Server shutting down")
+            val current = bot.brain.record
+            val record =
+                current.copy(
+                    save = spawner.snapshot(id) ?: current.save,
+                    state = BotState.Disabled,
+                    updatedAt = clock(),
+                )
+            live.remove(id)
+            records[id] = record
+            write(BotWrite(bots = listOf(record)))
+            log.info(record, "saved for shutdown")
         }
     }
 

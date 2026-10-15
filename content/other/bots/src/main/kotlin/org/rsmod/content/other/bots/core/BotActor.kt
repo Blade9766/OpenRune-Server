@@ -81,6 +81,9 @@ interface BotActor {
     /** Noted plus unnoted [itemId] currently in the inventory. */
     fun held(itemId: Int): Int
 
+    /** Noted [itemId] currently in the inventory. */
+    fun heldNoted(itemId: Int): Int
+
     /** Removes exactly [count] of [itemId] from the inventory, or nothing. */
     fun takeHeld(itemId: Int, count: Int): Boolean
 

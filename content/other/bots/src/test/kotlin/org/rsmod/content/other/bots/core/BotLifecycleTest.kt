@@ -57,6 +57,25 @@ class BotLifecycleTest {
     }
 
     @Test
+    fun `a bot re-enabled with unnoted gathered items keeps gathering instead of listing them`() {
+        val world = BotTestHarness()
+        val id = world.readyBot()
+        world.coordinator.setMaster(true)
+        world.coordinator.enable(id)
+        world.tickUntil { world.live(id) { it.held(LOGS) >= 5 } }
+        world.coordinator.disable(id)
+        world.tickUntil { !world.coordinator.isLive(id) }
+
+        world.coordinator.enable(id)
+        world.tickUntil { world.coordinator.isLive(id) }
+        world.tick(20)
+
+        assertTrue(world.state(id) in setOf(BotState.TravelToResource, BotState.Gathering))
+        assertTrue(world.offers(id).isEmpty())
+        assertTrue(world.actor(id).held(LOGS) >= 5)
+    }
+
+    @Test
     fun `master toggle off removes all bots and the active cap is respected`() {
         val world = BotTestHarness()
         val ids = List(3) { world.readyBot() }

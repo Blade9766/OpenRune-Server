@@ -304,13 +304,13 @@ constructor(
         setVar(player, GeConfig.VARBIT_TYPE, type.clientId)
         setVar(player, GeConfig.VARP_ITEM, item)
         setVar(player, GeConfig.VARBIT_QUANTITY, quantity)
-        setVar(player, GeConfig.VARBIT_PRICE, price)
+        setVar(player, GeConfig.VARP_PRICE, price)
     }
 
     private fun clearSetup(player: Player) {
         setVar(player, GeConfig.VARP_ITEM, -1)
         setVar(player, GeConfig.VARBIT_QUANTITY, 0)
-        setVar(player, GeConfig.VARBIT_PRICE, 0)
+        setVar(player, GeConfig.VARP_PRICE, 0)
     }
 
     /** The slot an offer is being set up in, or null when the setup panel is not showing. */
@@ -362,7 +362,7 @@ constructor(
         setVar(player, GeConfig.VARP_LAST_SEARCHED, item.id)
         setVar(player, GeConfig.VARP_ITEM, item.id)
         setVar(player, GeConfig.VARBIT_QUANTITY, 1)
-        setVar(player, GeConfig.VARBIT_PRICE, items.guidePrice(item.id))
+        setVar(player, GeConfig.VARP_PRICE, items.guidePrice(item.id))
     }
 
     /** "Offer" on an inventory item: sell it, in the open sell setup or the first free slot. */
@@ -422,12 +422,12 @@ constructor(
     }
 
     fun adjustPrice(player: Player, delta: Int) {
-        val current = player.vars[GeConfig.VARBIT_PRICE]
+        val current = player.vars[GeConfig.VARP_PRICE]
         setPrice(player, current.toLong() + delta)
     }
 
     fun adjustPricePercent(player: Player, percent: Int) {
-        val current = player.vars[GeConfig.VARBIT_PRICE].toLong()
+        val current = player.vars[GeConfig.VARP_PRICE].toLong()
         setPrice(player, current + current * percent / 100)
     }
 
@@ -444,7 +444,7 @@ constructor(
     fun setPrice(player: Player, value: Long) {
         setupSlot(player) ?: return
         setupItem(player) ?: return
-        setVar(player, GeConfig.VARBIT_PRICE, value.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt())
+        setVar(player, GeConfig.VARP_PRICE, value.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt())
     }
 
     suspend fun enterPrice(access: ProtectedAccess) {
@@ -471,7 +471,7 @@ constructor(
         }
         val type = setupType(player)
         val quantity = player.vars[GeConfig.VARBIT_QUANTITY]
-        val price = player.vars[GeConfig.VARBIT_PRICE]
+        val price = player.vars[GeConfig.VARP_PRICE]
         if (quantity <= 0 || price <= 0) {
             player.mes("Set a quantity and a price for your offer first.")
             return
@@ -516,7 +516,7 @@ constructor(
         if (setupType(player) == GeOfferType.Sell) {
             return max(1, available(player, item))
         }
-        val price = max(1, player.vars[GeConfig.VARBIT_PRICE])
+        val price = max(1, player.vars[GeConfig.VARP_PRICE])
         return max(1, Int.MAX_VALUE / price)
     }
 

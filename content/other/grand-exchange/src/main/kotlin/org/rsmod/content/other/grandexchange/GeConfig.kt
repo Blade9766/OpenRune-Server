@@ -163,7 +163,7 @@ object GeConfig {
     const val VARBIT_SELECTED_SLOT = "varbit.ge_selectedslot"
     const val VARBIT_TYPE = "varbit.ge_newoffer_type"
     const val VARBIT_QUANTITY = "varbit.ge_newoffer_quantity"
-    const val VARBIT_PRICE = "varbit.ge_newoffer_price"
+    const val VARP_PRICE = "varp.ge_newoffer_price"
     const val VARBIT_CUSTOM_PERCENT = "varbit.ge_price_custom"
     const val VARBIT_TAX_RATE = "varbit.ge_transmit_taxrate"
 

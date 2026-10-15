@@ -261,6 +261,11 @@ class PlayerBotActor(
         return player.inv.objs.sumOf { if (it != null && (it.id == itemId || it.id == noted)) it.count else 0 }
     }
 
+    override fun heldNoted(itemId: Int): Int {
+        val noted = notedId(itemId) ?: return 0
+        return player.inv.objs.sumOf { if (it?.id == noted) it.count else 0 }
+    }
+
     override fun takeHeld(itemId: Int, count: Int): Boolean {
         val noted = notedId(itemId)
         val notedHeld = if (noted != null) player.inv.objs.sumOf { if (it != null && it.id == noted) it.count else 0 } else 0

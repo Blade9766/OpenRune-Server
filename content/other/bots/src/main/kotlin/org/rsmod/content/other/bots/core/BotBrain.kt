@@ -115,7 +115,7 @@ class BotBrain(
             return
         }
         val saleItem = saleItemId()
-        if (saleItem != null && actor.held(saleItem) > 0) {
+        if (saleItem != null && actor.heldNoted(saleItem) > 0) {
             val next = if (saleAllowed(now)) BotState.TravelToExchange else BotState.TravelToBank
             transition(next, cycle, "Carrying items for sale")
             return

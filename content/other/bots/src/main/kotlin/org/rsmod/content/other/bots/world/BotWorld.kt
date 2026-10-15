@@ -117,6 +117,8 @@ constructor(
         player.userId = id
         player.accountHash = id
         player.userHash = id
+        player.uuid = id
+        player.observerUUID = id
         player.worldType = WorldType.DEFAULT
         player.username = "bot.${record.id}"
         player.displayName = record.name
