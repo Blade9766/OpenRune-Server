@@ -95,6 +95,10 @@ class PlayerBotActor(
         if (player.coords == lastCoords) {
             if (++stillTicks >= STUCK_TICKS) {
                 stillTicks = 0
+                if (world.openNearbyDoor(player)) {
+                    reroutes++
+                    return TravelStatus.Moving
+                }
                 if (++reroutes > MAX_REROUTES) {
                     val at = player.coords
                     resetTravel()
@@ -174,7 +178,7 @@ class PlayerBotActor(
 
     /** Death respawns and stray teleports leave a bot where no route can reach its site. */
     private fun isOffSite(): Boolean {
-        if (behaviour.isAt(player, BotDestination.SupplySource)) {
+        if (behaviour.isAt(player, BotDestination.Resource) || behaviour.isAt(player, BotDestination.SupplySource)) {
             return false
         }
         val anchors = allChains().flatten() + site.bank.center()
@@ -189,6 +193,11 @@ class PlayerBotActor(
     }
 
     override fun gather(target: BotDestination): GatherStatus {
+        if (isOffSite()) {
+            resetTravel()
+            world.telejump(player, site.bank.center())
+            return GatherStatus.NeedsSupplies
+        }
         val current = countByItem(player.inv)
         val arrived = gatherBaseline?.let { produced(it, current, target) } ?: 0
         if (arrived > 0) {
@@ -252,7 +261,9 @@ class PlayerBotActor(
         }
         for (id in supplies) {
             val slot = bank.indices.firstOrNull { bank[it]?.id == id } ?: continue
-            val count = minOf(free, bank[slot]!!.count)
+            val wanted = behaviour.supplyAmount(free)
+            val stackable = ServerCacheManager.getItem(id)?.stackable == true
+            val count = minOf(if (stackable) wanted else minOf(wanted, free), bank[slot]!!.count)
             val result = player.invTransfer(from = bank, fromSlot = slot, count = count, into = player.inv)
             if (result.success) {
                 gatherBaseline = null

@@ -8,6 +8,7 @@ dependencies {
     implementation(projects.api.net)
     implementation(projects.api.registry)
     implementation(projects.content.interfaces.bank)
+    implementation(projects.content.other.cheatMenu)
     implementation(projects.content.other.grandExchange)
     implementation(projects.content.quest)
     implementation(projects.content.skills.mining)

@@ -51,7 +51,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
     }
 
     private fun create(player: Player, coordinator: BotCoordinator, args: List<String>) {
-        val role = BotRoleType.of(args[0]) ?: return player.mes("Roles: woodcutting, mining, runecrafting.")
+        val role = BotRoleType.of(args[0]) ?: return player.mes("Roles: ${BotRoleType.entries.joinToString { it.key }}.")
         val site = BotSites[args[1]] ?: return player.mes("Unknown site '${args[1]}'. Use ::bot sites.")
         if (site.roleType != role) {
             return player.mes("Site ${site.key} is a ${site.role} site.")

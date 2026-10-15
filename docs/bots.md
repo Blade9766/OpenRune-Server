@@ -41,7 +41,7 @@ the client, so names are matched case-insensitively.
 ::bot                                   open the status interface
 ::bot list                              one line per bot
 ::bot status <bot>                      details (config, totals, last error)
-::bot create <role> <site> [name]       role: woodcutting | mining | runecrafting
+::bot create <role> <site> [name]       role: woodcutting | mining | runecrafting | fishing | thieving | combat
 ::bot enable|disable <bot>
 ::bot remove <bot> [force]              force also cancels open offers (forfeits them)
 ::bot clear <bot>                       clear an ERROR so it can run again
@@ -161,6 +161,32 @@ The pathfinder walks between waypoints, so keep them within ~40 tiles of each
 other and off closed doors. **The bundled coordinates are a starting point and
 must be walked in-game before use.**
 
+Fishing, thieving and combat sites also use:
+
+| Field | Meaning |
+|---|---|
+| `targets` | What the bot clicks: `npc.x` / `loc.x` types, `content.x` groups, or `name:Display name` |
+| `target_op` | Which op of a target (1-5): fishing spot op, `2` for a stall's Steal-from or an npc's Attack |
+| `tools` | The bot needs one of these carried or worn; never banked |
+| `supplies` | Withdrawn from the bank before a trip, best first (bait, feathers, food) |
+| `supply_amount` | How many supplies to carry; `0` fills the free inventory |
+
+Roles:
+
+- **fishing**: clicks the nearest target spot; bait/feathers come from `supplies`.
+  `barbarian_village_fly` (fly fishing, Edgeville bank) gives trout and salmon.
+- **thieving**: steals from the nearest stocked stall and waits out emptied ones.
+  `varrock_tea_stall` (Varrock East bank) gives cups of tea.
+- **combat**: attacks the nearest target not already in combat, eats `supplies`
+  below 50% Hitpoints, heads to the bank to restock when out of food, and picks
+  up the site's `products` between fights. Use cheap gear: a bot that dies keeps
+  only what the normal death rules allow. `barbarian_village_fighters` (Edgeville
+  bank) collects bones.
+
+A bot that is stuck on its route clicks "Open" on a closed door or gate within
+two tiles before rerouting. Each bot gets a random body type, clothing and
+colours, seeded by its id so it keeps the same look across restarts.
+
 ## States
 
 `DISABLED, IDLE, TRAVEL_TO_RESOURCE, GATHERING, TRAVEL_TO_BANK, BANKING,
@@ -238,8 +264,8 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
   be compiled or run in the environment it was written in; `core/`, the file
   store, the exchange adapter and the Grand Exchange book were compiled and
   unit-tested. Expect a first in-game shakedown.
-- All three bundled sites (`varrock_west_trees`, `varrock_east_mine`, `earth_altar` with bank essence) ran in game
-  (2026-10-15); walk any new site first. Routes cannot cross closed doors.
+- Every bundled site ran in game on 2026-10-15; walk any new site first. Doors and
+  gates are only opened when the bot gets stuck right next to one.
 - A bot more than 64 tiles from its bank and every route point (after a death respawn
   or any teleport) telejumps back to its bank instead of failing to path.
 - Bots are restored with at least 10 Hitpoints.

@@ -40,3 +40,47 @@ exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z 
 supply_npc = "npc.aubury"
 supply_area = { x = 3253, z = 3401, radius = 5 }
 supply_route = [{ x = 3253, z = 3410 }]
+
+[[site]]
+key = "barbarian_village_fly"
+role = "fishing"
+description = "Trout and salmon by fly fishing at Barbarian Village, banking at Edgeville"
+resource = { x = 3104, z = 3428, radius = 8 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.raw_trout", "obj.raw_salmon"]
+targets = ["content.lure_bait_fishing_spot"]
+target_op = 1
+tools = ["obj.fly_fishing_rod"]
+supplies = ["obj.feather"]
+supply_amount = 1000
+resource_route = [{ x = 3094, z = 3470 }, { x = 3097, z = 3445 }, { x = 3104, z = 3432 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "varrock_tea_stall"
+role = "thieving"
+description = "Tea from the stall in east Varrock, banking at Varrock East"
+resource = { x = 3269, z = 3411, radius = 4 }
+bank = { x = 3253, z = 3420, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.cup_of_tea"]
+targets = ["loc.tea_stall"]
+target_op = 2
+resource_route = [{ x = 3262, z = 3416 }]
+exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z = 3448 }, { x = 3170, z = 3474 }]
+
+[[site]]
+key = "barbarian_village_fighters"
+role = "combat"
+description = "Barbarians in Barbarian Village for their bones, banking at Edgeville"
+resource = { x = 3081, z = 3418, radius = 10 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.bones"]
+targets = ["name:Barbarian"]
+target_op = 2
+supplies = ["obj.shark", "obj.lobster", "obj.swordfish", "obj.salmon", "obj.trout", "obj.bread"]
+supply_amount = 8
+resource_route = [{ x = 3094, z = 3470 }, { x = 3092, z = 3445 }, { x = 3084, z = 3426 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]

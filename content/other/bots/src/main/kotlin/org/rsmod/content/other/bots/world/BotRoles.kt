@@ -4,7 +4,10 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ObjectServerType
+import org.rsmod.api.npc.isInCombat
+import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.baseRunecraftingLvl
+import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.miningLvl
 import org.rsmod.api.player.stat.woodcuttingLvl
 import org.rsmod.api.table.runecrafting.RunecraftingAltarsRow
@@ -37,6 +40,9 @@ interface BotRoleBehaviour {
     /** Item ids withdrawn from the bank as supplies, best first. */
     fun supplyIds(): List<Int> = emptyList()
 
+    /** How many of a supply to carry when the inventory has [free] slots. */
+    fun supplyAmount(free: Int): Int = free
+
     fun isAt(player: Player, destination: BotDestination): Boolean = false
 
     /** Takes one step out of an instance-like area (altar, essence mine); true while escaping. */
@@ -50,6 +56,10 @@ interface BotRoleBehaviour {
                 BotRoleType.Woodcutting -> WoodcuttingBehaviour(site, world)
                 BotRoleType.Mining -> MiningBehaviour(site, world)
                 BotRoleType.Runecrafting -> RunecraftingBehaviour(site, essence, world)
+                BotRoleType.Fishing -> FishingBehaviour(site, world)
+                BotRoleType.Thieving -> StallThievingBehaviour(site, world)
+                BotRoleType.Combat -> CombatBehaviour(site, world)
+                BotRoleType.Slayer -> UnsupportedBehaviour(role)
             }
     }
 }
@@ -299,6 +309,175 @@ class RunecraftingBehaviour(
         private const val RUNE_MYSTERIES = "quest_runemysteries"
         private val ESSENCE_MINE = CoordGrid(2910, 4832)
     }
+}
+
+/** A site's [BotSite.targets]: exact `npc.`/`loc.` types, `content.` groups and `name:` names. */
+private class SiteTargets(names: List<String>, exactType: RSCMType) {
+    private val exact: Set<Int> = resolveIds(names.filterNot { it.startsWith(CONTENT) || it.startsWith(NAME) }, exactType)
+    private val groups: Set<Int> = resolveIds(names.filter { it.startsWith(CONTENT) }, RSCMType.CONTENT)
+    private val displayNames: Set<String> = names.filter { it.startsWith(NAME) }.map { it.removePrefix(NAME).lowercase() }.toSet()
+
+    fun matches(typeId: Int, contentGroup: Int, name: String): Boolean =
+        typeId in exact || contentGroup in groups || name.lowercase() in displayNames
+
+    private companion object {
+        private const val CONTENT = "content."
+        private const val NAME = "name:"
+    }
+}
+
+private fun resolveIds(names: List<String>, type: RSCMType): Set<Int> =
+    names.mapNotNull { runCatching { it.asRSCM(type) }.getOrNull() }.toSet()
+
+private fun Player.carriesAny(ids: Set<Int>): Boolean =
+    inv.objs.any { it != null && it.id in ids } || worn.objs.any { it != null && it.id in ids }
+
+private fun Player.isActing(): Boolean = interaction != null || weakQueueList.isNotEmpty
+
+private fun interactionOp(op: Int): InteractionOp =
+    when (op) {
+        2 -> InteractionOp.Op2
+        3 -> InteractionOp.Op3
+        4 -> InteractionOp.Op4
+        5 -> InteractionOp.Op5
+        else -> InteractionOp.Op1
+    }
+
+/**
+ * Clicks the nearest target npc in the resource area (fishing spots). Fishing keeps going through
+ * a weak queue rather than the interaction, so a queued catch counts as still working.
+ */
+class FishingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+    private val targets by lazy { SiteTargets(site.targets, RSCMType.NPC) }
+    private val toolIds by lazy { resolveIds(site.tools, RSCMType.OBJ) }
+    private val supplyIds by lazy { resolveIds(site.supplies, RSCMType.OBJ) }
+
+    override fun requirementProblem(player: Player): String? =
+        if (toolIds.isNotEmpty() && !player.carriesAny(toolIds)) "needs one of ${site.tools}" else null
+
+    override fun keep(itemId: Int): Boolean = itemId in toolIds || itemId in supplyIds
+
+    override fun needsSupplies(player: Player): Boolean =
+        supplyIds.isNotEmpty() && !player.carriesAny(supplyIds)
+
+    override fun supplyIds(): List<Int> = supplyIds.toList()
+
+    override fun supplyAmount(free: Int): Int = if (site.supplyAmount > 0) site.supplyAmount else free
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        destination == BotDestination.Resource && site.resource.contains(player.coords)
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus {
+        if (player.inv.isFull()) {
+            return GatherStatus.InventoryFull
+        }
+        if (needsSupplies(player)) {
+            return GatherStatus.NeedsSupplies
+        }
+        if (player.isActing()) {
+            return GatherStatus.Working(0)
+        }
+        val spot =
+            world
+                .findNpcs(site.resource.center(), site.resource.radius) { targets.matches(it.type.id, it.type.contentGroup, it.type.name) }
+                .minByOrNull { it.coords.chebyshevDistance(player.coords) }
+                ?: return GatherStatus.NoResource
+        return if (world.opNpc(player, spot, interactionOp(site.targetOp))) GatherStatus.Working(0) else GatherStatus.NoResource
+    }
+}
+
+/** Steals from the nearest stocked stall loc in the resource area; emptied stalls are skipped. */
+class StallThievingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+    private val targets by lazy { SiteTargets(site.targets, RSCMType.LOC) }
+
+    override fun requirementProblem(player: Player): String? = null
+
+    override fun keep(itemId: Int): Boolean = false
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        destination == BotDestination.Resource && site.resource.contains(player.coords)
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus {
+        if (player.inv.isFull()) {
+            return GatherStatus.InventoryFull
+        }
+        if (player.isActing()) {
+            return GatherStatus.Working(0)
+        }
+        val (loc, type) =
+            world
+                .findLocs(site.resource.center(), site.resource.radius) { targets.matches(it.id, it.contentGroup, it.name) }
+                .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(player.coords) }
+                ?: return GatherStatus.NoResource
+        return if (world.opLoc(player, loc, type, interactionOp(site.targetOp))) GatherStatus.Working(0) else GatherStatus.NoResource
+    }
+}
+
+/**
+ * Fights target npcs in the resource area. Below [EAT_PERCENT] hitpoints it eats, and with no food
+ * left it heads back to the bank to restock. Between fights it picks up the site's products.
+ */
+class CombatBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+    private val targets by lazy { SiteTargets(site.targets, RSCMType.NPC) }
+    private val toolIds by lazy { resolveIds(site.tools, RSCMType.OBJ) }
+    private val foodIds by lazy { resolveIds(site.supplies, RSCMType.OBJ) }
+    private val lootIds by lazy { resolveIds(site.products, RSCMType.OBJ) }
+
+    override fun requirementProblem(player: Player): String? =
+        if (toolIds.isNotEmpty() && !player.carriesAny(toolIds)) "needs one of ${site.tools}" else null
+
+    override fun keep(itemId: Int): Boolean = itemId in toolIds || itemId in foodIds
+
+    override fun needsSupplies(player: Player): Boolean = foodIds.isNotEmpty() && !player.carriesAny(foodIds)
+
+    override fun supplyIds(): List<Int> = foodIds.toList()
+
+    override fun supplyAmount(free: Int): Int = if (site.supplyAmount > 0) minOf(site.supplyAmount, free) else free
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        destination == BotDestination.Resource && site.resource.contains(player.coords)
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus {
+        if (foodIds.isNotEmpty() && player.hitpoints * 100 < player.baseHitpointsLvl * EAT_PERCENT) {
+            val food = player.inv.indices.firstOrNull { player.inv[it]?.id in foodIds } ?: return GatherStatus.NeedsSupplies
+            world.eat(player, food)
+            return GatherStatus.Working(0)
+        }
+        if (player.inv.isFull()) {
+            return GatherStatus.InventoryFull
+        }
+        if (player.isActing()) {
+            return GatherStatus.Working(0)
+        }
+        val area = site.resource
+        val loot =
+            world
+                .findObjs(player, area.center(), area.radius) { it.type in lootIds }
+                .minByOrNull { it.coords.chebyshevDistance(player.coords) }
+        if (loot != null) {
+            world.pickUp(player, loot)
+            return GatherStatus.Working(0)
+        }
+        val npc =
+            world
+                .findNpcs(area.center(), area.radius) { targets.matches(it.type.id, it.type.contentGroup, it.type.name) && !it.isInCombat() }
+                .minByOrNull { it.coords.chebyshevDistance(player.coords) }
+                ?: return GatherStatus.NoResource
+        return if (world.opNpc(player, npc, interactionOp(site.targetOp))) GatherStatus.Working(0) else GatherStatus.NoResource
+    }
+
+    private companion object {
+        private const val EAT_PERCENT = 50
+    }
+}
+
+private class UnsupportedBehaviour(private val role: BotRoleType) : BotRoleBehaviour {
+    override fun requirementProblem(player: Player): String = "the ${role.key} role is not available yet"
+
+    override fun keep(itemId: Int): Boolean = false
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus =
+        GatherStatus.Failed("the ${role.key} role is not available yet")
 }
 
 private fun nameOf(itemId: Int): String = ServerCacheManager.getItem(itemId)?.internalName.orEmpty()

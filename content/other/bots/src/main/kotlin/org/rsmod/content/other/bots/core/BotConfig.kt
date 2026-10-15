@@ -17,7 +17,11 @@ enum class BotState(val label: String) {
 enum class BotRoleType(val key: String) {
     Woodcutting("woodcutting"),
     Mining("mining"),
-    Runecrafting("runecrafting");
+    Runecrafting("runecrafting"),
+    Fishing("fishing"),
+    Thieving("thieving"),
+    Combat("combat"),
+    Slayer("slayer");
 
     companion object {
         fun of(key: String): BotRoleType? = entries.firstOrNull { it.key.equals(key, true) }

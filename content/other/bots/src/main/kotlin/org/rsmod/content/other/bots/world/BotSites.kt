@@ -47,6 +47,16 @@ data class BotSite(
     @JsonProperty("supply_npc") val supplyNpc: String = "",
     @JsonProperty("supply_area") val supplyArea: SiteArea? = null,
     @JsonProperty("supply_route") val supplyRoute: List<SiteTile> = emptyList(),
+    /** Npc or loc gamevals (`npc.`, `loc.` or `content.`) the bot clicks to gather here. */
+    val targets: List<String> = emptyList(),
+    /** Which op (1-5) of a target the bot clicks. */
+    @JsonProperty("target_op") val targetOp: Int = 1,
+    /** The bot needs one of these in its inventory or equipment; they are never banked. */
+    val tools: List<String> = emptyList(),
+    /** Withdrawn from the bank before each trip (bait, food), best first. */
+    val supplies: List<String> = emptyList(),
+    /** How many supplies to carry; 0 fills the free inventory. */
+    @JsonProperty("supply_amount") val supplyAmount: Int = 0,
 ) {
     val roleType: BotRoleType?
         get() = BotRoleType.of(role)

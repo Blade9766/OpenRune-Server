@@ -15,7 +15,7 @@ import org.rsmod.game.entity.player.Appearance
  * runtime. `CheatMenuDataTest` cross-checks the table against the engine's own default appearance
  * to catch it drifting from the cache.
  */
-internal enum class AppearancePart(
+enum class AppearancePart(
     val label: String,
     val slot: Int,
     private val bodyTypeA: List<IntRange>,
@@ -83,7 +83,7 @@ internal enum class AppearancePart(
 }
 
 /** The recolourable areas of a player's model, with the vanilla palette size for each. */
-internal enum class AppearanceColour(val label: String, val index: Int, val paletteSize: Int) {
+enum class AppearanceColour(val label: String, val index: Int, val paletteSize: Int) {
     Hair("Hair colour", 0, 25),
     Torso("Torso colour", 1, 29),
     Legs("Leg colour", 2, 29),

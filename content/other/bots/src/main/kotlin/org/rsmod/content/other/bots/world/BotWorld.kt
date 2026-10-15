@@ -63,6 +63,7 @@ constructor(
         player.coords = record.save.coords?.let { CoordGrid(it.x, it.z, it.level) } ?: site.bank.center()
         invMapInit.init(player)
         restore(player, record.save)
+        BotAppearance.randomize(player, record.id)
         player.slotId = slot
         sessions.attach(player)
         val result = playerRegistry.add(player)
