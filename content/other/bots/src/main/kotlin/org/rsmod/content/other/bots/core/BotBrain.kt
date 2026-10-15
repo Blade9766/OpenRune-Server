@@ -191,6 +191,9 @@ class BotBrain(
     }
 
     private fun bank(now: Long, cycle: Int) {
+        if (exchange.available && storeHealthy()) {
+            abortStaleOffers(now)
+        }
         collectProceeds()
         when (val outcome = actor.depositGathered()) {
             DepositOutcome.BankFull -> {
@@ -573,18 +576,10 @@ class BotBrain(
         if (!saleAllowed(now) || record.pendingListing != null) {
             return false
         }
-        if (hasOpenSale(item)) {
-            return hasStaleOffer(now)
-        }
-        if (exchange.freeSlot(owner) == null) {
+        if (hasOpenSale(item) || exchange.freeSlot(owner) == null) {
             return false
         }
         return actor.bankCount(item) >= record.config.sale.threshold
-    }
-
-    private fun hasStaleOffer(now: Long): Boolean {
-        val timeout = record.config.pricing.listingTimeoutMinutes * 60_000L
-        return exchange.offers(owner).any { it.isOpen && it.sell && now - it.createdAt >= timeout }
     }
 
     private fun gatherLimitReached(now: Long): Boolean {

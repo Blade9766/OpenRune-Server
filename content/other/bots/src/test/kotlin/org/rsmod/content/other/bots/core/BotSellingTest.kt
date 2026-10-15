@@ -151,6 +151,25 @@ class BotSellingTest {
     }
 
     @Test
+    fun `a timed-out listing is relisted in full, not replaced by what is left in the bank`() {
+        val world = BotTestHarness()
+        val config =
+            BotTestHarness.woodcuttingConfig(quantity = 1000).let {
+                it.copy(pricing = it.pricing.copy(listingTimeoutMinutes = 1, maxRetries = 3))
+            }
+        val id = world.startBot(config, bankedLogs = 1000)
+
+        val listings = LinkedHashMap<Long, Int>()
+        world.tickUntil(limit = 20_000) {
+            world.offers(id).filter { it.isOpen }.forEach { listings[it.createdAt] = it.total }
+            listings.size >= 2
+        }
+        val (first, second) = listings.values.toList()
+        assertEquals(1000, first)
+        assertTrue(second >= 1000, "relisted $second instead of the returned 1000")
+    }
+
+    @Test
     fun `selling pauses when no safe reference price exists`() {
         val world = BotTestHarness()
         world.exchange.guide = null
