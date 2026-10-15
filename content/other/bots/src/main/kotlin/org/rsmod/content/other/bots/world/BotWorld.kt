@@ -5,6 +5,7 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.util.UncheckedType
+import dev.openrune.types.varp.VarpLifetime
 import dev.or2.central.account.Rights
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -133,6 +134,9 @@ constructor(
         fill(player.inv, save.inv)
         fill(player.worn, save.worn)
         fill(player.invMap.getOrPut(BANK), save.bank)
+        for ((varp, value) in save.vars) {
+            player.vars.backing[varp] = value
+        }
         val minHitpointsXp = PlayerSkillXPTable.getFineXPFromLevel(MIN_HITPOINTS)
         val xp = save.xp + (HITPOINTS to maxOf(save.xp[HITPOINTS] ?: 0, minHitpointsXp))
         for ((stat, fineXp) in xp) {
@@ -165,6 +169,10 @@ constructor(
                     val name = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
                     name to player.statMap.getFineXP(name)
                 },
+            vars =
+                player.vars.backing.int2IntEntrySet()
+                    .filter { it.intValue != 0 && ServerCacheManager.getVarp(it.intKey)?.scope == VarpLifetime.Perm }
+                    .associate { it.intKey to it.intValue },
         )
 
     private fun savedObjs(inv: Inventory): List<SavedObj> =

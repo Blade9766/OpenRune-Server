@@ -7,6 +7,7 @@ import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
 import org.rsmod.api.player.interact.ObjInteractions
+import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.registry.loc.LocRegistry
@@ -71,6 +72,9 @@ constructor(
         player.routeRequest = RouteRequestCoord(obj.coords)
         return true
     }
+
+    /** Runs [block] with [player]'s protected access, as a script triggered by a click would. */
+    fun launch(player: Player, block: suspend ProtectedAccess.() -> Unit): Boolean = protectedAccess.launch(player, block = block)
 
     /** Clicks "Open" on the nearest closed door or gate within [DOOR_RADIUS] tiles of [player]. */
     fun openNearbyDoor(player: Player): Boolean {

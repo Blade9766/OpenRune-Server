@@ -2,6 +2,8 @@ package org.rsmod.content.other.bots
 
 import com.github.michaelbull.logging.InlineLogger
 import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.utils.format.formatAmount
 import org.rsmod.content.other.bots.core.BotConfig
@@ -13,6 +15,7 @@ import org.rsmod.content.other.bots.core.SaleConfig
 import org.rsmod.content.other.bots.world.BotKit
 import org.rsmod.content.other.bots.world.BotSites
 import org.rsmod.content.other.bots.world.KitTarget
+import org.rsmod.content.slayer.core.SlayerTaskManager
 import org.rsmod.game.entity.Player
 
 /** `::bot` sub-commands. Every change is logged with the administrator's name. */
@@ -65,7 +68,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             BotConfig(
                 role = role,
                 site = site.key,
-                sale = SaleConfig(item = product, allowedItems = setOf(product)),
+                sale = SaleConfig(enabled = site.exchangeRoute.isNotEmpty(), item = product, allowedItems = setOf(product)),
             )
         coordinator
             .create(config, name, takenNames())
@@ -213,7 +216,18 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
         if (r.pendingCollects.isNotEmpty()) {
             player.mes("Pending collections: slots ${r.pendingCollects.joinToString { it.slot.toString() }}")
         }
+        if (c.role == BotRoleType.Slayer) {
+            player.mes(slayerTask(r))
+        }
         r.lastError?.let { player.mes("Last error: $it") }
+    }
+
+    private fun slayerTask(record: BotRecord): String {
+        val live = manager.playerOf(record.id)?.vars
+        fun value(varp: String): Int = live?.get(varp) ?: record.save.vars[varp.asRSCM(RSCMType.VARP)] ?: 0
+        val left = value(SLAYER_COUNT)
+        val name = SlayerTaskManager.slayerTargets.firstOrNull { it.id == value(SLAYER_TARGET) }?.nameLowercase
+        return if (name == null || left <= 0) "Slayer: no task" else "Slayer: $left $name left"
     }
 
     private fun list(player: Player, coordinator: BotCoordinator) {
@@ -274,6 +288,9 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
     }
 
     companion object {
+        private const val SLAYER_TARGET = "varp.slayer_target"
+        private const val SLAYER_COUNT = "varp.slayer_count"
+
         val SETTING_KEYS: List<String> =
             listOf(
                 "threshold", "quantity", "selling", "item", "allow", "disallow", "refprice", "adjust",

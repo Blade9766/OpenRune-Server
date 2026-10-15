@@ -27,6 +27,16 @@ data class SiteArea(val x: Int = 0, val z: Int = 0, val level: Int = 0, val radi
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class KitItem(val item: String = "", val count: Int = 1)
 
+/** One slayer task a slayer site can work: where its monsters are and what to loot there. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class SlayerHunt(
+    /** The task's lowercase name, as the slayer task table spells it ("goblins"). */
+    val task: String = "",
+    val resource: SiteArea = SiteArea(),
+    @JsonProperty("resource_route") val resourceRoute: List<SiteTile> = emptyList(),
+    val products: List<String> = emptyList(),
+)
+
 /** What a new bot at a site starts with; applying it tops up to these counts and levels. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class StarterKit(
@@ -71,6 +81,8 @@ data class BotSite(
     /** How many supplies to carry; 0 fills the free inventory. */
     @JsonProperty("supply_amount") val supplyAmount: Int = 0,
     val kit: StarterKit? = null,
+    /** Slayer: the tasks this site can work; [supplyNpc] is the slayer master. */
+    val hunts: List<SlayerHunt> = emptyList(),
 ) {
     val roleType: BotRoleType?
         get() = BotRoleType.of(role)

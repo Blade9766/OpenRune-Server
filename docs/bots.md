@@ -55,7 +55,7 @@ Closing any of the menus or prompts cancels without changing anything.
 ::bot                                   open the status interface
 ::bot list                              one line per bot
 ::bot status <bot>                      details (config, totals, last error)
-::bot create <role> <site> [name]       role: woodcutting | mining | runecrafting | fishing | thieving | combat
+::bot create <role> <site> [name]       role: woodcutting | mining | runecrafting | fishing | thieving | combat | slayer
 ::bot enable|disable <bot>
 ::bot remove <bot> [force]              force also cancels open offers (forfeits them)
 ::bot clear <bot>                       clear an ERROR so it can run again
@@ -176,6 +176,9 @@ The pathfinder walks between waypoints, so keep them within ~40 tiles of each
 other and off closed doors. **The bundled coordinates are a starting point and
 must be walked in-game before use.**
 
+A site with no `exchange_route` does not sell: bots created there start with
+selling off and keep their loot in the bank.
+
 Every site can carry a starter kit, applied when a bot is created there and by
 `::bot kit` / Manage > Apply starter kit. It only tops up: items already there
 are not duplicated and higher levels are not lowered.
@@ -205,6 +208,17 @@ Roles:
   up the site's `products` between fights. Use cheap gear: a bot that dies keeps
   only what the normal death rules allow. `barbarian_village_fighters` (Edgeville
   bank) collects bones.
+
+- **slayer**: combat on tasks from the site's slayer master (`supply_npc`, reached
+  through `supply_area`/`supply_route`). With no task, or a finished one, the bot
+  walks to the master and is given a task. The site lists a `hunts` entry per
+  task it can work: the task's lowercase name, an area, a route from the bank and
+  what to loot. A task without a hunt is handed back and re-rolled (up to 40
+  times in a row). The bot attacks whatever the slayer module counts for its task,
+  so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
+  Interest for Spria) marked complete when they spawn. `draynor_slayer` uses
+  Spria and hunts goblins and cows near Lumbridge and rats in Draynor; Details
+  shows the current task.
 
 A bot that is stuck on its route clicks "Open" on a closed door or gate within
 two tiles before rerouting. Each bot gets a random body type, clothing and
@@ -248,7 +262,7 @@ offer screens and the exchange never tries to message them.
 ## Persistence and safety
 
 Bots live in `.data/bots.json` (one entry per bot with inventory, equipment,
-bank, xp, totals and sale state, plus the master toggle and max active),
+bank, xp, permanent varps (quest stages, slayer task), totals and sale state, plus the master toggle and max active),
 rewritten through a temporary file and an atomic move. The exchange saves its
 own book to `.data/grand-exchange.json` at the end of each cycle in which it
 changed. Because the two files are written separately, every item movement

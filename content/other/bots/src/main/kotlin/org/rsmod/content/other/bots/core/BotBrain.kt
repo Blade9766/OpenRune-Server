@@ -124,6 +124,10 @@ class BotBrain(
             transition(BotState.TravelToBank, cycle, "Inventory full")
             return
         }
+        if (actor.needsSourceVisit()) {
+            travelTo(BotDestination.SupplySource, cycle)
+            return
+        }
         if (actor.needsSupplies()) {
             if (record.config.essenceSource == EssenceSource.Mine) {
                 travelTo(BotDestination.SupplySource, cycle)
@@ -182,6 +186,14 @@ class BotBrain(
                 }
             GatherStatus.NeedsSupplies ->
                 transition(BotState.TravelToBank, cycle, "Out of supplies")
+            GatherStatus.Done ->
+                if (gatherTarget == BotDestination.SupplySource && actor.needsSupplies()) {
+                    transition(BotState.TravelToBank, cycle, "Fetching supplies")
+                } else if (gatherTarget == BotDestination.SupplySource) {
+                    travelTo(BotDestination.Resource, cycle)
+                } else {
+                    transition(BotState.TravelToBank, cycle, "Finished here")
+                }
             GatherStatus.NoResource -> {
                 setActivity("Waiting for resources to respawn")
                 if (cycle - lastProgressCycle > NO_RESOURCE_TICKS) {
@@ -232,7 +244,7 @@ class BotBrain(
     /** Returns false when the bot cannot continue gathering yet. */
     private fun restock(now: Long, cycle: Int): Boolean {
         if (!actor.needsSupplies()) {
-            gatherTarget = BotDestination.Resource
+            gatherTarget = workTarget()
             return true
         }
         if (record.config.essenceSource == EssenceSource.Mine) {
@@ -242,7 +254,7 @@ class BotBrain(
         return when (actor.withdrawSupplies()) {
             SupplyOutcome.NotNeeded,
             is SupplyOutcome.Withdrawn -> {
-                gatherTarget = BotDestination.Resource
+                gatherTarget = workTarget()
                 true
             }
             SupplyOutcome.Unavailable -> {
@@ -256,6 +268,9 @@ class BotBrain(
             }
         }
     }
+
+    private fun workTarget(): BotDestination =
+        if (actor.needsSourceVisit()) BotDestination.SupplySource else BotDestination.Resource
 
     private fun waitForSupplies(now: Long, cycle: Int) {
         if ((cycle - stateCycle) % SUPPLY_RECHECK_TICKS != 0) {

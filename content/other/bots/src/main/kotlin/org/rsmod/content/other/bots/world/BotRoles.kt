@@ -21,6 +21,8 @@ import org.rsmod.content.skills.mining.scripts.Mining
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLevelReq
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLogs
+import org.rsmod.content.slayer.core.SlayerTaskManager
+import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.InteractionNpcOp
 import org.rsmod.game.interact.InteractionOp
@@ -46,6 +48,14 @@ interface BotRoleBehaviour {
 
     fun isAt(player: Player, destination: BotDestination): Boolean = false
 
+    /** True when the bot must visit the site's supply source before working (a slayer master). */
+    fun needsSourceVisit(player: Player): Boolean = false
+
+    /** Where the bot works right now, when that is not the site's own resource area (slayer hunts). */
+    fun resourceArea(player: Player): SiteArea? = null
+
+    fun resourceRoute(player: Player): List<SiteTile>? = null
+
     /** Takes one step out of an instance-like area (altar, essence mine); true while escaping. */
     fun escape(player: Player, destination: BotDestination): Boolean = false
 
@@ -60,7 +70,7 @@ interface BotRoleBehaviour {
                 BotRoleType.Fishing -> FishingBehaviour(site, world)
                 BotRoleType.Thieving -> StallThievingBehaviour(site, world)
                 BotRoleType.Combat -> CombatBehaviour(site, world)
-                BotRoleType.Slayer -> UnsupportedBehaviour(role)
+                BotRoleType.Slayer -> SlayerBehaviour(site, world)
             }
     }
 }
@@ -418,11 +428,21 @@ class StallThievingBehaviour(private val site: BotSite, private val world: BotWo
  * Fights target npcs in the resource area. Below [EAT_PERCENT] hitpoints it eats, and with no food
  * left it heads back to the bank to restock. Between fights it picks up the site's products.
  */
-class CombatBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+open class CombatBehaviour(protected val site: BotSite, protected val world: BotWorldServices) : BotRoleBehaviour {
     private val targets by lazy { SiteTargets(site.targets, RSCMType.NPC) }
     private val toolIds by lazy { resolveIds(site.tools, RSCMType.OBJ) }
     private val foodIds by lazy { resolveIds(site.supplies, RSCMType.OBJ) }
-    private val lootIds by lazy { resolveIds(site.products, RSCMType.OBJ) }
+    private val siteLootIds by lazy { resolveIds(site.products, RSCMType.OBJ) }
+
+    /** Where the bot fights right now. */
+    protected open fun fightArea(player: Player): SiteArea = site.resource
+
+    protected open fun isTarget(player: Player, npc: Npc): Boolean =
+        targets.matches(npc.type.id, npc.type.contentGroup, npc.type.name)
+
+    protected open fun lootIds(player: Player): Set<Int> = siteLootIds
+
+    protected open fun attackOp(npc: Npc): InteractionOp = interactionOp(site.targetOp)
 
     override fun requirementProblem(player: Player): String? =
         if (toolIds.isNotEmpty() && !player.carriesAny(toolIds)) "needs one of ${site.tools}" else null
@@ -436,7 +456,7 @@ class CombatBehaviour(private val site: BotSite, private val world: BotWorldServ
     override fun supplyAmount(free: Int): Int = if (site.supplyAmount > 0) minOf(site.supplyAmount, free) else free
 
     override fun isAt(player: Player, destination: BotDestination): Boolean =
-        destination == BotDestination.Resource && site.resource.contains(player.coords)
+        destination == BotDestination.Resource && fightArea(player).contains(player.coords)
 
     override fun gather(player: Player, target: BotDestination): GatherStatus {
         if (foodIds.isNotEmpty() && player.hitpoints * 100 < player.baseHitpointsLvl * EAT_PERCENT) {
@@ -448,24 +468,24 @@ class CombatBehaviour(private val site: BotSite, private val world: BotWorldServ
             return GatherStatus.InventoryFull
         }
         if (player.isActing()) {
-            val target = (player.interaction as? InteractionNpcOp)?.target
-            return GatherStatus.Working(0, progressed = target != null && target.isInCombat())
+            return GatherStatus.Working(0, progressed = player.interaction is InteractionNpcOp)
         }
-        val area = site.resource
-        val loot =
+        val area = fightArea(player)
+        val loot = lootIds(player)
+        val drop =
             world
-                .findObjs(player, area.center(), area.radius) { it.type in lootIds }
+                .findObjs(player, area.center(), area.radius) { it.type in loot }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
-        if (loot != null) {
-            world.pickUp(player, loot)
+        if (drop != null) {
+            world.pickUp(player, drop)
             return GatherStatus.Working(0)
         }
         val npc =
             world
-                .findNpcs(area.center(), area.radius) { targets.matches(it.type.id, it.type.contentGroup, it.type.name) && !it.isInCombat() }
+                .findNpcs(area.center(), area.radius) { isTarget(player, it) && !it.isInCombat() }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
                 ?: return GatherStatus.NoResource
-        return if (world.opNpc(player, npc, interactionOp(site.targetOp))) GatherStatus.Working(0) else GatherStatus.NoResource
+        return if (world.opNpc(player, npc, attackOp(npc))) GatherStatus.Working(0) else GatherStatus.NoResource
     }
 
     private companion object {
@@ -473,13 +493,91 @@ class CombatBehaviour(private val site: BotSite, private val world: BotWorldServ
     }
 }
 
-private class UnsupportedBehaviour(private val role: BotRoleType) : BotRoleBehaviour {
-    override fun requirementProblem(player: Player): String = "the ${role.key} role is not available yet"
+/**
+ * Combat on slayer tasks from the site's master ([BotSite.supplyNpc], visited through the supply
+ * route). A bot with no task, or a finished one, goes to the master; a task the site has no
+ * [SlayerHunt] for is handed back and re-rolled, at most [MAX_REROLLS] times in a row.
+ */
+class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(site, world) {
+    private var rerolls = 0
 
-    override fun keep(itemId: Int): Boolean = false
+    private fun taskId(player: Player): Int = player.vars[TASK_VARP]
 
-    override fun gather(player: Player, target: BotDestination): GatherStatus =
-        GatherStatus.Failed("the ${role.key} role is not available yet")
+    private fun hunt(player: Player): SlayerHunt? {
+        val taskId = taskId(player)
+        if (taskId == 0 || player.vars[COUNT_VARP] <= 0) {
+            return null
+        }
+        val name = SlayerTaskManager.slayerTargets.firstOrNull { it.id == taskId }?.nameLowercase ?: return null
+        return site.hunts.firstOrNull { it.task.equals(name, ignoreCase = true) }
+    }
+
+    override fun prepare(player: Player) {
+        Quest.get(MASTER_QUEST)?.let { if (!it.isQuestCompleted(player)) it.jumpToStage(player, it.maxSteps) }
+    }
+
+    override fun needsSourceVisit(player: Player): Boolean = hunt(player) == null
+
+    override fun resourceArea(player: Player): SiteArea? = hunt(player)?.resource
+
+    override fun resourceRoute(player: Player): List<SiteTile>? = hunt(player)?.resourceRoute
+
+    override fun fightArea(player: Player): SiteArea = hunt(player)?.resource ?: site.resource
+
+    override fun isTarget(player: Player, npc: Npc): Boolean =
+        taskId(player) != 0 && SlayerTaskManager.isTaskNpcType(npc.type, taskId(player))
+
+    override fun lootIds(player: Player): Set<Int> = resolveIds(hunt(player)?.products.orEmpty(), RSCMType.OBJ)
+
+    override fun attackOp(npc: Npc): InteractionOp {
+        val index = (0 until 5).firstOrNull { npc.type.actions.getOpOrNull(it).equals("Attack", ignoreCase = true) }
+        return interactionOp((index ?: 1) + 1)
+    }
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        when (destination) {
+            BotDestination.SupplySource -> site.supplyArea?.contains(player.coords) == true
+            else -> super.isAt(player, destination)
+        }
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus {
+        if (target == BotDestination.SupplySource) {
+            return askForTask(player)
+        }
+        if (hunt(player) == null) {
+            return GatherStatus.Done
+        }
+        return super.gather(player, target)
+    }
+
+    private fun askForTask(player: Player): GatherStatus {
+        if (hunt(player) != null) {
+            rerolls = 0
+            return GatherStatus.Done
+        }
+        if (player.isAccessProtected || player.isDelayed) {
+            return GatherStatus.Working(0, progressed = true)
+        }
+        if (rerolls++ >= MAX_REROLLS) {
+            rerolls = 0
+            return GatherStatus.Failed("no task with a hunt at ${site.key} after $MAX_REROLLS tries")
+        }
+        val handBack = taskId(player) != 0 && player.vars[COUNT_VARP] > 0
+        world.launch(player) {
+            if (handBack) {
+                SlayerTaskManager.resetTask(this)
+            }
+            SlayerTaskManager.assignTask(this, site.supplyNpc)
+        }
+        return GatherStatus.Working(0, progressed = true)
+    }
+
+    private companion object {
+        private const val TASK_VARP = "varp.slayer_target"
+        private const val COUNT_VARP = "varp.slayer_count"
+        private const val MASTER_QUEST = "quest_porcineofinterest"
+        private const val MAX_REROLLS = 40
+    }
 }
 
 private fun nameOf(itemId: Int): String = ServerCacheManager.getItem(itemId)?.internalName.orEmpty()

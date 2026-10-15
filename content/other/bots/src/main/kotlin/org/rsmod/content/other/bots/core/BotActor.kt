@@ -25,6 +25,9 @@ sealed class GatherStatus {
 
     data object NeedsSupplies : GatherStatus()
 
+    /** The work at this destination is finished (a slayer task is assigned or completed). */
+    data object Done : GatherStatus()
+
     data class Failed(val reason: String) : GatherStatus()
 }
 
@@ -60,6 +63,9 @@ interface BotActor {
     fun requirementProblem(): String?
 
     /** True when the role consumes something (essence) the inventory has run out of. */
+    /** True when the bot must visit its site's supply source first (a slayer master for a task). */
+    fun needsSourceVisit(): Boolean = false
+
     fun needsSupplies(): Boolean
 
     fun travel(destination: BotDestination): TravelStatus

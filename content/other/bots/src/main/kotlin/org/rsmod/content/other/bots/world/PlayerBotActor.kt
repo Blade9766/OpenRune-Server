@@ -62,6 +62,8 @@ class PlayerBotActor(
 
     override fun needsSupplies(): Boolean = behaviour.needsSupplies(player)
 
+    override fun needsSourceVisit(): Boolean = behaviour.needsSourceVisit(player)
+
     override fun travel(destination: BotDestination): TravelStatus {
         if (behaviour.escape(player, destination)) {
             return TravelStatus.Moving
@@ -157,7 +159,11 @@ class PlayerBotActor(
 
     private fun chainTo(destination: BotDestination): List<CoordGrid>? =
         when (destination) {
-            BotDestination.Resource -> site.resourceRoute.map { it.toCoords() } + site.resource.center()
+            BotDestination.Resource -> {
+                val route = behaviour.resourceRoute(player) ?: site.resourceRoute
+                val area = behaviour.resourceArea(player) ?: site.resource
+                route.map { it.toCoords() } + area.center()
+            }
             BotDestination.Exchange -> site.exchangeRoute.map { it.toCoords() } + site.exchange.center()
             BotDestination.SupplySource ->
                 site.supplyArea?.let { area -> site.supplyRoute.map { it.toCoords() } + area.center() }

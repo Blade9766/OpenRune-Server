@@ -76,6 +76,18 @@ class BotLifecycleTest {
     }
 
     @Test
+    fun `a bot without a task visits its source, works the task, and comes back for another`() {
+        val world = BotTestHarness(actorFactory = { FakeActor(taskSize = 5) })
+        val id = world.readyBot()
+        world.coordinator.setMaster(true)
+        world.coordinator.enable(id)
+
+        world.tickUntil { world.live(id) { it.sourceVisits >= 2 } }
+        assertTrue(world.record(id).stats.gathered >= 5, "worked the first task before asking for another")
+        assertTrue(world.state(id) != BotState.Error)
+    }
+
+    @Test
     fun `master toggle off removes all bots and the active cap is respected`() {
         val world = BotTestHarness()
         val ids = List(3) { world.readyBot() }

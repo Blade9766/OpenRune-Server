@@ -14,7 +14,12 @@ class FakeActor(
     val tools: Set<Int> = setOf(AXE),
     val supplyItem: Int? = null,
     val stackable: Set<Int> = setOf(COINS),
+    /** Slayer-like: work needs a task from the supply source, [taskSize] items per task. */
+    val taskSize: Int = 0,
 ) : BotActor {
+    var taskLeft = 0
+    var sourceVisits = 0
+
     val inv = LinkedHashMap<Int, Int>()
     val bank = LinkedHashMap<Int, Long>()
     var travelTicks = 2
@@ -41,6 +46,8 @@ class FakeActor(
 
     override fun needsSupplies(): Boolean = supplyItem != null && (inv[supplyItem] ?: 0) == 0
 
+    override fun needsSourceVisit(): Boolean = taskSize > 0 && taskLeft == 0
+
     override fun travel(destination: BotDestination): TravelStatus {
         if (destination in blocked) {
             return TravelStatus.Blocked("path to ${destination.name} is blocked")
@@ -66,6 +73,14 @@ class FakeActor(
             return GatherStatus.Failed("missing a tool")
         }
         val full = inventoryUsed >= inventoryCapacity
+        if (taskSize > 0 && target == BotDestination.SupplySource) {
+            sourceVisits++
+            taskLeft = taskSize
+            return GatherStatus.Done
+        }
+        if (taskSize > 0 && taskLeft == 0) {
+            return GatherStatus.Done
+        }
         if (target == BotDestination.SupplySource) {
             if (full) {
                 return GatherStatus.InventoryFull
@@ -88,6 +103,9 @@ class FakeActor(
             return GatherStatus.NoResource
         }
         add(gatheredItem, 1)
+        if (taskLeft > 0) {
+            taskLeft--
+        }
         return GatherStatus.Working(1)
     }
 
