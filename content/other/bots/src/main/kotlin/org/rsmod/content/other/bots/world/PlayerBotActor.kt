@@ -37,6 +37,7 @@ class PlayerBotActor(
     private val bank: Inventory = player.invMap.getOrPut(BANK)
 
     private var travelDestination: BotDestination? = null
+    private var arrivedVia: List<CoordGrid>? = null
     private val plan = ArrayDeque<CoordGrid>()
     private var lastCoords = CoordGrid.NULL
     private var stillTicks = 0
@@ -69,7 +70,7 @@ class PlayerBotActor(
             return TravelStatus.Moving
         }
         if (isAt(destination)) {
-            resetTravel()
+            arrive(destination)
             return TravelStatus.Arrived
         }
         if (isOffSite()) {
@@ -92,7 +93,11 @@ class PlayerBotActor(
             plan.firstOrNull()?.let { world.walkTo(player, it) }
         }
         if (plan.isEmpty()) {
-            return if (isAt(destination)) TravelStatus.Arrived else TravelStatus.Moving
+            if (!isAt(destination)) {
+                return TravelStatus.Moving
+            }
+            arrive(destination)
+            return TravelStatus.Arrived
         }
         if (player.coords == lastCoords) {
             if (++stillTicks >= STUCK_TICKS) {
@@ -115,6 +120,11 @@ class PlayerBotActor(
         return TravelStatus.Moving
     }
 
+    private fun arrive(destination: BotDestination) {
+        resetTravel()
+        arrivedVia = chainTo(destination)
+    }
+
     private fun isAt(destination: BotDestination): Boolean =
         when (destination) {
             BotDestination.Bank -> site.bank.contains(player.coords)
@@ -132,7 +142,7 @@ class PlayerBotActor(
         plan.clear()
         val bank = site.bank.center()
         if (destination == BotDestination.Bank) {
-            val (chain, index) = nearestChainPoint(allChains()) ?: (emptyList<CoordGrid>() to -1)
+            val (chain, index) = wayBack() ?: (emptyList<CoordGrid>() to -1)
             for (i in index downTo 0) {
                 plan += chain[i]
             }
@@ -144,7 +154,7 @@ class PlayerBotActor(
         if (chain[nearest].chebyshevDistance(player.coords) > REJOIN_DISTANCE &&
             !site.bank.contains(player.coords)
         ) {
-            val (back, index) = nearestChainPoint(allChains()) ?: (emptyList<CoordGrid>() to -1)
+            val (back, index) = wayBack() ?: (emptyList<CoordGrid>() to -1)
             for (i in index downTo 0) {
                 plan += back[i]
             }
@@ -175,7 +185,23 @@ class PlayerBotActor(
             chainTo(BotDestination.Resource),
             chainTo(BotDestination.Exchange),
             chainTo(BotDestination.SupplySource),
-        )
+        ) + huntChains()
+
+    private fun huntChains(): List<List<CoordGrid>> =
+        site.hunts.map { hunt -> hunt.resourceRoute.map { it.toCoords() } + hunt.resource.center() }
+
+    /**
+     * Where a trip home starts. A bot leaving the place it walked to retraces that whole route,
+     * so it leaves a fenced field through the gate it came in by rather than at the fence.
+     */
+    private fun wayBack(): Pair<List<CoordGrid>, Int>? {
+        val leaving =
+            arrivedVia?.takeIf { it.size > 1 && it.last().chebyshevDistance(player.coords) <= LEAVE_DISTANCE }
+                ?: huntChains()
+                    .filter { it.size > 1 && it.last().chebyshevDistance(player.coords) <= LEAVE_DISTANCE }
+                    .minByOrNull { it.last().chebyshevDistance(player.coords) }
+        return leaving?.let { it to it.lastIndex } ?: nearestChainPoint(allChains())
+    }
 
     private fun nearestChainPoint(chains: List<List<CoordGrid>>): Pair<List<CoordGrid>, Int>? =
         chains
@@ -369,6 +395,7 @@ class PlayerBotActor(
         private const val DEFAULT_BANK_CAPACITY = 800
         private const val WAYPOINT_REACHED = 2
         private const val REJOIN_DISTANCE = 20
+        private const val LEAVE_DISTANCE = 30
         private const val STUCK_TICKS = 8
         private const val MAX_REROUTES = 5
         private const val OFF_SITE_DISTANCE = 64

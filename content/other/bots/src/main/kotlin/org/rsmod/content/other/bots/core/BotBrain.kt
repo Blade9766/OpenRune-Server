@@ -691,7 +691,7 @@ class BotBrain(
     }
 
     companion object {
-        const val TRAVEL_BUDGET_TICKS: Int = 500
+        const val TRAVEL_BUDGET_TICKS: Int = 1000
         const val GATHER_STALL_TICKS: Int = 200
         const val NO_RESOURCE_TICKS: Int = 300
         const val BUSY_LIMIT_TICKS: Int = 100

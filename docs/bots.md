@@ -176,8 +176,9 @@ The pathfinder walks between waypoints, so keep them within ~40 tiles of each
 other and off closed doors. **The bundled coordinates are a starting point and
 must be walked in-game before use.**
 
-A site with no `exchange_route` does not sell: bots created there start with
-selling off and keep their loot in the bank.
+Sites with an `exchange_route` sell by default: bots created there start with
+selling on. A site with no `exchange_route` does not sell: bots created there
+start with selling off and keep their loot in the bank.
 
 Every site can carry a starter kit, applied when a bot is created there and by
 `::bot kit` / Manage > Apply starter kit. It only tops up: items already there
@@ -218,18 +219,29 @@ Roles:
   so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
   Interest for Spria) marked complete when they spawn. `draynor_slayer` uses
   Spria and hunts goblins and cows near Lumbridge and rats in Draynor; Details
-  shows the current task.
+  shows the current task. It sells at the Grand Exchange, walking north between
+  Falador's east wall and the Draynor Manor fence to Barbarian Village and on
+  past Edgeville (the River Lum blocks the direct way to Varrock). Each hunt's
+  route also counts as a way home, so a bot can walk back to the master or bank
+  from any hunt area.
 
 A bot that is stuck on its route clicks "Open" on a closed door or gate within
-two tiles before rerouting. Each bot gets a random body type, clothing and
-colours, seeded by its id so it keeps the same look across restarts.
+two tiles before rerouting. A route into a fenced area needs a waypoint on each
+side of the gate, at least three tiles from it (a waypoint counts as reached two
+tiles away, so a closer one is ticked off through the fence), and a resource area
+that lies wholly inside the fence; otherwise the pathfinder parks the bot outside
+and it never tries the gate (see the cows hunt in `draynor_slayer`). A bot heading
+home retraces the route it arrived by, so it leaves through the same gate.
+
+Each bot gets a random body type, clothing and colours, seeded by its id so it
+keeps the same look across restarts.
 
 ## States
 
 `DISABLED, IDLE, TRAVEL_TO_RESOURCE, GATHERING, TRAVEL_TO_BANK, BANKING,
 PREPARE_SALE, TRAVEL_TO_EXCHANGE, LISTING, WAITING_FOR_SUPPLIES, ERROR`.
 
-Every state has a budget (travel 500 ticks, no gathering progress 200 ticks,
+Every state has a budget (travel 1000 ticks, no gathering progress 200 ticks,
 no resources 300 ticks, stuck mid-action 100 ticks). A blown budget is retried
 three times, then the bot goes to `ERROR`, recovers automatically up to three
 times five minutes apart, and then waits for `::bot clear`. Missing tools,
@@ -302,7 +314,9 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
   store, the exchange adapter and the Grand Exchange book were compiled and
   unit-tested. Expect a first in-game shakedown.
 - Every bundled site ran in game on 2026-10-15; walk any new site first. Doors and
-  gates are only opened when the bot gets stuck right next to one.
+  gates are only opened when the bot gets stuck right next to one; this was seen
+  working on the Lumbridge cow field gate (`draynor_slayer` cows) on 2026-10-15,
+  as was the `draynor_slayer` exchange route.
 - A bot more than 64 tiles from its bank and every route point (after a death respawn
   or any teleport) telejumps back to its bank instead of failing to path.
 - Bots are restored with at least 10 Hitpoints.
