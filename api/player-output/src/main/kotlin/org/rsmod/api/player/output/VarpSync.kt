@@ -2,6 +2,7 @@ package org.rsmod.api.player.output
 
 import dev.openrune.types.varp.VarpServerType
 import net.rsprot.protocol.game.outgoing.varp.VarpLarge
+import net.rsprot.protocol.game.outgoing.varp.VarpLong
 import net.rsprot.protocol.game.outgoing.varp.VarpSmall
 import org.rsmod.game.client.Client
 import org.rsmod.game.entity.Player
@@ -21,5 +22,10 @@ public object VarpSync {
                 VarpLarge(varp.id, value)
             }
         client.write(message)
+    }
+
+    /** Writes a varp the client stores as a long (e.g. `ge_newoffer_price`), bypassing transmit. */
+    public fun writeVarpLong(player: Player, varp: VarpServerType, value: Long) {
+        player.client.write(VarpLong(varp.id, value))
     }
 }

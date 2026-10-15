@@ -67,6 +67,28 @@ public object VarPlayerIntMapSetter {
         }
     }
 
+    /**
+     * Sets a varp the client stores as a long (revision 241's `ge_newoffer_price`,
+     * `ge_itemsink_price_long_*`, ...). The server keeps the int value and transmits it as a long,
+     * since the client reads these vars from its long var store.
+     */
+    public fun setLong(player: Player, varp: String, value: Int) {
+        val type = ServerCacheManager.getVarp(varp.asRSCM(RSCMType.VARP))!!
+        val previous = player.vars.backing[type.id]
+        player.vars.backing[type.id] = value
+        val engineLoggedIn = player.processedMapClock > 0
+        if (!engineLoggedIn) {
+            return
+        }
+        if (previous != value) {
+            PlayerPersistenceHints.notify(player)
+        }
+        val transmit = type.transmit
+        if (transmit.always || (transmit.onDiff && previous != value)) {
+            VarpSync.writeVarpLong(player, type, value.toLong())
+        }
+    }
+
     public fun toggle(player: Player, varp: String) {
         if (varp.startsWith("varp.")) {
             toggle(player, ServerCacheManager.getVarp(varp.asRSCM(RSCMType.VARP))!!)

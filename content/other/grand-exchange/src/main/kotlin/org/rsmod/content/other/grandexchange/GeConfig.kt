@@ -134,25 +134,12 @@ object GeConfig {
             "inv.ge_collect_7",
         )
 
-    /**
-     * Varps the client reads the fee already paid on each slot from. Slots 2-5 point at music varps
-     * in the cache's script (`currentsong`, `musiclength`, ...), so only the others are written.
-     */
-    val TAX_VARPS: List<String?> =
-        listOf(
-            "varp.ge_tax_slot_0",
-            "varp.ge_tax_slot_1",
-            null,
-            null,
-            null,
-            null,
-            "varp.ge_tax_slot_6",
-            "varp.ge_tax_slot_7",
-        )
+    /** Long varp the client reads the fee already paid on each slot from. */
+    fun taxVarp(slot: Int): String = "varp.ge_tax_slot_long_$slot"
 
     fun itemSinkObjVarp(slot: Int): String = "varp.ge_itemsink_obj_$slot"
 
-    fun itemSinkPriceVarp(slot: Int): String = "varp.ge_itemsink_price_$slot"
+    fun itemSinkPriceVarp(slot: Int): String = "varp.ge_itemsink_price_long_$slot"
 
     const val VARP_ITEM = "varp.tradingpost_search"
     const val VARP_LAST_SEARCHED = "varp.ge_last_searched"

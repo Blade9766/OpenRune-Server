@@ -36,12 +36,14 @@ import org.rsmod.game.type.uncert
  * history screens, moving coins and items in and out of the [GeExchange] book, and telling
  * players when their offers move.
  *
- * Client contract (read from the revision-240 clientscripts, see [GeConfig]):
+ * Client contract (read from the revision-241 clientscripts, see [GeConfig]):
  * - Each slot's state arrives in an `UpdateStockMarketSlotV1` packet; the screens redraw from it.
  * - The setup panel reads the chosen item from `varp.tradingpost_search` and the quantity, price
- *   and type from the `ge_newoffer_*` varbits. The panel's buttons change those varbits client
+ *   and type from the `ge_newoffer_*` vars. The panel's buttons change those vars client
  *   side, and also reach the server as buttons on `ge_offers:setup`, so the same numbers are
  *   kept here; a mismatch would make the client snap back to the server value.
+ * - `ge_newoffer_price`, `ge_itemsink_price_long_N` and `ge_tax_slot_long_N` are long varps: they
+ *   must go out as `VarpLong`; the scripts read them from the client's long var store.
  * - Collectable items and coins are drawn from the two-slot `tradingpost_sell_N` / `ge_collect_N`
  *   inventories (slot 0 items, slot 1 coins).
  * - The `ge_itemsink_obj_N` varps must be -1 or the client shows "Offer status" on empty slots.
@@ -106,7 +108,7 @@ constructor(
     fun onLogin(player: Player) {
         for (slot in 0 until GeConfig.SLOT_COUNT) {
             setVar(player, GeConfig.itemSinkObjVarp(slot), -1)
-            setVar(player, GeConfig.itemSinkPriceVarp(slot), -1)
+            setLongVar(player, GeConfig.itemSinkPriceVarp(slot), -1)
         }
         setVar(player, GeConfig.VARBIT_TAX_RATE, GeConfig.TAX_PER_MILLE)
         setVar(player, GeConfig.VARBIT_SELECTED_SLOT, 0)
@@ -159,7 +161,7 @@ constructor(
                 )
             }
         player.client.write(UpdateStockMarketSlotV1(slot, update))
-        GeConfig.TAX_VARPS[slot]?.let { setVar(player, it, offer?.taxPaid ?: 0) }
+        setLongVar(player, GeConfig.taxVarp(slot), offer?.taxPaid ?: 0)
         syncCollectInv(player, slot)
     }
 
@@ -304,13 +306,13 @@ constructor(
         setVar(player, GeConfig.VARBIT_TYPE, type.clientId)
         setVar(player, GeConfig.VARP_ITEM, item)
         setVar(player, GeConfig.VARBIT_QUANTITY, quantity)
-        setVar(player, GeConfig.VARP_PRICE, price)
+        setLongVar(player, GeConfig.VARP_PRICE, price)
     }
 
     private fun clearSetup(player: Player) {
         setVar(player, GeConfig.VARP_ITEM, -1)
         setVar(player, GeConfig.VARBIT_QUANTITY, 0)
-        setVar(player, GeConfig.VARP_PRICE, 0)
+        setLongVar(player, GeConfig.VARP_PRICE, 0)
     }
 
     /** The slot an offer is being set up in, or null when the setup panel is not showing. */
@@ -362,7 +364,7 @@ constructor(
         setVar(player, GeConfig.VARP_LAST_SEARCHED, item.id)
         setVar(player, GeConfig.VARP_ITEM, item.id)
         setVar(player, GeConfig.VARBIT_QUANTITY, 1)
-        setVar(player, GeConfig.VARP_PRICE, items.guidePrice(item.id))
+        setLongVar(player, GeConfig.VARP_PRICE, items.guidePrice(item.id))
     }
 
     /** "Offer" on an inventory item: sell it, in the open sell setup or the first free slot. */
@@ -444,7 +446,7 @@ constructor(
     fun setPrice(player: Player, value: Long) {
         setupSlot(player) ?: return
         setupItem(player) ?: return
-        setVar(player, GeConfig.VARP_PRICE, value.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt())
+        setLongVar(player, GeConfig.VARP_PRICE, value.coerceIn(1L, Int.MAX_VALUE.toLong()).toInt())
     }
 
     suspend fun enterPrice(access: ProtectedAccess) {
@@ -827,6 +829,10 @@ constructor(
 
     private fun setVar(player: Player, name: String, value: Int) {
         VarPlayerIntMapSetter.set(player, name, value)
+    }
+
+    private fun setLongVar(player: Player, name: String, value: Int) {
+        VarPlayerIntMapSetter.setLong(player, name, value)
     }
 
     private companion object {
