@@ -134,7 +134,7 @@ constructor(
         const val LEVER_SEQ = "seq.mourning_temple_lever"
         const val CHEST_SEQ = "seq.human_openchest"
         const val CHEST_TICKS = 100
-        const val CHEST_JINGLE = "jingle.temple_of_light"
+        const val CHEST_JINGLE = "jingle.open_light_chest"
 
         private val WORDS = listOf("no", "one", "two", "three", "four")
     }

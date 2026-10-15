@@ -141,6 +141,6 @@ public class CombatAchievements {
     private fun completedVarp(id: Int): String = "varp.ca_task_completed_${id / 32}"
 
     private companion object {
-        const val COMPLETION_JINGLE = "jingle.grumpy"
+        const val COMPLETION_JINGLE = "jingle.arena_wave_complete"
     }
 }
