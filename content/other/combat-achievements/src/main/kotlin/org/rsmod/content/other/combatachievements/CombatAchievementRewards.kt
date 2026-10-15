@@ -1,8 +1,7 @@
 package org.rsmod.content.other.combatachievements
 
 import dev.openrune.definition.type.widget.IfEvent
-import dev.openrune.rscm.RSCM
-import dev.openrune.rscm.RSCMType
+import dev.openrune.types.StatType
 import dev.openrune.types.enums.enum
 import jakarta.inject.Inject
 import org.rsmod.api.area.checker.AreaChecker
@@ -20,6 +19,9 @@ import org.rsmod.api.utils.time.runeday
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
+
+internal fun lampStat(subcomponent: Int): String? =
+    enum<Int, StatType>("fake_xp_drops").backing[subcomponent + 1]?.internalName
 
 /** The antique lamps and Ghommal's hilts handed out for each Combat Achievement tier. */
 class CombatAchievementRewards
@@ -49,8 +51,7 @@ constructor(private val achievements: CombatAchievements, private val areas: Are
         )
         ifSetEvents("component.xpreward:universe", 0 until SKILL_BUTTONS, IfEvent.PauseButton)
         val input = pauseButton()
-        val statId = enum<Int, Int>(LAMP_SKILL_ENUM).backing[input.subcomponent + 1] ?: return
-        val stat = RSCM.getReverseMapping(RSCMType.STAT, statId)
+        val stat = lampStat(input.subcomponent) ?: return
         if (statBase(stat) < tier.lampMinLevel) {
             return
         }
@@ -148,7 +149,6 @@ constructor(private val achievements: CombatAchievements, private val areas: Are
         const val DAY_VARP = "varp.ca_teleport_day"
         const val ALL_SKILLS = -1
         const val SKILL_BUTTONS = 24
-        const val LAMP_SKILL_ENUM = 681
         const val TELEPORT_TICKS = 5
         const val MAX_WILDERNESS_LEVEL = 20
     }
