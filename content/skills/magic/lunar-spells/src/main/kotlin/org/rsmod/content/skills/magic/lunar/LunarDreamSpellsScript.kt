@@ -21,6 +21,7 @@ import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.stat
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.script.onApNpcT
+import org.rsmod.api.script.onApPlayerT
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onIfOverlayButton
 import org.rsmod.api.script.onOpHeld1
@@ -47,6 +48,7 @@ constructor(private val spells: MagicSpellRegistry, private val runes: MagicRune
         onIfModalButton(MONSTER_CLOSE) { ifClose() }
 
         onOpPlayerT(LunarDreamSpell.StatSpy.component) { statSpy(it.target) }
+        onApPlayerT(component(LunarDreamSpell.StatSpy.component)) { statSpy(it.target) }
         onIfModalButton(PLAYER_STATS_CLOSE) { ifClose() }
 
         onIfOverlayButton(LunarDreamSpell.Humidify.component) { humidify() }

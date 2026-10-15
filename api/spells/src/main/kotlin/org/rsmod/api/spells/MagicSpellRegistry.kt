@@ -27,11 +27,18 @@ public class MagicSpellRegistry {
     public fun autocastSpells(): Map<Int, MagicSpell> = autocastSpells
 
     /**
-     * Spells that attack their target. The Lunar book has no attack spells, but the cache types its
-     * targeted ones (Monster Examine, Stat Spy, ...) as combat; their own scripts handle them.
+     * Jagex types every targeted spell as combat, including Lunar utility spells whose casts are
+     * handled by their own scripts; those are left out so the attack handlers don't claim them.
      */
     public fun combatSpells(): List<MagicSpell> =
-        objSpells.values.filter { it.type == MagicSpellType.Combat && it.spellbook != Spellbook.Lunars }
+        objSpells
+            .filter { (obj, spell) -> spell.type == MagicSpellType.Combat && obj !in nonAttackSpells }
+            .values
+            .toList()
+
+    private val nonAttackSpells by lazy {
+        NON_ATTACK_SPELLS.map { it.asRSCM(RSCMType.OBJ) }.toSet()
+    }
 
     internal fun init() {
         check(!::objSpells.isInitialized) { "`init` already called for this repository." }
@@ -148,4 +155,8 @@ public class MagicSpellRegistry {
         } else {
             this
         }
+
+    private companion object {
+        private val NON_ATTACK_SPELLS = setOf("obj.66_monster_examine", "obj.75_stat_spy")
+    }
 }
