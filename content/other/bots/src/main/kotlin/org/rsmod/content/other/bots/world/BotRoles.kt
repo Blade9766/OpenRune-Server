@@ -12,6 +12,7 @@ import org.rsmod.content.other.bots.core.BotDestination
 import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.content.other.bots.core.EssenceSource
 import org.rsmod.content.other.bots.core.GatherStatus
+import org.rsmod.content.quest.manager.Quest
 import org.rsmod.content.skills.mining.configs.MiningRocks
 import org.rsmod.content.skills.mining.scripts.Mining
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
@@ -24,6 +25,9 @@ import org.rsmod.map.CoordGrid
 /** Skill-specific behaviour. New skills plug in here and in [BotRoleBehaviour.of]. */
 interface BotRoleBehaviour {
     fun requirementProblem(player: Player): String?
+
+    /** Sets up character state the role relies on, before the bot logs in. */
+    fun prepare(player: Player) {}
 
     /** Items that stay in the inventory when banking (tools, supplies). */
     fun keep(itemId: Int): Boolean
@@ -158,6 +162,12 @@ class RunecraftingBehaviour(
             .toSet()
     }
 
+    override fun prepare(player: Player) {
+        if (essence == EssenceSource.Mine) {
+            Quest.get(RUNE_MYSTERIES)?.let { it.jumpToStage(player, it.maxSteps) }
+        }
+    }
+
     override fun requirementProblem(player: Player): String? {
         val altar = altar ?: return "site has no valid altar_loc"
         val tiara = altar.tiara?.item?.internalName ?: return "altar has no tiara"
@@ -168,12 +178,8 @@ class RunecraftingBehaviour(
         if (player.baseRunecraftingLvl < level) {
             return "needs Runecrafting level $level"
         }
-        val carried = (player.inv.objs.asSequence() + player.worn.objs.asSequence()).filterNotNull()
-        if (essence == EssenceSource.Mine && carried.none { isPickaxe(it.id) }) {
-            return "needs a pickaxe to mine essence"
-        }
-        if (essence == EssenceSource.Mine && !world.hasCompletedQuest(player, RUNE_MYSTERIES)) {
-            return "needs Rune Mysteries for the essence mine teleport; use essence bank"
+        if (essence == EssenceSource.Mine && Mining.findPickaxe(player) == null) {
+            return "needs a pickaxe it has the Mining level to use"
         }
         return null
     }

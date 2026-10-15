@@ -3,7 +3,6 @@ package org.rsmod.content.other.bots.world
 import dev.openrune.ServerCacheManager
 import dev.openrune.types.ObjectServerType
 import jakarta.inject.Inject
-import org.rsmod.api.combat.commons.magic.SpellQuestRequirement
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
 import org.rsmod.api.player.protect.clearPendingAction
@@ -38,17 +37,12 @@ constructor(
     private val locInteractions: LocInteractions,
     private val npcInteractions: NpcInteractions,
     private val npcList: NpcList,
-    private val questRequirements: Set<SpellQuestRequirement>,
     private val collision: CollisionFlagMap,
 ) {
     fun telejump(player: Player, dest: CoordGrid) {
         player.clearPendingAction(eventBus)
         PathingEntityCommon.telejump(player, collision, dest)
     }
-
-    /** [quest] is a `dbrow.quest_*` key such as `quest_runemysteries`; follows the active policy. */
-    fun hasCompletedQuest(player: Player, quest: String): Boolean =
-        questRequirements.all { it.hasCompleted(player, quest) }
 
     fun walkTo(player: Player, dest: CoordGrid) {
         if (player.interaction != null && !player.isDelayed) {

@@ -71,10 +71,11 @@ constructor(
             logger.warn { "Bot ${record.name} could not be registered: $result" }
             return null
         }
+        val behaviour = BotRoleBehaviour.of(site, record.config.role, record.config.essenceSource, services)
+        behaviour.prepare(player)
         eventBus.publish(SessionStateEvent.Login(player))
         eventBus.publish(SessionStateEvent.EngineLogin(player))
         player.rebuildAppearance()
-        val behaviour = BotRoleBehaviour.of(site, record.config.role, record.config.essenceSource, services)
         val actor = PlayerBotActor(player, site, behaviour, services)
         actors[record.id] = actor
         byPlayer[player] = record.id

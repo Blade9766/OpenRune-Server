@@ -118,7 +118,7 @@ Earth runecrafter mining its own essence:
 ```
 ::bot create runecrafting earth_altar
 ::bot give 3 tiara_earth 1 worn
-::bot give 3 rune_pickaxe
+::bot give 3 mithril_pickaxe
 ::bot level 3 runecrafting 9
 ::bot level 3 mining 30
 ::bot set 3 essence mine
@@ -126,9 +126,8 @@ Earth runecrafter mining its own essence:
 ::bot enable 3
 ```
 
-`essence mine` uses Aubury's teleport, which needs Rune Mysteries: under the
-`respect-progress` quest policy a bot never has it and goes straight to `ERROR`, so use
-`essence bank` there.
+`essence mine` uses Aubury's teleport, which needs Rune Mysteries; a bot set to mine its
+own essence has the quest marked complete each time it spawns, whatever the quest policy.
 
 With `essence bank` instead, stock its bank: `::bot give 3 blankrune_high 5000 bank`.
 It pauses in `WAITING_FOR_SUPPLIES` when the bank runs dry and resumes when
