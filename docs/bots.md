@@ -25,7 +25,7 @@ to the engine.
 
 1. Rebuild the cache so the status interface and its clientscript exist:
    `gradlew buildCache` (the pack registers `interface.bot_status = 1102` and
-   `clientscript.bot_status_init = 45600`).
+   `clientscript.bot_status_init = 45800`).
 2. Start the server. Bots are kept in `.data/bots.json`, created on first use.
 3. Walk each site you intend to use (see [Sites](#sites)) and fix its
    coordinates if your map differs.
