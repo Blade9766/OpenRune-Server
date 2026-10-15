@@ -126,6 +126,10 @@ Earth runecrafter mining its own essence:
 ::bot enable 3
 ```
 
+`essence mine` uses Aubury's teleport, which needs Rune Mysteries: under the
+`respect-progress` quest policy a bot never has it and goes straight to `ERROR`, so use
+`essence bank` there.
+
 With `essence bank` instead, stock its bank: `::bot give 3 blankrune_high 5000 bank`.
 It pauses in `WAITING_FOR_SUPPLIES` when the bank runs dry and resumes when
 essence appears.
@@ -235,7 +239,11 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
   be compiled or run in the environment it was written in; `core/`, the file
   store, the exchange adapter and the Grand Exchange book were compiled and
   unit-tested. Expect a first in-game shakedown.
-- Site coordinates and routes are unverified. Routes cannot cross closed doors.
+- Only `varrock_west_trees` and `varrock_east_mine` routes have been walked in game
+  (2026-10-15); the others are unverified. Routes cannot cross closed doors.
+- A bot more than 64 tiles from its bank and every route point (after a death respawn
+  or any teleport) telejumps back to its bank instead of failing to path.
+- Bots are restored with at least 10 Hitpoints.
 - Bots are visible through the session-less player-info avatar
   (`BotSessions`) that castle-wars bots also use.
 - Bot items from a crash between saves: up to ~100 ticks of freshly gathered

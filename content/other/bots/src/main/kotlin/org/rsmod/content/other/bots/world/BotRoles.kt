@@ -172,6 +172,9 @@ class RunecraftingBehaviour(
         if (essence == EssenceSource.Mine && carried.none { isPickaxe(it.id) }) {
             return "needs a pickaxe to mine essence"
         }
+        if (essence == EssenceSource.Mine && !world.hasCompletedQuest(player, RUNE_MYSTERIES)) {
+            return "needs Rune Mysteries for the essence mine teleport; use essence bank"
+        }
         return null
     }
 
@@ -284,6 +287,7 @@ class RunecraftingBehaviour(
         private const val ESCAPE_RADIUS = 30
         private const val ESSENCE_MINE_RADIUS = 60
         private const val MINE_PORTAL = "loc.blankrunestone_exit_portal"
+        private const val RUNE_MYSTERIES = "quest_runemysteries"
         private val ESSENCE_MINE = CoordGrid(2910, 4832)
     }
 }

@@ -70,6 +70,11 @@ class PlayerBotActor(
             resetTravel()
             return TravelStatus.Arrived
         }
+        if (isOffSite()) {
+            resetTravel()
+            world.telejump(player, site.bank.center())
+            return TravelStatus.Moving
+        }
         if (travelDestination != destination || plan.isEmpty()) {
             travelDestination = destination
             planRoute(destination)
@@ -166,6 +171,15 @@ class PlayerBotActor(
         chains
             .flatMap { chain -> chain.indices.map { chain to it } }
             .minByOrNull { (chain, i) -> chain[i].chebyshevDistance(player.coords) }
+
+    /** Death respawns and stray teleports leave a bot where no route can reach its site. */
+    private fun isOffSite(): Boolean {
+        if (behaviour.isAt(player, BotDestination.SupplySource)) {
+            return false
+        }
+        val anchors = allChains().flatten() + site.bank.center()
+        return anchors.none { it.level == player.coords.level && it.chebyshevDistance(player.coords) <= OFF_SITE_DISTANCE }
+    }
 
     private fun resetTravel() {
         travelDestination = null
@@ -337,5 +351,6 @@ class PlayerBotActor(
         private const val REJOIN_DISTANCE = 20
         private const val STUCK_TICKS = 8
         private const val MAX_REROUTES = 5
+        private const val OFF_SITE_DISTANCE = 64
     }
 }

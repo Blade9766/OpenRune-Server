@@ -131,7 +131,8 @@ constructor(
         fill(player.inv, save.inv)
         fill(player.worn, save.worn)
         fill(player.invMap.getOrPut(BANK), save.bank)
-        val xp = save.xp.ifEmpty { mapOf(HITPOINTS to PlayerSkillXPTable.getFineXPFromLevel(10)) }
+        val minHitpointsXp = PlayerSkillXPTable.getFineXPFromLevel(MIN_HITPOINTS)
+        val xp = save.xp + (HITPOINTS to maxOf(save.xp[HITPOINTS] ?: 0, minHitpointsXp))
         for ((stat, fineXp) in xp) {
             val level = PlayerSkillXPTable.getLevelFromFineXP(fineXp).coerceIn(1, 99)
             player.statMap.setFineXP(stat, fineXp)
@@ -170,5 +171,6 @@ constructor(
     private companion object {
         private const val BANK = "inv.bank"
         private const val HITPOINTS = "stat.hitpoints"
+        private const val MIN_HITPOINTS = 10
     }
 }
