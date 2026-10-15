@@ -228,7 +228,10 @@ class RunecraftingBehaviour(
             return if (clicked) GatherStatus.Working(0) else GatherStatus.Failed("altar not found")
         }
         val ruins = altar.ruins.map { it.id }.toSet()
-        val clicked = clickNearest(player, site.resource.center(), site.resource.radius + 4) { it.id in ruins }
+        val clicked =
+            clickNearest(player, site.resource.center(), site.resource.radius + 4) { type ->
+                type.id in ruins || type.multiDefault in ruins || type.multiLoc.any { (it and 0xFFFF) in ruins }
+            }
         return if (clicked) GatherStatus.Working(0) else GatherStatus.Failed("ruins not found")
     }
 

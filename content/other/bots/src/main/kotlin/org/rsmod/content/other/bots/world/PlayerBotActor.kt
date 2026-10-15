@@ -189,21 +189,24 @@ class PlayerBotActor(
     }
 
     override fun gather(target: BotDestination): GatherStatus {
-        val before = gatherBaseline ?: countByItem(player.inv)
+        val current = countByItem(player.inv)
+        val arrived = gatherBaseline?.let { produced(it, current, target) } ?: 0
+        if (arrived > 0) {
+            gatherBaseline = current
+            return GatherStatus.Working(arrived)
+        }
         val status = behaviour.gather(player, target)
         val after = countByItem(player.inv)
         gatherBaseline = after
-        if (status !is GatherStatus.Working) {
-            return status
-        }
-        val produced =
-            after.entries.sumOf { (id, count) ->
-                val supply = behaviour.keep(id)
-                val counted = if (target == BotDestination.SupplySource) supply else !supply
-                if (counted) (count - (before[id] ?: 0)).coerceAtLeast(0) else 0
-            }
-        return GatherStatus.Working(produced)
+        return if (status is GatherStatus.Working) GatherStatus.Working(produced(current, after, target)) else status
     }
+
+    private fun produced(before: Map<Int, Int>, after: Map<Int, Int>, target: BotDestination): Int =
+        after.entries.sumOf { (id, count) ->
+            val supply = behaviour.keep(id)
+            val counted = if (target == BotDestination.SupplySource) supply else !supply
+            if (counted) (count - (before[id] ?: 0)).coerceAtLeast(0) else 0
+        }
 
     override fun stopActivity() {
         resetTravel()

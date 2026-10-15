@@ -239,8 +239,8 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
   be compiled or run in the environment it was written in; `core/`, the file
   store, the exchange adapter and the Grand Exchange book were compiled and
   unit-tested. Expect a first in-game shakedown.
-- Only `varrock_west_trees` and `varrock_east_mine` routes have been walked in game
-  (2026-10-15); the others are unverified. Routes cannot cross closed doors.
+- All three bundled sites (`varrock_west_trees`, `varrock_east_mine`, `earth_altar` with bank essence) ran in game
+  (2026-10-15); walk any new site first. Routes cannot cross closed doors.
 - A bot more than 64 tiles from its bank and every route point (after a death respawn
   or any teleport) telejumps back to its bank instead of failing to path.
 - Bots are restored with at least 10 Hitpoints.
