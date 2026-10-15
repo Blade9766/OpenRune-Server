@@ -16,7 +16,8 @@ sealed class TravelStatus {
 }
 
 sealed class GatherStatus {
-    data class Working(val gained: Int) : GatherStatus()
+    /** [progressed] marks work that yields nothing yet but is clearly advancing (a fight). */
+    data class Working(val gained: Int, val progressed: Boolean = false) : GatherStatus()
 
     data object InventoryFull : GatherStatus()
 

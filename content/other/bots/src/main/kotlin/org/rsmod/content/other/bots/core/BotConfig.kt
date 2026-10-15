@@ -1,17 +1,17 @@
 package org.rsmod.content.other.bots.core
 
-enum class BotState(val label: String) {
-    Disabled("DISABLED"),
-    Idle("IDLE"),
-    TravelToResource("TRAVEL_TO_RESOURCE"),
-    Gathering("GATHERING"),
-    TravelToBank("TRAVEL_TO_BANK"),
-    Banking("BANKING"),
-    PrepareSale("PREPARE_SALE"),
-    TravelToExchange("TRAVEL_TO_EXCHANGE"),
-    Listing("LISTING"),
-    WaitingForSupplies("WAITING_FOR_SUPPLIES"),
-    Error("ERROR"),
+enum class BotState(val label: String, val shortLabel: String) {
+    Disabled("DISABLED", "Disabled"),
+    Idle("IDLE", "Idle"),
+    TravelToResource("TRAVEL_TO_RESOURCE", "To work"),
+    Gathering("GATHERING", "Working"),
+    TravelToBank("TRAVEL_TO_BANK", "To bank"),
+    Banking("BANKING", "Banking"),
+    PrepareSale("PREPARE_SALE", "Selling"),
+    TravelToExchange("TRAVEL_TO_EXCHANGE", "To exchange"),
+    Listing("LISTING", "Listing"),
+    WaitingForSupplies("WAITING_FOR_SUPPLIES", "No supplies"),
+    Error("ERROR", "Error"),
 }
 
 enum class BotRoleType(val key: String) {

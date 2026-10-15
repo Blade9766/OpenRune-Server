@@ -12,6 +12,7 @@ resource = { x = 3166, z = 3412, radius = 12 }
 bank = { x = 3185, z = 3438, radius = 4 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.logs", "obj.oak_logs"]
+kit = { inv = [{ item = "obj.steel_axe" }], levels = { woodcutting = 15 } }
 resource_route = [{ x = 3182, z = 3429 }, { x = 3172, z = 3419 }]
 exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
 
@@ -23,6 +24,7 @@ resource = { x = 3286, z = 3366, radius = 8 }
 bank = { x = 3253, z = 3420, radius = 4 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.copper_ore", "obj.tin_ore", "obj.iron_ore"]
+kit = { inv = [{ item = "obj.mithril_pickaxe" }], levels = { mining = 30 } }
 resource_route = [{ x = 3270, z = 3428 }, { x = 3285, z = 3420 }, { x = 3290, z = 3400 }, { x = 3290, z = 3379 }]
 exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z = 3448 }, { x = 3170, z = 3474 }]
 
@@ -34,6 +36,7 @@ resource = { x = 3304, z = 3475, radius = 6 }
 bank = { x = 3253, z = 3420, radius = 4 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.earthrune"]
+kit = { inv = [{ item = "obj.mithril_pickaxe" }], worn = [{ item = "obj.tiara_earth" }], levels = { runecrafting = 9, mining = 30 } }
 altar_loc = "loc.earth_altar"
 resource_route = [{ x = 3262, z = 3428 }, { x = 3277, z = 3430 }, { x = 3292, z = 3452 }, { x = 3302, z = 3470 }]
 exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z = 3448 }, { x = 3170, z = 3474 }]
@@ -49,6 +52,7 @@ resource = { x = 3104, z = 3428, radius = 8 }
 bank = { x = 3094, z = 3492, radius = 4 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.raw_trout", "obj.raw_salmon"]
+kit = { inv = [{ item = "obj.fly_fishing_rod" }], bank = [{ item = "obj.feather", count = 1000 }], levels = { fishing = 30 } }
 targets = ["content.lure_bait_fishing_spot"]
 target_op = 1
 tools = ["obj.fly_fishing_rod"]
@@ -65,6 +69,7 @@ resource = { x = 3269, z = 3411, radius = 4 }
 bank = { x = 3253, z = 3420, radius = 4 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.cup_of_tea"]
+kit = { levels = { thieving = 5 } }
 targets = ["loc.tea_stall"]
 target_op = 2
 resource_route = [{ x = 3262, z = 3416 }]
@@ -78,6 +83,7 @@ resource = { x = 3081, z = 3418, radius = 10 }
 bank = { x = 3094, z = 3492, radius = 4 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.bones"]
+kit = { worn = [{ item = "obj.iron_scimitar" }], bank = [{ item = "obj.trout", count = 50 }], levels = { attack = 20, strength = 20, defence = 20, hitpoints = 25 } }
 targets = ["name:Barbarian"]
 target_op = 2
 supplies = ["obj.shark", "obj.lobster", "obj.swordfish", "obj.salmon", "obj.trout", "obj.bread"]

@@ -44,6 +44,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "give" -> give(player, coordinator, rest)
             "take" -> take(player, coordinator, rest)
             "level" -> level(player, coordinator, rest)
+            "kit" -> change(player, coordinator, rest[0], "applied the starter kit to") { applyKit(coordinator, it) }
             "sites" -> sites(player, rest.firstOrNull() == "reload")
             "here" -> player.mes("{ x = ${player.coords.x}, z = ${player.coords.z}, level = ${player.coords.level} }")
             else -> player.mes(USAGE)
@@ -68,11 +69,22 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             )
         coordinator
             .create(config, name, takenNames())
-            .onSuccess {
-                audit(player, it, "created ${role.key} bot at ${site.key}")
-                player.mes("Created bot #${it.id} '${it.name}'. Give it tools with ::bot give, then ::bot enable ${it.id}.")
+            .onSuccess { bot ->
+                audit(player, bot, "created ${role.key} bot at ${site.key}")
+                val kit =
+                    when {
+                        site.kit == null -> "Give it its tools with ::bot give"
+                        applyKit(coordinator, bot) == null -> "It has its starter kit"
+                        else -> "Its starter kit did not fit; give it its tools with ::bot give"
+                    }
+                player.mes("Created bot #${bot.id} '${bot.name}'. $kit. Enable it from Manage or ::bot enable ${bot.id}.")
             }
             .onFailure { player.mes("Could not create bot: ${it.message}") }
+    }
+
+    private fun applyKit(coordinator: BotCoordinator, bot: BotRecord): String? {
+        val kit = BotSites[bot.config.site]?.kit ?: return "site ${bot.config.site} has no starter kit"
+        return coordinator.editSave(bot.id) { BotKit.applyKit(it, kit, manager::itemId) }
     }
 
     private fun master(player: Player, coordinator: BotCoordinator, value: String) {
@@ -262,9 +274,16 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
     }
 
     companion object {
+        val SETTING_KEYS: List<String> =
+            listOf(
+                "threshold", "quantity", "selling", "item", "allow", "disallow", "refprice", "adjust",
+                "minprice", "deviation", "cooldown", "timeout", "retries", "step", "window",
+                "mintrades", "minvolume", "interval", "hourlimit", "essence",
+            )
+
         const val USAGE: String =
             "::bot [status <bot>|list|create <role> <site> [name]|enable|disable|remove <bot> [force]|" +
-                "clear <bot>|master on|off|max <n>|set <bot> <key> <value>|give|take <bot> <item> [n] [inv|worn|bank]|" +
+                "clear <bot>|kit <bot>|master on|off|max <n>|set <bot> <key> <value>|give|take <bot> <item> [n] [inv|worn|bank]|" +
                 "level <bot> <stat> <lvl>|sites [reload]|here]"
     }
 }

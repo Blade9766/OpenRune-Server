@@ -35,6 +35,20 @@ to the engine.
 All `::bot` commands need `ADMINISTRATOR` rights. Arguments are lower-cased by
 the client, so names are matched case-insensitively.
 
+## Bot Manager window
+
+`::bot` opens the Bot Manager. Everything the commands below do is also
+available from it:
+
+- **Create** (bottom bar): pick a role, then a site for that role, then a random
+  or typed name. The new bot gets the site's starter kit and starts disabled.
+- **Toggle** (left-click a row): enable or disable that bot.
+- **Manage** (right-click a row): show details, enable/disable, clear an error,
+  apply the starter kit, set a level, give an item, change a setting, teleport to
+  the bot, or remove it.
+
+Closing any of the menus or prompts cancels without changing anything.
+
 ## Commands
 
 ```
@@ -45,6 +59,7 @@ the client, so names are matched case-insensitively.
 ::bot enable|disable <bot>
 ::bot remove <bot> [force]              force also cancels open offers (forfeits them)
 ::bot clear <bot>                       clear an ERROR so it can run again
+::bot kit <bot>                         top the bot up to its site's starter kit (bot must be disabled)
 ::bot master on|off                     master toggle for every bot
 ::bot max <n>                           maximum bots in the world at once
 ::bot set <bot> <key> <value>           see the table below
@@ -160,6 +175,14 @@ runecrafting with mined essence `supply_route` + `supply_npc` + `supply_area`).
 The pathfinder walks between waypoints, so keep them within ~40 tiles of each
 other and off closed doors. **The bundled coordinates are a starting point and
 must be walked in-game before use.**
+
+Every site can carry a starter kit, applied when a bot is created there and by
+`::bot kit` / Manage > Apply starter kit. It only tops up: items already there
+are not duplicated and higher levels are not lowered.
+
+```toml
+kit = { inv = [{ item = "obj.fly_fishing_rod" }], bank = [{ item = "obj.feather", count = 1000 }], levels = { fishing = 30 } }
+```
 
 Fishing, thieving and combat sites also use:
 

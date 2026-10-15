@@ -78,6 +78,42 @@ object BotKit {
         return save.copy(xp = save.xp + (stat to PlayerSkillXPTable.getFineXPFromLevel(level)))
     }
 
+    /**
+     * Tops [save] up to [kit]: each item up to its count in its target and each level up to its
+     * minimum. Nothing already there is duplicated or lowered. Returns null, changing nothing, when
+     * an item is unknown or does not fit.
+     */
+    fun applyKit(save: BotSave, kit: StarterKit, itemId: (String) -> Int?): BotSave? {
+        var result = save
+        val targets = listOf(KitTarget.Inv to kit.inv, KitTarget.Worn to kit.worn, KitTarget.Bank to kit.bank)
+        for ((target, items) in targets) {
+            for (entry in items) {
+                val id = itemId(entry.item) ?: return null
+                val missing = entry.count - count(result, id, target)
+                if (missing > 0) {
+                    result = give(result, id, missing, target) ?: return null
+                }
+            }
+        }
+        for ((stat, level) in kit.levels) {
+            val name = "stat.$stat"
+            if (PlayerSkillXPTable.getLevelFromFineXP(result.xp[name] ?: 0) < level) {
+                result = setLevel(result, name, level) ?: return null
+            }
+        }
+        return result
+    }
+
+    private fun count(save: BotSave, itemId: Int, target: KitTarget): Int {
+        val objs =
+            when (target) {
+                KitTarget.Inv -> save.inv
+                KitTarget.Worn -> save.worn
+                KitTarget.Bank -> save.bank
+            }
+        return objs.sumOf { if (it.id == itemId) it.count else 0 }
+    }
+
     private fun add(
         objs: List<SavedObj>,
         itemId: Int,

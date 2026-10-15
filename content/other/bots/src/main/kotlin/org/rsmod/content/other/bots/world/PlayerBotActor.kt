@@ -207,7 +207,7 @@ class PlayerBotActor(
         val status = behaviour.gather(player, target)
         val after = countByItem(player.inv)
         gatherBaseline = after
-        return if (status is GatherStatus.Working) GatherStatus.Working(produced(current, after, target)) else status
+        return if (status is GatherStatus.Working) status.copy(gained = produced(current, after, target)) else status
     }
 
     private fun produced(before: Map<Int, Int>, after: Map<Int, Int>, target: BotDestination): Int =

@@ -1,6 +1,9 @@
 package org.rsmod.content.other.bots
 
+import dev.openrune.ServerCacheManager
 import dev.openrune.definition.type.widget.IfEvent
+import dev.openrune.rscm.RSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.types.aconverted.interf.IfButtonOp
 import dev.or2.central.account.Rights
 import jakarta.inject.Inject
@@ -15,8 +18,10 @@ import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.utils.format.formatAmount
+import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.content.other.bots.core.BotState
 import org.rsmod.content.other.bots.core.BotStatusView
+import org.rsmod.content.other.bots.world.BotSites
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.SessionStateEvent
@@ -62,6 +67,7 @@ constructor(
         onIfModalButton("$COMPONENT:next") { if (isAdmin()) page(1) }
         onIfModalButton("$COMPONENT:refresh") { if (isAdmin()) render() }
         onIfModalButton("$COMPONENT:master") { if (isAdmin()) toggleMaster() }
+        onIfModalButton("$COMPONENT:create") { if (isAdmin()) createBot() }
         for (row in 0 until ROWS) {
             onIfModalButton("$COMPONENT:row$row") { if (isAdmin()) rowAction(row, it.op) }
         }
@@ -102,7 +108,7 @@ constructor(
         render()
     }
 
-    private fun ProtectedAccess.rowAction(row: Int, op: IfButtonOp) {
+    private suspend fun ProtectedAccess.rowAction(row: Int, op: IfButtonOp) {
         val coordinator = manager.coordinator ?: return
         val view = pageOf(viewers[player] ?: 0).getOrNull(row) ?: return
         val id = view.record.id
@@ -110,10 +116,90 @@ constructor(
             IfButtonOp.Op1 -> {
                 val error = if (view.record.enabled) coordinator.disable(id) else coordinator.enable(id)
                 mes(error ?: "${view.record.name} is now ${if (view.record.enabled) "disabled" else "enabled"}.")
+                render()
             }
-            else -> commands.run(player, listOf("status", id.toString())) {}
+            else -> manage(view.record.id)
         }
-        render()
+    }
+
+    /** Role, then a site for it, then a name; the site's starter kit comes with it. */
+    private suspend fun ProtectedAccess.createBot() {
+        val sites = BotSites.all().values
+        val roles = BotRoleType.entries.filter { role -> sites.any { it.roleType == role } }
+        val role = roles[pick("Role for the new bot", roles.map { it.key.replaceFirstChar(Char::uppercaseChar) })]
+        val roleSites = sites.filter { it.roleType == role }
+        val site = roleSites[pick("Where should it work?", roleSites.map { "${it.key}: ${it.description}" })]
+        val name =
+            when (pick("Name", listOf("Random silly name", "Type a name"))) {
+                0 -> emptyList()
+                else -> stringDialog("Bot name:").trim().split(" ").filter { it.isNotBlank() }
+            }
+        commands.run(player, listOf("create", role.key, site.key) + name) {}
+        openStatus()
+    }
+
+    private suspend fun ProtectedAccess.manage(botId: Long) {
+        val record = manager.coordinator?.find(botId.toString()) ?: return
+        val id = botId.toString()
+        val actions =
+            buildList<Pair<String, suspend () -> Unit>> {
+                add("Show details" to { commands.run(player, listOf("status", id)) {} })
+                add((if (record.enabled) "Disable" else "Enable") to { commands.run(player, listOf(if (record.enabled) "disable" else "enable", id)) {} })
+                if (record.state == BotState.Error) {
+                    add("Clear error" to { commands.run(player, listOf("clear", id)) {} })
+                }
+                add("Apply starter kit" to { commands.run(player, listOf("kit", id)) {} })
+                add("Set a level..." to { setLevel(id) })
+                add("Give an item..." to { giveItem(id) })
+                add("Change a setting..." to { changeSetting(id) })
+                add("Teleport to bot" to { teleportTo(botId) })
+                add("Remove bot" to { removeBot(id, record.name) })
+            }
+        val choice = pick(record.name, actions.map { it.first })
+        actions[choice].second.invoke()
+        openStatus()
+    }
+
+    private suspend fun ProtectedAccess.setLevel(id: String) {
+        val stats =
+            ServerCacheManager.getStats().values
+                .map { RSCM.getReverseMapping(RSCMType.STAT, it.id).removePrefix("stat.") }
+                .filter { it != UNRELEASED_STAT }
+                .sorted()
+        val stat = stats[pick("Which skill?", stats.map { it.replaceFirstChar(Char::uppercaseChar) })]
+        val level = countDialog("New ${stat.replaceFirstChar(Char::uppercaseChar)} level (1-99):")
+        commands.run(player, listOf("level", id, stat, level.toString())) {}
+    }
+
+    private suspend fun ProtectedAccess.giveItem(id: String) {
+        val item = stringDialog("Item to give (for example iron_scimitar):").trim().lowercase().replace(' ', '_')
+        val count = countDialog("How many?")
+        val target = listOf("inv", "worn", "bank")[pick("Put it where?", listOf("Inventory", "Worn", "Bank"))]
+        commands.run(player, listOf("give", id, item, count.toString(), target)) {}
+    }
+
+    private suspend fun ProtectedAccess.changeSetting(id: String) {
+        val key = BotCommands.SETTING_KEYS[pick("Which setting?", BotCommands.SETTING_KEYS)]
+        val value = stringDialog("New value for $key:").trim().lowercase()
+        commands.run(player, listOf("set", id, key) + value.split(" ")) {}
+    }
+
+    private fun ProtectedAccess.teleportTo(botId: Long) {
+        val bot = manager.playerOf(botId) ?: return mes("That bot is not in the world.")
+        telejump(bot.coords)
+    }
+
+    private suspend fun ProtectedAccess.removeBot(id: String, name: String) {
+        if (pick("Remove $name?", listOf("Yes, remove it", "No")) == 0) {
+            commands.run(player, listOf("remove", id)) {}
+        }
+    }
+
+    /** Picks from the list modal and closes it, so the next dialogue keeps protected access. */
+    private suspend fun ProtectedAccess.pick(title: String, choices: List<String>): Int {
+        val picked = menu(title, hotkeys = false, choices = choices)
+        ifCloseSub(MENU_INTERFACE)
+        return picked
     }
 
     private fun refreshViewers() {
@@ -171,7 +257,7 @@ constructor(
         return listOf(
             "name" to name,
             "role" to record.config.role.key.replaceFirstChar(Char::uppercaseChar),
-            "state" to "$stateColour${record.state.label}",
+            "state" to "$stateColour${record.state.shortLabel}",
             "inv" to "${view.inventoryUsed}/${view.inventoryCapacity}",
             "banked" to view.bankedSaleItems.formatAmount,
             "threshold" to record.config.sale.threshold.formatAmount,
@@ -191,7 +277,9 @@ constructor(
         private const val COMPONENT = "component.bot_status"
         private const val ROWS = 10
         private const val REFRESH_TICKS = 5
-        private val BUTTONS = listOf("prev", "next", "refresh", "master")
+        private const val MENU_INTERFACE = "interface.menu"
+        private val BUTTONS = listOf("prev", "next", "refresh", "create", "master")
+        private const val UNRELEASED_STAT = "unreleased"
         private val COLUMNS = listOf("name", "role", "state", "inv", "banked", "threshold", "listings", "coins")
     }
 }

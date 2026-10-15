@@ -168,6 +168,8 @@ class BotBrain(
                     lastProgressCycle = cycle
                     recordGathered(status.gained, now)
                     setActivity(gatherActivity())
+                } else if (status.progressed) {
+                    lastProgressCycle = cycle
                 } else if (cycle - lastProgressCycle > GATHER_STALL_TICKS) {
                     fail("no gathering progress", cycle, now)
                 }

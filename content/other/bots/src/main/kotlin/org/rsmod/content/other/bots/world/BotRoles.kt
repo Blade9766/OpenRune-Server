@@ -22,6 +22,7 @@ import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLevelReq
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLogs
 import org.rsmod.game.entity.Player
+import org.rsmod.game.interact.InteractionNpcOp
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.map.CoordGrid
 
@@ -447,7 +448,8 @@ class CombatBehaviour(private val site: BotSite, private val world: BotWorldServ
             return GatherStatus.InventoryFull
         }
         if (player.isActing()) {
-            return GatherStatus.Working(0)
+            val target = (player.interaction as? InteractionNpcOp)?.target
+            return GatherStatus.Working(0, progressed = target != null && target.isInCombat())
         }
         val area = site.resource
         val loot =

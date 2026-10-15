@@ -24,6 +24,19 @@ data class SiteArea(val x: Int = 0, val z: Int = 0, val level: Int = 0, val radi
         coords.level == level && coords.chebyshevDistance(center()) <= radius
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class KitItem(val item: String = "", val count: Int = 1)
+
+/** What a new bot at a site starts with; applying it tops up to these counts and levels. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class StarterKit(
+    val inv: List<KitItem> = emptyList(),
+    val worn: List<KitItem> = emptyList(),
+    val bank: List<KitItem> = emptyList(),
+    /** Minimum levels keyed by stat name without the `stat.` prefix. */
+    val levels: Map<String, Int> = emptyMap(),
+)
+
 /**
  * Where a bot works. Routes are waypoint lists that start next to the bank; the pathfinder handles
  * the steps between waypoints, so consecutive waypoints should be at most ~40 tiles apart and the
@@ -57,6 +70,7 @@ data class BotSite(
     val supplies: List<String> = emptyList(),
     /** How many supplies to carry; 0 fills the free inventory. */
     @JsonProperty("supply_amount") val supplyAmount: Int = 0,
+    val kit: StarterKit? = null,
 ) {
     val roleType: BotRoleType?
         get() = BotRoleType.of(role)
