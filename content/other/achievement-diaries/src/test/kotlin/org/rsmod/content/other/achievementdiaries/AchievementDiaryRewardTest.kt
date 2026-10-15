@@ -113,6 +113,13 @@ class AchievementDiaryRewardTest {
         assertEquals(1, f.diaries.lostRewards(f.access(), LUMBRIDGE).size)
     }
 
+    @Test
+    fun `every lamp skill button resolves to a stat`() {
+        val stats = (0 until 24).map { lampStat(it) }
+        assertTrue(stats.all { it != null && it.startsWith("stat.") }, stats.toString())
+        assertEquals(24, stats.toSet().size)
+    }
+
     private fun easyTasks(): List<AchievementDiaryTasksRow> =
         AchievementDiaryTasksRow.all().filter { it.tier.rowId == AchievementDiaryTiersRow.getRow(EASY_TIER).rowId }
 

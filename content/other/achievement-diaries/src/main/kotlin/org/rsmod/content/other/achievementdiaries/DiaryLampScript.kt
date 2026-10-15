@@ -1,9 +1,7 @@
 package org.rsmod.content.other.achievementdiaries
 
 import dev.openrune.definition.type.widget.IfEvent
-import dev.openrune.rscm.RSCM
-import dev.openrune.rscm.RSCM.asRSCM
-import dev.openrune.rscm.RSCMType
+import dev.openrune.types.StatType
 import dev.openrune.types.enums.enum
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
@@ -11,6 +9,9 @@ import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.table.AchievementDiaryTiersRow
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
+
+internal fun lampStat(subcomponent: Int): String? =
+    enum<Int, StatType>("fake_xp_drops").backing[subcomponent + 1]?.internalName
 
 class DiaryLampScript : PluginScript() {
     override fun ScriptContext.startup() {
@@ -29,9 +30,7 @@ class DiaryLampScript : PluginScript() {
         )
         ifSetEvents("component.xpreward:universe", 0 until SKILL_BUTTONS, IfEvent.PauseButton)
         val input = pauseButton()
-        val skills = enum<Int, Int>("enum.fake_xp_drops".asRSCM(RSCMType.ENUM))
-        val statId = skills.backing[input.subcomponent + 1] ?: return
-        val stat = RSCM.getReverseMapping(RSCMType.STAT, statId)
+        val stat = lampStat(input.subcomponent) ?: return
         if (statBase(stat) < tier.lampLevel) {
             return
         }
