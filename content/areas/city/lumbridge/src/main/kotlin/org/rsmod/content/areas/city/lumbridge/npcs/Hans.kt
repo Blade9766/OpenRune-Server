@@ -3,6 +3,7 @@ package org.rsmod.content.areas.city.lumbridge.npcs
 import jakarta.inject.Inject
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
@@ -16,8 +17,11 @@ import org.rsmod.plugin.scripts.ScriptContext
 
 class Hans
 @Inject
-constructor(private val lostTribe: LostTribeQuest, private val zanikTour: ZanikTour) :
-    PluginScript() {
+constructor(
+    private val lostTribe: LostTribeQuest,
+    private val zanikTour: ZanikTour,
+    private val diaries: AchievementDiaries,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.hans") { hansDialogue(it.npc) }
         onOpNpc3("npc.hans") { hansAgeDialogue(it.npc) }
@@ -99,6 +103,7 @@ constructor(private val lostTribe: LostTribeQuest, private val zanikTour: ZanikT
             }
 
         chatNpc(happy, text)
+        diaries.complete(player, "dbrow.diary_lumbridge_easy_hans")
     }
 
     private fun Int.toDayHourMinuteParts(): Triple<Int, Int, Int> {

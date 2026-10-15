@@ -1,6 +1,7 @@
 package org.rsmod.content.skills.agility.rooftop
 
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
@@ -46,6 +47,7 @@ constructor(
     private val worldRepo: WorldRepository,
     private val npcRepo: NpcRepository,
     private val wilderness: WildernessLaps,
+    private val diaries: AchievementDiaries,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         val byLoc = LinkedHashMap<String, MutableList<CourseStep>>()
@@ -138,6 +140,9 @@ constructor(
             marks.roll(player, random, layout)
             if (course == RooftopCourse.Wilderness) {
                 wilderness.lapCompleted(this)
+            }
+            if (course == RooftopCourse.Draynor) {
+                diaries.complete(player, "dbrow.diary_lumbridge_easy_draynor_rooftop")
             }
         }
     }

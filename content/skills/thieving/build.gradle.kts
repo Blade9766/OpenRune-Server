@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.api.achievementDiaryTasks)
     implementation(projects.api.pluginCommons)
     implementation(projects.api.attr)
     implementation(projects.api.combat.combatCommons)

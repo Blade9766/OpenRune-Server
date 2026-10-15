@@ -1,6 +1,7 @@
 package org.rsmod.content.areas.city.lumbridge
 
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.cinematic.Cinematic
 import org.rsmod.api.player.cinematic.MinimapState
 import org.rsmod.api.player.output.ChatType
@@ -24,7 +25,10 @@ import org.rsmod.plugin.scripts.ScriptContext
 private var Player.darkness by intVarBit("varbit.darkness_level")
 private var Player.hamTrapdoorOpen by boolVarBit("varbit.ham_thief")
 
-class LumbridgeSwampLocs @Inject constructor(private val hamHideout: HamHideout) : PluginScript() {
+class LumbridgeSwampLocs
+@Inject
+constructor(private val hamHideout: HamHideout, private val diaries: AchievementDiaries) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpLoc1("loc.goblin_cave_entrance") { enterCave() }
         onIfModalButton("component.cws_warning_13:warn1") {
@@ -56,6 +60,7 @@ class LumbridgeSwampLocs @Inject constructor(private val hamHideout: HamHideout)
         mes("You climb down through the trapdoor.")
         telejump(HAM_HIDEOUT_LANDING)
         hamHideout.afterDescending(player)
+        diaries.complete(player, "dbrow.diary_lumbridge_easy_ham_hideout")
     }
 
     private suspend fun ProtectedAccess.closeTrapdoor() {

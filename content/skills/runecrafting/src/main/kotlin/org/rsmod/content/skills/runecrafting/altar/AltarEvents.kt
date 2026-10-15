@@ -4,6 +4,7 @@ import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
@@ -22,6 +23,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 
 class AltarEvents @Inject constructor(
     private val xpMods: XpModifiers,
+    private val diaries: AchievementDiaries,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         val altars = RunecraftingAltarsRow.all()
@@ -152,6 +154,9 @@ class AltarEvents @Inject constructor(
             craftRune(altar.rune, xpMods)
             if (kourend != null && inv.count(rune) > before) {
                 kourend.markCrafted(player)
+            }
+            if (rune == "obj.waterrune" && inv.count(rune) > before) {
+                diaries.complete(player, "dbrow.diary_lumbridge_easy_water_runes")
             }
         }
     }

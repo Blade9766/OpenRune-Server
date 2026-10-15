@@ -1,6 +1,7 @@
 package org.rsmod.content.skills.thieving.pickpocket
 
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.combat.commons.CombatEffects
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.thievingLvl
@@ -39,6 +40,7 @@ constructor(
     private val objRepo: ObjRepository,
     private val equipment: ThievingEquipment,
     private val pets: PetRewards,
+    private val diaries: AchievementDiaries,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -108,6 +110,9 @@ constructor(
             spam("Your rogue outfit lets you steal twice as much!")
         }
         pets.rollSkillingPet(player, ROCKY, THIEVING_STAT, target.petBase)
+        if (target == PickpocketTarget.MAN_WOMAN && inArea("area.lumbridge", npc.coords)) {
+            diaries.complete(player, "dbrow.diary_lumbridge_easy_pickpocket")
+        }
     }
 
     private fun ProtectedAccess.fail(npc: Npc, target: PickpocketTarget, name: String) {

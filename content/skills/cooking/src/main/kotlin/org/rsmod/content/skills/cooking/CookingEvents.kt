@@ -1,6 +1,7 @@
 package org.rsmod.content.skills.cooking
 
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.cookingLvl
 import org.rsmod.api.repo.loc.LocRepository
@@ -25,6 +26,7 @@ import skillSuccess
 class CookingEvents @Inject constructor(
     private val xpMods: XpModifiers,
     private val locRepo: LocRepository,
+    private val diaries: AchievementDiaries,
 ) : PluginScript() {
 
     private val foods = CookingFoodsRow.all()
@@ -233,8 +235,14 @@ class CookingEvents @Inject constructor(
             val xpModifier = xpMods.get(player, "stat.cooking")
             statAdvance("stat.cooking", food.xp.toDouble() * xpModifier)
             mes("You successfully cook the ${food.raw.name}.")
+            if (food.cooked.internalName == "obj.bread" && surface.isLumbridgeRange()) {
+                diaries.complete(player, "dbrow.diary_lumbridge_easy_bread")
+            }
         }
     }
+
+    private fun CookingSurface.isLumbridgeRange(): Boolean =
+        this is CookingSurface.Range && rangeType == RangeType.LUMBRIDGE
 
     private data class CookTask(
         val food: CookingFoodsRow,

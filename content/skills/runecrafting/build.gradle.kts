@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.api.achievementDiaryTasks)
     implementation(projects.api.combat.combatManager)
     implementation(projects.api.invStorage)
     implementation(projects.api.invtx)
