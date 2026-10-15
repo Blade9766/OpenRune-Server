@@ -40,6 +40,7 @@ constructor(
             refreshViewers()
         }
         onEvent<SessionStateEvent.Logout> { manager.onBotLoggedOut(player) }
+        onEvent<SessionStateEvent.Delete> { manager.onPlayerDeleted(player) }
         onEvent<GameLifecycle.Shutdown> { manager.shutdown() }
 
         onCommand("bot") {

@@ -10,7 +10,7 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.IdentityHashMap
 import org.rsmod.api.inv.map.InvMapInit
-import org.rsmod.api.net.rsprot.HeadlessSessions
+import org.rsmod.api.net.rsprot.BotSessions
 import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.registry.player.isSuccess
 import org.rsmod.content.other.bots.core.BotActor
@@ -30,8 +30,8 @@ import org.rsmod.map.CoordGrid
 
 /**
  * Brings bot characters in and out of the world. A bot is an ordinary [Player] with no network
- * session (it gets a headless info-protocol avatar so others can see it) and a negative account
- * id, which keeps it out of every account-save path; its state is persisted by the bot store.
+ * session (it gets a [BotSessions] avatar so others can see it) and a negative account id, which
+ * keeps it out of every account-save path; its state is persisted by the bot store.
  */
 @Singleton
 class BotWorld
@@ -40,7 +40,7 @@ constructor(
     private val playerRegistry: PlayerRegistry,
     private val eventBus: EventBus,
     private val invMapInit: InvMapInit,
-    private val headless: HeadlessSessions,
+    private val sessions: BotSessions,
     private val services: BotWorldServices,
 ) : BotSpawner {
     private val logger = InlineLogger()
@@ -64,13 +64,10 @@ constructor(
         invMapInit.init(player)
         restore(player, record.save)
         player.slotId = slot
-        try {
-            headless.attach(player)
-        } catch (e: Exception) {
-            logger.warn(e) { "Bot ${record.name} has no visible avatar; continuing headless." }
-        }
+        sessions.attach(player)
         val result = playerRegistry.add(player)
         if (!result.isSuccess()) {
+            sessions.detach(player)
             logger.warn { "Bot ${record.name} could not be registered: $result" }
             return null
         }
@@ -94,8 +91,16 @@ constructor(
         if (player.slotId != -1 && !player.loggingOut) {
             eventBus.publish(SessionStateEvent.Logout(player))
             playerRegistry.del(player)
+            sessions.detach(player)
         }
         return save
+    }
+
+    /** Releases the avatar of a bot the engine removed from the world by itself. */
+    fun onDeleted(player: Player) {
+        if (player.accountId < 0) {
+            sessions.detach(player)
+        }
     }
 
     /** The engine is logging a bot out by itself (shutdown, forced disconnect). */

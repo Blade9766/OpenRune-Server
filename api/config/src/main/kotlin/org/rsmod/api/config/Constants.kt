@@ -39,6 +39,7 @@ object Constants {
 
     // Arbitrary value until I get more info on this var.
     const val ge_recalcusers_normal: Int = 25
+
     // Arbitrary value until I get more info on this var.
     const val ge_recalcusers_low: Int = 10
 
@@ -60,6 +61,9 @@ object Constants {
     const val combat_pstaff_attackrate = 4
     const val combat_spell_attackrate = 5
     const val combat_activecombat_delay = 8
+
+    // Must stay above every weapon's `defend_anim` priority, which tops out at 6.
+    const val combat_special_anim_priority = 7
 
     const val npc_immunity_none = 0
     const val npc_venom_partial_immunity = 1

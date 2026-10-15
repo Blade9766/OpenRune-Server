@@ -4,13 +4,16 @@ import dev.openrune.util.Wearpos
 import kotlin.math.max
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.player.front
 import org.rsmod.api.player.hands
 import org.rsmod.api.player.hat
 import org.rsmod.api.player.legs
 import org.rsmod.api.player.righthand
 import org.rsmod.api.player.torso
+import org.rsmod.api.player.worn.DizanasQuiver
 import org.rsmod.api.player.worn.EquipmentChecks
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.isAnyType
 import org.rsmod.game.type.getInvObj
 import org.rsmod.game.type.getOrNull
 
@@ -124,8 +127,35 @@ public class WornBonuses {
         val usingThrown = weapon != null && weapon.isCategoryType("category.throwing_weapon")
         val ignoreQuiverBonuses = usingChargebow || usingThrown
 
+        // Ammunition fired from a worn Dizana's quiver replaces the ammo slot's ranged strength;
+        // everything else the ammo slot item gives (e.g. a blessing's prayer bonus) still counts.
+        val storedAmmo = DizanasQuiver.activeStoredAmmo(player, weapon)
+
         for (wearpos in Wearpos.entries) {
-            val obj = player.worn[wearpos.slot] ?: continue
+            val obj =
+                if (wearpos == Wearpos.Quiver && storedAmmo != null) {
+                    // The ammo slot may be empty; the stored ammunition still applies.
+                    val wornAmmo = player.worn[wearpos.slot]
+                    if (wornAmmo != null) {
+                        val wornType = getInvObj(wornAmmo)
+                        offStab += wornType.param(params.attack_stab)
+                        offSlash += wornType.param(params.attack_slash)
+                        offCrush += wornType.param(params.attack_crush)
+                        offMagic += wornType.param(params.attack_magic)
+                        offRange += wornType.param(params.attack_ranged)
+                        defStab += wornType.param(params.defence_stab)
+                        defSlash += wornType.param(params.defence_slash)
+                        defCrush += wornType.param(params.defence_crush)
+                        defRange += wornType.param(params.defence_ranged)
+                        defMagic += wornType.param(params.defence_magic)
+                        meleeStr += wornType.param(params.melee_strength)
+                        magicDmg += wornType.param(params.magic_damage)
+                        prayer += wornType.param(params.item_prayer_bonus)
+                    }
+                    storedAmmo
+                } else {
+                    player.worn[wearpos.slot] ?: continue
+                }
 
             if (wearpos == Wearpos.Quiver && ignoreQuiverBonuses) {
                 continue
@@ -194,6 +224,10 @@ public class WornBonuses {
             magicDmg += 50
         }
 
+        if (player.isWearingVeracSetWithDamnedAmulet()) {
+            prayer += 7
+        }
+
         // TODO: +10 off ranged and +1 ranged str with dizana's quiver.
         //  Verify if this is visible in equipment bonus interface. If it's not then it can be
         //  handled purely in combat formulae and not here.
@@ -227,6 +261,10 @@ public class WornBonuses {
             EquipmentChecks.isEliteVoidTop(torso) &&
             EquipmentChecks.isEliteVoidRobe(legs) &&
             EquipmentChecks.isVoidGloves(hands)
+
+    private fun Player.isWearingVeracSetWithDamnedAmulet(): Boolean =
+        EquipmentChecks.isVeracSet(hat, torso, legs, righthand) &&
+            front.isAnyType("obj.damned_amulet", "obj.damned_amulet_degraded")
 
     public data class Bonuses(
         val offStab: Int,

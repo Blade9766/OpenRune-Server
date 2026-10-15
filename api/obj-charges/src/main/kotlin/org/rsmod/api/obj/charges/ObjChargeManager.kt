@@ -23,6 +23,25 @@ public class ObjChargeManager {
     }
 
     /**
+     * Whether [addCharges] would add at least one charge to [obj] without throwing: it must hold
+     * fewer than [max] charges, and an uncharged obj must define a `charged_variant` param.
+     */
+    public fun canAddCharges(obj: InvObj?, internal: String, max: Int): Boolean {
+        if (obj == null) {
+            return false
+        }
+        val curr = getCharges(obj, internal)
+        if (curr >= max) {
+            return false
+        }
+        return curr > 0 || getInvObj(obj).paramOrNull(params.charged_variant) != null
+    }
+
+    /** Whether [removeAllCharges] can be called on [obj] without throwing. */
+    public fun canRemoveAllCharges(obj: InvObj?): Boolean =
+        obj != null && getInvObj(obj).paramOrNull(params.uncharged_variant) != null
+
+    /**
      * Adds charges to the obj in the given [slot] of the provided [inventory].
      *
      * If the obj has **no existing charges**, it is assumed to be the uncharged variant and will be

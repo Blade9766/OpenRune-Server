@@ -1,0 +1,16 @@
+id = "Zombie Drops (level 18)"
+npcs = ["npc.zombie2", "npc.zombie2_b", "npc.zombie2_c"]
+
+[[tertiary]]
+numerator = 1
+denominator = 4
+obj = "obj.rag_zombie_bone"
+count = 1
+quest = "quest_ragandboneman2"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_zombie"
+count = 1

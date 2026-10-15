@@ -20,7 +20,11 @@ data class ItemVersion(
 class ShopBuckets(private val source: BucketSource) {
 
     suspend fun listShops(): List<ParsedWikiShopInfobox> =
-        source.rows("infobox_shop", listOf("page_name", "shop_name"), cacheKey = "all-shops").map {
+        source.rows(
+            "infobox_shop",
+            listOf("page_name", "shop_name", "specialty"),
+            cacheKey = "all-shops-specialty",
+        ).map {
             row ->
             val page = row.requireText("page_name", "infobox_shop")
             val name = row.get("shop_name")?.takeIf { it.isTextual }?.asText().orEmpty()
@@ -28,6 +32,8 @@ class ShopBuckets(private val source: BucketSource) {
                 pageTitle = page,
                 rsName = null,
                 infoboxName = name.ifBlank { page },
+                generalStore =
+                    row.get("specialty")?.asText().equals("General store", ignoreCase = true),
             )
         }
 

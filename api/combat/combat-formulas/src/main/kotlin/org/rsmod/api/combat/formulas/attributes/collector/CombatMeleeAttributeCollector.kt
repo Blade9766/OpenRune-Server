@@ -113,6 +113,10 @@ public class CombatMeleeAttributeCollector {
                     CombatMeleeAttributes.Silverlight
                 }
 
+                weapon.isAnyType("obj.fairy_enchanted_secateurs", "obj.nzone_fairysecateurs") -> {
+                    CombatMeleeAttributes.MagicSecateurs
+                }
+
                 weapon.isAnyType(
                     "obj.leafbladed_sword",
                     "obj.slayer_leafbladed_spear",

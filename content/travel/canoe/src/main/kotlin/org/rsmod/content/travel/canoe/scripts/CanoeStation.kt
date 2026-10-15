@@ -61,6 +61,10 @@ constructor(private val invisibleLvls: InvisibleLevels, private val worldRepo: W
             delay(1)
             playerWalk(dest)
             delay(1)
+            if (coords != dest) {
+                mes("I can't reach that!")
+                return
+            }
         }
         faceSquare(face)
         delay(1)

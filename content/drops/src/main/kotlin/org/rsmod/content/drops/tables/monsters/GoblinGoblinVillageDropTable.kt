@@ -2,16 +2,13 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
-import org.rsmod.content.drops.hasCompletedQuest
-import org.rsmod.content.drops.isOnQuest
 import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.needsQuestDrop
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -38,13 +35,11 @@ public val goblinGoblinVillageDropTable: RSDropTable<Player, DropRollItem> = RSD
         3 weight "obj.coins" count 24
         9 weight "obj.hammer" count 1
         2 weight "obj.slice_goblin_history_book" count 1
-        10 weight "obj.goblin_armour_red" count 1 condition { player ->
-            // Drops Need Manual: Only dropped by goblins wearing red goblin mail.
-             true
+        10 weight "obj.goblin_armour_red" count 1 killCondition { player, npc, areaChecker ->
+            npc.type.internalName.contains("_red_")
         }
-        10 weight "obj.goblin_armour_green" count 1 condition { player ->
-            // Drops Need Manual: Only dropped by goblins wearing green goblin mail.
-             true
+        10 weight "obj.goblin_armour_green" count 1 killCondition { player, npc, areaChecker ->
+            npc.type.internalName.contains("_green_")
         }
         1 weight "obj.grapes" count 1
         1 weight "obj.red_cape" count 1
@@ -53,8 +48,8 @@ public val goblinGoblinVillageDropTable: RSDropTable<Player, DropRollItem> = RSD
         2 weight SharedDropTables.herb
     },
     tertiaries = rsPlayerTertiaryTable {
-        1 outOf 4 weight "obj.rag_goblin_bone" count 1 condition {
-            player -> player.isOnQuest("quest_ragandboneman1")
+        1 outOf 1 weight "obj.rag_goblin_bone" count 1 condition {
+            player -> player.needsQuestDrop("quest_ragandboneman1", "obj.rag_goblin_bone")
         }
         1 outOf 30 weight "obj.arceuus_corpse_goblin" count 1
         1 outOf 5000 weight "obj.champions_challenge_goblin" count 1

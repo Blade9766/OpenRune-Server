@@ -3,6 +3,7 @@ package org.rsmod.content.areas.wilderness
 import kotlin.math.min
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 
 public suspend fun ProtectedAccess.tryPayWildernessBossFee(
     fee: Int,
@@ -60,7 +61,10 @@ private fun ProtectedAccess.payFee(fee: Int): String? {
     val fromBank = fee - fromInv
     if (invTotal(bank, COINS) < fromBank) return null
     if (fromInv > 0) invDel(inv, COINS, fromInv)
-    if (fromBank > 0) invDel(bank, COINS, fromBank)
+    if (fromBank > 0) {
+        invDel(bank, COINS, fromBank)
+        player.syncBankAfterDirectWrite()
+    }
     return when {
         fromBank == 0 -> "your inventory"
         fromInv == 0 -> "your bank"

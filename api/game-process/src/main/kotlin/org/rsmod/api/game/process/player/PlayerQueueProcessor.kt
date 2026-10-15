@@ -13,11 +13,32 @@ public class PlayerQueueProcessor
 @Inject
 constructor(private val eventBus: EventBus, private val protectedAccess: ProtectedAccessLauncher) {
     public fun process(player: Player) {
-        if (player.queueList.strongQueues > 0) {
-            player.ifClose(eventBus)
+        // Only a strong queue that fires this cycle interrupts. A pending one (a spell that lands
+        // in three cycles, say) must leave the player free to keep fighting until it does.
+        if (player.queueList.strongQueues > 0 && player.hasStrongQueueDue()) {
+            player.interruptForStrongQueue()
         }
         player.publishExpiredQueues()
         player.publishExpiredWeakQueues()
+    }
+
+    private fun Player.hasStrongQueueDue(): Boolean =
+        queueList.anyDue(QueueCategory.Strong, currentMapClock)
+
+    /**
+     * A strong queue that fires this cycle closes the player's modals so the queue can launch. It
+     * does _not_ drop the current interaction or route: every hit and auto-retaliate is a strong
+     * queue, so clearing them here would replace whatever the player was doing (a manually cast
+     * spell, say) with a plain retaliation attack on every hit they take. Scripts that need to
+     * stop the player's action, such as the death sequence, do so themselves.
+     *
+     * A script that is already mid-way - suspended in a delay or a dialogue - is left to finish:
+     * closing the modals is enough to unwind a dialogue, and a delayed script (the death sequence
+     * itself, for one) must not be cancelled by the very queue it is servicing. The strong queue
+     * launches once the script has ended, which [canLaunchQueue] enforces.
+     */
+    private fun Player.interruptForStrongQueue() {
+        ifClose(eventBus)
     }
 
     private fun Player.publishExpiredQueues() {
@@ -64,7 +85,14 @@ constructor(private val eventBus: EventBus, private val protectedAccess: Protect
         category == QueueCategory.Strong.id || category == QueueCategory.Soft.id
 
     private fun Player.canLaunchQueue(queue: PlayerQueueList.Queue): Boolean =
-        queue.category == QueueCategory.Soft.id || !isAccessProtected
+        when (queue.category) {
+            QueueCategory.Soft.id -> true
+            // Modals were closed by [interruptForStrongQueue]; an interaction never blocks a
+            // queue, so only a delay or a coroutine that is still suspended holds a strong queue
+            // back.
+            QueueCategory.Strong.id -> !isModalButtonProtected
+            else -> !isAccessProtected
+        }
 
     private fun Player.publish(queue: PlayerQueueList.Queue) {
         if (queue.category == QueueCategory.Soft.id) {
@@ -105,7 +133,7 @@ constructor(private val eventBus: EventBus, private val protectedAccess: Protect
             }
             iterator.cleanUp()
 
-            if (processedNone || queueList.size == 1) {
+            if (processedNone || weakQueueList.size == 1) {
                 break
             }
         }

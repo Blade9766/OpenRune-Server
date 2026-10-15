@@ -1,0 +1,8 @@
+id = "Undead one (skeleton) Drops"
+npcs = ["npc.zqskeleton_unarmed", "npc.zqskeleton_unarmed2", "npc.zqskeleton_armed", "npc.zqskeleton_armed2"]
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_skeleton"
+count = 1

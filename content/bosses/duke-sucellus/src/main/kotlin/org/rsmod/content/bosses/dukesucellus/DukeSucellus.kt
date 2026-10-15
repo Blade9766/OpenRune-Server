@@ -241,7 +241,7 @@ constructor(
             if (!player.isValidTarget() || player.coords !in tiles) continue
             val damage = range.first + deps.random.of(range.last - range.first + 1)
             val modifier = deps.playerHitModifier
-            player.finishNpcHit(npc, 1, EngineHitType.Melee, damage, modifier, MELEE_SLAM_PENETRATION)
+            player.finishNpcHit(npc, 1, EngineHitType.Melee, damage, modifier, penetration = MELEE_SLAM_PENETRATION)
         }
     }
 

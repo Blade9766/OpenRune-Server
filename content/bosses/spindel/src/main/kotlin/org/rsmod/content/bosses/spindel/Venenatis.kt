@@ -8,12 +8,14 @@ import kotlin.math.abs
 import org.rsmod.api.bosses.dsl.*
 import org.rsmod.api.bosses.runtime.BossCombat
 import org.rsmod.api.bosses.runtime.BossDeps
+import org.rsmod.api.bosses.runtime.BossEncounter
 import org.rsmod.api.bosses.runtime.BossPluginScript
 import org.rsmod.api.bosses.runtime.EffectInterpreter
 import org.rsmod.api.bosses.runtime.bossProjectile
 import org.rsmod.api.bosses.runtime.encounter
 import org.rsmod.api.bosses.runtime.repeatTick
 import org.rsmod.api.bosses.spec.Condition
+import org.rsmod.api.bosses.spec.DamageExpr
 import org.rsmod.api.bosses.spec.Effect
 import org.rsmod.api.bosses.spec.ProjectileConfig
 import org.rsmod.api.combat.commons.CombatEffects
@@ -49,6 +51,9 @@ data class LairConfig(
     val maxX: Int,
     val minZ: Int,
     val maxZ: Int,
+    val meleeMaxHit: Int,
+    val rangedMaxHit: Int,
+    val magicMaxHit: Int,
 ) {
     fun contains(coord: CoordGrid, margin: Int = 0): Boolean =
         coord.level == level &&
@@ -61,10 +66,34 @@ data class LairConfig(
 }
 
 val SPINDEL_LAIR =
-    LairConfig("spindel", "npc.venenatis_singles", "npc.spindel_spiderling", 2, 1610, 1650, 11525, 11570)
+    LairConfig(
+        "spindel",
+        "npc.venenatis_singles",
+        "npc.spindel_spiderling",
+        2,
+        1610,
+        1650,
+        11525,
+        11570,
+        meleeMaxHit = 14,
+        rangedMaxHit = 31,
+        magicMaxHit = 24,
+    )
 
 val VENENATIS_LAIR =
-    LairConfig("venenatis", "npc.venenatis", "npc.venenatis_spiderling", 2, 3405, 3440, 10180, 10220)
+    LairConfig(
+        "venenatis",
+        "npc.venenatis",
+        "npc.venenatis_spiderling",
+        2,
+        3405,
+        3440,
+        10180,
+        10220,
+        meleeMaxHit = 21,
+        rangedMaxHit = 35,
+        magicMaxHit = 30,
+    )
 
 class Venenatis
 @Inject
@@ -81,6 +110,9 @@ constructor(
 
     private fun lairFor(npc: Npc): LairConfig = lairsById.getValue(npc.id)
 
+    private fun lairMaxHit(max: (LairConfig) -> Int): DamageExpr =
+        DamageExpr.Custom { npc, _ -> deps.random.of(max(lairFor(npc)) + 1) }
+
     override val spec =
         boss(SPINDEL_LAIR.bossNpc, VENENATIS_LAIR.bossNpc) {
             stats(attackRate = ATTACK_RATE)
@@ -89,7 +121,7 @@ constructor(
                 ability("melee") {
                     anim("seq.npc_venenatis_melee_01")
                     hit {
-                        damage(0..MELEE_MAX_HIT).roll()
+                        damage(lairMaxHit { it.meleeMaxHit })
                         type(Melee)
                         target = AllInRadius(radius = 1)
                     }
@@ -107,7 +139,7 @@ constructor(
                                 config = RANGED_PROJECTILE_CONFIG,
                                 hit =
                                     Effect.Hit(
-                                        damage = Roll(0..RANGED_MAX_HIT),
+                                        damage = lairMaxHit { it.rangedMaxHit },
                                         type = Ranged,
                                         spotanim = "spotanim.fx_venenatis_ranged_impact",
                                         spotanimHeight = RANGED_IMPACT_HEIGHT,
@@ -129,7 +161,7 @@ constructor(
                                 config = MAGIC_PROJECTILE_CONFIG,
                                 hit =
                                     Effect.Hit(
-                                        damage = Roll(0..MAGIC_MAX_HIT),
+                                        damage = lairMaxHit { it.magicMaxHit },
                                         type = Magic,
                                         spotanim = "spotanim.fx_venenatis_magic_impact",
                                         spotanimHeight = MAGIC_IMPACT_HEIGHT,
@@ -211,16 +243,22 @@ constructor(
     private fun fleeFromTarget(npc: Npc) {
         val lair = lairFor(npc)
         val dest = randomArenaTile(lair, npc.coords)
+        val encounter = deps.encounter(npc)
+        var finished = false
+        val finish = {
+            if (!finished) {
+                finished = true
+                if (npc.hitpoints > 0 && deps.encounterRegistry.isActive(encounter)) {
+                    npc.ignoreCombatInteractions = false
+                    pickArenaTarget(npc)?.let { npc.apPlayer2(it, aiPlayerInteractions) }
+                }
+            }
+        }
         npc.ignoreCombatInteractions = true
         npc.resetFaceEntity()
         npc.clearFacingLock()
-        npc.walkTo(routeFactory, dest, speed = MoveSpeed.Run) {
-            npc.ignoreCombatInteractions = false
-            val next = pickArenaTarget(npc)
-            if (next != null) {
-                npc.apPlayer2(next, aiPlayerInteractions)
-            }
-        }
+        npc.walkTo(routeFactory, dest, speed = MoveSpeed.Run, onArrival = finish)
+        deps.worldQueues.add(FLEE_TIMEOUT_TICKS) { finish() }
     }
 
     private fun pickArenaTarget(npc: Npc): Player? {
@@ -261,10 +299,12 @@ constructor(
             travel = WEB_PROJ_TRAVEL,
             curve = WEB_PROJ_ANGLE,
         )
-        deps.worldQueues.add(WEB_LAND_TICKS) { deployWebZone(npc, centerTile) }
+        val encounter = deps.encounter(npc)
+        deps.worldQueues.add(WEB_LAND_TICKS) { deployWebZone(npc, encounter, centerTile) }
     }
 
-    private fun deployWebZone(npc: Npc, centerTile: CoordGrid) {
+    private fun deployWebZone(npc: Npc, encounter: BossEncounter, centerTile: CoordGrid) {
+        if (npc.hitpoints <= 0 || !deps.encounterRegistry.isActive(encounter)) return
         val footprint = webFootprint(centerTile)
         val impactSpot = SpotanimType("spotanim.fx_venenatis_web_impact".asRSCM(RSCMType.SPOTANIM))
         for (tile in footprint) {
@@ -281,7 +321,9 @@ constructor(
         deps.repeatTick(
             ticks = WEB_DURATION_TICKS,
             onTick = { _ ->
-                if (!npc.isSlotAssigned) return@repeatTick false
+                if (npc.hitpoints <= 0 || !deps.encounterRegistry.isActive(encounter)) {
+                    return@repeatTick false
+                }
                 for (player in deps.playerList) {
                     if (player.hitpoints > 0 && player.coords in tiles) {
                         player.finishNpcHit(
@@ -343,14 +385,11 @@ constructor(
         private const val FLEE_MIN_MOVE = 4
         private const val FLEE_MAX_MOVE = 9
         private const val FLEE_TILE_ATTEMPTS = 8
+        private const val FLEE_TIMEOUT_TICKS = 12
         private const val ARENA_ATTACK_RADIUS = 15
 
         private const val SPIDERLING_COUNT = 2
         private const val SPIDERLING_SUMMON_RADIUS = 6
-
-        private const val MELEE_MAX_HIT = 20
-        private const val RANGED_MAX_HIT = 30
-        private const val MAGIC_MAX_HIT = 30
 
         private const val RANGED_IMPACT_HEIGHT = 30
         private val RANGED_PROJECTILE_CONFIG =

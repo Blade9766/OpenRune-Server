@@ -1,0 +1,2 @@
+[clientscript,cheat_design_zoom](int $xof, int $yof, int $xan, int $yan, int $zan, int $zoom)
+if_setmodelangle($xof, $yof, $xan, $yan, $zan, $zoom, player_design:player);

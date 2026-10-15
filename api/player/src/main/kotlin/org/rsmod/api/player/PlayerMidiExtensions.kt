@@ -15,9 +15,16 @@ public fun Player.midiJingle(jingle: String) {
     client.write(MidiJingle(jingle.asRSCM(RSCMType.JINGLE)))
 }
 
-public fun Player.midiJingle(id: Int) {
-    musicClocks = 0
-    client.write(MidiJingle(id))
+/**
+ * Plays the jingle stored as js5 archive 11 group [group].
+ *
+ * The client looks a jingle up by its archive group, which is not the id the `jingle.*` gameval
+ * resolves to (the sound gameval table numbers music and jingles in its own space), so a jingle
+ * whose group has been identified by ear or by duration is played through this overload.
+ */
+public fun Player.midiJingle(group: Int) {
+    musicClocks = 0 // Client restarts music when a jingle is played.
+    client.write(MidiJingle(group))
 }
 
 /** @see [MidiSongV2] */

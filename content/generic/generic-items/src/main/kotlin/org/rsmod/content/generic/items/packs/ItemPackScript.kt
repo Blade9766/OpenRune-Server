@@ -1,7 +1,6 @@
 package org.rsmod.content.generic.items.packs
 
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.enums.enum
 import jakarta.inject.Inject
 import org.rsmod.api.enums.NamedEnums.item_pack_contents
 import org.rsmod.api.invtx.add

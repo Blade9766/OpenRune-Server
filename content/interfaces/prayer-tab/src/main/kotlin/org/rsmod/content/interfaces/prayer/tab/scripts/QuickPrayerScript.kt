@@ -5,6 +5,8 @@ import dev.openrune.types.aconverted.interf.IfButtonOp
 import dev.openrune.types.aconverted.interf.IfSubType
 import jakarta.inject.Inject
 import org.rsmod.api.config.constants
+import org.rsmod.api.player.hook.PlayerRestrictions
+import org.rsmod.api.player.hook.RestrictedAction
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.overheadProtectionPrayerVarbits
 import org.rsmod.api.player.overheadsLocked
@@ -40,6 +42,7 @@ constructor(
     private val repo: PrayerRepository,
     private val eventBus: EventBus,
     private val protectedAccess: ProtectedAccessLauncher,
+    private val restrictions: PlayerRestrictions,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onPlayerLogin { player.disableQuickPrayers() }
@@ -85,6 +88,13 @@ constructor(
     }
 
     private fun ProtectedAccess.enableQuickPrayers() {
+        val restriction = restrictions.check(player, RestrictedAction.Prayer)
+        if (restriction != null) {
+            mes(restriction)
+            player.resyncVar("varbit.quickprayer_active")
+            return
+        }
+
         val quickPrayerVars = vars["varbit.quickprayer_selected"]
 
         if (quickPrayerVars == 0) {

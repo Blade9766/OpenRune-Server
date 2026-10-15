@@ -1,0 +1,9 @@
+# Farming sound effects. The ids come from the OSRS wiki's list of sound IDs; the cache ships them
+# but the stock gameval tables only name a couple of hundred synths, so the plugin names its own.
+[gamevals.synth]
+farming_compost = 2427
+farming_dibbing = 2432
+farming_pick = 2437
+farming_plantcure = 2438
+farming_raking = 2442
+farming_watering = 2446

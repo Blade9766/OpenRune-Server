@@ -4,6 +4,7 @@ import dev.openrune.map.MapSingletons.collision
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -27,13 +28,13 @@ import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import skillSuccess
 
-
 public class BurnLogEvents @Inject constructor(
     private val objRepo: ObjRegistry,
     private val objRegistry: ObjRegistry,
     private val locRepo: LocRepository,
     private val worldClock: MapClock,
     private val xpMods: XpModifiers,
+    private val diaries: AchievementDiaries,
 ) : PluginScript() {
 
     private val walkDirections = listOf(
@@ -173,6 +174,9 @@ public class BurnLogEvents @Inject constructor(
         val xp = task.log.xp * task.method.xpMultiplier(task.log.input.internalName) * xpModifier
         statAdvance("stat.firemaking", xp)
         mes("The fire catches and the logs begin to burn.")
+        if (task.log.input.internalName == "obj.oak_logs" && inArea("area.lumbridge", fireCoords)) {
+            diaries.complete(player, "dbrow.diary_lumbridge_easy_oak_logs")
+        }
 
         moveAwayFromFire(fireCoords)
         faceSquare(fireCoords)

@@ -1,0 +1,74 @@
+id = "Cave bug Level 96 drops"
+npcs = ["npc.molanisk_giant_cave_bug"]
+
+[main]
+total = 128
+name = "Cave bug Level 96 drops"
+
+[[main.entries]]
+weight = 1
+obj = "obj.water_battlestaff"
+count = 1
+
+[[main.entries]]
+weight = 15
+obj = "obj.earthrune"
+count = "1..10"
+
+[[main.entries]]
+weight = 2
+obj = "obj.earthrune"
+count = "1..170"
+
+[[main.entries]]
+weight = 14
+obj = "obj.waterrune"
+count = "1..15"
+
+[[main.entries]]
+weight = 2
+obj = "obj.waterrune"
+count = "1..170"
+
+[[main.entries]]
+weight = 13
+obj = "obj.firerune"
+count = "1..20"
+
+[[main.entries]]
+weight = 2
+obj = "obj.firerune"
+count = "1..170"
+
+[[main.entries]]
+weight = 14
+obj = "obj.coins"
+count = "1..40"
+
+[[main.entries]]
+weight = 31
+obj = "obj.dorgesh_swamp_weed"
+count = "1..4"
+
+[[main.entries]]
+weight = 10
+obj = "obj.dorgesh_swamp_weed"
+count = "5..8"
+
+[[main.entries]]
+weight = 19
+shared = "herb"
+
+[[main.entries]]
+weight = 5
+nothing = true
+
+[[tertiary]]
+numerator = 1
+denominator = 121
+obj = "obj.trail_clue_easy_simple001"
+count = 1
+clue_scroll_box = true
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (5 weight)

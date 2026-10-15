@@ -54,3 +54,6 @@ coords = "0_24_147_25_13"
 npc = "npc.moonlight_antelope"
 coords = "0_24_147_26_9"
 
+[[spawn]]
+npc = "npc.hg_fur_trader"
+coords = "0_24_47_29_26"

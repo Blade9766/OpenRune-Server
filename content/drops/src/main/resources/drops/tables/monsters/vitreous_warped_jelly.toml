@@ -105,3 +105,18 @@ denominator = 60
 obj = "obj.trail_clue_hard_map001"
 count = 1
 clue_scroll_box = true
+
+[[tertiary]]
+numerator = 1
+denominator = 186
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true

@@ -1,0 +1,11 @@
+[clientscript,transmog_presets](int $saved)
+~transmog_preset(transmog:preset0, 0, $saved);
+~transmog_preset(transmog:preset1, 1, $saved);
+~transmog_preset(transmog:preset2, 2, $saved);
+~transmog_preset(transmog:preset3, 3, $saved);
+~transmog_preset(transmog:preset4, 4, $saved);
+~transmog_preset(transmog:preset5, 5, $saved);
+~transmog_preset(transmog:preset6, 6, $saved);
+~transmog_preset(transmog:preset7, 7, $saved);
+~transmog_preset(transmog:preset8, 8, $saved);
+~transmog_preset(transmog:preset9, 9, $saved);

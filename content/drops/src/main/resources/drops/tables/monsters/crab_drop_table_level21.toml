@@ -1,0 +1,32 @@
+id = "Crab Drops (Level 21)"
+npcs = ["npc.hundred_pirate_giant_crab"]
+
+[main]
+total = 16
+name = "Crab Drops (Level 21)"
+
+[[main.entries]]
+weight = 1
+obj = "obj.hundred_pirate_crab_shell_claw"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.hundred_pirate_crab_shell_head"
+count = 1
+
+[[main.entries]]
+weight = 14
+nothing = true
+
+[[main.separate_rolls]]
+numerator = 1
+denominator = 10
+
+[[main.separate_rolls.entries]]
+weight = 1
+obj = "obj.oystershell"
+count = 1
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (14 weight)

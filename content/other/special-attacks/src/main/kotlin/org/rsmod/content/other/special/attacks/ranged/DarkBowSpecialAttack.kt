@@ -3,18 +3,17 @@ package org.rsmod.content.other.special.attacks.ranged
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.quiver
 import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.RangedSpecialAttack
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.PathingEntity
 import org.rsmod.game.entity.Player
@@ -51,7 +50,8 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             attack: CombatAttack.Ranged,
         ): Boolean {
             val righthandType = getInvObj(attack.weapon)
-            val quiverType = getOrNull(player.quiver)
+            val quiver = ammunition.activeAmmo(player, righthandType)
+            val quiverType = getOrNull(quiver)
 
             val canUseAmmo = ammunition.attemptAmmoUsage(player, righthandType, quiverType)
             if (!canUseAmmo) {
@@ -67,7 +67,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
                 return false
             }
 
-            val quiverCount = player.quiver?.count ?: 0
+            val quiverCount = quiver?.count ?: 0
             if (quiverCount < 2) {
                 manager.stopCombat(this)
                 mes("You need to have at least 2 arrows in your quiver for this special attack.")
@@ -92,11 +92,18 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             quiverType: ItemServerType,
             travelSpot: String,
         ) {
-            val launchSpot = quiverType.paramOrNull(params.proj_launch_double)
-            anim("seq.human_bow")
+            // Broad and ogre arrows carry no double-launch graphic; fall back to the single one.
+            val launchSpot =
+                quiverType.paramOrNull(params.proj_launch_double)
+                    ?: quiverType.paramOrNull(params.proj_launch)
+            specialAnim("seq.human_bow")
             soundSynth("synth.darkbow_doublefire")
             soundSynth("synth.darkbow_shadow_attack")
-            spotanim(RSCM.getReverseMapping(RSCMType.SPOTANIM,launchSpot!!.id), height = 96, slot = constants.spotanim_slot_combat)
+            spotanim(
+                launchSpot?.let { RSCM.getReverseMapping(RSCMType.SPOTANIM, it.id) },
+                height = 96,
+                slot = constants.spotanim_slot_combat,
+            )
 
             val descentTravel = "spotanim.darkbow_generic_smoke_arrow_flight"
             val descentImpact = "spotanim.darkbow_smoke_arrow_impact"
@@ -115,7 +122,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             target.spotanim(descentImpact, height = 96, delay = clientDelay2)
 
             val damage =
-                calculateDamage(target, attack, damageRange = 5..Int.MAX_VALUE, multiplier = 1.3)
+                calculateDamage(target, attack, damageRange = 5..48, multiplier = 1.3)
             val hitDelay1 = proj1.serverCycles
             val hitDelay2 = proj2.serverCycles
 
@@ -139,7 +146,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
 
             manager.queueRangedDamage(this, target, quiverType, damage[1], hitDelay2)
 
-            if (player.quiver?.count == 1) {
+            if (ammunition.activeAmmo(player, getInvObj(attack.weapon))?.count == 1) {
                 mes("You now have only 1 arrow left in your quiver.")
             }
         }
@@ -150,11 +157,18 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
             quiverType: ItemServerType,
             travelSpot: String,
         ) {
-            val launchSpot = quiverType.paramOrNull(params.proj_launch_double)
-            anim("seq.human_bow")
+            // Broad and ogre arrows carry no double-launch graphic; fall back to the single one.
+            val launchSpot =
+                quiverType.paramOrNull(params.proj_launch_double)
+                    ?: quiverType.paramOrNull(params.proj_launch)
+            specialAnim("seq.human_bow")
             soundSynth("synth.darkbow_doublefire")
             soundSynth("synth.darkbow_dragon_attack")
-            spotanim(RSCM.getReverseMapping(RSCMType.SPOTANIM,launchSpot!!.id), height = 96, slot = constants.spotanim_slot_combat)
+            spotanim(
+                launchSpot?.let { RSCM.getReverseMapping(RSCMType.SPOTANIM, it.id) },
+                height = 96,
+                slot = constants.spotanim_slot_combat,
+            )
 
             val descentTravel = "spotanim.darkbow_dragon_head_flying_projanim"
             val descentImpact = "spotanim.darkbow_dragon_head_flying_impact_anim"
@@ -196,7 +210,7 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
 
             manager.queueRangedDamage(this, target, quiverType, damage[1], hitDelay2)
 
-            if (player.quiver?.count == 1) {
+            if (ammunition.activeAmmo(player, getInvObj(attack.weapon))?.count == 1) {
                 mes("You now have only 1 arrow left in your quiver.")
             }
         }
@@ -226,8 +240,10 @@ class DarkBowSpecialAttack @Inject constructor(private val ammunition: RangedAmm
                     multiplier = multiplier,
                     boltSpecDamage = 0,
                 )
-            val first = if (!accuracySuccess()) 0 else random.of(0..damage).coerceIn(damageRange)
-            val second = if (!accuracySuccess()) 0 else random.of(0..damage).coerceIn(damageRange)
+            // Each arrow always deals at least the floor of its range, even when the accuracy
+            // roll fails, and never more than its cap.
+            val first = (if (accuracySuccess()) random.of(0..damage) else 0).coerceIn(damageRange)
+            val second = (if (accuracySuccess()) random.of(0..damage) else 0).coerceIn(damageRange)
             return DescentHit(first, second)
         }
 

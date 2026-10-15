@@ -10,8 +10,10 @@ import org.rsmod.api.death.PlayerDeathDrops.Companion.standardKeepCount
 public class PlayerDeathHandlingResolver
 @Inject
 constructor(
-    private val hooks: Set<PlayerDeathHook>,
+    hooks: Set<PlayerDeathHook>,
 ) {
+    private val hooks = hooks.sortedByDescending(PlayerDeathHook::priority)
+
     public fun resolve(context: PlayerDeathContext): PlayerDeathHandling {
         for (hook in hooks) {
             val handling = hook.handleDeath(context)

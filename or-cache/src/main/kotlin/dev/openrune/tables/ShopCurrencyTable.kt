@@ -32,6 +32,14 @@ object ShopCurrencyTable {
             columnRSCM(OBJ, "obj.star_dust")
         }
 
+        // Emir's Arena reward points live in a varbit rather than an obj.
+        row("dbrow.shop_currency_pvp_arena_points") {
+            column(KEY, "currency.pvp_arena_points")
+            column(SINGULAR_NAME, "PvP Arena reward point")
+            column(PLURAL_NAME, "PvP Arena reward points")
+            columnRSCM(VARBIT, "varbit.pvpa_points_currency")
+        }
+
         row("dbrow.shop_currency_golden_nugget") {
             column(KEY, "currency.golden_nugget")
             column(SINGULAR_NAME, "golden nugget")

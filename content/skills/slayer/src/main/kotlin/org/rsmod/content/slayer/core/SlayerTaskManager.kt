@@ -22,6 +22,7 @@ import org.rsmod.api.table.slayer.SlayerMasterTaskRow
 import org.rsmod.api.table.slayer.SlayerMastersRow
 import org.rsmod.api.table.slayer.SlayerTaskRow
 import org.rsmod.api.table.slayer.SlayerUnlockRow
+import org.rsmod.content.slayer.rewards.SlayerRewardsPoints
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 
@@ -124,7 +125,7 @@ object SlayerTaskManager {
 
         val master = getCurrentAssignedMaster(player) ?: return clearAssignedTask(player)
 
-        val pointsToAdd =
+        val pointsEarned =
             if (MortimerAssignment.isMortimer(master)) {
                 MortimerAssignment.onTaskComplete(player)
             } else {
@@ -139,7 +140,7 @@ object SlayerTaskManager {
                         next
                     }
 
-                val basePoints = master.pointsPerTask
+                val basePoints = diaryBasePoints(player, master)
                 val multiplier = streakPointMultiplier(streak)
                 if (totalTasksDone <= TOTAL_TASKS_NO_POINTS_THRESHOLD || basePoints <= 0) {
                     0
@@ -148,10 +149,7 @@ object SlayerTaskManager {
                 }
             }
 
-        if (pointsToAdd > 0) {
-            val currentPoints = player.vars["varbit.slayer_points"]
-            VarPlayerIntMapSetter.set(player, "varbit.slayer_points", currentPoints + pointsToAdd)
-        }
+        val pointsToAdd = SlayerRewardsPoints.addPoints(player, pointsEarned)
 
         if (wasBossTask) {
             player.statAdvance("stat.slayer", SlayerBossTasks.BOSS_COMPLETION_BONUS_XP)
@@ -165,6 +163,15 @@ object SlayerTaskManager {
 
         clearAssignedTask(player)
     }
+
+    private fun diaryBasePoints(player: Player, master: SlayerMastersRow): Int =
+        when {
+            master.masterId == NIEVE_MASTER_ID &&
+                player.vars["varbit.western_diary_elite_complete"] != 0 -> NIEVE_DIARY_POINTS
+            master.masterId == KONAR_MASTER_ID &&
+                player.vars["varbit.kourend_diary_elite_complete"] != 0 -> KONAR_DIARY_POINTS
+            else -> master.pointsPerTask
+        }
 
     private fun streakForMilestoneMultiplier(streak: Int): Int =
         if (streak > STREAK_MILESTONE_WRAP_THRESHOLD) {
@@ -280,10 +287,6 @@ object SlayerTaskManager {
     fun slayerStreak(access: ProtectedAccess): Int = access.vars["varbit.slayer_streak"]
 
     fun slayerWildyStreak(access: ProtectedAccess): Int = access.vars["varbit.slayer_wildy_streak"]
-
-    fun setSlayerStreak(access: ProtectedAccess, value: Int) {
-        VarPlayerIntMapSetter.set(access.player, "varbit.slayer_streak", value)
-    }
 
     fun rollAssignment(
         protected: ProtectedAccess,
@@ -501,8 +504,20 @@ object SlayerTaskManager {
         )
     }
 
-    private fun findMaster(npcId: String): SlayerMastersRow? =
-        tasks.keys.firstOrNull { master -> master.npcIds.any { it.id == npcId.asRSCM(RSCMType.NPC) } }
+    /**
+     * A multinpc's ops always arrive under its base type (Spria's `npc.slayer_master_9`), and
+     * `Npc.visType` does not resolve the varbit transform, so a master reached that way has to be
+     * matched through the forms its base type can take.
+     */
+    private fun findMaster(npcId: String): SlayerMastersRow? {
+        val id = npcId.asRSCM(RSCMType.NPC)
+        val direct = tasks.keys.firstOrNull { master -> master.npcIds.any { it.id == id } }
+        if (direct != null) {
+            return direct
+        }
+        val forms = ServerCacheManager.getNpc(id)?.transforms ?: return null
+        return tasks.keys.firstOrNull { master -> master.npcIds.any { it.id in forms } }
+    }
 
     private fun meetsMasterRequirements(access: ProtectedAccess, master: SlayerMastersRow): Boolean {
         val slayerLevel = access.statBase("stat.slayer")
@@ -615,6 +630,7 @@ object SlayerTaskManager {
         konarAreaId: Int? = null,
     ) {
         val player = protected.player
+        resetStreakOnTaskSkip(player, master)
         VarPlayerIntMapSetter.set(player, "varbit.slayer_master", master.masterId)
         VarPlayerIntMapSetter.set(player, "varp.slayer_count_original", amount)
         VarPlayerIntMapSetter.set(player, "varp.slayer_count", amount)
@@ -634,10 +650,20 @@ object SlayerTaskManager {
         }
 
         recordLastAssignment(player, master.masterId, task.task.id, assignedKonarArea, amount)
+    }
 
-        if (master.masterId == TURAEL_MASTER_ID) {
-            VarPlayerIntMapSetter.set(player, "varbit.slayer_streak", 0)
-        }
+    private fun resetStreakOnTaskSkip(player: Player, newMaster: SlayerMastersRow) {
+        if (newMaster.masterId != TURAEL_MASTER_ID) return
+        if (player.vars["varp.slayer_target"] == 0) return
+        val previous = getCurrentAssignedMaster(player)
+        if (previous?.masterId == TURAEL_MASTER_ID) return
+        val streak =
+            if (previous != null && isWildernessMaster(previous)) {
+                "varbit.slayer_wildy_streak"
+            } else {
+                "varbit.slayer_streak"
+            }
+        VarPlayerIntMapSetter.set(player, streak, 0)
     }
 
     private fun recordLastAssignment(player: Player, masterId: Int, taskId: Int, konarAreaId: Int, count: Int) {
@@ -696,7 +722,10 @@ object SlayerTaskManager {
 
     private const val TURAEL_MASTER_ID = 1
     private const val KONAR_MASTER_ID = 8
-    private const val TOTAL_TASKS_NO_POINTS_THRESHOLD = 5
+    private const val NIEVE_MASTER_ID = 6
+    private const val NIEVE_DIARY_POINTS = 15
+    private const val KONAR_DIARY_POINTS = 20
+    private const val TOTAL_TASKS_NO_POINTS_THRESHOLD = 4
     private const val STREAK_MILESTONE_WRAP_THRESHOLD = 16_000
     private const val MILESTONE_CYCLE = 1_000
     private const val SLAYER_XP_HP_CAP = 2000

@@ -36,6 +36,7 @@ import org.rsmod.content.interfaces.bank.alwaysPlacehold
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.interfaces.bank.configs.bank_comsubs
 import org.rsmod.content.interfaces.bank.configs.bank_constants
+import org.rsmod.content.interfaces.bank.coverStrayBankObjs
 import org.rsmod.content.interfaces.bank.insertMode
 import org.rsmod.content.interfaces.bank.lastQtyInput
 import org.rsmod.content.interfaces.bank.leftClickQtyMode
@@ -99,7 +100,7 @@ constructor(
         onIfModalDrag("component.bankside:wornops") { dragSideInv(it) }
         onIfModalDrag("component.bankmain:items", "component.bankmain:tabs") { dragIntoTab(it) }
 
-        val wornComponents = bank_equipment_tab_to_slots_map.filterValuesNotNull().map { it.key to RSCM.getReverseMapping(RSCMType.COMPONENT,it.value.packed) }
+        val wornComponents = bank_equipment_tab_to_slots_map.filterValuesNotNull().map { it.key to RSCM.getReverseMapping(RSCMType.COMPONENT, it.value.packed) }
         for ((slot, component) in wornComponents) {
             onIfModalButton(component) { wornOp(slot, it.op) }
         }
@@ -203,8 +204,11 @@ constructor(
                     input
                 }
                 IfButtonOp.Op8 -> Int.MAX_VALUE
+                // The client draws "View" (looting bag) and "Configure" (rune pouch) as op1 on
+                // bankside objs; they take the same content hook as the op9 extra op.
+                IfButtonOp.Op1,
                 IfButtonOp.Op9 -> {
-                    clickBanksideExtraOp(slot)
+                    clickBanksideExtraOp(slot, op)
                     return
                 }
                 else -> throw IllegalStateException("Invalid main inv op: $op")
@@ -213,6 +217,7 @@ constructor(
     }
 
     public fun ProtectedAccess.invDeposit(slot: Int, count: Int, inventory: Inventory): Boolean {
+        player.coverStrayBankObjs()
         val obj = inventory[slot]
         if (obj == null) {
             resendSlot(inventory, 0)
@@ -228,8 +233,10 @@ constructor(
 
         val tab = selectedTab
 
-        val placeholder = placeholder(objType)
-        val containedObjSlot = bank.indexOfFirst { it?.id == obj.id || it?.id == placeholder.id }
+        val bankType = untransform(uncert(objType))
+        val placeholder = placeholder(bankType)
+        val containedObjSlot =
+            bank.indexOfFirst { it?.id == bankType.id || it?.id == placeholder.id }
         val prioritySlot =
             if (containedObjSlot != -1) {
                 containedObjSlot
@@ -268,6 +275,7 @@ constructor(
                     this.intoCapacity = bankCapacity
                     this.count = count
                     this.uncert = true
+                    this.untransform = true
                     this.strict = false
                 }
             }
@@ -290,8 +298,7 @@ constructor(
 
         // Cheap way of checking if obj has taken a new slot in bank.
         val expectedSlot = tabSlots.last + 1
-        val expectedObj = uncert(obj)
-        if (bank[expectedSlot]?.id == expectedObj.id) {
+        if (prioritySlot == null && bank[expectedSlot]?.id == bankType.id) {
             tab.increaseSize(this)
         }
 
@@ -328,6 +335,19 @@ constructor(
             }
             return
         }
+    }
+
+    /** Withdraws up to [count] of the obj in bank [slot] into [into], keeping the tab sizes in step. */
+    public fun ProtectedAccess.invWithdraw(slot: Int, count: Int, into: Inventory): Boolean {
+        player.coverStrayBankObjs()
+        val result = invMoveFromSlot(from = bank, into = into, fromSlot = slot, count = count, strict = false)[0]
+        if (!result.isOk()) {
+            return false
+        }
+        if (bank[slot] == null) {
+            notifySlotUpdate(slot)
+        }
+        return true
     }
 
     public fun ProtectedAccess.depositInv() {
@@ -1099,7 +1119,7 @@ constructor(
         player.setBankWornBonuses(wornBonuses, weaponSpeeds)
     }
 
-    private suspend fun ProtectedAccess.clickBanksideExtraOp(slot: Int) {
+    private suspend fun ProtectedAccess.clickBanksideExtraOp(slot: Int, op: IfButtonOp) {
         val obj = inv[slot] ?: return resendSlot(inv, 0)
         val type = getInvObj(obj)
 
@@ -1128,7 +1148,7 @@ constructor(
             return
         }
 
-        val event = HeldBanksideEvents.Type(player, slot, type)
+        val event = HeldBanksideEvents.Type(player, slot, type, op)
         publish(event)
     }
 
@@ -1142,13 +1162,14 @@ constructor(
         if (op == IfButtonOp.Op2) {
             val type = getInvObj(obj)
             val deposited = invDeposit(wornSlot, obj.count, worn)
-            if (deposited) {
+            if (deposited && worn[wornSlot] !== obj) {
                 val wearpos = Wearpos[type.wearpos1]
                 checkNotNull(wearpos) {
                     "Wearpos should not be null for worn obj: " +
                         "wornSlot=$wornSlot, obj=$obj, type=$type"
                 }
                 WornUnequipOp.notifyWornUnequip(player, wearpos, type, eventBus)
+                setBankWornBonuses()
             }
             return
         }

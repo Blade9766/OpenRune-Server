@@ -29,11 +29,14 @@ import org.rsmod.api.combat.commons.types.RangedAttackType
 import org.rsmod.api.combat.formulas.AccuracyFormulae
 import org.rsmod.api.combat.formulas.MaxHitFormulae
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.death.PvPCombatXpHook
+import org.rsmod.api.death.PvPMaxHitHook
 import org.rsmod.api.death.PvPPlayerHitHook
 import org.rsmod.api.npc.hit.isStyleImmuneTo
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.queueHit
 import org.rsmod.api.player.cheat.adminMaxHit
+import org.rsmod.api.player.hit.modifier.PIERCE_PROTECTION_PRAYER_ATTR
 import org.rsmod.api.player.hit.modifier.PlayerHitModifier
 import org.rsmod.api.player.hit.queueHit
 import org.rsmod.api.player.interact.NpcInteractions
@@ -41,8 +44,8 @@ import org.rsmod.api.player.interact.NpcTInteractions
 import org.rsmod.api.player.interact.PlayerInteractions
 import org.rsmod.api.player.interact.PlayerTInteractions
 import org.rsmod.api.player.ironman.shouldBlockNpcCombatXp
-import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.clearPendingAction
+import org.rsmod.api.player.righthand
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.random.GameRandom
@@ -59,6 +62,9 @@ import org.rsmod.game.type.getInvObj
 import org.rsmod.game.type.getOrNull
 import org.rsmod.map.CoordGrid
 
+/** Radius, in tiles, that weapon and spell attack sounds are heard within. */
+private const val ATTACK_SOUND_RADIUS: Int = 10
+
 public class PlayerAttackManager
 @Inject
 constructor(
@@ -74,6 +80,8 @@ constructor(
     private val playerInteractions: PlayerInteractions,
     private val playerTInteractions: PlayerTInteractions,
     private val pvpPlayerHitHooks: Set<PvPPlayerHitHook>,
+    private val pvpCombatXpHooks: Set<PvPCombatXpHook>,
+    private val pvpMaxHitHooks: Set<PvPMaxHitHook>,
 ) {
     /**
      * Determines if the player is still under an active attack delay.
@@ -213,7 +221,7 @@ constructor(
             weapon?.paramOrNull(soundParam) ?: SynthType(defaultSound.asRSCM(RSCMType.SYNTH))
 
         player.anim(RSCM.getReverseMapping(RSCMType.SEQ, attackAnim.id), priority = 6)
-        player.soundSynth(attackSound)
+        playAttackSound(player, attackSound)
     }
 
     /**
@@ -231,8 +239,46 @@ constructor(
         val attackAnim = weapon.paramOrNull(params.attack_anim_stance1) ?: return false
         player.anim(RSCM.getReverseMapping(RSCMType.SEQ, attackAnim.id), priority = 6)
         val attackSound = weapon.paramOrNull(params.attack_sound_stance1)
-        attackSound?.let(player::soundSynth)
+        attackSound?.let { playAttackSound(player, it) }
         return true
+    }
+
+    /**
+     * Plays the attack sound for [attack] without its animation.
+     *
+     * Special attacks never reach [playWeaponFx] because they supply their own animation, so
+     * without this they are silent. Weapons whose special has a sound of its own play that
+     * instead.
+     */
+    public fun playWeaponSound(player: Player, attack: CombatAttack.Melee) {
+        val weapon = getOrNull(attack.weapon)
+        val fx = MeleeAnimationAndSound.from(attack.stance)
+        val attackSound =
+            weapon?.paramOrNull(fx.soundParam)
+                ?: SynthType(fx.defaultSound.asRSCM(RSCMType.SYNTH))
+        playAttackSound(player, attackSound)
+    }
+
+    /** @see [playWeaponSound] */
+    public fun playWeaponSound(player: Player, attack: CombatAttack.Staff) {
+        val weapon = getInvObj(attack.weapon)
+        val attackSound = weapon.paramOrNull(params.attack_sound_stance1) ?: return
+        playAttackSound(player, attackSound)
+    }
+
+    /** @see [playWeaponSound] */
+    public fun playWeaponSound(player: Player, attack: CombatAttack.Ranged) {
+        val weapon = getInvObj(attack.weapon)
+        val attackSound = weapon.paramOrNull(params.attack_sound_stance1) ?: return
+        playAttackSound(player, attackSound)
+    }
+
+    /**
+     * Plays a weapon attack sound as an area sound around [player], so that nearby players hear
+     * the attack as well as the attacker - the official behaviour for combat sounds.
+     */
+    private fun playAttackSound(player: Player, synth: SynthType) {
+        worldRepo.soundArea(player, synth.id, radius = ATTACK_SOUND_RADIUS)
     }
 
     /**
@@ -268,6 +314,9 @@ constructor(
         attack: CombatAttack.Melee,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveCombatXp(player, attack, cappedDamage, multiplier)
@@ -339,6 +388,9 @@ constructor(
         attack: CombatAttack.Ranged,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveCombatXp(player, attack, cappedDamage, multiplier)
@@ -401,6 +453,9 @@ constructor(
         attack: CombatAttack.Spell,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
         giveCombatXp(player, attack, cappedDamage, multiplier)
@@ -439,30 +494,41 @@ constructor(
             is Player -> giveCombatXp(player, target, attack, damage)
         }
 
-    @Suppress("unused")
     private fun giveCombatXp(player: Player, target: Npc, attack: CombatAttack.Staff, damage: Int) {
         if (player.shouldBlockNpcCombatXp(target) || target.isStyleImmuneTo(HitType.Magic)) {
             return
         }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
-        giveStaffCombatXp(player, cappedDamage, multiplier)
+        giveStaffCombatXp(player, attack, cappedDamage, multiplier)
     }
 
-    @Suppress("unused")
     private fun giveCombatXp(
         player: Player,
         target: Player,
         attack: CombatAttack.Staff,
         damage: Int,
     ) {
+        if (pvpCombatXpHooks.any { it.blocksCombatXp(player, target) }) {
+            return
+        }
         val cappedDamage = min(damage, target.hitpoints)
         val multiplier = target.resolveCombatXpMultiplier()
-        giveStaffCombatXp(player, cappedDamage, multiplier)
+        giveStaffCombatXp(player, attack, cappedDamage, multiplier)
     }
 
-    private fun giveStaffCombatXp(player: Player, damage: Int, multiplier: Double) {
-        statAdvance(player, "stat.magic", damage * 2.0, multiplier)
+    private fun giveStaffCombatXp(
+        player: Player,
+        attack: CombatAttack.Staff,
+        damage: Int,
+        multiplier: Double,
+    ) {
+        if (attack.style == MagicAttackStyle.Longrange) {
+            statAdvance(player, "stat.magic", damage * 1.33, multiplier)
+            statAdvance(player, "stat.defence", damage.toDouble(), multiplier)
+        } else {
+            statAdvance(player, "stat.magic", damage * 2.0, multiplier)
+        }
         statAdvance(player, "stat.hitpoints", damage * 1.33, multiplier)
     }
 
@@ -504,26 +570,34 @@ constructor(
         blockType: MeleeAttackType? = attack.type,
         roundMaxHitUp: Boolean = false,
     ): Int {
+        val defiler = VeracDefiler.roll(source, random)
         val successfulAccuracyRoll =
-            rollMeleeAccuracy(
-                source = source,
-                target = target,
-                multiplier = accuracyMultiplier,
-                attackType = attackType,
-                attackStyle = attackStyle,
-                blockType = blockType,
-            )
+            defiler ||
+                rollMeleeAccuracy(
+                    source = source,
+                    target = target,
+                    multiplier = accuracyMultiplier,
+                    attackType = attackType,
+                    attackStyle = attackStyle,
+                    blockType = blockType,
+                )
         if (!successfulAccuracyRoll) {
             return 0
         }
-        return rollMeleeMaxHit(
-            source,
-            target,
-            attackType,
-            attackStyle,
-            maxHitMultiplier,
-            roundMaxHitUp,
-        )
+        val damage =
+            rollMeleeMaxHit(
+                source,
+                target,
+                attackType,
+                attackStyle,
+                maxHitMultiplier,
+                roundMaxHitUp,
+            )
+        if (!defiler) {
+            return damage
+        }
+        target.spotanim("spotanim.barrows_verac_desolation")
+        return if (target is Npc) damage + 1 else damage
     }
 
     /**
@@ -552,7 +626,7 @@ constructor(
         blockType: MeleeAttackType?,
         multiplier: Double,
     ): Boolean {
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return true
         }
         return when (target) {
@@ -625,7 +699,7 @@ constructor(
     ): Int {
         val maxHit =
             calculateMeleeMaxHit(source, target, attackType, attackStyle, multiplier, roundUp)
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return maxHit
         }
         return random.of(1..maxHit)
@@ -678,8 +752,11 @@ constructor(
         attackStyle: MeleeAttackStyle?,
         specMultiplier: Double,
         roundUp: Boolean,
-    ): Int =
-        maxHits.getMeleeMaxHit(source, target, attackType, attackStyle, specMultiplier, roundUp)
+    ): Int {
+        val maxHit =
+            maxHits.getMeleeMaxHit(source, target, attackType, attackStyle, specMultiplier, roundUp)
+        return applyPvPMaxHitBonus(source, target, maxHit)
+    }
 
     /**
      * Queues a melee hit on [target], applying damage after the specified [delay].
@@ -720,6 +797,7 @@ constructor(
         // last entries in the queue list at the time of processing.
         target.queueCombatRetaliate(source)
 
+        VeracDefiler.consume(source)
         val hit = target.queueHit(source, delay, HitType.Melee, damage, npcHitModifier)
         target.combatPlayDefendAnim()
         return hit
@@ -731,7 +809,12 @@ constructor(
         // last entries in the queue list at the time of processing.
         target.queueCombatRetaliate(source)
 
+        val pierce = VeracDefiler.consume(source)
+        if (pierce) {
+            target.attr[PIERCE_PROTECTION_PRAYER_ATTR] = true
+        }
         val hit = target.queueHit(source, delay, HitType.Melee, damage, playerHitModifier)
+        target.attr.remove(PIERCE_PROTECTION_PRAYER_ATTR)
         notifyPlayerHit(source, target, damage)
         target.combatPlayDefendAnim()
         return hit
@@ -817,7 +900,7 @@ constructor(
         blockType: RangedAttackType?,
         multiplier: Double,
     ): Boolean {
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return true
         }
         return when (target) {
@@ -895,7 +978,7 @@ constructor(
                 multiplier = multiplier,
                 boltSpecDamage = boltSpecDamage,
             )
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return maxHit
         }
         return random.of(1..maxHit)
@@ -972,15 +1055,18 @@ constructor(
         attackStyle: RangedAttackStyle?,
         specMultiplier: Double,
         boltSpecDamage: Int,
-    ): Int =
-        maxHits.getRangedMaxHit(
-            player = source,
-            target = target,
-            attackType = attackType,
-            attackStyle = attackStyle,
-            specMultiplier = specMultiplier,
-            boltSpecDamage = boltSpecDamage,
-        )
+    ): Int {
+        val maxHit =
+            maxHits.getRangedMaxHit(
+                player = source,
+                target = target,
+                attackType = attackType,
+                attackStyle = attackStyle,
+                specMultiplier = specMultiplier,
+                boltSpecDamage = boltSpecDamage,
+            )
+        return applyPvPMaxHitBonus(source, target, maxHit)
+    }
 
     /**
      * Queues a ranged hit on [target], applying damage after the specified [hitDelay].
@@ -1160,6 +1246,8 @@ constructor(
      * @param spellbook The [Spellbook] the spell belongs to (e.g., Standard or Ancients), usually
      *   derived from the player's current spellbook.
      * @param sunfireRune Set to `true` if the spell was cast using a Sunfire rune.
+     * @param conflictionEligible Set to `false` when the confliction gauntlets passive must not
+     *   apply, e.g. secondary targets of a multi-target spell.
      * @return `true` if the accuracy roll succeeds (the spell will "land"), `false` otherwise.
      */
     public fun rollSpellAccuracy(
@@ -1168,13 +1256,16 @@ constructor(
         spell: ItemServerType,
         spellbook: Spellbook?,
         sunfireRune: Boolean,
+        conflictionEligible: Boolean = true,
     ): Boolean {
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return true
         }
-        return when (target) {
-            is Npc -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
-            is Player -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+        return ConflictionGauntlets.roll(source, target, spell.id, conflictionEligible) {
+            when (target) {
+                is Npc -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+                is Player -> rollSpellAccuracy(source, target, spell, spellbook, sunfireRune)
+            }
         }
     }
 
@@ -1248,7 +1339,7 @@ constructor(
                 attackRate = attackRate,
                 sunfireRune = sunfireRune,
             )
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return hitRange.last
         }
         return random.of(hitRange)
@@ -1331,15 +1422,18 @@ constructor(
         spellbook: Spellbook?,
         baseMaxHit: Int,
         sunfireRune: Boolean,
-    ): IntRange =
-        maxHits.getSpellMaxHitRange(
-            player = source,
-            target = target,
-            spell = spell,
-            spellbook = spellbook,
-            baseMaxHit = baseMaxHit,
-            usedSunfireRune = sunfireRune,
-        )
+    ): IntRange {
+        val range =
+            maxHits.getSpellMaxHitRange(
+                player = source,
+                target = target,
+                spell = spell,
+                spellbook = spellbook,
+                baseMaxHit = baseMaxHit,
+                usedSunfireRune = sunfireRune,
+            )
+        return range.first..applyPvPMaxHitBonus(source, target, range.last)
+    }
 
     /**
      * Determines whether the **built-in spell** from a **powered staff** used by [source] will
@@ -1360,9 +1454,12 @@ constructor(
         attackStyle: MagicAttackStyle?,
         multiplier: Double,
     ): Boolean {
-        return when (target) {
-            is Npc -> rollStaffAccuracy(source, target, attackStyle, multiplier)
-            is Player -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+        val weapon = source.righthand?.id ?: -1
+        return ConflictionGauntlets.roll(source, target, weapon, eligible = true) {
+            when (target) {
+                is Npc -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+                is Player -> rollStaffAccuracy(source, target, attackStyle, multiplier)
+            }
         }
     }
 
@@ -1414,7 +1511,7 @@ constructor(
         multiplier: Double,
     ): Int {
         val maxHit = calculateStaffMaxHit(source, target, baseMaxHit, multiplier)
-        if (source.adminMaxHit) {
+        if (alwaysMaxHit(source, target)) {
             return maxHit
         }
         return random.of(1..maxHit)
@@ -1463,13 +1560,24 @@ constructor(
         target: Player,
         baseMaxHit: Int,
         specMultiplier: Double,
-    ): Int =
-        maxHits.getStaffMaxHit(
-            player = source,
-            target = target,
-            baseMaxHit = baseMaxHit,
-            specialMultiplier = specMultiplier,
-        )
+    ): Int {
+        val maxHit =
+            maxHits.getStaffMaxHit(
+                player = source,
+                target = target,
+                baseMaxHit = baseMaxHit,
+                specialMultiplier = specMultiplier,
+            )
+        return applyPvPMaxHitBonus(source, target, maxHit)
+    }
+
+    private fun applyPvPMaxHitBonus(source: Player, target: Player, maxHit: Int): Int {
+        val percent = pvpMaxHitHooks.sumOf { it.maxHitBonusPercent(source, target) }
+        if (percent == 0) {
+            return maxHit
+        }
+        return (maxHit * (100 + percent) / 100).coerceAtLeast(0)
+    }
 
     /**
      * Queues a magic hit on [target], applying damage after the specified [hitDelay].
@@ -1560,7 +1668,7 @@ constructor(
                 modifier = npcHitModifier,
                 sourceSecondary = spell,
             )
-        target.combatPlayDefendAnim(clientDelay)
+        // Targets never play their defend animation for a spell, only for melee and ranged.
         return hit
     }
 
@@ -1588,7 +1696,7 @@ constructor(
                 sourceSecondary = spell,
             )
         notifyPlayerHit(source, target, damage)
-        target.combatPlayDefendAnim(clientDelay)
+        // Targets never play their defend animation for a spell, only for melee and ranged.
         return hit
     }
 
@@ -1678,7 +1786,14 @@ constructor(
         hitSound: String?,
     ) {
         if (castSound != null) {
-            source.soundSynth(castSound)
+            soundArea(
+                source = source.coords,
+                synth = castSound,
+                delay = 0,
+                loops = 1,
+                radius = ATTACK_SOUND_RADIUS,
+                size = 0,
+            )
         }
 
         if (hitSpot != null) {
@@ -1739,8 +1854,8 @@ constructor(
      *
      * @param clientDelay The delay in client cycles (`20ms` per cycle) before the splash spotanim
      *   and sound are played on [target]. Typically derived from the projectile's metadata.
-     * @param castSound The sound to play immediately. Plays as a `soundarea` if [target] is a
-     *   [Player], or a `soundsynth` if [target] is an [Npc]. If `null`, no cast sound is played.
+     * @param castSound The sound to play immediately as a `soundarea` around [source]. If `null`,
+     *   no cast sound is played.
      * @param soundRadius The radius to use for [castSound] when played as a `soundarea`.
      */
     public fun playMagicSplashFx(
@@ -1775,7 +1890,14 @@ constructor(
         castSound: String?,
     ) {
         if (castSound != null) {
-            source.soundSynth(castSound)
+            soundArea(
+                source = source.coords,
+                synth = castSound,
+                delay = 0,
+                loops = 1,
+                radius = ATTACK_SOUND_RADIUS,
+                size = 0,
+            )
         }
         target.spotanim("spotanim.failedspell_impact", delay = clientDelay, height = 124)
         soundArea(
@@ -2114,4 +2236,15 @@ constructor(
             radius = radius,
             size = size,
         )
+
+    /**
+     * True when every attack [source] makes on [target] should land at its max hit: the admin cheat,
+     * and the house combat dummies, which exist to show a player their max hit.
+     */
+    private fun alwaysMaxHit(source: Player, target: PathingEntity): Boolean =
+        source.adminMaxHit || (target is Npc && target.visType.isCategoryType(COMBAT_DUMMY))
+
+    private companion object {
+        const val COMBAT_DUMMY = "category.poh_combat_dummy"
+    }
 }

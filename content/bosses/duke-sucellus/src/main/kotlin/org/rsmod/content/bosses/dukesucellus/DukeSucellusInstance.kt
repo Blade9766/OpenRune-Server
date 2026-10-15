@@ -6,7 +6,6 @@ import dev.openrune.rscm.RSCMType
 import dev.openrune.types.NpcMode
 import dev.openrune.types.aconverted.SpotanimType
 import jakarta.inject.Inject
-import java.util.Collections
 import java.util.IdentityHashMap
 import kotlin.math.abs
 import org.rsmod.annotations.InternalApi
@@ -80,7 +79,8 @@ constructor(
 
     private val pendingAwakened = HashSet<Player>()
     private val feedProgress: MutableMap<Npc, Int> = IdentityHashMap()
-    private val hazardsActive: MutableSet<Npc> = Collections.newSetFromMap(IdentityHashMap())
+    private val hazardRuns: MutableMap<Npc, Int> = IdentityHashMap()
+    private var nextHazardRun = 0
     private val vats: MutableMap<VatKey, VatState> = HashMap()
 
     override fun settingsRow(): String = "dbrow.instance_duke_sucellus"
@@ -91,7 +91,7 @@ constructor(
         onEnterPrelude { result, enter ->
             withInstanceEnterTransition(InstanceEnterTransition(message = ENTER_MESSAGE), enter)
             if (result is InstanceManager.Result.Created && pendingAwakened.remove(player)) {
-                manager.npcsForInstance(result.session.id).firstOrNull()?.let(::markAwakened)
+                awakenIfOrbSpent(result.session)
             }
         }
 
@@ -140,7 +140,9 @@ constructor(
             startHazards(npc, session)
         }
         onInstancePlayerLeave {
-            manager.npcsForInstance(instanceId).forEach(hazardsActive::remove)
+            val session = manager.sessionForId(instanceId)
+            if (session != null && session.occupants.isNotEmpty()) return@onInstancePlayerLeave
+            manager.npcsForInstance(instanceId).forEach(hazardRuns::remove)
         }
     }
 
@@ -150,29 +152,37 @@ constructor(
 
     private suspend fun ProtectedAccess.enterInstance() {
         val owned = player.uuid?.let { manager.sessionOwnedBy(key, it) }
-        if (owned == null && tryConsumeAwakenersOrb()) {
+        if (owned == null && wantsAwakenedFight()) {
             pendingAwakened += player
         }
-        defaultInstanceEntry()
+        try {
+            defaultInstanceEntry()
+        } finally {
+            pendingAwakened -= player
+        }
     }
 
-    private suspend fun ProtectedAccess.tryConsumeAwakenersOrb(): Boolean {
+    private suspend fun ProtectedAccess.wantsAwakenedFight(): Boolean {
         if (AWAKENERS_ORB !in inv) {
             return false
         }
-        val useOrb =
-            choice2(
-                "Yes - consume an Awakener's orb.",
-                true,
-                "No - fight the normal encounter.",
-                false,
-                title = "Use an Awakener's orb to fight an Awakened Duke Sucellus?",
-            )
-        if (!useOrb) {
-            return false
+        return choice2(
+            "Yes - consume an Awakener's orb.",
+            true,
+            "No - fight the normal encounter.",
+            false,
+            title = "Use an Awakener's orb to fight an Awakened Duke Sucellus?",
+        )
+    }
+
+    private fun ProtectedAccess.awakenIfOrbSpent(session: InstanceSession) {
+        if (player.uuid !in session.occupants) {
+            return
         }
-        invDel(inv, AWAKENERS_ORB, 1)
-        return true
+        if (!invDel(inv, AWAKENERS_ORB, 1).success) {
+            return
+        }
+        manager.npcsForInstance(session.id).firstOrNull()?.let(::markAwakened)
     }
 
     private fun markAwakened(npc: Npc) {
@@ -197,7 +207,7 @@ constructor(
             return
         }
         feedProgress.remove(npc)
-        hazardsActive.remove(npc)
+        hazardRuns.remove(npc)
         mes(WAKE_MESSAGE)
         npc.anim(WAKE_SEQ)
         val target = player
@@ -251,6 +261,7 @@ constructor(
         }
     }
 
+    @OptIn(InternalApi::class)
     private suspend fun StandardNpcAccess.dukeDeath() {
         val dead = ServerCacheManager.getNpc(DEAD_NPC.asRSCM(RSCMType.NPC)) ?: return
         val asleep = ServerCacheManager.getNpc(SLEEP_NPC.asRSCM(RSCMType.NPC)) ?: return
@@ -269,6 +280,7 @@ constructor(
         npc.resetTransmog()
         npc.copyStats(asleep)
         npc.hitpoints = npc.baseHitpointsLvl
+        npc.clearHeroPoints()
         npc.apRequiresLineOfSight = true
         npc.apRangeOverride = null
         deps.encounterRegistry.remove(npc)
@@ -431,10 +443,12 @@ constructor(
         iceDelay: Int = ICE_INTERVAL,
         sweepDelay: Int = EXTREMITY_INTERVAL,
     ) {
-        if (!hazardsActive.add(npc)) return
-        scheduleGasVents(npc, session, 0, ventDelay)
-        scheduleFallingIce(npc, session, iceDelay)
-        scheduleExtremityGaze(npc, session, sweepDelay)
+        if (npc in hazardRuns) return
+        val run = ++nextHazardRun
+        hazardRuns[npc] = run
+        scheduleGasVents(npc, session, run, 0, ventDelay)
+        scheduleFallingIce(npc, session, run, iceDelay)
+        scheduleExtremityGaze(npc, session, run, sweepDelay)
     }
 
     private fun resolve(session: InstanceSession, coords: CoordGrid): CoordGrid =
@@ -452,18 +466,19 @@ constructor(
     private fun scheduleGasVents(
         npc: Npc,
         session: InstanceSession,
+        run: Int,
         groupIndex: Int,
         delay: Int = GAS_VENT_INTERVAL,
     ) {
         deps.worldQueues.add(delay) {
-            if (npc !in hazardsActive) return@add
+            if (hazardRuns[npc] != run) return@add
             val group = VENT_GROUPS[groupIndex % VENT_GROUPS.size].map { VENT_TILES[it] }
-            group.forEach { rampVent(npc, session, resolve(session, it)) }
-            scheduleGasVents(npc, session, groupIndex + 1)
+            group.forEach { rampVent(npc, session, run, resolve(session, it)) }
+            scheduleGasVents(npc, session, run, groupIndex + 1)
         }
     }
 
-    private fun rampVent(npc: Npc, session: InstanceSession, tile: CoordGrid) {
+    private fun rampVent(npc: Npc, session: InstanceSession, run: Int, tile: CoordGrid) {
         val ventType = ServerCacheManager.getNpc(GAS_VENT_NPC.asRSCM(RSCMType.NPC)) ?: return
         val vent = Npc(ventType, tile.translate(GAS_VENT_NPC_OFFSET, GAS_VENT_NPC_OFFSET))
         vent.mode = NpcMode.None
@@ -481,7 +496,7 @@ constructor(
 
         for (tick in GAS_VENT_IDLE_DELAY..GAS_VENT_DESPAWN_DELAY) {
             deps.worldQueues.add(tick) {
-                if (npc !in hazardsActive) return@add
+                if (hazardRuns[npc] != run) return@add
                 for (player in instancePlayersNear(session, tile, GAS_VENT_RADIUS)) {
                     player.statSub("stat.prayer", GAS_VENT_PRAYER_DRAIN, 0)
                     val damage = GAS_VENT_DAMAGE.first + deps.random.of(GAS_VENT_DAMAGE.last - GAS_VENT_DAMAGE.first + 1)
@@ -498,11 +513,11 @@ constructor(
                 manager.sessionForPlayer(it)?.id == session.id
         }
 
-    private fun scheduleFallingIce(npc: Npc, session: InstanceSession, delay: Int = ICE_INTERVAL) {
+    private fun scheduleFallingIce(npc: Npc, session: InstanceSession, run: Int, delay: Int = ICE_INTERVAL) {
         deps.worldQueues.add(delay) {
-            if (npc !in hazardsActive) return@add
+            if (hazardRuns[npc] != run) return@add
             telegraphIce(npc, session, resolve(session, ICE_TILES.random()))
-            scheduleFallingIce(npc, session)
+            scheduleFallingIce(npc, session, run)
         }
     }
 
@@ -522,15 +537,20 @@ constructor(
         }
     }
 
-    private fun scheduleExtremityGaze(npc: Npc, session: InstanceSession, delay: Int = EXTREMITY_INTERVAL) {
+    private fun scheduleExtremityGaze(
+        npc: Npc,
+        session: InstanceSession,
+        run: Int,
+        delay: Int = EXTREMITY_INTERVAL,
+    ) {
         deps.worldQueues.add(delay) {
-            if (npc !in hazardsActive) return@add
+            if (hazardRuns[npc] != run) return@add
             EXTREMITY_SWEEP.forEach { step ->
                 deps.worldQueues.add(step.delay.coerceAtLeast(1)) {
-                    if (npc in hazardsActive) fireExtremityPair(npc, session, step)
+                    if (hazardRuns[npc] == run) fireExtremityPair(npc, session, step)
                 }
             }
-            scheduleExtremityGaze(npc, session)
+            scheduleExtremityGaze(npc, session, run)
         }
     }
 

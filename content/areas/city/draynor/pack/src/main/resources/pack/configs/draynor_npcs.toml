@@ -27,6 +27,9 @@ wanderRange = 1
 [[npc]]
 id = "npc.ned"
 inherit = "npc.ned"
+option1 = "Talk-to"
+option3 = "Trade"
+option4 = "Trick-or-treat"
 moveRestrict = "Indoors"
 wanderRange = 1
 

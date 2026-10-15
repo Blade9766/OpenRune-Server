@@ -198,15 +198,15 @@ object SettingConfigs {
         row("dbrow.setting_38") {
             column(SETTING_ID, 38)
             columnRSCM(VARBIT_ID, "varbit.option_lootnotification_on")
-            column(MIN, 0)
-            column(MAX, 500000000)
-            column(PROMPT, "Set threshold value:")
-            columnRSCM(ENABLE_TOGGLE, "dbrow.setting_38")
         }
 
         row("dbrow.setting_39") {
             column(SETTING_ID, 39)
             columnRSCM(VARBIT_ID, "varbit.option_lootnotification_value")
+            column(MIN, 0)
+            column(MAX, 500000000)
+            column(PROMPT, "Set threshold value:")
+            columnRSCM(ENABLE_TOGGLE, "dbrow.setting_38")
         }
 
         row("dbrow.setting_40") {
@@ -2068,11 +2068,17 @@ object SettingConfigs {
         row("dbrow.setting_449") {
             column(SETTING_ID, 449)
             columnRSCM(VARP, "varp.settings_birdhouse_seed_warning_value")
+            column(MIN, 0)
+            column(MAX, 500000000)
+            column(PROMPT, "Set value threshold for birdhouse warnings:")
         }
 
         row("dbrow.setting_450") {
             column(SETTING_ID, 450)
             columnRSCM(VARBIT_ID, "varbit.option_cannonballs_load_x")
+            column(MIN, 1)
+            column(MAX, 30)
+            column(PROMPT, "Set number of cannonballs to load:")
         }
 
         row("dbrow.setting_451") {
@@ -2279,6 +2285,5 @@ object SettingConfigs {
             column(SETTING_ID, 501)
             columnRSCM(VARBIT_ID, "varbit.settings_sailing_wind_on_orb_disabled")
         }
-
     }
 }

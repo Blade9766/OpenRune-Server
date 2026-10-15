@@ -18,6 +18,7 @@ import org.rsmod.content.skills.crafting.interfaces.hasSilverCraftingBars
 import org.rsmod.content.skills.crafting.interfaces.openGoldCrafting
 import org.rsmod.content.skills.crafting.interfaces.openSilverCrafting
 import org.rsmod.content.skills.openSkillMulti
+import org.rsmod.content.skills.smithing.coalbag.CoalBag
 import org.rsmod.content.skills.smithing.hasCannonballFurnaceMould
 import org.rsmod.content.skills.smithing.openCannonballFurnaceMenu
 import org.rsmod.content.skills.smithing.util.SmithingBonuses
@@ -225,21 +226,21 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
                 0
             }
 
-        val primaryRemoved = invDel(inv, bar.input.first().internalName, primaryAmt).success
-        val secondaryRemoved =
-            if (!requiresSecondary) {
-                true
-            } else {
-                invDel(inv, secondary.internalName, effectiveSecondaryAmt).success
-            }
-
-        if (!primaryRemoved || !secondaryRemoved) {
+        val xp = SmithingSmeltXp.resolve(player, inv, bar, isSuperHeat, xpMods, regularFurnace)
+        val primary = bar.input.first().internalName
+        if (invDel(inv, primary, primaryAmt).failure) {
             return
         }
-
-        if (shouldConsumeSmithingCatalyst(player, inv, bar, regularFurnace)) {
-            invDel(inv, SmithingBonuses.SMITHING_CATALYST, 1)
+        val bagCoalBefore = CoalBag.storedAmount(player)
+        if (requiresSecondary && invDel(inv, secondary.internalName, effectiveSecondaryAmt).failure) {
+            invAdd(inv, primary, primaryAmt)
+            return
         }
+        val secondaryFromBag = (bagCoalBefore - CoalBag.storedAmount(player)).coerceAtLeast(0)
+
+        val catalystUsed =
+            shouldConsumeSmithingCatalyst(player, inv, bar, regularFurnace) &&
+                invDel(inv, SmithingBonuses.SMITHING_CATALYST, 1).success
 
         val isIronBar = bar.output.internalName == "obj.iron_bar"
         val hasRingOfForging = "obj.ring_of_forging" in player.worn
@@ -251,18 +252,36 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
 
         if (success) {
             val outputCount = outputBarCount(bar, furnaceLocInternal, furnaceCoords)
-            if (invAdd(inv, bar.output.internalName, outputCount).success) {
-                val xp = SmithingSmeltXp.resolve(player, inv, bar, isSuperHeat, xpMods, regularFurnace)
-                statAdvance("stat.smithing", xp)
-                val metal = SmithingUtils.itemName(bar.output, "bar").removeSuffix(" bar").lowercase()
-                mes("You retrieve a bar of $metal.")
-                if (outputCount > 1) {
-                    val barName = SmithingUtils.itemName(bar.output, "bar")
-                    mes("Your Varrock armour helps you smelt an extra $barName.")
+            if (invAdd(inv, bar.output.internalName, outputCount).failure) {
+                invAdd(inv, primary, primaryAmt)
+                if (requiresSecondary) {
+                    refundSecondary(secondary.internalName, effectiveSecondaryAmt, secondaryFromBag)
                 }
+                if (catalystUsed) {
+                    invAdd(inv, SmithingBonuses.SMITHING_CATALYST, 1)
+                }
+                mes("You don't have enough inventory space to do that.")
+                return
+            }
+            statAdvance("stat.smithing", xp)
+            val metal = SmithingUtils.itemName(bar.output, "bar").removeSuffix(" bar").lowercase()
+            mes("You retrieve a bar of $metal.")
+            if (outputCount > 1) {
+                val barName = SmithingUtils.itemName(bar.output, "bar")
+                mes("Your Varrock armour helps you smelt an extra $barName.")
             }
         } else {
             mes("The ore is too impure and you fail to refine it.")
+        }
+    }
+
+    private fun ProtectedAccess.refundSecondary(secondary: String, amount: Int, fromBag: Int) {
+        if (fromBag > 0) {
+            CoalBag.addStored(player, fromBag)
+        }
+        val fromInv = amount - fromBag
+        if (fromInv > 0) {
+            invAdd(inv, secondary, fromInv, ignoreVirtualStorage = true)
         }
     }
 

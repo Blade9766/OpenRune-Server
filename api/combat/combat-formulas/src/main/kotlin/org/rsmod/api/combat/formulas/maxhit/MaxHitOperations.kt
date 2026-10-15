@@ -21,6 +21,10 @@ internal object MaxHitOperations {
             modified = scale(modified, multiplier = 4, divisor = 5)
         }
 
+        if (DamageReductionAttributes.PowerOfDeath in reductionAttributes) {
+            modified = scale(modified, multiplier = 1, divisor = 2)
+        }
+
         if (DamageReductionAttributes.Justiciar in reductionAttributes) {
             val factor = checkNotNull(activeDefenceBonus) / 3000.0
             // Damage reduction effect will always reduce at least `1`.

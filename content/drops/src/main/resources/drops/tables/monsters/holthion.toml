@@ -1,5 +1,5 @@
 id = "Holthion Drops"
-npcs = ["npc.holthion_vis"]
+npcs = ["npc.holthion", "npc.holthion_vis"]
 
 [[guaranteed]]
 obj = "obj.holthion_amulet"

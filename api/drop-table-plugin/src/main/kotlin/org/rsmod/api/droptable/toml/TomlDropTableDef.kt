@@ -42,6 +42,7 @@ public data class TomlWeightedEntry(
     val clueScrollBox: Boolean = false,
     val quest: String? = null,
     val questMode: String? = null,
+    val area: String? = null,
 )
 
 public data class TomlGuaranteedEntry(
@@ -54,6 +55,7 @@ public data class TomlGuaranteedEntry(
     val clueScrollBox: Boolean = false,
     val quest: String? = null,
     val questMode: String? = null,
+    val area: String? = null,
 )
 
 public data class TomlChanceEntry(
@@ -72,6 +74,9 @@ public data class TomlChanceEntry(
     val requireWilderness: Boolean = false,
     val quest: String? = null,
     val questMode: String? = null,
+    val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )
 
 public data class TomlDropHooks(
@@ -83,4 +88,7 @@ public data class TomlDropHooks(
     val requireWilderness: Boolean = false,
     val quest: String? = null,
     val questMode: String? = null,
+    val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )

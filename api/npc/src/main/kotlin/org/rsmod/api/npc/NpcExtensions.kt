@@ -24,6 +24,10 @@ public fun Npc.isValidTarget(): Boolean {
     return isSlotAssigned && isVisible && isNotDelayed && hitpoints > 0
 }
 
+public fun Npc.isAliveInWorld(): Boolean {
+    return isSlotAssigned && hitpoints > 0 && "queue.death" !in queueList
+}
+
 /**
  * Restores the npc's [Npc.hitpoints] by [amount], capped at its max ([Npc.baseHitpointsLvl]).
  *

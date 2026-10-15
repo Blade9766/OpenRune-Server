@@ -4,12 +4,11 @@ plugins {
 
 dependencies {
     implementation(projects.api.pluginCommons)
-    implementation(projects.api.exchange)
-    implementation(projects.api.db)
     implementation(projects.api.invPlugin)
     implementation(projects.api.net)
     implementation(projects.api.registry)
     implementation(projects.content.interfaces.bank)
+    implementation(projects.content.other.grandExchange)
     implementation(projects.content.skills.mining)
     implementation(projects.content.skills.woodcutting)
     implementation(libs.jackson.databind)

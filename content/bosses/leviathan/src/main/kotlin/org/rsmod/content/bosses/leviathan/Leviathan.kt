@@ -143,7 +143,7 @@ internal constructor(
                 rule(InPhase(ENRAGED_PHASE) and insideAura) { scalePercent(INSIDE_AURA_DAMAGE_PERCENT) }
             }
 
-            phase(FIGHT_PHASE) {
+            phase(FIGHT_PHASE, lockMovement = true) {
                 weightedSelectorRandom {
                     +random(bite, weight = 1, requires = targetWithin(BITE_RANGE) and !lastAbility(bite))
                     +random(volley, weight = 1)
@@ -168,6 +168,7 @@ internal constructor(
             phase(
                 ENRAGED_PHASE,
                 entryHp = LeviathanFights.ENRAGE_HP_FRACTION,
+                lockMovement = true,
                 attackRate = LeviathanFights.ENRAGED_INTERVAL,
             ) {
                 entry = enrageEntry.name
@@ -271,18 +272,23 @@ constructor(
         if (!pendingSpawns.add(session.id.value)) return
         deps.worldQueues.add(delay) {
             pendingSpawns.remove(session.id.value)
-            if (instances.sessionForPlayer(player)?.id != session.id) return@add
             if (bossOf(session) != null) return@add
-            spawn(session, player)
+            val inSession = instances.sessionForPlayer(player)?.id == session.id
+            if (!inSession || !spawn(session, player)) reopenArena(session)
         }
     }
 
-    private fun spawn(session: InstanceSession, player: Player) {
-        val coords = instances.resolveCoord(session, LeviathanArena.BOSS_SPAWN) ?: return
-        val arena = Arena.forBoss(coords)
-        if (!arena.inSearchBox(player.coords) || arenaLocs.isOnIsland(arena, player.coords)) return
+    private fun reopenArena(session: InstanceSession) {
+        arenaLocs.setHandholds(session, LeviathanArenaLocs.HANDHOLDS_ENTER_LOC)
+        arenaLocs.setBoat(session, escape = false)
+    }
 
-        val type = ServerCacheManager.getNpc(BOSS_NPC.asRSCM(RSCMType.NPC)) ?: return
+    private fun spawn(session: InstanceSession, player: Player): Boolean {
+        val coords = instances.resolveCoord(session, LeviathanArena.BOSS_SPAWN) ?: return false
+        val arena = Arena.forBoss(coords)
+        if (!arena.inSearchBox(player.coords) || arenaLocs.isOnIsland(arena, player.coords)) return false
+
+        val type = ServerCacheManager.getNpc(BOSS_NPC.asRSCM(RSCMType.NPC)) ?: return false
         val npc = Npc(type, coords)
         npc.movementLocked = true
         npc.apRequiresLineOfSight = false
@@ -300,6 +306,7 @@ constructor(
         deps.worldQueues.add(1) { if (npc.isSlotAssigned) refacePlayer(npc, player) }
         npc.apPlayer2(player, aiPlayerInteractions)
         watchAbandonment(fight)
+        return true
     }
 
     private fun watchAbandonment(fight: LeviathanFight) {
@@ -482,9 +489,11 @@ constructor(
     }
 
     private fun abandon(fight: LeviathanFight) {
+        val session = sessionOf(fight.npc)
         end(fight)
         deps.clearOwnedLocs(fight.npc, RUBBLE_BREAK_SPOTANIM)
         if (fight.npc.isSlotAssigned) deps.npcRepo.del(fight.npc, Int.MAX_VALUE)
+        session?.let(::reopenArena)
     }
 
     fun onDeleted(npc: Npc) {
@@ -501,7 +510,12 @@ constructor(
 
     fun dropCoords(npc: Npc): CoordGrid {
         val fight = fights[npc] ?: return npc.coords
-        return arenaLocs.arenaPlayers(fight).firstOrNull()?.coords ?: npc.coords
+        return arenaLocs.arenaPlayers(fight).firstOrNull()?.coords
+            ?: arenaLocs
+                .freeArenaTiles(fight)
+                .filterNot { it.x - npc.coords.x in 0 until npc.size && it.z - npc.coords.z in 0 until npc.size }
+                .minByOrNull { it.chebyshevDistance(npc.coords) }
+            ?: npc.coords
     }
 
     fun afterKill(session: InstanceSession) {
@@ -526,7 +540,7 @@ constructor(
         arenaLocs.setHandholds(session, LeviathanArenaLocs.HANDHOLDS_SEALED_LOC)
         arenaLocs.setBoat(session, escape = true)
         if (delay <= 0) {
-            if (bossOf(session) == null) spawn(session, player)
+            if (bossOf(session) == null && !spawn(session, player)) reopenArena(session)
         } else {
             scheduleSpawn(session, player, delay)
         }

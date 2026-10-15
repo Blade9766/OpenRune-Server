@@ -1,7 +1,6 @@
 package org.rsmod.content.areas.city.falador.npcs
 
 import jakarta.inject.Inject
-import org.rsmod.api.config.Constants
 import org.rsmod.api.invtx.invAddOrDrop
 import org.rsmod.api.invtx.invTakeFee
 import org.rsmod.api.player.dialogue.Dialogue
@@ -15,11 +14,9 @@ import org.rsmod.plugin.scripts.ScriptContext
 class FaladorTownsfolkScript @Inject constructor(private val objRepo: ObjRepository) :
     PluginScript() {
     override fun ScriptContext.startup() {
-        onOpNpc1("npc.rd_teleporter_guy") { startDialogue(it.npc) { sirTiffy() } }
         onOpNpc1("npc.partyroom_pete") { startDialogue(it.npc) { partyPete(it.npc) } }
         onOpNpc1("npc.sir_vyvin") { startDialogue(it.npc) { sirVyvin() } }
         onOpNpc1("npc.white_knight_diary") { startDialogue(it.npc) { sirRebral() } }
-        onOpNpc1("npc.wyson") { startDialogue(it.npc) { wyson() } }
         onOpNpc1("npc.pmod_town_crier_falador") { startDialogue(it.npc) { townCrier() } }
         onOpNpc1("npc.aluft_gnome_diplomat_falador") { startDialogue(it.npc) { spanfipple() } }
         onOpNpc1("npc.falador_man4") { startDialogue(it.npc) { norman() } }
@@ -30,19 +27,6 @@ class FaladorTownsfolkScript @Inject constructor(private val objRepo: ObjReposit
         for (client in MAHOGANY_HOMES_CLIENTS) {
             onOpNpc1(client) { startDialogue(it.npc) { mahoganyHomesClient() } }
         }
-    }
-
-    private suspend fun Dialogue.sirTiffy() {
-        val greeting =
-            if (player.appearance.bodyType == Constants.bodytype_a) "What ho, sir." else "What ho, milady."
-        chatPlayer(happy, "Hello.")
-        chatNpc(happy, "$greeting Spiffing day for a walk in the park, what?")
-        chatPlayer(confused, "...spiffing?")
-        chatNpc(
-            laugh,
-            "Absolutely, top-hole! Well, can't stay and chat all day, dontchaknow! Ta-ta for now!",
-        )
-        chatPlayer(confused, "Erm... goodbye.")
     }
 
     private suspend fun Dialogue.partyPete(npc: Npc) {
@@ -321,31 +305,6 @@ class FaladorTownsfolkScript @Inject constructor(private val objRepo: ObjReposit
         chatNpc(happy, "See you later.")
     }
 
-    private suspend fun Dialogue.wyson() {
-        chatNpc(
-            neutral,
-            "I'm the head gardener around here. If you're looking for woad leaves, or if you need " +
-                "help with owt, I'm yer man.",
-        )
-        when (
-            choice3(
-                "Yes please, I need woad leaves.",
-                1,
-                "How about ME helping YOU instead?",
-                2,
-                "Sorry, but I'm not interested.",
-                3,
-            )
-        ) {
-            1 -> buyWoadLeaves()
-            2 -> wysonMole()
-            else -> {
-                chatPlayer(neutral, "Sorry, but I'm not interested.")
-                chatNpc(neutral, "Fair enough.")
-            }
-        }
-    }
-
     private suspend fun Dialogue.buyWoadLeaves() {
         chatPlayer(happy, "Yes please, I need woad leaves.")
         chatNpc(quiz, "How much are you willing to pay?")
@@ -392,46 +351,6 @@ class FaladorTownsfolkScript @Inject constructor(private val objRepo: ObjReposit
             chatPlayer(happy, "Thanks.")
             chatNpc(happy, "I'll be around if you have any more gardening needs.")
         }
-    }
-
-    private suspend fun Dialogue.wysonMole() {
-        chatPlayer(happy, "How about ME helping YOU instead?")
-        chatNpc(
-            happy,
-            "That's a nice thing to say. I do need a hand, now you mention it. You see, there's some " +
-                "stupid mole digging up my lovely garden.",
-        )
-        chatPlayer(quiz, "A mole? Surely you've dealt with moles in the past?")
-        chatNpc(
-            worried,
-            "Ah, well this is no ordinary mole! He's a big'un for sure. Ya see... I'm always relied " +
-                "upon to make the most of this 'ere garden - the faster and bigger I can grow plants the " +
-                "better!",
-        )
-        chatNpc(
-            worried,
-            "In my quest for perfection I looked into 'Malignius-Mortifer's-Super-Ultra-Flora-Growth-" +
-                "Potion'. It worked well on my plants, no doubt about it! But it had the same effect on a " +
-                "nearby mole. Ya can imagine the",
-        )
-        chatNpc(
-            worried,
-            "havoc he causes to my patches of sunflowers! Why, if any of the other gardeners knew " +
-                "about this mole, I'd be looking for a new job in no time!",
-        )
-        chatPlayer(neutral, "I see. What do you need me to do?")
-        chatNpc(
-            neutral,
-            "If ya are willing maybe yer wouldn't mind killing it for me? Take a spade and use it to " +
-                "shake up them mole hills. Be careful though, he really is big!",
-        )
-        chatPlayer(quiz, "Is there anything in this for me?")
-        chatNpc(
-            neutral,
-            "Well, if yer gets any mole skin or mole claws off 'un, I'd trade 'em for bird nests if " +
-                "ye brings 'em here to me.",
-        )
-        chatPlayer(neutral, "Right, I'll bear it in mind.")
     }
 
     private suspend fun Dialogue.townCrier() {

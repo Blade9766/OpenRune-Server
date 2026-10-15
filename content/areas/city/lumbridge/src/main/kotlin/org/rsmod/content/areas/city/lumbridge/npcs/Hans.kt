@@ -1,16 +1,27 @@
 package org.rsmod.content.areas.city.lumbridge.npcs
 
+import jakarta.inject.Inject
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class Hans : PluginScript() {
+class Hans
+@Inject
+constructor(
+    private val lostTribe: LostTribeQuest,
+    private val zanikTour: ZanikTour,
+    private val diaries: AchievementDiaries,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.hans") { hansDialogue(it.npc) }
         onOpNpc3("npc.hans") { hansAgeDialogue(it.npc) }
@@ -20,11 +31,16 @@ class Hans : PluginScript() {
         startDialogue(npc) { optionsDialogue(npc) }
 
     private suspend fun Dialogue.optionsDialogue(npc: Npc) {
-        chatNpc(neutral, "Hello. What are you doing here?")
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { hansIntro() }
+        } else {
+            chatNpc(neutral, "Hello. What are you doing here?")
+        }
+        val cellarQuestion = lostTribe.cellarQuestion(player, Witness.Hans)
         val choice =
             choice5(
-                "I'm looking for whoever is in charge of this place.",
-                1,
+                cellarQuestion ?: "I'm looking for whoever is in charge of this place.",
+                if (cellarQuestion != null) 6 else 1,
                 "I have come to kill everyone in this castle!",
                 2,
                 "I don't know. I'm lost. Where am I?",
@@ -66,6 +82,7 @@ class Hans : PluginScript() {
             5 -> {
                 chatPlayer(shifty, "Nothing.")
             }
+            6 -> with(lostTribe) { askAboutCellar(Witness.Hans) }
         }
     }
 
@@ -86,6 +103,7 @@ class Hans : PluginScript() {
             }
 
         chatNpc(happy, text)
+        diaries.complete(player, "dbrow.diary_lumbridge_easy_hans")
     }
 
     private fun Int.toDayHourMinuteParts(): Triple<Int, Int, Int> {

@@ -147,5 +147,33 @@ denominator = 5013
 obj = "obj.dorgesh_construction_bone_curved"
 count = 1
 
+[[tertiary]]
+numerator = 1
+denominator = 246
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend,area.giantsden"
+
+[[tertiary]]
+numerator = 1
+denominator = 370
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend,area.giantsden"
+dark_totem_piece = true
+
+[[tertiary]]
+numerator = 1
+denominator = 232
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 98
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
 
 # Drops need manual rate (konar_key): Brimstone key drop rates for level 86, 104 and 109 fire giants are , and respectively.

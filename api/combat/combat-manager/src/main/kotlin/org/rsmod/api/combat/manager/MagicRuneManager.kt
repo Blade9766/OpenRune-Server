@@ -5,10 +5,12 @@ import jakarta.inject.Inject
 import kotlin.collections.any
 import kotlin.contracts.contract
 import org.rsmod.api.combat.commons.magic.MagicSpell
+import org.rsmod.api.combat.commons.magic.SpellCastHook
 import org.rsmod.api.combat.commons.magic.SpellQuestRequirement
 import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.config.refs.BaseParams
 import org.rsmod.api.invtx.invDelAll
+import org.rsmod.api.player.cheat.adminInfiniteRunes
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.stat.magicLvl
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
@@ -36,6 +38,7 @@ constructor(
     private val staffSubs: StaffSubstituteRepository,
     private val runeSubs: RuneSubstituteRepository,
     private val questRequirements: Set<SpellQuestRequirement>,
+    private val castHooks: Set<SpellCastHook>,
 ) {
     private val Player.spellbook by enumVarBit<Spellbook>("varbit.spellbook")
 
@@ -62,7 +65,11 @@ constructor(
         if (accessFailure != null) {
             return accessFailure
         }
-        return delReqs(player, spell)
+        val result = delReqs(player, spell)
+        if (result is CastResult.Success) {
+            castHooks.forEach { it.onCast(player, spell) }
+        }
+        return result
     }
 
     /**
@@ -145,13 +152,25 @@ constructor(
         val sources = sourced.flatMap { it.sources }
 
         // Ensure player has enough varbits to be removed.
-        val varbitSources = sources.filterIsInstance<MagicRunes.Source.VarBitSource>()
+        val varbitSources =
+            sources
+                .filterIsInstance<MagicRunes.Source.VarBitSource>()
+                .groupBy { it.varbit }
+                .map { (varbit, list) ->
+                    MagicRunes.Source.VarBitSource(varbit, list.sumOf { it.count })
+                }
         val enoughVarBits = varbitSources.all { player.vars[it.varbit] >= it.count }
         if (!enoughVarBits) {
             return CastResult.Failure.NotEnoughVarBit
         }
 
-        val invSources = sources.filterIsInstance<MagicRunes.Source.InvSource>()
+        val invSources =
+            sources
+                .filterIsInstance<MagicRunes.Source.InvSource>()
+                .groupBy { it.slot to it.obj }
+                .map { (key, list) ->
+                    MagicRunes.Source.InvSource(key.second, key.first, list.sumOf { it.count })
+                }
 
         val consume = ArrayList<InvObj>(invSources.size)
         for (source in invSources) {
@@ -163,9 +182,13 @@ constructor(
             consume += invObj.copy(count = required)
         }
 
-        val transaction = player.invDelAll(player.inv, consume, strict = true)
-        if (!transaction.success) {
-            return CastResult.Failure.NotEnoughInvObj
+        // A cast paid for entirely from a rune pouch has nothing to delete from the inventory.
+        // An empty transaction reports failure, so only run one when there are objs to consume.
+        if (consume.isNotEmpty()) {
+            val transaction = player.invDelAll(player.inv, consume, strict = true)
+            if (!transaction.success) {
+                return CastResult.Failure.NotEnoughInvObj
+            }
         }
 
         for (source in varbitSources) {
@@ -182,6 +205,12 @@ constructor(
     }
 
     public fun validateSpell(player: Player, spell: MagicSpell): List<MagicRunes.Validation> {
+        // Admin "infinite runes" cheat: treat every obj requirement as an unlimited source so
+        // nothing is consumed. Level and spellbook requirements are handled by `validateAccess`
+        // and remain in effect.
+        if (player.adminInfiniteRunes || player.hasCastleWarsRunePouch()) {
+            return listOf(MagicRunes.Validation.Valid.Unlimited)
+        }
         val runePack = validateRunePack(player, spell.obj)
         return if (runePack != null) {
             listOf(runePack)
@@ -245,6 +274,10 @@ constructor(
         }
         return null
     }
+
+    /** The pouch handed out inside a Castle Wars game supplies every rune for free. */
+    private fun Player.hasCastleWarsRunePouch(): Boolean =
+        inv.contains("obj.castlewars_rune_replacement")
 
     private fun Player.useFakeRunes(): Boolean {
         return vars["varbit.barbassault_areaexit_pending"] == 1 || vars["varbit.br_ingame"] == 1

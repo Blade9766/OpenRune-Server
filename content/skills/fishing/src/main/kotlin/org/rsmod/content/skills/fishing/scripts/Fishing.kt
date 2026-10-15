@@ -180,7 +180,8 @@ constructor(
 
         val unlocked = FishingCatchLogic.unlocked(spot.spotId, active.methodId, player.fishingLvl, rows)
         val bait = resolveBait(active)
-        val hasBait = bait == null || invTotal(inv, bait) > 0
+        val hasMethodBait = bait == null || invTotal(inv, bait) > 0
+        val hasBait = hasMethodBait || unlocked.any { it.baitOverride != null && invTotal(inv, it.baitOverride) > 0 }
 
         when (FishingCatchLogic.attemptGate(active.bait, hasMethodTool(active), hasBait, unlocked)) {
             Gate.NoTool -> {
@@ -205,7 +206,7 @@ constructor(
             unlocked.filter {
                 player.strengthLvl >= it.strReq &&
                     player.agilityLvl >= it.agiReq &&
-                    (it.baitOverride == null || invTotal(inv, it.baitOverride) > 0)
+                    if (it.baitOverride == null) hasMethodBait else invTotal(inv, it.baitOverride) > 0
             }
         if (eligible.isEmpty()) {
             if (verbose) {

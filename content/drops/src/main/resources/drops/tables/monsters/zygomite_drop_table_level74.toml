@@ -1,0 +1,122 @@
+id = "Zygomite Drops (Level 74)"
+npcs = ["npc.slayer_mutated_zygomite_adolescent"]
+brimstone_key_roll = true
+brimstone_key_roll_konar_bonus = true
+
+[main]
+total = 143
+name = "Zygomite Drops (Level 74)"
+
+[[main.entries]]
+weight = 3
+obj = "obj.steel_axe"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.steel_2h_sword"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.mithril_full_helm"
+count = 1
+
+[[main.entries]]
+weight = 30
+obj = "obj.naturerune"
+count = 2
+
+[[main.entries]]
+weight = 5
+obj = "obj.earthrune"
+count = 15
+
+[[main.entries]]
+weight = 6
+obj = "obj.unidentified_ranarr"
+count = 2
+
+[[main.entries]]
+weight = 2
+obj = "obj.unidentified_tarromin"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.unidentified_harralander"
+count = 1
+
+[[main.entries]]
+weight = 11
+obj = "obj.strawberry_seed"
+count = 4
+
+[[main.entries]]
+weight = 1
+obj = "obj.potato_seed"
+count = 4
+
+[[main.entries]]
+weight = 3
+obj = "obj.coins"
+count = 24
+
+[[main.entries]]
+weight = 39
+obj = "obj.coins"
+count = 64
+
+[[main.entries]]
+weight = 10
+obj = "obj.coins"
+count = 120
+
+[[main.entries]]
+weight = 2
+obj = "obj.coins"
+count = 250
+
+[[main.entries]]
+weight = 6
+obj = "obj.cert_bucket_supercompost"
+count = 1
+
+[[main.entries]]
+weight = 7
+obj = "obj.clay"
+count = 1
+
+[[main.entries]]
+weight = 5
+shared = "gem"
+
+[[main.entries]]
+weight = 8
+nothing = true
+
+[[main.separate_rolls]]
+numerator = 8
+denominator = 429
+
+[[main.separate_rolls.entries]]
+weight = 8
+obj = "obj.mushroom_seed"
+count = 1
+
+[[main.separate_rolls]]
+numerator = 8
+denominator = 429
+
+[[main.separate_rolls.entries]]
+weight = 8
+obj = "obj.mortmyremushroom"
+count = 1
+
+[[main.separate_rolls.entries]]
+weight = 8
+obj = "obj.slayer_fungicide"
+count = 1
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (8 weight)

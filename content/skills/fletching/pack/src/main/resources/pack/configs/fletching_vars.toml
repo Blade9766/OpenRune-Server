@@ -1,0 +1,5 @@
+[[varp]]
+isServerOnly = true
+id = "varp.fletching_cape_searches"
+scope = "Perm"
+transmit = "Never"

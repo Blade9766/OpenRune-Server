@@ -1,11 +1,5 @@
 package org.rsmod.content.other.bots.core
 
-import org.rsmod.api.exchange.ExchangeMutation
-import org.rsmod.api.exchange.ExchangeOwner
-import org.rsmod.api.exchange.ExchangeTax
-import org.rsmod.api.exchange.GrandExchangeBook
-import org.rsmod.api.exchange.OwnerKind
-
 /** Brings bots into and out of the world. Implemented by the game layer, faked in tests. */
 interface BotSpawner {
     /** Places the bot in the world from its saved state; null when it cannot be spawned now. */
@@ -30,26 +24,24 @@ data class BotStatusView(
 
 /**
  * Owns every bot: admin operations, the master toggle, the active-bot cap, ticking, and
- * persistence. Single-threaded (game thread). Each write to [store] carries the bot's full
- * inventory/bank snapshot together with any exchange rows changed in the same action, so the
- * database never holds one side of an item movement without the other.
+ * persistence. Single-threaded (game thread). Every write carries the bot's full inventory and
+ * bank snapshot and is synchronous, which the brain's two-step exchange protocol relies on.
  */
 class BotCoordinator(
     private val store: BotStore,
-    private val book: GrandExchangeBook,
-    private val market: BotMarket,
+    private val exchange: BotExchange,
     private val spawner: BotSpawner,
     private val items: (String) -> Int?,
     private val log: BotLog,
     private val coinsItemId: Int? = null,
-    private val onExchangeChange: (ExchangeMutation) -> Unit = {},
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val records = LinkedHashMap<Long, BotRecord>()
     private val live = LinkedHashMap<Long, LiveBot>()
-    private val stopping = LinkedHashMap<Long, String>()
+    private val stopping = LinkedHashMap<Long, StopRequest>()
     private val exits = HashMap<Long, List<Long>>()
     private val spawnRetryAt = HashMap<Long, Int>()
+    private val recovering = HashSet<Long>()
     private var nextId = 1L
     private var lastPeriodicSave = 0
 
@@ -59,12 +51,18 @@ class BotCoordinator(
     var loaded: Boolean = false
         private set
 
+    var storeHealthy: Boolean = true
+        private set
+
     private class LiveBot(val brain: BotBrain, val actor: BotActor, var nextActionCycle: Int = 0)
+
+    private class StopRequest(val reason: String, var waited: Int = 0)
 
     fun load() {
         val snapshot = store.load()
         settings = snapshot.settings
         records.clear()
+        recovering.clear()
         for (record in snapshot.bots) {
             val restored =
                 when (record.state) {
@@ -72,6 +70,9 @@ class BotCoordinator(
                     else -> record.copy(state = BotState.Disabled, activity = "Loaded")
                 }
             records[record.id] = restored
+            if (record.hasPendingExchangeWork) {
+                recovering += record.id
+            }
             nextId = maxOf(nextId, record.id + 1)
         }
         loaded = true
@@ -113,7 +114,10 @@ class BotCoordinator(
                 activity = "Created",
             )
         records[record.id] = record
-        write(BotWrite(bots = listOf(record)))
+        if (!write(BotWrite(bots = listOf(record)))) {
+            records.remove(record.id)
+            return Result.failure(IllegalStateException("the bot store could not be written"))
+        }
         log.info(record, "created (${config.role.key} at ${config.site})")
         return Result.success(record)
     }
@@ -150,7 +154,7 @@ class BotCoordinator(
         val record = records[id] ?: return "no such bot"
         put(currentOf(record).copy(enabled = false))
         if (id in live) {
-            stopping[id] = reason
+            stopping[id] = StopRequest(reason)
             live[id]?.brain?.updateRecord { it.copy(enabled = false) }
         } else {
             put(records.getValue(id).copy(state = BotState.Disabled, activity = reason))
@@ -165,20 +169,20 @@ class BotCoordinator(
         if (id in live) {
             return "disable the bot and wait for it to leave the world first"
         }
-        val offers = book.offers(ExchangeOwner.bot(id))
-        if (offers.isNotEmpty() && !force) {
+        val offers = exchange.offers(record.ownerId)
+        if ((offers.isNotEmpty() || record.hasPendingExchangeWork) && !force) {
             return "the bot still has ${offers.size} exchange offer(s); collect them or use force"
         }
-        var mutation = ExchangeMutation.EMPTY
-        val owner = ExchangeOwner.bot(id)
         for (offer in offers) {
-            book.abort(owner, offer.id)?.let { mutation += it }
-            val owed = book.collectable(owner, offer.id) ?: continue
-            book.confirmCollect(owner, owed)?.let { mutation += it }
+            exchange.abort(record.ownerId, offer.slot)
+            exchange.offer(record.ownerId, offer.slot)?.let {
+                exchange.takeItems(record.ownerId, it.slot, it.collectItems)
+                exchange.takeCoins(record.ownerId, it.slot, it.collectCoins)
+            }
         }
         records.remove(id)
-        write(BotWrite(deleted = listOf(id), exchange = mutation))
-        log.info(record, "removed${if (force) " (forced, offers cancelled)" else ""}")
+        write(BotWrite(deleted = listOf(id)))
+        log.info(record, "removed${if (force) " (forced; its offers and their contents are forfeited)" else ""}")
         return null
     }
 
@@ -186,8 +190,8 @@ class BotCoordinator(
         settings = settings.copy(masterEnabled = enabled)
         write(BotWrite(settings = settings))
         if (!enabled) {
-            for (id in live.keys.toList()) {
-                stopping[id] = "Master toggle is off"
+            for (id in live.keys) {
+                stopping.getOrPut(id) { StopRequest("Master toggle is off") }
             }
         }
     }
@@ -256,10 +260,8 @@ class BotCoordinator(
             }
             bot.nextActionCycle = cycle + bot.brain.record.config.actionIntervalTicks
             bot.brain.tick(now, cycle)
-            val mutation = market.drain()
-            handleTrades(mutation)
-            if (bot.brain.urgent || !mutation.isEmpty()) {
-                persist(id, mutation)
+            if (bot.brain.urgent) {
+                persist(id)
             }
         }
         if (cycle - lastPeriodicSave >= PERIODIC_SAVE_TICKS) {
@@ -270,11 +272,6 @@ class BotCoordinator(
                 }
             }
         }
-    }
-
-    /** Called for every exchange change made outside a bot's own tick (players trading). */
-    fun onExchangeMutation(mutation: ExchangeMutation) {
-        handleTrades(mutation)
     }
 
     /**
@@ -290,16 +287,17 @@ class BotCoordinator(
         val recent = if (shutdown) previous else previous + now
         exits[id] = recent
         val parked = recent.size >= MAX_EXITS_PER_WINDOW
+        val current = bot.brain.record
         val record =
-            bot.brain.record.copy(
-                save = save ?: bot.brain.record.save,
+            current.copy(
+                save = save ?: current.save,
                 state = if (parked) BotState.Error else BotState.Disabled,
-                lastError = if (parked) "repeatedly removed from the world" else bot.brain.record.lastError,
-                errorRecoveries = if (parked) BotBrain.MAX_ERROR_RECOVERIES else bot.brain.record.errorRecoveries,
+                lastError = if (parked) "repeatedly removed from the world" else current.lastError,
+                errorRecoveries = if (parked) BotBrain.MAX_ERROR_RECOVERIES else current.errorRecoveries,
                 updatedAt = now,
             )
         records[id] = record
-        write(BotWrite(bots = listOf(record), exchange = market.drain()))
+        write(BotWrite(bots = listOf(record)))
         val reason = if (shutdown) "server shutdown" else "unexpectedly"
         log.warn(record, "left the world ($reason)${if (parked) "; parked in error" else ""}")
     }
@@ -327,7 +325,7 @@ class BotCoordinator(
                 inventoryUsed = actor?.inventoryUsed ?: save.inv.size,
                 inventoryCapacity = actor?.inventoryCapacity ?: INVENTORY_SIZE,
                 bankedSaleItems = banked,
-                activeListings = book.offers(ExchangeOwner.bot(record.id)).count { it.isOpen },
+                activeListings = exchange.offers(record.ownerId).count { it.isOpen },
                 coins = actor?.coins() ?: savedCoins(save),
             )
         }
@@ -338,7 +336,8 @@ class BotCoordinator(
     }
 
     private fun processStops() {
-        for ((id, reason) in stopping.toList()) {
+        val now = clock()
+        for ((id, request) in stopping.toList()) {
             val bot = live[id]
             if (bot == null) {
                 stopping.remove(id)
@@ -348,7 +347,14 @@ class BotCoordinator(
                 bot.actor.stopActivity()
                 continue
             }
-            despawn(id, reason, keepState = true)
+            if (bot.brain.hasPendingExchangeWork && request.waited++ < STOP_SETTLE_TICKS) {
+                bot.brain.settle(now)
+                if (bot.brain.urgent) {
+                    persist(id)
+                }
+                continue
+            }
+            despawn(id, request.reason, keepState = true)
             stopping.remove(id)
         }
     }
@@ -363,16 +369,13 @@ class BotCoordinator(
                 .map { it.id }
                 .take(settings.maxActiveBots)
                 .toSet()
-        for (id in live.keys.toList()) {
+        for (id in live.keys) {
             if (id !in wanted && id !in stopping) {
-                stopping[id] = "Over the active bot limit"
+                stopping[id] = StopRequest("Over the active bot limit")
             }
         }
         for (id in wanted) {
-            if (id in live || id in stopping) {
-                continue
-            }
-            if (cycle < (spawnRetryAt[id] ?: 0)) {
+            if (id in live || id in stopping || cycle < (spawnRetryAt[id] ?: 0)) {
                 continue
             }
             val record = records.getValue(id)
@@ -383,7 +386,16 @@ class BotCoordinator(
                 continue
             }
             spawnRetryAt.remove(id)
-            val brain = BotBrain(record, actor, market, items, log)
+            val brain =
+                BotBrain(
+                    initial = record,
+                    actor = actor,
+                    exchange = exchange,
+                    items = items,
+                    log = log,
+                    storeHealthy = { storeHealthy },
+                    recovering = recovering.remove(id),
+                )
             brain.start(cycle)
             live[id] = LiveBot(brain, actor, cycle)
             log.info(record, "spawned")
@@ -393,76 +405,51 @@ class BotCoordinator(
     private fun despawn(id: Long, reason: String, keepState: Boolean) {
         val bot = live[id] ?: return
         bot.brain.stop(reason)
-        val mutation = market.drain()
         val save = spawner.despawn(id) ?: bot.brain.record.save
         live.remove(id)
-        val state = if (keepState && bot.brain.record.lastError != null &&
-            bot.brain.record.errorRecoveries >= BotBrain.MAX_ERROR_RECOVERIES
-        ) {
-            BotState.Error
-        } else {
-            BotState.Disabled
-        }
-        val record = bot.brain.record.copy(save = save, state = state, updatedAt = clock())
+        val current = bot.brain.record
+        val parked = keepState && current.lastError != null &&
+            current.errorRecoveries >= BotBrain.MAX_ERROR_RECOVERIES
+        val record =
+            current.copy(
+                save = save,
+                state = if (parked) BotState.Error else BotState.Disabled,
+                updatedAt = clock(),
+            )
         records[id] = record
-        write(BotWrite(bots = listOf(record), exchange = mutation))
+        write(BotWrite(bots = listOf(record)))
         log.info(record, "left the world ($reason)")
     }
 
-    private fun handleTrades(mutation: ExchangeMutation) {
-        for (trade in mutation.trades) {
-            val offer = book.offer(trade.sellOfferId)
-                ?: mutation.offers.firstOrNull { it.id == trade.sellOfferId }
-                ?: continue
-            if (offer.owner.kind != OwnerKind.Bot) {
-                continue
-            }
-            val id = offer.owner.id
-            val net = trade.quantity.toLong() * trade.price - ExchangeTax.total(trade.price, trade.quantity)
-            val update: (BotRecord) -> BotRecord = {
-                it.copy(
-                    stats =
-                        it.stats.copy(
-                            sold = it.stats.sold + trade.quantity,
-                            coinsEarned = it.stats.coinsEarned + net,
-                        )
-                )
-            }
-            val brain = live[id]?.brain
-            if (brain != null) {
-                brain.updateRecord(update)
-            } else {
-                records[id]?.let { records[id] = update(it) }
-            }
-            records[id]?.let { log.info(currentOf(it), "sold ${trade.quantity} x item ${trade.itemId} at ${trade.price}") }
-            if (brain == null) {
-                persist(id)
-            }
-        }
-    }
-
-    private fun persist(id: Long, mutation: ExchangeMutation = ExchangeMutation.EMPTY) {
+    private fun persist(id: Long) {
         val bot = live[id]
         val record =
             if (bot != null) {
                 val save = spawner.snapshot(id) ?: bot.brain.record.save
                 bot.brain.updateRecord { it.copy(save = save, updatedAt = clock()) }
-                bot.brain.dirty = false
-                bot.brain.urgent = false
                 bot.brain.record
             } else {
                 records[id] ?: return
             }
         records[id] = record
-        write(BotWrite(bots = listOf(record), exchange = mutation))
-    }
-
-    private fun write(write: BotWrite) {
-        store.write(write)
-        if (!write.exchange.isEmpty()) {
-            onExchangeChange(write.exchange)
+        if (write(BotWrite(bots = listOf(record))) && bot != null) {
+            bot.brain.dirty = false
+            bot.brain.urgent = false
         }
     }
+
+    private fun write(write: BotWrite): Boolean =
+        try {
+            store.write(write)
+            storeHealthy = true
+            true
+        } catch (e: Exception) {
+            if (storeHealthy) {
+                log.error("bot store write failed; exchange work is paused until it recovers: $e")
+            }
+            storeHealthy = false
+            false
+        }
 
     private fun currentOf(record: BotRecord): BotRecord = live[record.id]?.brain?.record ?: record
 
@@ -473,9 +460,10 @@ class BotCoordinator(
     companion object {
         const val MAX_ACTIVE_LIMIT: Int = 200
         const val INVENTORY_SIZE: Int = 28
-        private const val EXIT_WINDOW_MS = 60 * 60_000L
-        private const val MAX_EXITS_PER_WINDOW = 3
+        const val STOP_SETTLE_TICKS: Int = 50
         private const val PERIODIC_SAVE_TICKS = 100
         private const val SPAWN_RETRY_TICKS = 100
+        private const val EXIT_WINDOW_MS = 60 * 60_000L
+        private const val MAX_EXITS_PER_WINDOW = 3
     }
 }

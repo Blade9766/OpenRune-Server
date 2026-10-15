@@ -19,6 +19,7 @@ import org.rsmod.game.obj.Obj
 import org.rsmod.game.ui.Component
 import org.rsmod.map.CoordGrid
 
+/** An interface component (a spell such as Telekinetic Grab) used on a ground obj. */
 class OpObjTHandler
 @Inject
 constructor(
@@ -33,7 +34,6 @@ constructor(
 
     override fun handle(player: Player, message: OpObjT) {
         if (player.isDelayed) {
-            player.clearMapFlag()
             return
         }
 
@@ -44,10 +44,10 @@ constructor(
             player.clearPendingAction(eventBus)
             return
         }
-
+        val type = ServerCacheManager.getItem(obj.type) ?: return
         val interfaceType = ServerCacheManager.fromInterface(message.asComponent.packed)
         val componentType = ServerCacheManager.fromComponent(message.asComponent.packed)
-        val selectedObj =
+        val objType =
             message.selectedObj
                 .takeIf { it != -1 }
                 ?.let { id -> ServerCacheManager.getItems().values.firstOrNull { it.id == id } }
@@ -61,6 +61,7 @@ constructor(
         }
 
         val comsub = message.selectedSub
+
         val targetEnabled =
             InterfaceEvents.isEnabled(player.ui, componentType, comsub, IfEvent.TgtObj)
         if (!targetEnabled) {
@@ -70,22 +71,27 @@ constructor(
         }
 
         val speed = if (message.controlKey) player.ctrlMoveSpeed() else null
+        val opTrigger = objInteractions.hasOpTrigger(obj, objType, componentType, comsub, type)
+        val apTrigger = objInteractions.hasApTrigger(obj, objType, componentType, comsub, type)
         val interaction =
             InteractionObjT(
-                objType = selectedObj,
+                target = obj,
+                objType = objType,
                 component = componentType,
                 comsub = comsub,
-                target = obj,
-                hasOpTrigger = objInteractions.hasOpTrigger(obj, componentType, comsub, selectedObj),
-                hasApTrigger = objInteractions.hasApTrigger(obj, componentType, comsub, selectedObj),
+                hasOpTrigger = opTrigger,
+                hasApTrigger = apTrigger,
             )
+        val routeRequest = RouteRequestCoord(coords, clientRequest = true)
         player.clearPendingAction(eventBus)
         player.resetFaceEntity()
         player.faceSquare(coords)
         player.interaction = interaction
-        player.routeRequest = RouteRequestCoord(coords, clientRequest = true)
+        player.routeRequest = routeRequest
         player.tempMoveSpeed = speed
-        logger.debug { "OpObjT: obj=$obj, comsub=$comsub, component=$componentType" }
+        logger.debug {
+            "OpObjT: obj=$obj, type=$type, comsub=$comsub, component=$componentType, selectedObj=$objType"
+        }
     }
 
     private fun findObj(player: Player, coords: CoordGrid, type: Int): Obj? =

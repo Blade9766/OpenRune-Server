@@ -1,7 +1,5 @@
 package org.rsmod.api.spells.runes
 
-import dev.openrune.ServerCacheManager
-import dev.openrune.definition.type.VarBitType
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
@@ -50,6 +48,7 @@ public object MagicRunes {
         staffSubs: StaffSubstituteRepository,
     ): List<Validation> {
         val validationList = mutableListOf<Validation>()
+        val used = UsedRunes()
 
         val righthand = worn[Wearpos.RightHand.slot]
         val lefthand = worn[Wearpos.LeftHand.slot]
@@ -92,9 +91,11 @@ public object MagicRunes {
                     unlimited = unlimited,
                     subs = runeSubs,
                     fakes = fakes,
+                    used = used,
                 )
             if (validation.isValid) {
                 validationList += validation
+                used.record(validation)
                 runeReq1.remaining -= minRemaining
                 runeReq2.remaining -= minRemaining
             }
@@ -128,6 +129,7 @@ public object MagicRunes {
                     unlimited = unlimited,
                     subs = runeSubs,
                     fakes = fakes,
+                    used = used,
                 )
 
             // If this rune result is invalid, we defer handling it in case a combo rune can still
@@ -138,6 +140,7 @@ public object MagicRunes {
             }
 
             validationList += validation
+            used.record(validation)
             req.remaining = 0
         }
 
@@ -173,11 +176,13 @@ public object MagicRunes {
                     unlimited = unlimited,
                     subs = runeSubs,
                     fakes = fakes,
+                    used = used,
                 )
 
             // Only include the combo rune if its validation is successful.
             if (validation.isValid) {
                 validationList += validation
+                used.record(validation)
 
                 if (runeReq1 != null) {
                     runeReq1.remaining -= maxRemaining
@@ -226,6 +231,7 @@ public object MagicRunes {
         unlimited: UnlimitedRuneRepository,
         subs: RuneSubstituteRepository,
         fakes: FakeRuneRepository,
+        used: UsedRunes = UsedRunes(),
     ): Validation {
         require(required > 0) { "`required` must be greater than 0. (required=$required)" }
 
@@ -247,7 +253,7 @@ public object MagicRunes {
             if (fake != null) {
                 val invFakeSlot = inv.indexOfFirst { it.isType(fake) }
                 val invFakeRune = inv[invFakeSlot]
-                val count = invFakeRune?.count ?: 0
+                val count = used.available(invFakeSlot, invFakeRune?.count ?: 0)
                 return if (count >= required) {
 
                     val internalName = RSCM.getReverseMapping(RSCMType.OBJ, fake.id)
@@ -265,10 +271,10 @@ public object MagicRunes {
         }
 
         val invRuneSlot = inv.indexOfFirst { it.isType(rune) }
-        val invRuneObj = inv[invRuneSlot]
+        val invRuneCount = used.available(invRuneSlot, inv[invRuneSlot]?.count ?: 0)
 
         // Fast-path: return single-list `HasEnough` validation when inv has enough runes.
-        if (invRuneObj != null && invRuneObj.count >= required) {
+        if (invRuneCount >= required) {
             val internalName = RSCM.getReverseMapping(RSCMType.OBJ, rune.id)
             val sources = listOf(Source.InvSource(internalName, invRuneSlot, required))
             return Validation.Valid.HasEnough(sources)
@@ -278,10 +284,10 @@ public object MagicRunes {
         var remaining = required
 
         // Reduce remaining count from existing inv rune (if available).
-        if (invRuneObj != null) {
-            remaining -= invRuneObj.count
+        if (invRuneCount > 0) {
+            remaining -= invRuneCount
             val internalName = RSCM.getReverseMapping(RSCMType.OBJ, rune.id)
-            sources += Source.InvSource(internalName, invRuneSlot, invRuneObj.count)
+            sources += Source.InvSource(internalName, invRuneSlot, invRuneCount)
         }
 
         if (pouch != null) {
@@ -319,7 +325,10 @@ public object MagicRunes {
                 }
             }
 
-            if (pouchCountVarBit != null && pouchRuneCount >= remaining) {
+            if (
+                pouchCountVarBit != null &&
+                    used.available(pouchCountVarBit, pouchRuneCount) >= remaining
+            ) {
                 sources += Source.VarBitSource(pouchCountVarBit, remaining)
                 return Validation.Valid.HasEnough(sources)
             }
@@ -342,6 +351,7 @@ public object MagicRunes {
                         unlimited = unlimited,
                         subs = subs,
                         fakes = fakes,
+                        used = used,
                     )
                 val validResult = validate as? Validation.Valid ?: continue
                 return when (validResult) {
@@ -395,6 +405,27 @@ public object MagicRunes {
             public data class NotEnoughRunes(val obj: ItemServerType) : Invalid()
 
             public data class NotWearing(val obj: ItemServerType) : Invalid()
+        }
+    }
+
+    public class UsedRunes {
+        private val invSlots = mutableMapOf<Int, Int>()
+        private val varbits = mutableMapOf<String, Int>()
+
+        internal fun available(slot: Int, count: Int): Int =
+            if (slot < 0) 0 else (count - (invSlots[slot] ?: 0)).coerceAtLeast(0)
+
+        internal fun available(varbit: String, count: Int): Int =
+            (count - (varbits[varbit] ?: 0)).coerceAtLeast(0)
+
+        internal fun record(validation: Validation) {
+            val sources = (validation as? Validation.Valid.HasEnough)?.sources ?: return
+            for (source in sources) {
+                when (source) {
+                    is Source.InvSource -> invSlots.merge(source.slot, source.count, Int::plus)
+                    is Source.VarBitSource -> varbits.merge(source.varbit, source.count, Int::plus)
+                }
+            }
         }
     }
 

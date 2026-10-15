@@ -1,6 +1,8 @@
 package org.rsmod.api.combat
 
 import com.google.inject.multibindings.Multibinder
+import org.rsmod.api.combat.commons.hook.CombatStanceSelectHook
+import org.rsmod.api.combat.commons.hook.PvPAttackRestrictionHook
 import org.rsmod.api.combat.commons.npc.NpcAttackHook
 import org.rsmod.plugin.module.PluginModule
 
@@ -11,5 +13,7 @@ internal class CombatModule : PluginModule() {
         bindInstance<NvPCombat>()
         bindInstance<PvNCombat>()
         bindInstance<PvPCombat>()
+        newSetBinding<PvPAttackRestrictionHook>()
+        newSetBinding<CombatStanceSelectHook>()
     }
 }

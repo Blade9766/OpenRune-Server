@@ -18,3 +18,10 @@ coords = "0_37_150_3_11"
 npc = "npc.skeleton_unarmed2"
 coords = "0_37_150_7_9"
 
+[[spawn]]
+npc = "npc.unicorn_upass"
+coords = "0_37_150_4_4"
+
+[[spawn]]
+npc = "npc.boulder_upass"
+coords = "0_37_150_6_6"

@@ -1,0 +1,16 @@
+# Gamevals for the powered staves (tridents, Sanguinesti staff, revenant sceptres, warped
+# sceptre, bone staff, Eye of Ayak, corrupted Tumeken's shadow).
+
+# One 16-bit charge counter shared by every powered staff that is not Tumeken's shadow. The bit
+# range itself is declared in .data/raw-cache/server/varobjbit.toml.
+[gamevals.varobj]
+powered_staff_charges = 65528
+# Crystal bow / Bow of Faerdhinen charges (max 20,000) and the revenant ether held by
+# Craw's bow / Webweaver bow (1,000 activation + up to 16,000 ammo). Bit ranges are in
+# .data/raw-cache/server/varobjbit.toml.
+crystal_weapon_charges = 65527
+wild_cave_bow_ether = 65526
+
+# Delayed heal for the Sanguinesti staff passive, queued to land with the hit.
+[gamevals.queue]
+sanguinesti_heal = 65420

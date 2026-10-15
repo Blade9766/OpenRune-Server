@@ -22,7 +22,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
     fun run(player: Player, args: List<String>, openStatus: () -> Unit) {
         val coordinator = manager.coordinator
         if (coordinator == null) {
-            player.mes("Bots are not loaded yet (the exchange or database is unavailable).")
+            player.mes("Bots are not loaded yet; check the server log.")
             return
         }
         val sub = args.firstOrNull() ?: return openStatus()
@@ -197,6 +197,10 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "Totals: gathered ${r.stats.gathered.formatAmount}, deposited ${r.stats.deposited.formatAmount}, " +
                 "listed ${r.stats.listed.formatAmount}, sold ${r.stats.sold.formatAmount} for ${r.stats.coinsEarned.formatAmount} gp"
         )
+        r.pendingListing?.let { player.mes("Pending listing: ${it.quantity} x ${it.itemId} at ${it.price} in slot ${it.slot}") }
+        if (r.pendingCollects.isNotEmpty()) {
+            player.mes("Pending collections: slots ${r.pendingCollects.joinToString { it.slot.toString() }}")
+        }
         r.lastError?.let { player.mes("Last error: $it") }
     }
 

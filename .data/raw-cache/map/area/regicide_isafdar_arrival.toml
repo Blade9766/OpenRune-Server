@@ -1,0 +1,14 @@
+# The clearing outside the Underground Pass's western cave mouth in Isafdar. On a first arrival
+# during Regicide the elves Idris, Morvran and Essyllt meet the player here.
+[[area]]
+name = "Regicide Isafdar arrival"
+area_id = "area.regicide_isafdar_arrival"
+levels = [0]
+
+[[area.polygons]]
+vertices = [
+    [2280, 3204],
+    [2312, 3204],
+    [2312, 3232],
+    [2280, 3232],
+]

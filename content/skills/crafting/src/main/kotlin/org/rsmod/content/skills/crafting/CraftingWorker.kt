@@ -209,6 +209,13 @@ suspend fun ProtectedAccess.canCraft(product: CraftingProduct, verbose: Boolean)
 }
 
 suspend fun ProtectedAccess.craftOnce(product: CraftingProduct): Boolean {
+    if (!canCraft(product, verbose = false)) {
+        val threadless = !holdsCostumeNeedle() && !inv.contains(CraftingConstants.THREAD)
+        if (product.consumesThread && threadless) {
+            mes("You need some thread to make that.", ChatType.Spam)
+        }
+        return false
+    }
     val removed = mutableListOf<Pair<String, Int>>()
     for (material in product.inputs) {
         if (invDel(inv, material.internal, material.count).success) {
@@ -261,9 +268,10 @@ private fun ProtectedAccess.consumeThreadCharge() {
     val uses =
         player.craftingThreadUses.takeIf { it > 0 } ?: CraftingConstants.THREAD_USES_PER_SPOOL
     if (uses <= 1) {
-        if (invDel(inv, CraftingConstants.THREAD, 1).success) {
-            mes("You use up one of your reels of thread.", ChatType.Spam)
+        if (invDel(inv, CraftingConstants.THREAD, 1).failure) {
+            return
         }
+        mes("You use up one of your reels of thread.", ChatType.Spam)
         player.craftingThreadUses = CraftingConstants.THREAD_USES_PER_SPOOL
     } else {
         player.craftingThreadUses = uses - 1

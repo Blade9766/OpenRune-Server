@@ -1,0 +1,13 @@
+[proc,transmog_preset](component $component, int $index, int $saved)
+def_string $label = tostring(calc($index + 1));
+if_clearops($component);
+if (testbit($saved, $index) = 1) {
+    if_setop(1, "Load", $component);
+    if_setop(2, "Save", $component);
+    if_setop(3, "Delete", $component);
+    ~transmog_button($component, $label, 0xff981f);
+} else {
+    if_setop(1, "Save", $component);
+    ~transmog_button($component, $label, 0x9f9f9f);
+}
+if_setopbase("<col=ff9040>Preset <$label></col>", $component);

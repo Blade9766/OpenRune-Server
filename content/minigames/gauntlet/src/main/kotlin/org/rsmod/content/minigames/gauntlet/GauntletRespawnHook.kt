@@ -13,7 +13,7 @@ constructor(
     private val runs: GauntletRuns,
     private val rewards: GauntletRewards,
 ) : PlayerRespawnHook {
-    override fun respawnCoords(player: Player): CoordGrid? {
+    override fun respawn(player: Player): CoordGrid? {
         if (instances.sessionForPlayer(player)?.key != GauntletRuns.KEY) return null
         runs.runFor(player)?.let { rewards.settleByPoints(player, it) }
         player.inv.fillNulls()

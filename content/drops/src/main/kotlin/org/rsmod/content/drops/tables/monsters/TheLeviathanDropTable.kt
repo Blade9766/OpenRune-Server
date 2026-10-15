@@ -9,6 +9,7 @@ import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.hasObjInInventoryOrBank
 import org.rsmod.content.drops.shouldDropSanguineTorvaKit
 import org.rsmod.content.drops.vestigeProgressRoll
 import org.rsmod.game.entity.Player
@@ -54,8 +55,7 @@ public val theLeviathanDropTable: RSDropTable<Player, DropRollItem> = RSDropTabl
             1 weight "obj.virtus_legs" count 1
         }
         1 outOf 26 separate "obj.leviathan_tablet" count 1 condition { player ->
-            // Drops Need Manual: The scarred tablet will become more common at an unknown rate as kill count increases until the first drop is received. Afterwards, the item will no longer be dropped.
-             true
+            !player.hasObjInInventoryOrBank("obj.leviathan_tablet")
         }
         1 outOf 54 separate "obj.dt2_awakeners_orb" count 1
         1 outOf 206 separate "obj.smoke_quartz" count 1

@@ -19,6 +19,7 @@ import org.rsmod.api.script.onIfOpen
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.interfaces.bank.configs.bank_comsubs
 import org.rsmod.content.interfaces.bank.configs.bank_constants
+import org.rsmod.content.interfaces.bank.coverStrayBankObjs
 import org.rsmod.content.interfaces.bank.disableIfEvents
 import org.rsmod.content.interfaces.bank.highlightNoClickClear
 import org.rsmod.content.interfaces.bank.setBankWornBonuses
@@ -52,6 +53,7 @@ constructor(
             ifClose(eventBus)
             return
         }
+        coverStrayBankObjs()
         if (!disableIfEvents) {
             val capacityIncrease = bank_constants.purchasable_capacity
             withdrawCert = false

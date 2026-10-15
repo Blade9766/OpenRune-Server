@@ -1,0 +1,16 @@
+id = "Hellhound Level 127 (God Wars Dungeon) drops"
+npcs = ["npc.godwars_ancient_hellhound"]
+brimstone_key_roll = true
+
+[[tertiary]]
+numerator = 1
+denominator = 40
+obj = "obj.arceuus_corpse_hellhound"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 60
+obj = "obj.trail_clue_hard_map001"
+count = 1
+clue_scroll_box = true

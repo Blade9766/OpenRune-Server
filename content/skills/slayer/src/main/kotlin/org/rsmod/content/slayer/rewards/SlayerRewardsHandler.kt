@@ -7,10 +7,8 @@ import org.rsmod.api.table.slayer.SlayerUnlockRow
 
 object SlayerRewardsHandler {
 
-    fun onUnlockListComsub(access: ProtectedAccess, comsub: Int) {
-
-        if (comsub == EXTEND_ALL_COMSUB) {
-            SlayerRewardUnlocks.confirmFullExtensionUnlock(access)
+    fun onConfirmButton(access: ProtectedAccess, comsub: Int) {
+        if (SlayerRewardTasks.tryHandleUnblockConfirm(access, comsub)) {
             return
         }
 
@@ -20,18 +18,6 @@ object SlayerRewardsHandler {
         }
 
         SlayerRewardTasks.handleComsub(access, comsub)
-    }
-
-    fun onConfirmButton(access: ProtectedAccess, comsub: Int) {
-        if (SlayerRewardTasks.tryHandleUnblockConfirm(access, comsub)) {
-            return
-        }
-
-        onUnlockListComsub(access, comsub)
-    }
-
-    fun onExtendEtcetera(access: ProtectedAccess) {
-        SlayerRewardUnlocks.confirmFullExtensionUnlock(access)
     }
 
     fun onBuyItem(access: ProtectedAccess, shopIndex: Int, op: IfButtonOp, item: ItemServerType?) {
@@ -51,6 +37,4 @@ object SlayerRewardsHandler {
 
         SlayerRewardShop.handleBuyReward(access, shopIndex, item, sets, examine = false)
     }
-
-    private const val EXTEND_ALL_COMSUB = 72
 }

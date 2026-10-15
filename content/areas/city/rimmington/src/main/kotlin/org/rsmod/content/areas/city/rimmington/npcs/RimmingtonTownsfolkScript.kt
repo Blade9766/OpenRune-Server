@@ -10,49 +10,10 @@ class RimmingtonTownsfolkScript : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.hw18_girl") { startDialogue(it.npc) { chatNpc(shifty, "We don't talk to strangers.") } }
         onOpNpc1("npc.hw18_boy") { startDialogue(it.npc) { chatNpc(shifty, "Sorry, we don't talk to strangers.") } }
-        onOpNpc1("npc.hetty") { startDialogue(it.npc) { hetty() } }
-        onOpNpc1("npc.chemist") { startDialogue(it.npc) { chemist() } }
         onOpNpc1("npc.rimmington_anja") { startDialogue(it.npc) { householder(it.npc, "Eeeek!") } }
         onOpNpc1("npc.rimmington_hengel") {
             startDialogue(it.npc) { householder(it.npc, "Aaaarrgh!") }
         }
-    }
-
-    private suspend fun Dialogue.hetty() {
-        chatNpc(happy, "How's your magic coming along?")
-        chatPlayer(happy, "I'm practicing and slowly getting better.")
-        chatNpc(happy, "Good, good.")
-    }
-
-    private suspend fun Dialogue.chemist() {
-        if (choice2("Yes.", true, "No.", false, title = "Do you want to talk about lamps?")) {
-            chatPlayer(quiz, "Hi, I need fuel for a lamp.")
-            chatNpc(
-                happy,
-                "Hello there, the fuel you need is lamp oil, do you need help making it?",
-            )
-            if (!choice2("Yes please.", true, "No thanks.", false, title = "Select an Option")) {
-                chatPlayer(neutral, "No thanks.")
-                return
-            }
-            chatPlayer(happy, "Yes please.")
-            chatNpc(
-                neutral,
-                "It's really quite simple.  You use the small still in here.  It's all set up, " +
-                    "so there's no fiddling around with dials...",
-            )
-            chatNpc(
-                neutral,
-                "Just put ordinary swamp tar in, and then use a lantern or lamp to get the oil out.",
-            )
-            chatPlayer(happy, "Thanks.")
-            return
-        }
-        chatPlayer(happy, "Hello.")
-        chatNpc(happy, "Oh.. hello, how's it going?")
-        chatPlayer(happy, "Good thanks.")
-        chatNpc(neutral, "Good to hear, sorry but I have a few things to do right now.")
-        chatPlayer(neutral, "Well I'd better let you get on then.")
     }
 
     private suspend fun Dialogue.householder(npc: Npc, scream: String) {

@@ -40,13 +40,16 @@ class GameBootstrap @Inject constructor(
         try {
             serviceManager.awaitShutdownOrThrow()
         } finally {
-            try {
-                Runtime.getRuntime().removeShutdownHook(shutdownHook)
-                // Without a JVM shutdown the hook never runs, and the embedded database has none.
+            val hookRemoved =
+                try {
+                    Runtime.getRuntime().removeShutdownHook(shutdownHook)
+                } catch (_: IllegalStateException) {
+                    // Virtual machine is already shutting down - the hook stops the databases.
+                    false
+                }
+            if (hookRemoved) {
                 runCatching { centralEmbedded.stopIfRunning() }
                 EmbeddedSameInstancePostgres.stop()
-            } catch (_: IllegalStateException) {
-                // Virtual machine is already in the process of shutting down - can safely noop.
             }
         }
     }

@@ -9,6 +9,7 @@ import org.rsmod.api.bosses.validation.SpecValidator
 import org.rsmod.api.bosses.validation.ValidationError
 import org.rsmod.api.npc.access.StandardNpcAccess
 import org.rsmod.api.npc.events.NpcHitEvents
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.script.onAiApPlayer2
 import org.rsmod.api.script.onAiOpPlayer2
 import org.rsmod.api.script.onEvent
@@ -148,6 +149,7 @@ object BossCombat {
         deps: BossDeps,
         onCombatTick: (suspend StandardNpcAccess.(Player) -> Unit)?,
     ) {
+        if (!npc.isAliveInWorld()) return
         onCombatTick?.invoke(this, target)
 
         val encounter = deps.encounterRegistry.of(npc)

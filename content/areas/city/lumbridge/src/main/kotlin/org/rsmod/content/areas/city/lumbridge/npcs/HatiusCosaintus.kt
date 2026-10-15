@@ -1,5 +1,8 @@
 package org.rsmod.content.areas.city.lumbridge.npcs
 
+import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
+import org.rsmod.api.achievementdiaries.DiaryClaim
 import org.rsmod.api.config.constants
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.output.ClientScripts.toplevelSidebuttonSwitch
@@ -9,7 +12,8 @@ import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class HatiusCosaintus : PluginScript() {
+class HatiusCosaintus @Inject constructor(private val diaries: AchievementDiaries) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1("npc.hatius_lumbridge_diary") { startDialogue(it.npc) }
     }
@@ -22,11 +26,21 @@ class HatiusCosaintus : PluginScript() {
 
     private suspend fun Dialogue.mainMenu() {
         val choice =
-            choice3("Who are you?", 1, "I have a question about my Achievement Diary", 2, "Bye!", 3)
+            choice4(
+                "Who are you?",
+                1,
+                "I have a question about my Achievement Diary",
+                2,
+                "I've completed some tasks in my Achievement Diary.",
+                3,
+                "Bye!",
+                4,
+            )
         when (choice) {
             1 -> interrogate()
             2 -> achievementDiaryQuestion()
-            3 -> bye()
+            3 -> claimRewards()
+            4 -> bye()
         }
     }
 
@@ -179,8 +193,55 @@ class HatiusCosaintus : PluginScript() {
         mainMenu()
     }
 
+    private suspend fun Dialogue.claimRewards() {
+        chatPlayer(happy, "I've completed some tasks in my Achievement Diary.")
+        when (val claim = diaries.claimNext(access, LUMBRIDGE_DIARY)) {
+            is DiaryClaim.Claimed -> {
+                val tier = diaries.tierLabel(claim.tier).lowercase()
+                chatNpc(happy, "Well done! You've completed all of the $tier tasks. Here's your reward.")
+                doubleobjbox(
+                    claim.tier.reward.internalName,
+                    claim.tier.lamp.internalName,
+                    "Hatius hands you an Explorer's ring and an antique lamp.",
+                )
+            }
+            is DiaryClaim.NeedSpace ->
+                chatNpc(
+                    neutral,
+                    "You'll need ${claim.slots} free inventory spaces for your reward. Make some " +
+                        "space and come back.",
+                )
+            DiaryClaim.Nothing -> replaceLostRewards()
+        }
+    }
+
+    private suspend fun Dialogue.replaceLostRewards() {
+        val lost = diaries.lostRewards(access, LUMBRIDGE_DIARY)
+        if (lost.isEmpty()) {
+            chatNpc(
+                neutral,
+                "You haven't completed a new set of tasks yet. Keep exploring Lumbridge and " +
+                    "Draynor, then come back to me.",
+            )
+            return
+        }
+        if (player.inv.freeSpace() < lost.size) {
+            chatNpc(neutral, "You've lost some of your rings, but you need more inventory space.")
+            return
+        }
+        chatNpc(happy, "It looks like you've lost your ring. Here's a replacement.")
+        for (tier in lost) {
+            access.invAdd(player.inv, tier.reward.internalName)
+        }
+        objbox(lost.last().reward.internalName, "Hatius hands you a replacement Explorer's ring.")
+    }
+
     private suspend fun Dialogue.bye() {
         chatPlayer(happy, "Bye!")
         chatNpc(happy, "Toodles.")
+    }
+
+    private companion object {
+        const val LUMBRIDGE_DIARY = 6
     }
 }

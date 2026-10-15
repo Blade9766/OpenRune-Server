@@ -129,6 +129,8 @@ respawnDir = "West"
 [[npc]]
 id = "npc.lumbridge_guide"
 inherit = "npc.lumbridge_guide"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 wanderRange = 0
 respawnDir = "West"
 
@@ -376,6 +378,10 @@ contentGroup = "content.duckling"
 [[npc]]
 id = "npc.man"
 inherit = "npc.man"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -393,6 +399,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.man2"
 inherit = "npc.man2"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -410,6 +420,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.man3"
 inherit = "npc.man3"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -427,6 +441,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.man_indoor"
 inherit = "npc.man_indoor"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -444,6 +462,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.woman"
 inherit = "npc.woman"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -461,6 +483,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.woman2"
 inherit = "npc.woman2"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -478,6 +504,10 @@ respawnRate = 25
 [[npc]]
 id = "npc.woman3"
 inherit = "npc.woman3"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 contentGroup = "content.person"
 respawnRate = 25
 [npc.params]
@@ -5110,6 +5140,114 @@ contentGroup = "content.dark_crab_fishing_spot"
 moveRestrict = "NoMove"
 wanderRange = 0
 
+# Grand Exchange staff stand at their desks: the clerks, pricing experts, bankers, the bond
+# clerk and James do not wander in OSRS (the engine default is a five-tile wander range).
+[[npc]]
+id = "npc.ge_clerk_1"
+inherit = "npc.ge_clerk_1"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_clerk_2"
+inherit = "npc.ge_clerk_2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_clerk_3"
+inherit = "npc.ge_clerk_3"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_clerk_4"
+inherit = "npc.ge_clerk_4"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_boss"
+inherit = "npc.ge_boss"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_expert_ores"
+inherit = "npc.ge_expert_ores"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_expert_herbs"
+inherit = "npc.ge_expert_herbs"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_expert_runes"
+inherit = "npc.ge_expert_runes"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_expert_logs"
+inherit = "npc.ge_expert_logs"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ge_expert_combat"
+inherit = "npc.ge_expert_combat"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.banker1_west"
+inherit = "npc.banker1_west"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.banker1_east"
+inherit = "npc.banker1_east"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.banker2_east"
+inherit = "npc.banker2_east"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.deadman_banker_grey_west"
+inherit = "npc.deadman_banker_grey_west"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.bond_james_visible"
+inherit = "npc.bond_james_visible"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.clan_clerk"
+inherit = "npc.clan_clerk"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+
+# Gertrude's Cat: the invisible mewing "crates" around the lumber yard. The timer drives their
+# ambient "Mew!"; they stay on their crates so the Search option is always where the sound is.
+[[npc]]
+id = "npc.kittens_mew"
+inherit = "npc.kittens_mew"
+timer = 1
+moveRestrict = "NoMove"
+wanderRange = 0
+
 [[npc]]
 id = "npc.tormented_demon_1"
 inherit = "npc.tormented_demon_1"
@@ -5326,12 +5464,487 @@ defaultMode = "Wander"
 "param.defend_anim"="seq.small_spider_update_defend"
 "param.death_anim"="seq.small_spider_update_death"
 
+# Goblin Diplomacy: the village soldiers argue about armour colour out loud. The timer drives
+# their shouted taunts (see VillageGoblins).
+[[npc]]
+id = "npc.goblin_red_soldier_2"
+inherit = "npc.goblin_red_soldier_2"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_3"
+inherit = "npc.goblin_red_soldier_3"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_4"
+inherit = "npc.goblin_red_soldier_4"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_5"
+inherit = "npc.goblin_red_soldier_5"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_6"
+inherit = "npc.goblin_red_soldier_6"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_7"
+inherit = "npc.goblin_red_soldier_7"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_red_soldier_8"
+inherit = "npc.goblin_red_soldier_8"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_2"
+inherit = "npc.goblin_green_soldier_2"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_3"
+inherit = "npc.goblin_green_soldier_3"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_4"
+inherit = "npc.goblin_green_soldier_4"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_5"
+inherit = "npc.goblin_green_soldier_5"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_6"
+inherit = "npc.goblin_green_soldier_6"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_7"
+inherit = "npc.goblin_green_soldier_7"
+timer = 1
+
+[[npc]]
+id = "npc.goblin_green_soldier_8"
+inherit = "npc.goblin_green_soldier_8"
+timer = 1
+
+
+# Plague City / Biohazard: Elena at home. Her house is small and its door swings open along the
+# inside of the doorway, so if she wanders into the corner by the door nobody can reach her to
+# start Biohazard. She stays at her desk in the middle of the room instead.
+[[npc]]
+id = "npc.elena2"
+inherit = "npc.elena2"
+wanderRange = 0
+
+# Biohazard: the chemist's errand boys in the Dancing Donkey Inn. Chancy and Da Vinci are
+# invisible click targets sitting inside the animated npc table (the seated figures are part
+# of the table model), so they must never leave their seats or nothing is left to talk to.
+[[npc]]
+id = "npc.gambler2"
+inherit = "npc.gambler2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.artist2"
+inherit = "npc.artist2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.drunk2"
+inherit = "npc.drunk2"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+# Biohazard: Guidor stays in his rocking chair and King Lathas on his throne; both have seated
+# idle animations and drifting off the seat made them awkward or impossible to reach.
+[[npc]]
+id = "npc.guidor"
+inherit = "npc.guidor"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.kinglathas"
+inherit = "npc.kinglathas"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+# Monkey Madness I: the Marim jail guards pace the guard room north of the cells, and the
+# Monkey's Aunt circles the banana plantation.
+[[npc]]
+id = "npc.mm_trefaji"
+inherit = "npc.mm_trefaji"
+defaultMode = "Patrol"
+maxRange = 20
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2796, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2796, level = 0 }
+pause_delay = 4
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2802, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2802, level = 0 }
+pause_delay = 4
+
+[[npc]]
+id = "npc.mm_aberab"
+inherit = "npc.mm_aberab"
+defaultMode = "Patrol"
+maxRange = 20
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2802, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2766, z = 2796, level = 0 }
+pause_delay = 6
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2796, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2773, z = 2802, level = 0 }
+pause_delay = 6
+
+[[npc]]
+id = "npc.mm_monkeys_aunt"
+inherit = "npc.mm_monkeys_aunt"
+defaultMode = "Patrol"
+maxRange = 20
+
+[[npc.waypoints]]
+destination = { x = 2745, z = 2790, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2739, z = 2790, level = 0 }
+pause_delay = 3
+
+[[npc.waypoints]]
+destination = { x = 2739, z = 2798, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2747, z = 2798, level = 0 }
+pause_delay = 3
+
+# A Porcine of Interest: Spria stays in her Draynor house rather than wandering the village.
+[[npc]]
+id = "npc.slayer_master_9"
+inherit = "npc.slayer_master_9"
+moveRestrict = "Indoors"
+wanderRange = 0
+
 [[npc]]
 id = "npc.motherlode_mother"
 inherit = "npc.motherlode_mother"
 moveRestrict = "NoMove"
 wanderRange = 0
 
+# Temple of Ikov: the Fire Warrior holds the corridor and comes at anyone who walks into it,
+# throwing fire and nothing else. He keeps close to the door he is guarding.
+[[npc]]
+id = "npc.ikov_firewarrior"
+inherit = "npc.ikov_firewarrior"
+huntMode = 8
+huntRange = 8
+maxRange = 12
+wanderRange = 4
+respawnRate = 50
+
+[[npc]]
+id = "npc.troll_champion"
+inherit = "npc.troll_champion"
+maxRange = 20
+[npc.params]
+"param.elemental_weakness_type"=2
+"param.elemental_weakness_percent"=40
+
+[[npc]]
+id = "npc.troll_prison_guard1"
+inherit = "npc.troll_prison_guard1"
+wanderRange = 0
+[npc.params]
+"param.elemental_weakness_type"=2
+"param.elemental_weakness_percent"=20
+
+[[npc]]
+id = "npc.troll_prison_guard2"
+inherit = "npc.troll_prison_guard2"
+wanderRange = 0
+
+# The Fremennik Trials: Koschei's forms chase their challenger anywhere in the battleground, and
+# the Draugen follows its hunter away from its haunt.
+[npc.params]
+"param.elemental_weakness_type"=2
+"param.elemental_weakness_percent"=20
+[[npc]]
+id = "npc.viking_enemy1"
+inherit = "npc.viking_enemy1"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_enemy2"
+inherit = "npc.viking_enemy2"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_enemy3"
+inherit = "npc.viking_enemy3"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_enemy4"
+inherit = "npc.viking_enemy4"
+maxRange = 40
+wanderRange = 0
+
+[[npc]]
+id = "npc.viking_draugen"
+inherit = "npc.viking_draugen"
+maxRange = 20
+wanderRange = 0
+[npc.params]
+"param.elemental_weakness_type"=0
+"param.elemental_weakness_percent"=50
+
+[[npc]]
+id = "npc.ics_little_mummy_1"
+inherit = "npc.ics_little_mummy_1"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_2"
+inherit = "npc.ics_little_mummy_2"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_3"
+inherit = "npc.ics_little_mummy_3"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_4"
+inherit = "npc.ics_little_mummy_4"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_mummy_5"
+inherit = "npc.ics_little_mummy_5"
+huntMode = 6
+huntRange = 4
+wanderRange = 3
+respawnRate = 50
+
+[[npc]]
+id = "npc.ics_little_hipriest_ceremony"
+inherit = "npc.ics_little_hipriest_ceremony"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ics_little_priest_ceremony"
+inherit = "npc.ics_little_priest_ceremony"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.ics_little_het"
+inherit = "npc.ics_little_het"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+[npc.params]
+"param.elemental_weakness_type"=0
+"param.elemental_weakness_percent"=40
+
+[[npc]]
+id = "npc.ics_little_apmeken"
+inherit = "npc.ics_little_apmeken"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+[npc.params]
+"param.elemental_weakness_type"=0
+"param.elemental_weakness_percent"=40
+
+[[npc]]
+id = "npc.ics_little_scabaras"
+inherit = "npc.ics_little_scabaras"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+[npc.params]
+"param.elemental_weakness_type"=0
+"param.elemental_weakness_percent"=40
+
+[[npc]]
+id = "npc.ics_little_crondis"
+inherit = "npc.ics_little_crondis"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+[npc.params]
+"param.elemental_weakness_type"=0
+"param.elemental_weakness_percent"=40
+
+[[npc]]
+id = "npc.ics_little_possessedpriest"
+inherit = "npc.ics_little_possessedpriest"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.ics_scarab_swarm"
+inherit = "npc.ics_scarab_swarm"
+maxRange = 20
+wanderRange = 0
+defaultMode = "None"
+
+# Witch's House: Nora T. Hagg paces the lawn in the middle of her garden. The experiment's
+# forms stay in the shed they are summoned into.
+[npc.params]
+"param.elemental_weakness_type"=3
+"param.elemental_weakness_percent"=50
+[[npc]]
+id = "npc.nora_t_hagg"
+inherit = "npc.nora_t_hagg"
+defaultMode = "Patrol"
+maxRange = 50
+
+[[npc.waypoints]]
+destination = { x = 2930, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2921, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2912, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2904, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2912, z = 3463, level = 0 }
+
+[[npc.waypoints]]
+destination = { x = 2921, z = 3463, level = 0 }
+
+[[npc]]
+id = "npc.shapeshifterglob"
+inherit = "npc.shapeshifterglob"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.shapeshifterspider"
+inherit = "npc.shapeshifterspider"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.shapeshifterbear"
+inherit = "npc.shapeshifterbear"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.shapeshifterwolf"
+inherit = "npc.shapeshifterwolf"
+maxRange = 8
+wanderRange = 0
+
+[[npc]]
+id = "npc.rantz"
+inherit = "npc.rantz"
+timer = 1
+wanderRange = 2
+
+[[npc]]
+id = "npc.fycie"
+inherit = "npc.fycie"
+wanderRange = 3
+
+[[npc]]
+id = "npc.bugs"
+inherit = "npc.bugs"
+wanderRange = 3
+
+[[npc]]
+id = "npc.bloated_toad"
+inherit = "npc.bloated_toad"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.chompybird_dead"
+inherit = "npc.chompybird_dead"
+moveRestrict = "NoMove"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+id = "npc.chompybird"
+inherit = "npc.chompybird"
+wanderRange = 3
+[npc.params]
+"param.attack_anim"="seq.chompy_update_attack"
+"param.defend_anim"="seq.chompy_update_defend"
+"param.death_anim"="seq.chompy_update_death"
+"param.attack_sound"="synth.chompy_bird_attack"
+"param.defend_sound"="synth.chompy_bird_hit"
+"param.death_sound"="synth.chompy_bird_death"
+
+[[npc]]
+id = "npc.boulder_upass"
+inherit = "npc.boulder_upass"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
+id = "npc.lunar_pirate_captain"
+inherit = "npc.lunar_pirate_captain"
+wanderRange = 0
+
+[[npc]]
+id = "npc.quest_lunar_mirror_of_player"
+inherit = "npc.quest_lunar_mirror_of_player"
+maxRange = 40
+
+[[npc]]
+id = "npc.quest_lunar_mirror_of_player_female"
+inherit = "npc.quest_lunar_mirror_of_player_female"
+maxRange = 40
 [[npc]]
 id = "npc.rd_teleporter_guy"
 inherit = "npc.rd_teleporter_guy"
@@ -5342,6 +5955,9 @@ respawnDir = "North"
 [[npc]]
 id = "npc.fai_falador_guard1"
 inherit = "npc.fai_falador_guard1"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 [npc.params]
 "param.attack_anim"="seq.human_sword_stab"
@@ -5349,6 +5965,9 @@ moveRestrict = "Outdoors"
 [[npc]]
 id = "npc.fai_falador_guard1_f"
 inherit = "npc.fai_falador_guard1_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 [npc.params]
 "param.attack_anim"="seq.human_sword_stab"
@@ -5421,11 +6040,15 @@ moveRestrict = "Indoors"
 [[npc]]
 id = "npc.partyroom_pete"
 inherit = "npc.partyroom_pete"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 moveRestrict = "Indoors"
 
 [[npc]]
 id = "npc.falador_man4"
 inherit = "npc.falador_man4"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
 moveRestrict = "Indoors"
 
 [[npc]]
@@ -5476,42 +6099,169 @@ moveRestrict = "Outdoors"
 [[npc]]
 id = "npc.fai_falador_guard1_variant02"
 inherit = "npc.fai_falador_guard1_variant02"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard2"
 inherit = "npc.fai_falador_guard2"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard2_f"
 inherit = "npc.fai_falador_guard2_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard3"
 inherit = "npc.fai_falador_guard3"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard3_f"
 inherit = "npc.fai_falador_guard3_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard4_f"
 inherit = "npc.fai_falador_guard4_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard5"
 inherit = "npc.fai_falador_guard5"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
 
 [[npc]]
 id = "npc.fai_falador_guard6"
 inherit = "npc.fai_falador_guard6"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
 moveRestrict = "Outdoors"
+
+[[npc]]
+id = "npc.murder_mystery_guarddog"
+inherit = "npc.murder_mystery_guarddog"
+timer = 1
+
+[[npc]]
+id = "npc.jonny_the_beard"
+inherit = "npc.jonny_the_beard"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.jonny_the_beard_2op"
+inherit = "npc.jonny_the_beard_2op"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_male01"
+inherit = "npc.qip_soa_thief_male01"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_male02"
+inherit = "npc.qip_soa_thief_male02"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=513
+"param.death_sound"=512
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_female01"
+inherit = "npc.qip_soa_thief_female01"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=506
+"param.death_sound"=505
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_thief_female02"
+inherit = "npc.qip_soa_thief_female02"
+[npc.params]
+"param.attack_sound"=2566
+"param.defend_sound"=506
+"param.death_sound"=505
+"param.attack_anim"="seq.human_unarmedpunch"
+"param.defend_anim"="seq.human_unarmed_def"
+"param.death_anim"="seq.human_death"
+
+[[npc]]
+id = "npc.qip_soa_newspaperseller"
+inherit = "npc.qip_soa_newspaperseller"
+timer = 1
+
+[[npc]]
+id = "npc.father_lawrence"
+inherit = "npc.father_lawrence"
+timer = 1
+wanderRange = 2
+
+[[npc]]
+id = "npc.romeo_juliet_pew_sleeping_man"
+inherit = "npc.romeo_juliet_pew_sleeping_man"
+timer = 1
+moveRestrict = "NoMove"
+wanderRange = 0
+respawnDir = "North"
+
+[[npc]]
+id = "npc.romeo_juliet_pew_sleeping_woman"
+inherit = "npc.romeo_juliet_pew_sleeping_woman"
+timer = 1
+moveRestrict = "NoMove"
+wanderRange = 0
+respawnDir = "North"
+
+[[npc]]
+id = "npc.romeo"
+inherit = "npc.romeo"
+timer = 1
 
 [[npc]]
 id = "npc.whisperer"
@@ -5560,6 +6310,11 @@ respawnRate = 30
 "param.boss_hp_bar_mode"=1
 "param.death_anim"="seq.npc_whisperer_01_death_01"
 
+# Captain Lawgof barks orders at his troops between visitors (see CaptainLawgof).
+[[npc]]
+id = "npc.lawgof2"
+inherit = "npc.lawgof2"
+timer = 1
 [[npc]]
 id = "npc.gemstone_crab"
 inherit = "npc.gemstone_crab"
@@ -9471,13 +10226,6 @@ inherit = "npc.viking_wolf"
 "param.elemental_weakness_percent"=25
 
 [[npc]]
-id = "npc.viking_draugen"
-inherit = "npc.viking_draugen"
-[npc.params]
-"param.elemental_weakness_type"=0
-"param.elemental_weakness_percent"=50
-
-[[npc]]
 id = "npc.nezikchened"
 inherit = "npc.nezikchened"
 [npc.params]
@@ -9676,13 +10424,6 @@ inherit = "npc.troll_spectator7"
 "param.elemental_weakness_percent"=20
 
 [[npc]]
-id = "npc.troll_champion"
-inherit = "npc.troll_champion"
-[npc.params]
-"param.elemental_weakness_type"=2
-"param.elemental_weakness_percent"=40
-
-[[npc]]
 id = "npc.troll_prison_guard1_awake"
 inherit = "npc.troll_prison_guard1_awake"
 [npc.params]
@@ -9692,20 +10433,6 @@ inherit = "npc.troll_prison_guard1_awake"
 [[npc]]
 id = "npc.troll_prison_guard2_awake"
 inherit = "npc.troll_prison_guard2_awake"
-[npc.params]
-"param.elemental_weakness_type"=2
-"param.elemental_weakness_percent"=20
-
-[[npc]]
-id = "npc.troll_prison_guard1"
-inherit = "npc.troll_prison_guard1"
-[npc.params]
-"param.elemental_weakness_type"=2
-"param.elemental_weakness_percent"=20
-
-[[npc]]
-id = "npc.troll_prison_guard2"
-inherit = "npc.troll_prison_guard2"
 [npc.params]
 "param.elemental_weakness_type"=2
 "param.elemental_weakness_percent"=20
@@ -9765,41 +10492,6 @@ inherit = "npc.ics_little_jackal"
 [npc.params]
 "param.elemental_weakness_type"=3
 "param.elemental_weakness_percent"=10
-
-[[npc]]
-id = "npc.ics_scarab_swarm"
-inherit = "npc.ics_scarab_swarm"
-[npc.params]
-"param.elemental_weakness_type"=3
-"param.elemental_weakness_percent"=50
-
-[[npc]]
-id = "npc.ics_little_het"
-inherit = "npc.ics_little_het"
-[npc.params]
-"param.elemental_weakness_type"=0
-"param.elemental_weakness_percent"=40
-
-[[npc]]
-id = "npc.ics_little_apmeken"
-inherit = "npc.ics_little_apmeken"
-[npc.params]
-"param.elemental_weakness_type"=0
-"param.elemental_weakness_percent"=40
-
-[[npc]]
-id = "npc.ics_little_scabaras"
-inherit = "npc.ics_little_scabaras"
-[npc.params]
-"param.elemental_weakness_type"=0
-"param.elemental_weakness_percent"=40
-
-[[npc]]
-id = "npc.ics_little_crondis"
-inherit = "npc.ics_little_crondis"
-[npc.params]
-"param.elemental_weakness_type"=0
-"param.elemental_weakness_percent"=40
 
 [[npc]]
 id = "npc.swan_kalphite_1"
@@ -16457,6 +17149,17 @@ inherit = "npc.leviathan_tail_ring_3"
 defaultMode = "None"
 
 [[npc]]
+id = "npc.roving_mossgiant"
+inherit = "npc.roving_mossgiant"
+respawnRate = 10
+
+[[npc]]
+id = "npc.tog_light_creature"
+inherit = "npc.tog_light_creature"
+moveRestrict = "NoMove"
+wanderRange = 0
+
+[[npc]]
 id = "npc.dom_boss"
 inherit = "npc.dom_boss"
 huntMode = 8
@@ -16802,12 +17505,6 @@ inherit = "npc.yama_voidflare"
 [npc.params]
 "param.demon"=1
 
-[[npc]]
-id = "npc.kittens_mew"
-inherit = "npc.kittens_mew"
-timer = 1
-moveRestrict = "NoMove"
-wanderRange = 0
 
 
 [[npc]]
@@ -16820,6 +17517,7 @@ wanderRange = 10
 "param.attack_anim"="seq.giant_rat_update_attack"
 "param.death_anim"="seq.giant_rat_update_death_fast"
 
+
 [[npc]]
 id = "npc.crystal_rat_hm"
 inherit = "npc.crystal_rat_hm"
@@ -16829,6 +17527,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.giant_rat_update_attack"
 "param.death_anim"="seq.giant_rat_update_death_fast"
+
 
 [[npc]]
 id = "npc.crystal_spider"
@@ -16840,6 +17539,7 @@ wanderRange = 10
 "param.attack_anim"="seq.sote_gauntlet_spider_attack_melee"
 "param.death_anim"="seq.sote_gauntlet_spider_death"
 
+
 [[npc]]
 id = "npc.crystal_spider_hm"
 inherit = "npc.crystal_spider_hm"
@@ -16849,6 +17549,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.sote_gauntlet_spider_attack_melee"
 "param.death_anim"="seq.sote_gauntlet_spider_death"
+
 
 [[npc]]
 id = "npc.crystal_bat"
@@ -16860,6 +17561,7 @@ wanderRange = 10
 "param.attack_anim"="seq.bat_rework_attack"
 "param.death_anim"="seq.bat_rework_death"
 
+
 [[npc]]
 id = "npc.crystal_bat_hm"
 inherit = "npc.crystal_bat_hm"
@@ -16869,6 +17571,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.bat_rework_attack"
 "param.death_anim"="seq.bat_rework_death"
+
 
 [[npc]]
 id = "npc.crystal_unicorn"
@@ -16880,6 +17583,7 @@ wanderRange = 10
 "param.attack_anim"="seq.unicorn_rework_attack"
 "param.death_anim"="seq.unicorn_rework_death"
 
+
 [[npc]]
 id = "npc.crystal_unicorn_hm"
 inherit = "npc.crystal_unicorn_hm"
@@ -16889,6 +17593,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.unicorn_rework_attack"
 "param.death_anim"="seq.unicorn_rework_death"
+
 
 [[npc]]
 id = "npc.crystal_scorpion"
@@ -16900,6 +17605,7 @@ wanderRange = 10
 "param.attack_anim"="seq.scorpion_update_attack_tail"
 "param.death_anim"="seq.scorpion_update_death"
 
+
 [[npc]]
 id = "npc.crystal_scorpion_hm"
 inherit = "npc.crystal_scorpion_hm"
@@ -16909,6 +17615,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.scorpion_update_attack_tail"
 "param.death_anim"="seq.scorpion_update_death"
+
 
 [[npc]]
 id = "npc.crystal_wolf"
@@ -16920,6 +17627,7 @@ wanderRange = 10
 "param.attack_anim"="seq.dog_update_wolf_attack"
 "param.death_anim"="seq.dog_update_wolf_death_quick"
 
+
 [[npc]]
 id = "npc.crystal_wolf_hm"
 inherit = "npc.crystal_wolf_hm"
@@ -16929,6 +17637,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.dog_update_wolf_attack"
 "param.death_anim"="seq.dog_update_wolf_death_quick"
+
 
 [[npc]]
 id = "npc.crystal_bear"
@@ -16940,6 +17649,7 @@ wanderRange = 10
 "param.attack_anim"="seq.bear_rework_attack"
 "param.death_anim"="seq.bear_rework_death"
 
+
 [[npc]]
 id = "npc.crystal_bear_hm"
 inherit = "npc.crystal_bear_hm"
@@ -16949,6 +17659,7 @@ wanderRange = 10
 "param.dropped_remains"=-1
 "param.attack_anim"="seq.bear_rework_attack"
 "param.death_anim"="seq.bear_rework_death"
+
 
 [[npc]]
 id = "npc.crystal_dragon"
@@ -16963,6 +17674,7 @@ wanderRange = 10
 "param.proj_type"="projanim.crystal_dragon_magic"
 "param.proj_travel"="spotanim.crystal_dragon_magic_travel"
 
+
 [[npc]]
 id = "npc.crystal_dragon_hm"
 inherit = "npc.crystal_dragon_hm"
@@ -16975,6 +17687,7 @@ wanderRange = 10
 "param.death_anim"="seq.dragon_death"
 "param.proj_type"="projanim.crystal_dragon_magic"
 "param.proj_travel"="spotanim.crystal_dragon_magic_travel_hm"
+
 
 [[npc]]
 id = "npc.crystal_dark_beast"
@@ -16989,6 +17702,7 @@ wanderRange = 10
 "param.proj_type"="projanim.crystal_dark_beast_ranged"
 "param.proj_travel"="spotanim.crystal_dark_beast_range_travel"
 
+
 [[npc]]
 id = "npc.crystal_dark_beast_hm"
 inherit = "npc.crystal_dark_beast_hm"
@@ -17002,6 +17716,7 @@ wanderRange = 10
 "param.proj_type"="projanim.crystal_dark_beast_ranged"
 "param.proj_travel"="spotanim.crystal_dark_beast_range_travel_hm"
 
+
 [[npc]]
 id = "npc.crystal_hunllef_melee"
 inherit = "npc.crystal_hunllef_melee"
@@ -17011,6 +17726,7 @@ inherit = "npc.crystal_hunllef_melee"
 "param.boss_hp_bar_colour_back"=13107200
 "param.boss_hp_bar_colour_sliding"=36864
 "param.boss_hp_bar_colour_remaining"=51200
+
 
 [[npc]]
 id = "npc.crystal_hunllef_melee_hm"
@@ -17022,6 +17738,7 @@ inherit = "npc.crystal_hunllef_melee_hm"
 "param.boss_hp_bar_colour_sliding"=36864
 "param.boss_hp_bar_colour_remaining"=51200
 
+
 [[npc]]
 id = "npc.crystal_hunllef_ranged"
 inherit = "npc.crystal_hunllef_ranged"
@@ -17031,6 +17748,7 @@ inherit = "npc.crystal_hunllef_ranged"
 "param.boss_hp_bar_colour_back"=13107200
 "param.boss_hp_bar_colour_sliding"=36864
 "param.boss_hp_bar_colour_remaining"=51200
+
 
 [[npc]]
 id = "npc.crystal_hunllef_ranged_hm"
@@ -17042,6 +17760,7 @@ inherit = "npc.crystal_hunllef_ranged_hm"
 "param.boss_hp_bar_colour_sliding"=36864
 "param.boss_hp_bar_colour_remaining"=51200
 
+
 [[npc]]
 id = "npc.crystal_hunllef_magic"
 inherit = "npc.crystal_hunllef_magic"
@@ -17051,6 +17770,7 @@ inherit = "npc.crystal_hunllef_magic"
 "param.boss_hp_bar_colour_back"=13107200
 "param.boss_hp_bar_colour_sliding"=36864
 "param.boss_hp_bar_colour_remaining"=51200
+
 
 [[npc]]
 id = "npc.crystal_hunllef_magic_hm"
@@ -17062,11 +17782,13 @@ inherit = "npc.crystal_hunllef_magic_hm"
 "param.boss_hp_bar_colour_sliding"=36864
 "param.boss_hp_bar_colour_remaining"=51200
 
+
 [[npc]]
 id = "npc.crystal_hunllef_death"
 inherit = "npc.crystal_hunllef_death"
 [npc.params]
 "param.dropped_remains"=-1
+
 
 [[npc]]
 id = "npc.crystal_hunllef_death_hm"
@@ -17074,11 +17796,13 @@ inherit = "npc.crystal_hunllef_death_hm"
 [npc.params]
 "param.dropped_remains"=-1
 
+
 [[npc]]
 id = "npc.crystal_hunllef_crystals"
 inherit = "npc.crystal_hunllef_crystals"
 [npc.params]
 "param.dropped_remains"=-1
+
 
 [[npc]]
 id = "npc.crystal_hunllef_crystals_hm"

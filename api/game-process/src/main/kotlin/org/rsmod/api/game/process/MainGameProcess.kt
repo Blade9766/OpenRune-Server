@@ -47,8 +47,10 @@ constructor(
         dbSync.blockingFastForwardShutdown()
     }
 
+    // Players leave the list only once their save is acknowledged, so an empty list means every
+    // logout has been fully persisted and further cycles have nothing left to flush.
     private fun fastForwardCycles() {
-        for (i in 0 until SHUTDOWN_MAX_SIMULATIONS) {
+        repeat(SHUTDOWN_MAX_SIMULATIONS) {
             if (playerList.none()) {
                 return
             }

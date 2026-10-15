@@ -1,28 +1,34 @@
 package org.rsmod.content.areas.city.lumbridge
 
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.cinematic.Cinematic
 import org.rsmod.api.player.cinematic.MinimapState
 import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.player.stat.thievingLvl
+import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.player.vars.intVarBit
-import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onOpLoc1
+import org.rsmod.api.script.onOpLoc2
+import org.rsmod.api.script.onOpLoc5
 import org.rsmod.api.script.onPlayerSoftTimer
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.HamHideout
 import org.rsmod.game.entity.Player
-import org.rsmod.game.loc.BoundLocInfo
-import org.rsmod.game.loc.LocAngle
-import org.rsmod.game.loc.LocShape
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 private var Player.darkness by intVarBit("varbit.darkness_level")
+private var Player.hamTrapdoorOpen by boolVarBit("varbit.ham_thief")
 
-class LumbridgeSwampLocs @Inject constructor(private val locRepo: LocRepository) : PluginScript() {
+class LumbridgeSwampLocs
+@Inject
+constructor(private val hamHideout: HamHideout, private val diaries: AchievementDiaries) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         onOpLoc1("loc.goblin_cave_entrance") { enterCave() }
         onIfModalButton("component.cws_warning_13:warn1") {
@@ -32,13 +38,65 @@ class LumbridgeSwampLocs @Inject constructor(private val locRepo: LocRepository)
         onIfModalButton("component.cws_warning_13:warn2") { ifClose() }
         onOpLoc1("loc.swamp_cave_climbing_rope") { climbRope() }
         onPlayerSoftTimer(INSECT_TIMER) { player.insectWarning() }
-        onOpLoc1("loc.ham_multi_trapdoor") {
-            arriveDelay()
+        onOpLoc1(HAM_TRAPDOOR) { openOrClimbTrapdoor() }
+        onOpLoc2(HAM_TRAPDOOR) { closeTrapdoor() }
+        onOpLoc5(HAM_TRAPDOOR) { pickTrapdoorLock() }
+        onOpLoc1("loc.osf_ham_ladder") { climbHamLadder() }
+    }
+
+    private suspend fun ProtectedAccess.openOrClimbTrapdoor() {
+        arriveDelay()
+        if (!player.hamTrapdoorOpen) {
             mes("You try to open the trap door.", ChatType.Spam)
             mes("This trapdoor seems totally locked.", ChatType.Spam)
             soundSynth("synth.locked")
+            return
         }
-        onOpLoc1("loc.zanarisdoor") { shedDoor(it.loc) }
+        if (!with(hamHideout) { beforeDescending() }) {
+            return
+        }
+        anim("seq.human_pickupfloor")
+        delay(1)
+        mes("You climb down through the trapdoor.")
+        telejump(HAM_HIDEOUT_LANDING)
+        hamHideout.afterDescending(player)
+        diaries.complete(player, "dbrow.diary_lumbridge_easy_ham_hideout")
+    }
+
+    private suspend fun ProtectedAccess.closeTrapdoor() {
+        arriveDelay()
+        anim("seq.human_pickupfloor")
+        soundSynth("synth.trapdoor_close")
+        player.hamTrapdoorOpen = false
+    }
+
+    /** The H.A.M. hideout lock has no level requirement; it just takes a few tries. */
+    private suspend fun ProtectedAccess.pickTrapdoorLock() {
+        arriveDelay()
+        if (player.hamTrapdoorOpen) {
+            mes("The trapdoor is already unlocked.")
+            return
+        }
+        mes("You attempt to pick the lock on the trap door.", ChatType.Spam)
+        anim("seq.human_picklock_chest")
+        soundSynth("synth.pick_lock")
+        delay(PICK_LOCK_TICKS)
+        val chance = (PICK_LOCK_BASE + player.thievingLvl).coerceAtMost(PICK_LOCK_MAX)
+        if (random.of(maxExclusive = 100) >= chance) {
+            mes("You fail to pick the lock - your fingers get numb from fumbling with the lock.")
+            return
+        }
+        mes("You pick the lock on the trap door.")
+        soundSynth("synth.trapdoor_open")
+        player.hamTrapdoorOpen = true
+    }
+
+    private suspend fun ProtectedAccess.climbHamLadder() {
+        arriveDelay()
+        anim("seq.human_reachforladder")
+        delay(1)
+        telejump(HAM_TRAPDOOR_EXIT)
+        with(hamHideout) { afterClimbingOut() }
     }
 
     private fun ProtectedAccess.hasLight(): Boolean =
@@ -91,35 +149,22 @@ class LumbridgeSwampLocs @Inject constructor(private val locRepo: LocRepository)
         soundSynth("synth.swamp_cave_insects")
     }
 
-    private suspend fun ProtectedAccess.shedDoor(door: BoundLocInfo) {
-        arriveDelay()
-        val inside = player.coords.x >= door.coords.x
-        if (!inside && ZANARIS_STAVES.any { player.worn.count(it) > 0 }) {
-            telejump(ZANARIS)
-            return
-        }
-        locRepo.del(door, DOOR_TICKS)
-        locRepo.add(SHED_DOOR_OPEN, "loc.zanarisdoor_open", DOOR_TICKS, LocAngle.North, LocShape.WallStraight)
-        soundSynth("synth.door_open")
-        val dest = if (inside) door.coords.translateX(-1) else door.coords
-        playerWalkWithMinDelay(dest)
-    }
-
     private companion object {
         const val WARNING = "interface.cws_warning_13"
         const val DARKNESS_OVERLAY = "interface.darkness_dark"
         const val INSECT_TIMER = "timer.swamp_cave_insects"
         const val INSECT_WARNING_TICKS = 16
         const val DARK = 3
-        const val DOOR_TICKS = 2
         const val TINDERBOX = "obj.tinderbox"
+        const val HAM_TRAPDOOR = "loc.ham_multi_trapdoor"
+        const val PICK_LOCK_TICKS = 3
+        const val PICK_LOCK_BASE = 30
+        const val PICK_LOCK_MAX = 90
 
         val CAVE_LANDING = CoordGrid(3167, 9573, 0)
         val SWAMP_EXIT = CoordGrid(3168, 3172, 0)
-        val SHED_DOOR_OPEN = CoordGrid(3201, 3169, 0)
-        val ZANARIS = CoordGrid(2412, 4434, 0)
-
-        val ZANARIS_STAVES = listOf("obj.dramen_staff", "obj.lunar_moonclan_liminal_staff")
+        val HAM_HIDEOUT_LANDING = CoordGrid(3149, 9652, 0)
+        val HAM_TRAPDOOR_EXIT = CoordGrid(3165, 3251, 0)
         val LIGHT_SOURCES =
             listOf(
                 "obj.lit_candle",
@@ -130,6 +175,7 @@ class LumbridgeSwampLocs @Inject constructor(private val locRepo: LocRepository)
                 "obj.oil_lamp_lit",
                 "obj.oil_lantern_lit",
                 "obj.bullseye_lantern_lit",
+                "obj.tog_sapphire_lantern_lit",
                 "obj.cave_goblin_mining_helmet_lit",
             )
     }

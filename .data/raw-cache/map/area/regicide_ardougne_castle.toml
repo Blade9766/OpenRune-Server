@@ -1,0 +1,14 @@
+# Ardougne Castle and its grounds inside the moat. A player carrying Iorwerth's message to
+# King Lathas during Regicide is stopped here by Arianwyn.
+[[area]]
+name = "Regicide Ardougne castle"
+area_id = "area.regicide_ardougne_castle"
+levels = [0, 1, 2]
+
+[[area.polygons]]
+vertices = [
+    [2568, 3283],
+    [2592, 3283],
+    [2592, 3312],
+    [2568, 3312],
+]

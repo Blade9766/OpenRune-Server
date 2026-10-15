@@ -1,6 +1,10 @@
 package org.rsmod.api.shops.currency
 
+import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
+import dev.openrune.types.varp.bits
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.Inventory
@@ -15,8 +19,14 @@ public class VarBitShopCurrency(
 
     override fun balance(player: Player, sideInv: Inventory): Int = player.vars[varbit]
 
+    private val maxValue: Int by lazy {
+        val bits = ServerCacheManager.getVarbit(varbit.asRSCM(RSCMType.VARBIT))!!.bits
+        val mask = (1L shl (bits.last - bits.first + 1)) - 1
+        minOf(mask, Int.MAX_VALUE.toLong()).toInt()
+    }
+
     override fun receiveCap(player: Player, sideInv: Inventory): Int =
-        Int.MAX_VALUE - balance(player, sideInv)
+        (maxValue - balance(player, sideInv)).coerceAtLeast(0)
 
     override fun deduct(player: Player, amount: Int) {
         if (amount <= 0) {

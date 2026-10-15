@@ -4,21 +4,26 @@ import jakarta.inject.Inject
 import org.rsmod.api.config.Constants
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.vars.intVarp
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeDuke
 import org.rsmod.content.quest.area.lumbridge.rmTalisman
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest
+import org.rsmod.content.quest.area.varrock.dragonslayer.DragonSlayerQuest.Companion.ownsAntiDragonShield
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.game.entity.Npc
-import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQuest) : PluginScript() {
-
-    private val quest
-        get() = runeMysteries.quest
-
-    private var Player.dragonQuest by intVarp("varp.dragonquest")
+class DukeHoracio
+@Inject
+constructor(
+    private val runeMysteries: RuneMysteriesQuest,
+    private val dragonSlayer: DragonSlayerQuest,
+    private val lostTribe: LostTribeDuke,
+    private val zanikTour: ZanikTour,
+) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpNpc1("npc.duke_of_lumbridge") { startDukeDialogue(it.npc) }
@@ -29,35 +34,30 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
     }
 
     private suspend fun Dialogue.dukeDialogue(npc: Npc) {
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { dukeVisit() }
+            return
+        }
         chatNpc(happy, "Greetings. Welcome to my castle.")
 
-        val hasShield = player.inv.contains(ANTI_DRAGON_SHIELD)
-        val showShieldOption = !hasShield && player.dragonQuest >= 1
-        val stage = quest.getQuestStage(player)
+        val hasShield = player.ownsAntiDragonShield()
+        val showShieldOption = !hasShield && dragonSlayer.stage(player) >= DragonSlayerQuest.STAGE_STARTED
+        val stage = runeMysteries.stage(player)
         val questOption =
             when {
                 stage == RuneMysteriesQuest.STAGE_TALISMAN -> "What did you want me to do again?"
                 else -> "Have you any quests for me?"
             }
 
-        val choice =
+        val options = buildList {
             if (showShieldOption) {
-                choice3(
-                    "I seek a shield that will protect me from dragonbreath.",
-                    1,
-                    questOption,
-                    2,
-                    "Where can I find money?",
-                    3,
-                )
-            } else {
-                choice2(
-                    questOption,
-                    2,
-                    "Where can I find money?",
-                    3,
-                )
+                add("I seek a shield that will protect me from dragonbreath." to 1)
             }
+            add(questOption to 2)
+            add("Where can I find money?" to 3)
+            lostTribe.option(player)?.let { add(it to 4) }
+        }
+        val choice = menu(options)
 
         when (choice) {
             1 -> dukeDragonShield(npc)
@@ -70,14 +70,15 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
                         "Maybe you could try your hand at that?",
                 )
             }
+            4 -> with(lostTribe) { talk() }
         }
     }
 
     private suspend fun Dialogue.dukeQuestBranch(npc: Npc) {
-        val stage = quest.getQuestStage(player)
+        val stage = runeMysteries.stage(player)
         when {
             stage == 0 -> dukeStartQuest(npc)
-            stage == RuneMysteriesQuest.STAGE_TALISMAN && !hasAirTalisman(player) ->
+            stage == RuneMysteriesQuest.STAGE_TALISMAN && !ownsAirTalisman() ->
                 dukeReplaceTalisman(npc)
             stage == RuneMysteriesQuest.STAGE_TALISMAN -> {
                 chatPlayer(quiz, "What did you want me to do again?")
@@ -119,15 +120,7 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
         )
         chatNpc(quiz, "Would you be willing to take it to them for me?")
 
-        when (
-            choice2(
-                "Sure, no problem.",
-                1,
-                "Not right now.",
-                2,
-                title = "Start the Rune Mysteries quest?",
-            )
-        ) {
+        when (choice2("Yes.", 1, "No.", 2, title = "Start the Rune Mysteries quest?")) {
             1 -> {
                 chatPlayer(happy, "Sure, no problem.")
                 if (access.invAdd(access.inv, RuneMysteriesQuest.AIR_TALISMAN).failure) {
@@ -138,7 +131,7 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
                     return
                 }
                 player.rmTalisman = true
-                quest.advanceQuestStage(access)
+                runeMysteries.advanceTo(access, RuneMysteriesQuest.STAGE_TALISMAN)
                 chatNpc(
                     happy,
                     "Thank you very much. You'll find the Wizards' Tower south west of here, " +
@@ -189,8 +182,14 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
         ) {
             1 -> {
                 chatPlayer(happy, "Elvarg, the dragon of Crandor island!")
+                if (dragonSlayer.quest.isQuestCompleted(player)) {
+                    chatNpc(happy, "Elvarg? But you've already slain her! Word of your victory has spread all over the kingdom.")
+                    chatNpc(happy, "Of course you may have another shield. You've earned the right to call it your own.")
+                    giveAntiDragonShield(finishedDragonSlayer = true)
+                    return
+                }
                 chatNpc(shocked, "Elvarg? Are you sure?")
-                when (choice2("Yes.", 1, "I'd better leave that dragon alone.", 2, title = "Well, are you sure?")) {
+                when (choice2("Yes.", 1, "No.", 2, title = "Well, are you sure?")) {
                     1 -> {
                         chatPlayer(happy, "Yes.")
                         val gender =
@@ -226,12 +225,12 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
                             2 -> leaveDragonAlone()
                         }
                     }
-                    2 -> leaveDragonAlone()
+                    2 -> chatNpc(neutral, "Very wise. There are some monsters that are best left alone.")
                 }
             }
             2 -> {
                 chatPlayer(quiz, "Oh, no dragon in particular. I just feel like killing a dragon.")
-                if (player.dragonQuest >= 2) {
+                if (dragonSlayer.quest.isQuestCompleted(player)) {
                     chatNpc(
                         happy,
                         "Of course. Now you've slain Elvarg, you've earned the right to call the " +
@@ -279,10 +278,11 @@ class DukeHoracio @Inject constructor(private val runeMysteries: RuneMysteriesQu
         }
     }
 
-    private fun hasAirTalisman(player: Player): Boolean =
-        player.inv.contains(RuneMysteriesQuest.AIR_TALISMAN)
+    private fun Dialogue.ownsAirTalisman(): Boolean =
+        RuneMysteriesQuest.AIR_TALISMAN in player.inv ||
+            RuneMysteriesQuest.AIR_TALISMAN in access.bank
 
     private companion object {
-        const val ANTI_DRAGON_SHIELD = "obj.antidragonbreathshield"
+        const val ANTI_DRAGON_SHIELD = DragonSlayerQuest.ANTI_DRAGON_SHIELD
     }
 }

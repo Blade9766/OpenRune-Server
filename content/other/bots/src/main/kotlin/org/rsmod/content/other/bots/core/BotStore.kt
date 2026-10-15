@@ -1,37 +1,33 @@
 package org.rsmod.content.other.bots.core
 
-import org.rsmod.api.exchange.ExchangeMutation
-import org.rsmod.api.exchange.persistence.InMemoryExchangeStore
-
-/** One atomic write: bot rows and the exchange rows the same action changed. */
 data class BotWrite(
     val bots: List<BotRecord> = emptyList(),
     val deleted: List<Long> = emptyList(),
     val settings: BotGlobalSettings? = null,
-    val exchange: ExchangeMutation = ExchangeMutation.EMPTY,
 )
 
 data class BotStoreSnapshot(val bots: List<BotRecord>, val settings: BotGlobalSettings)
 
+/** Persists bots. [write] is synchronous: when it returns the data is durable, or it throws. */
 interface BotStore {
-    val healthy: Boolean
-
     fun load(): BotStoreSnapshot
 
     fun write(write: BotWrite)
 }
 
-/** Mirrors the database: only what was written survives a simulated restart. */
-class InMemoryBotStore(val exchange: InMemoryExchangeStore = InMemoryExchangeStore()) : BotStore {
+/** Mirrors a file on disk: only what was written survives a simulated restart. */
+class InMemoryBotStore : BotStore {
     val bots: MutableMap<Long, BotRecord> = LinkedHashMap()
     var settings: BotGlobalSettings = BotGlobalSettings()
     val writes: MutableList<BotWrite> = ArrayList()
-
-    override var healthy: Boolean = true
+    var failing: Boolean = false
 
     override fun load(): BotStoreSnapshot = BotStoreSnapshot(bots.values.toList(), settings)
 
     override fun write(write: BotWrite) {
+        if (failing) {
+            throw java.io.IOException("simulated write failure")
+        }
         writes += write
         for (bot in write.bots) {
             bots[bot.id] = bot
@@ -40,6 +36,5 @@ class InMemoryBotStore(val exchange: InMemoryExchangeStore = InMemoryExchangeSto
             bots.remove(id)
         }
         write.settings?.let { settings = it }
-        exchange.apply(write.exchange)
     }
 }

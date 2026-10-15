@@ -96,6 +96,14 @@ public class LocUInteractions @Inject private constructor(private val eventBus: 
             }
         }
 
+        val baseType = baseTypeOf(target, base)
+        if (baseType != null) {
+            val baseEvent = LocUEvents.Op(base, target, baseType, objType, invSlot)
+            if (eventBus.contains(baseEvent::class.java, baseEvent.id)) {
+                return baseEvent
+            }
+        }
+
         val defaultTypeScript = LocUDefaultEvents.OpType(base, target, locType, objType, invSlot)
         if (eventBus.contains(defaultTypeScript::class.java, defaultTypeScript.id)) {
             return defaultTypeScript
@@ -184,6 +192,14 @@ public class LocUInteractions @Inject private constructor(private val eventBus: 
             }
         }
 
+        val baseType = baseTypeOf(target, base)
+        if (baseType != null) {
+            val baseEvent = LocUEvents.Ap(base, target, baseType, objType, invSlot)
+            if (eventBus.contains(baseEvent::class.java, baseEvent.id)) {
+                return baseEvent
+            }
+        }
+
         val defaultTypeScript = LocUDefaultEvents.ApType(base, target, locType, objType, invSlot)
         if (eventBus.contains(defaultTypeScript::class.java, defaultTypeScript.id)) {
             return defaultTypeScript
@@ -209,6 +225,10 @@ public class LocUInteractions @Inject private constructor(private val eventBus: 
         return null
     }
 
+    /** Scripts on a multiloc's base loc still answer when the visible variant has none. */
+    private fun baseTypeOf(target: BoundLocInfo, base: BoundLocInfo): ObjectServerType? =
+        if (base.id == target.id) null else ServerCacheManager.getObject(base.id)
+
     public fun multiLoc(
         loc: BoundLocInfo,
         type: ObjectServerType,
@@ -232,10 +252,10 @@ public class LocUInteractions @Inject private constructor(private val eventBus: 
     }
 
     private fun ObjectServerType.multiVarValue(vars: VarPlayerIntMap): Int? {
-        if (multiVarp > 0) {
+        if (multiVarp >= 0) {
             val varp = ServerCacheManager.getVarp(multiVarp) ?: return null
             return vars[varp]
-        } else if (multiVarBit > 0) {
+        } else if (multiVarBit >= 0) {
             val varBit = ServerCacheManager.getVarbit(multiVarBit) ?: return null
             val packed = vars[varBit.baseVar]
             return packed.getBits(varBit.bits)

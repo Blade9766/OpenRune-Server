@@ -14,3 +14,17 @@ denominator = 128
 obj = "obj.trail_clue_beginner"
 count = 1
 clue_scroll_box = true
+
+[[tertiary]]
+numerator = 1
+denominator = 319
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 1972
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true

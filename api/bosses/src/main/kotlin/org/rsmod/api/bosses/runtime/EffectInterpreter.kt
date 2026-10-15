@@ -17,6 +17,7 @@ import org.rsmod.api.combat.commons.player.queueCombatRetaliate
 import org.rsmod.api.combat.commons.types.MeleeAttackType
 import org.rsmod.api.npc.access.StandardNpcAccess
 import org.rsmod.api.npc.heal
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.disableOverheadPrayers
 import org.rsmod.api.player.disablePrayers
@@ -77,6 +78,7 @@ class EffectInterpreter internal constructor(
         get() = encounter.epoch != abilityRun.epoch
 
     fun run(access: StandardNpcAccess?, effect: Effect, onComplete: () -> Unit = {}) {
+        if (!npc.isAliveInWorld()) return
         when (effect) {
             is Effect.Anim -> npc.anim(effect.seq, effect.delay)
             is Effect.IdleAnim -> effect.seq?.let(npc::setIdleAnim) ?: npc.clearIdleAnim()
@@ -361,7 +363,7 @@ class EffectInterpreter internal constructor(
                 continue
             }
             val landed =
-                t.finishNpcHit(npc, delay, hit.type.toEngine(), damage, deps.playerHitModifier, hit.penetration)
+                t.finishNpcHit(npc, delay, hit.type.toEngine(), damage, deps.playerHitModifier, penetration = hit.penetration)
             scheduleLanding(access, hit, t, damage, landed.damage, delay, clientDelay = 0)
         }
     }
@@ -482,7 +484,7 @@ class EffectInterpreter internal constructor(
         }
         val hitType = hit.type.toEngine()
         val landed =
-            player.finishNpcHit(npc, ticks, hitType, damage, deps.playerHitModifier, hit.penetration).damage
+            player.finishNpcHit(npc, ticks, hitType, damage, deps.playerHitModifier, penetration = hit.penetration).damage
         scheduleLanding(access, hit, player, damage, landed, ticks, projAnim.clientCycles)
     }
 
@@ -583,6 +585,7 @@ class EffectInterpreter internal constructor(
         tiles.forEach { deps.worldRepo.spotanimMap(telegraphSpot, it) }
 
         deps.worldQueues.add(effect.windup) {
+            if (!npc.isAliveInWorld()) return@add
             effect.impact?.let { impact ->
                 val impactSpot = SpotanimType(impact.asRSCM(RSCMType.SPOTANIM))
                 tileSet.forEach { deps.worldRepo.spotanimMap(impactSpot, it) }

@@ -1,7 +1,8 @@
 # Gathering bots
 
 Server-driven characters that gather a resource, bank it, and sell it on the
-Grand Exchange ([grand-exchange.md](grand-exchange.md)). Each bot is a real
+Grand Exchange (`content/other/grand-exchange`, the same book players trade on
+through the GE interface). Each bot is a real
 in-world player: it walks with the normal pathfinder, clicks trees, rocks and
 altars through the same interaction objects a client packet creates, and is
 subject to every level, tool, inventory, depletion and respawn rule the skill
@@ -11,8 +12,7 @@ scripts already enforce. Other players can see it and compete with it.
 
 | Path | What |
 |---|---|
-| `api/exchange` | Order book, tax, price guide, ordered DB writer, exchange tables |
-| `content/other/grand-exchange` | `::ge` player commands |
+| `content/other/grand-exchange` | The Grand Exchange: order book, tax, guide prices, `.data/grand-exchange.json` |
 | `content/other/bots` | Bot coordinator, state machine, roles, `::bot` commands |
 | `content/other/bots/pack` | `bot_status` interface + init clientscript |
 | `content/other/bots/src/main/resources/bot-sites.toml` | Work sites |
@@ -26,8 +26,7 @@ to the engine.
 1. Rebuild the cache so the status interface and its clientscript exist:
    `gradlew buildCache` (the pack registers `interface.bot_status = 1102` and
    `clientscript.bot_status_init = 45600`).
-2. Start the server. Tables (`bots`, `bot_settings`, `exchange_offers`,
-   `exchange_trades`) are created on first use; nothing to migrate by hand.
+2. Start the server. Bots are kept in `.data/bots.json`, created on first use.
 3. Walk each site you intend to use (see [Sites](#sites)) and fix its
    coordinates if your map differs.
 4. Create bots, give them their kit, enable them, then turn the master toggle
@@ -131,7 +130,7 @@ With `essence bank` instead, stock its bank: `::bot give 3 blankrune_high 5000 b
 It pauses in `WAITING_FOR_SUPPLIES` when the bank runs dry and resumes when
 essence appears.
 
-A bot's stored configuration is JSON in `bots.record`, for example:
+A bot's stored configuration is the `config` of its entry in `.data/bots.json`, for example:
 
 ```json
 {
@@ -179,8 +178,9 @@ withdraws `quantity` as notes, walks to the exchange and lists them. Price:
 1. Volume-weighted average of recent exchange trades, if reliable (enough
    trades and volume in the window, outliers more than 50% from the median
    discarded) and within `deviation` of the reference.
-2. Otherwise the reference: `refprice`, else the server's `MarketPrices`
-   service (cache value).
+2. Otherwise the reference: `refprice`, else the Grand Exchange guide price
+   (the wiki price shipped in `ge-items.tsv`; items without one have no
+   reference).
 3. Otherwise selling pauses for `cooldown` minutes.
 
 Then `adjust` is applied, minus `step`% per retry, never below the price whose
@@ -190,24 +190,39 @@ aborted after `timeout` and re-listed lower, at most `retries` times, then
 selling pauses for `cooldown`. A bot keeps at most one open listing per item.
 Proceeds and returned items are collected straight into the bot's bank on its
 next bank visit. Only players buy from bots; there are no artificial buyers.
+Bots trade under their negative account id, so they show up in no player's
+offer screens and the exchange never tries to message them.
 
 ## Persistence and safety
 
-- `bots` (one JSON row per bot, including inventory, equipment, bank, xp,
-  totals and sale state) and `bot_settings` (master toggle, max active).
-- Every bot write carries the bot's full item snapshot **and** the exchange
-  rows the same action changed, in one transaction, through a single ordered
-  writer shared with the exchange. Listing, collection and abort can therefore
-  never be persisted half-done.
-- Each listing carries an idempotency reference (`bot:<id>:sale:<seq>`); the
-  exchange refuses a second offer with the same reference.
-- Collections credit the bank first; the exchange then refuses to deduct more
-  than is owed, so a repeated collection pays nothing.
+Bots live in `.data/bots.json` (one entry per bot with inventory, equipment,
+bank, xp, totals and sale state, plus the master toggle and max active),
+rewritten through a temporary file and an atomic move. The exchange saves its
+own book to `.data/grand-exchange.json` at the end of each cycle in which it
+changed. Because the two files are written separately, every item movement
+between a bot and the exchange is done in steps, each saved before the next:
+
+- **Listing**: the notes leave the bot's inventory and the listing is written
+  to the bot file as pending. Next tick the offer is placed. Once the exchange
+  file has been saved with the offer in it, the pending entry is cleared.
+- **Collecting**: proceeds and returned items are credited to the bot's bank
+  and written as pending, with the offer's running collected totals as the
+  target. Next tick the exchange is emptied down to that target, and the
+  pending entry is cleared once the exchange file has saved that too.
+
+On restart the exchange file decides what happened to anything still pending:
+a listing whose offer is not in the book is rolled back into the bot's
+inventory; a collection takes from the exchange only what its target says is
+still owed. A crash at any point therefore neither duplicates nor loses items
+or coins. While the bot file cannot be written, bots leave the exchange alone
+(the error is logged once) and resume when writes succeed again.
+
 - On restart, bots come back `DISABLED`/`ERROR` with their saved items and are
   respawned (if enabled and the master toggle is on) from `IDLE`. A bot still
   carrying noted sale items goes back to the exchange or the bank.
 - Disabling never drops items: the bot finishes its current script step,
-  stops, is saved, and leaves the world.
+  settles pending exchange work (up to 50 ticks), is saved, and leaves the
+  world.
 - Bots have negative account ids, so they never touch the account save path
   (`AccountRegistry` skips them) or the central session tables.
 
@@ -216,15 +231,14 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
 
 ## Limitations
 
-- The game-facing code (`world/`, scripts, interface) could not be compiled or
-  run in the environment it was written in; only `core/` and `api/exchange`
-  were compiled and unit-tested. Expect a first in-game shakedown.
+- The game-facing code (`world/` engine adapters, scripts, interface) could not
+  be compiled or run in the environment it was written in; `core/`, the file
+  store, the exchange adapter and the Grand Exchange book were compiled and
+  unit-tested. Expect a first in-game shakedown.
 - Site coordinates and routes are unverified. Routes cannot cross closed doors.
-- Bots are visible through a headless player-info avatar (`HeadlessSessions`);
-  if RSProt rejects an avatar without a session the bot still works but is
-  invisible (a warning is logged).
+- Bots are visible through the session-less player-info avatar
+  (`BotSessions`) that castle-wars bots also use.
 - Bot items from a crash between saves: up to ~100 ticks of freshly gathered
   items can be lost (never duplicated), since bots save on every bank, listing
   and collection, and otherwise every 100 ticks.
-- The Grand Exchange has no client interface yet; players use `::ge`.
 - Kit, levels and site changes require the bot to be disabled.

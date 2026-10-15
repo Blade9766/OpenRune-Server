@@ -6,8 +6,6 @@ import org.rsmod.api.player.stat.agilityLvl
 import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.api.script.onOpLoc2
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocInfo
@@ -29,11 +27,7 @@ constructor(private val locRepo: LocRepository, private val worldRepo: WorldRepo
 
         onOpLoc1("loc.dwarf_mines_sc_wall_crack") { squeezeThroughCrevice(it.loc) }
 
-        onOpLoc1("loc.dragon_slayer_qip_magic_door") { openMagicDoor(it.loc) }
-
-        onOpLoc1("loc.oraclechestshut") { openOracleChest(it.loc) }
-        onOpLoc1("loc.oraclechestopen") { mes("You search the chest but find nothing.") }
-        onOpLoc2("loc.oraclechestopen") { locRepo.change(it.loc, "loc.oraclechestshut", CHEST_OPEN_CYCLES) }
+        // Thalzar's door and chest belong to Dragon Slayer; see quest/../dragonslayer/MagicDoor.
     }
 
     private suspend fun ProtectedAccess.useStairs(dest: CoordGrid) {
@@ -70,72 +64,8 @@ constructor(private val locRepo: LocRepository, private val worldRepo: WorldRepo
         spam("You climb your way through the narrow crevice.")
     }
 
-    private suspend fun ProtectedAccess.openMagicDoor(door: BoundLocInfo) {
-        arriveDelay()
-        if (!QuestRequirements.hasCompleted(player, DRAGON_SLAYER)) {
-            mes("There is something in this door for me to put objects in.")
-            return
-        }
-        val fromWest = coords.x < door.coords.x
-        val centre = door.coords.translateZ(1)
-        val approach = centre.translateX(if (fromWest) -1 else 1)
-        val exit = centre.translateX(if (fromWest) 1 else -1)
-
-        if (coords != approach) {
-            playerWalk(approach)
-            delay(1)
-        }
-        mes("The door opens...")
-        worldRepo.locAnim(door, "seq.dragon_slayer_qip_magic_door_open")
-        delay(MAGIC_DOOR_OPEN_CYCLES)
-
-        val closedDoor = LocInfo(door.layer, door.coords, door.entity)
-        val leftPanel = spawn(door.coords.translateZ(2), "loc.dragon_slayer_qip_magic_door_left", LocAngle.North, LocShape.CentrepieceStraight)
-        val middlePanel = spawn(centre, "loc.dragon_slayer_qip_magic_door2", LocAngle.South, LocShape.WallStraight)
-        val eastWall = spawn(centre.translateX(1), INVISIBLE_WALL, LocAngle.West, LocShape.WallL)
-        val westWall = spawn(centre.translateX(-1), INVISIBLE_WALL, LocAngle.East, LocShape.WallL)
-        locRepo.del(closedDoor, Int.MAX_VALUE)
-        spawn(door.coords, "loc.dragon_slayer_qip_magic_door_right", LocAngle.North, LocShape.CentrepieceStraight)
-        teleport(exit)
-        delay(PANEL_CYCLES)
-
-        locRepo.del(leftPanel, Int.MAX_VALUE)
-        locRepo.del(middlePanel, Int.MAX_VALUE)
-        spawn(door.coords, "loc.dragon_slayer_qip_magic_door_open", LocAngle.North, LocShape.CentrepieceStraight)
-        delay(1)
-
-        locRepo.del(eastWall, Int.MAX_VALUE)
-        locRepo.del(westWall, Int.MAX_VALUE)
-        delay(1)
-
-        locRepo.add(closedDoor, Int.MAX_VALUE)
-    }
-
     private fun spawn(coords: CoordGrid, loc: String, angle: LocAngle, shape: LocShape): LocInfo =
         locRepo.add(coords, loc, Int.MAX_VALUE, angle, shape)
-
-    private suspend fun ProtectedAccess.openOracleChest(chest: BoundLocInfo) {
-        arriveDelay()
-        mesbox("As you open the chest, you notice an inscription on the lid:")
-        mesbox(
-            "Here I rest the map to my beloved home. To whoever finds it, I beg of you, let it be. I was " +
-                "honour-bound not to destroy the map piece, but I have used all my magical skill to keep it " +
-                "from being recovered.",
-        )
-        mesbox(
-            "This map leads to the lair of the beast that destroyed my home, devoured my family, and burned " +
-                "to a cinder all that I love. But revenge would not benefit me now, and to disturb this beast " +
-                "is to risk bringing its wrath down upon another land.",
-        )
-        mesbox(
-            "I cannot stop you from taking this map piece now, but think on this: if you can slay the Dragon " +
-                "of Crandor, you are a greater hero than my land ever produced. There is no shame in backing " +
-                "out now.",
-        )
-        anim("seq.human_openchest")
-        soundSynth(CHEST_OPEN_SOUND)
-        locRepo.change(chest, "loc.oraclechestopen", CHEST_OPEN_CYCLES)
-    }
 
     private companion object {
         val FALADOR_HOUSE = CoordGrid(3061, 3377, 0)
@@ -155,8 +85,5 @@ constructor(private val locRepo: LocRepository, private val worldRepo: WorldRepo
         const val MAGIC_DOOR_OPEN_CYCLES = 6
         const val PANEL_CYCLES = 3
         const val INVISIBLE_WALL = "loc.inviswall"
-
-        const val CHEST_OPEN_SOUND = 52
-        const val CHEST_OPEN_CYCLES = 500
     }
 }

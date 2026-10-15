@@ -1,0 +1,210 @@
+[[varp]]
+isServerOnly = true
+id = "varp.dream_mentor_recent_food"
+scope = "Temp"
+transmit = "Never"
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.dream_mentor_food_a"
+varp = "varp.dream_mentor_recent_food"
+startBit = 0
+endBit = 15
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.dream_mentor_food_b"
+varp = "varp.dream_mentor_recent_food"
+startBit = 16
+endBit = 31
+
+# Spellbook Swap: set while the player is borrowing another spellbook for one spell.
+[[varp]]
+isServerOnly = true
+id = "varp.dream_mentor_spellbook_swap"
+scope = "Temp"
+transmit = "Never"
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.dream_mentor_swapped"
+varp = "varp.dream_mentor_spellbook_swap"
+startBit = 0
+endBit = 0
+
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_bank_objs"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.logs"
+1 = "obj.dragon_chainbody"
+2 = "obj.barrows_ahrim_body"
+3 = "obj.barrows_karil_body"
+4 = "obj.vial_water"
+5 = "obj.chisel"
+6 = "obj.1doseantipoison"
+7 = "obj.lobster"
+8 = "obj.hammer"
+9 = "obj.knife"
+10 = "obj.cert_magic_logs"
+13 = "obj.plantpot_empty"
+14 = "obj.2dose1strength"
+15 = "obj.dragon_med_helm"
+16 = "obj.splitbark_helm"
+17 = "obj.robinhoodhat"
+18 = "obj.coins"
+19 = "obj.abyssal_whip"
+20 = "obj.staff_of_zaros"
+21 = "obj.magic_shortbow"
+22 = "obj.cert_ranarr_weed"
+23 = "obj.shark"
+24 = "obj.bucket_empty"
+25 = "obj.rope"
+26 = "obj.barrows_torag_legs"
+27 = "obj.barrows_ahrim_legs"
+28 = "obj.black_dragonhide_chaps"
+29 = "obj.magictraining_infinityboots"
+30 = "obj.boots_ranger"
+31 = "obj.adamant_armoured_boots"
+33 = "obj.airrune"
+34 = "obj.bloodrune"
+35 = "obj.cosmicrune"
+
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_bank_counts"
+keyType = "INT"
+valueType = "INT"
+
+[enum.values]
+10 = 1464
+18 = 230000
+22 = 594
+33 = 52584
+34 = 3524
+35 = 9864
+
+# Which slot of Cyrisus's chest each wearable piece in his bank fills:
+# 0 weapon, 1 helm, 2 body, 3 legs, 4 boots.
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_armour_slots"
+keyType = "INT"
+valueType = "INT"
+
+[enum.values]
+1 = 2
+2 = 2
+3 = 2
+15 = 1
+16 = 1
+17 = 1
+19 = 0
+20 = 0
+21 = 0
+26 = 3
+27 = 3
+28 = 3
+29 = 4
+30 = 4
+31 = 4
+
+# The fighting style each wearable piece suits, in `varbit.dream_combattype` values:
+# 1 melee, 2 magic, 3 ranged.
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_armour_styles"
+keyType = "INT"
+valueType = "INT"
+
+[enum.values]
+2 = 1
+15 = 1
+19 = 1
+27 = 1
+30 = 1
+1 = 2
+17 = 2
+20 = 2
+28 = 2
+29 = 2
+3 = 3
+16 = 3
+21 = 3
+26 = 3
+31 = 3
+
+# Humidify: each empty vessel (or clay) in the inventory and what it becomes, paired by index.
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_humidify_from"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.bucket_empty"
+1 = "obj.jug_empty"
+2 = "obj.bowl_empty"
+3 = "obj.vial_empty"
+4 = "obj.fishbowl_empty"
+5 = "obj.clay"
+6 = "obj.dream_vial_empty"
+7 = "obj.watering_can_0"
+8 = "obj.watering_can_1"
+9 = "obj.watering_can_2"
+10 = "obj.watering_can_3"
+11 = "obj.watering_can_4"
+12 = "obj.watering_can_5"
+13 = "obj.watering_can_6"
+14 = "obj.watering_can_7"
+15 = "obj.water_skin0"
+16 = "obj.water_skin1"
+17 = "obj.water_skin2"
+18 = "obj.water_skin3"
+
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_humidify_to"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.bucket_water"
+1 = "obj.jug_water"
+2 = "obj.bowl_water"
+3 = "obj.vial_water"
+4 = "obj.fishbowl_water"
+5 = "obj.softclay"
+6 = "obj.dream_vial_water"
+7 = "obj.watering_can_8"
+8 = "obj.watering_can_8"
+9 = "obj.watering_can_8"
+10 = "obj.watering_can_8"
+11 = "obj.watering_can_8"
+12 = "obj.watering_can_8"
+13 = "obj.watering_can_8"
+14 = "obj.watering_can_8"
+15 = "obj.water_skin4"
+16 = "obj.water_skin4"
+17 = "obj.water_skin4"
+18 = "obj.water_skin4"
+
+# The Hunter kit's contents, in the order it empties out.
+[[enum]]
+isServerOnly = true
+id = "enum.dream_mentor_hunter_kit"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.noose_wand"
+1 = "obj.hunting_butterfly_net"
+2 = "obj.hunting_ojibway_bird_snare"
+3 = "obj.hunting_snare"
+4 = "obj.hunting_teasing_stick"
+5 = "obj.torch_unlit"
+6 = "obj.hunting_box_trap"
+7 = "obj.ii_impling_jar"

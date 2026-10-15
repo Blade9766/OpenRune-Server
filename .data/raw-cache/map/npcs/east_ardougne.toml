@@ -219,10 +219,6 @@ npc = "npc.eaglepeak_zookeeper_charlie"
 coords = "0_40_51_47_0"
 
 [[spawn]]
-npc = "npc.edmond"
-coords = "0_40_52_8_6"
-
-[[spawn]]
 npc = "npc.edmond_top"
 coords = "0_40_52_8_6"
 
@@ -1318,10 +1314,6 @@ coords = "0_31_72_60_36"
 npc = "npc.paladin_west_f"
 coords = "0_31_72_59_24"
 
-[[spawn]]
-npc = "npc.regicide_evil_elf1"
-coords = "0_31_72_60_20"
-
 ## Zenesha's Plate Mail Body Shop
 
 [[spawn]]
@@ -1330,3 +1322,13 @@ coords = "0_41_51_29_31"
 
 ## Zenesha's Plate Mail Body Shop End
 
+
+[[spawn]]
+npc = "npc.ikov_lucien1"
+coords = "0_40_51_14_57"
+
+## Wizard Cromperty
+
+[[spawn]]
+npc = "npc.cromperty_pre_diary"
+coords = "0_41_51_61_61"

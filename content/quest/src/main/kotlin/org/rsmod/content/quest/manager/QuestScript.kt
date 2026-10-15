@@ -3,7 +3,6 @@ package org.rsmod.content.quest.manager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -41,7 +40,9 @@ data class QuestReward(
     val xp: Map<String, Double> = emptyMap(),
     val items: List<Pair<String, Int>> = emptyList(),
     val extraText: String? = null,
-    val itemLabels: Map<String, String> = emptyMap()
+    /** Replaces the generated reward-scroll lines, for quests whose rewards do not fit in six. */
+    val scrollLines: List<String>? = null,
+    val itemLabels: Map<String, String> = emptyMap(),
 )
 
 @QuestJournalDsl
@@ -55,6 +56,7 @@ class QuestRewardBuilder {
     private val _items = mutableListOf<Pair<String, Int>>()
     private val _itemLabels = mutableMapOf<String, String>()
     private var _extraText: String? = null
+    private var _scrollLines: List<String>? = null
 
     fun xp(skill: String, amount: Double) {
         _xp[skill] = amount
@@ -69,7 +71,11 @@ class QuestRewardBuilder {
         _extraText = text
     }
 
-    fun build(): QuestReward = QuestReward(_xp, _items, _extraText, _itemLabels)
+    fun scroll(vararg lines: String) {
+        _scrollLines = lines.toList()
+    }
+
+    fun build(): QuestReward = QuestReward(_xp, _items, _extraText, _scrollLines, _itemLabels)
 }
 
 abstract class QuestScript(
@@ -77,6 +83,12 @@ abstract class QuestScript(
     val questVarp: String,
     val rewards: QuestReward,
     val completedQuestItemDisplay: ItemRewardDisplay,
+    /**
+     * Js5 group of the jingle played with the completion scroll (one of the `Quest.QUEST_COMPLETE_*`
+     * constants); longer quests pass their own variant.
+     */
+    val completionJingle: Int = Quest.DEFAULT_COMPLETION_JINGLE,
+    /** Stage varbit for quests whose varp is shared with unrelated flags; see [Quest.questVarbit]. */
     val questVarbit: String? = null,
     val closeDialogue: QuestClose = QuestClose.OnFinished,
     val closeScroll: QuestClose = QuestClose.Never,
@@ -88,6 +100,7 @@ abstract class QuestScript(
             questVarp,
             completedQuestItemDisplay,
             rewards,
+            completionJingle,
             questVarbit,
             closeDialogue,
             closeScroll,
@@ -114,8 +127,7 @@ abstract class QuestScript(
         )
 
         onPlayerLogin {
-            quest.migrateLegacyStage(player)
-            VarPlayerIntMapSetter.set(player, questVarbit ?: questVarp, quest.getQuestStage(player))
+            quest.syncState(player)
         }
 
         this.init()

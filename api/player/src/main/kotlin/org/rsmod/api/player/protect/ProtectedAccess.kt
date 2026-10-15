@@ -62,6 +62,7 @@ import org.rsmod.api.player.hit.queueImpactHit
 import org.rsmod.api.player.hit.takeInstantHit
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.input.ResumePCountDialogInput
+import org.rsmod.api.player.input.ResumePNameDialogInput
 import org.rsmod.api.player.input.ResumePObjDialogInput
 import org.rsmod.api.player.input.ResumePStringDialogInput
 import org.rsmod.api.player.input.ResumePauseButtonInput
@@ -395,8 +396,12 @@ public class ProtectedAccess(
         return false
     }
 
-    public fun anim(seq: String, delay: Int = 0) {
-        player.anim(seq, delay)
+    public fun anim(seq: String, delay: Int = 0, priority: Int? = null) {
+        if (priority == null) {
+            player.anim(seq, delay)
+        } else {
+            player.anim(seq, delay, priority)
+        }
     }
 
     public fun resetAnim() {
@@ -2111,6 +2116,16 @@ public class ProtectedAccess(
     public suspend fun pauseButton(): ResumePauseButtonInput = await(ResumePauseButtonInput::class)
 
     /**
+     * Suspends the coroutine until the client answers a name dialog - one it can resume on its own,
+     * as the house advertisement board's Enter House does, without a prompt being shown.
+     *
+     * @throws ProtectedAccessLostException if the player could not retain protected access after
+     *   the coroutine suspension.
+     * @see [await]
+     */
+    public suspend fun nameDialogInput(): ResumePNameDialogInput = await(ResumePNameDialogInput::class)
+
+    /**
      * @throws ProtectedAccessLostException if the player could not retain protected access after
      *   the coroutine suspension.
      * @see [resumePauseButtonWithProtectedAccess]
@@ -2704,7 +2719,7 @@ public class ProtectedAccess(
         player.facePathingEntitySquare(npc)
         player.ifChatNpcSpecific(
             title,
-            RSCM.getReverseMapping(RSCMType.NPC, npc.type.id),
+            RSCM.getReverseMapping(RSCMType.NPC, npc.visType.id),
             text,
             chatanim,
             pauseText,
@@ -2757,7 +2772,7 @@ public class ProtectedAccess(
         player.facePathingEntitySquare(npc)
         player.ifChatNpcSpecific(
             title,
-            RSCM.getReverseMapping(RSCMType.NPC, npc.type.id),
+            RSCM.getReverseMapping(RSCMType.NPC, npc.visType.id),
             text,
             chatanim,
             pauseText,
@@ -3714,13 +3729,7 @@ public class ProtectedAccess(
         }
     }
 
-    private fun Npc.resolveVisName(): String {
-        if (!type.isMultiNpc) {
-            return type.name
-        }
-        val visType = npcVisType(this)
-        return visType.name
-    }
+    private fun Npc.resolveVisName(): String = npcVisType(this).name
 
     // The player should not be able to trigger a manual logout (e.g., by clicking the logout
     // button) if the server has already initiated a logout through other means.

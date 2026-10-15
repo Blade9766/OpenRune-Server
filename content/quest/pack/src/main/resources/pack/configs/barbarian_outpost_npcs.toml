@@ -1,0 +1,7 @@
+[[npc]]
+isServerOnly = true
+id = "npc.barbguard1"
+inherit = "npc.barbguard1"
+wanderRange = 0
+defaultMode = "None"
+moveRestrict = "NoMove"

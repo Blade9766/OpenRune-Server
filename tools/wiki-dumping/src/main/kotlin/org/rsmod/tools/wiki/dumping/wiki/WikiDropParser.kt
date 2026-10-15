@@ -1,5 +1,7 @@
 package org.rsmod.tools.wiki.dumping.wiki
 
+import org.rsmod.tools.wiki.dumping.DropVariantAreas
+
 enum class WikiDropSection {
     Guaranteed,
     Main,
@@ -15,6 +17,9 @@ data class ParsedWikiDrop(
     val wikiNotes: WikiDropNotes = WikiDropNotes(),
     val isNothing: Boolean = false,
     val isNoted: Boolean = false,
+    val area: String? = null,
+    val wildernessSlayerTask: Boolean = false,
+    val darkTotemPiece: Boolean = false,
 )
 
 data class ParsedNpcDropTable(
@@ -28,7 +33,15 @@ data class ParsedNpcDropTable(
 object WikiDropParser {
     private val npcIdPattern = Regex("""(?im)\|id(\d+)\s*=\s*([0-9,\s]+)""")
     private val dropVersionPattern = Regex("""(?im)\|dropversion(\d+)\s*=\s*(.+)$""")
-    private val dropTableHeadingPattern = Regex("""(?m)^==(Drop table \d+|Drops)==\s*$""")
+    private val dropTableHeadingPattern =
+        Regex("""(?im)^==\s*(Drop table \d+|[^=\n]*\bdrops\b[^=\n]*?)\s*==\s*$""")
+    private val numberedDropTablePattern = Regex("""(?i)^Drop table \d+$""")
+    private val tableHeadDropVersionPattern = Regex("""\{\{DropsTableHead\|[^}]*?dropversion\s*=\s*([^|}]+)""")
+    private val infoboxVersionPattern = Regex("""(?im)\|version(\d+)\s*=\s*(.+)$""")
+    private val alternateRewardSectionPattern = Regex("""(?i)free-to-play|\bf2p\b|\bdiary\b""")
+    private val blockDropVersionPattern = Regex("""(?im)^\s*\|dropversion\s*=\s*(.+)$""")
+    private val blockIdPattern = Regex("""(?im)^\s*\|id\s*=\s*([\d,\s]+)$""")
+    private val blockCombatPattern = Regex("""(?im)^\s*\|combat\s*=\s*(\d+)""")
     private val dropVariantHeadingPattern = Regex("""(?m)^={3}(?!=)\s*(.+?)\s*={3}(?!=)\s*$""")
 
     fun parseNpcIds(wikitext: String): List<Int> = WikiInfoboxIds.allNpcIds(wikitext)
@@ -62,13 +75,15 @@ object WikiDropParser {
     }
 
     fun parseAllDropTables(wikitext: String): List<ParsedNpcDropTable> {
-        val sections = parseDropTableSections(wikitext)
-        if (sections.isEmpty()) {
+        val allSections = parseDropTableSections(wikitext)
+        if (allSections.isEmpty()) {
             return emptyList()
         }
 
         val npcByTable = parseNpcIdsByDropTable(wikitext)
         val fallbackNpcIds = parseNpcIds(wikitext)
+        val sections = dropAlternateRewardSections(allSections)
+        val namedSectionIds = resolveNamedSectionNpcIds(wikitext, sections, fallbackNpcIds)
 
         return sections.flatMap { (tableName, body) ->
             val variants =
@@ -84,7 +99,10 @@ object WikiDropParser {
                         variantName.isNotBlank() ->
                             npcIdsForDropVariant(wikitext, variantName, fallbackNpcIds)
                         npcByTable.containsKey(tableName) -> npcByTable.getValue(tableName)
+                        namedSectionIds.containsKey(tableName) -> namedSectionIds.getValue(tableName)
                         sections.size == 1 && variants.size == 1 -> fallbackNpcIds
+                        tableName.equals("Drops", ignoreCase = true) && variants.size == 1 ->
+                            fallbackNpcIds - namedSectionIds.values.flatten().toSet()
                         else -> emptyList()
                     }
 
@@ -97,6 +115,116 @@ object WikiDropParser {
                 )
             }
         }
+    }
+
+    private fun isNamedDropSection(tableName: String): Boolean =
+        !tableName.equals("Drops", ignoreCase = true) && !numberedDropTablePattern.matches(tableName)
+
+    /**
+     * Free-to-play and achievement-diary sections share npc ids with the standard table; the server
+     * rolls the members/regular table for those npcs.
+     */
+    private fun dropAlternateRewardSections(sections: List<Pair<String, String>>): List<Pair<String, String>> {
+        val kept =
+            sections.filterNot { (name, _) ->
+                isNamedDropSection(name) && alternateRewardSectionPattern.containsMatchIn(name)
+            }
+        return kept.ifEmpty { sections }
+    }
+
+    private class InfoboxVersion(
+        val ids: List<Int>,
+        val dropVersions: List<String>,
+        val version: String,
+    )
+
+    /**
+     * Maps named drop sections (e.g. `==Level 82, 87, and 94 drops==`, `==Drops (Armed)==`) to npc ids.
+     * A section claims an infobox version when its `DropsTableHead` dropversions match the version's
+     * primary dropversion, then any of its dropversions, then a level number from the heading. Each
+     * version goes to the first section that claims it, so two sections never share an npc.
+     */
+    private fun resolveNamedSectionNpcIds(
+        wikitext: String,
+        sections: List<Pair<String, String>>,
+        fallbackNpcIds: List<Int>,
+    ): Map<String, List<Int>> {
+        val named = sections.filter { (name, _) -> isNamedDropSection(name) }
+        if (named.isEmpty()) {
+            return emptyMap()
+        }
+
+        val versions =
+            WikiText.extractNpcInfoboxBlocks(wikitext)
+                .flatMap(::parseInfoboxVersions)
+                .withIndex()
+                .associate { it.index to it.value }
+
+        if (versions.isEmpty()) {
+            val first = named.first().first
+            return mapOf(first to fallbackNpcIds)
+        }
+
+        val unclaimed = versions.keys.toMutableSet()
+        val result = linkedMapOf<String, List<Int>>()
+        val matchers: List<(String, String, InfoboxVersion) -> Boolean> =
+            listOf(
+                { _, body, v -> v.dropVersions.firstOrNull()?.let { tableHeadMatches(body, it) } == true },
+                { _, body, v -> v.dropVersions.any { tableHeadMatches(body, it) } },
+                { heading, _, v -> headingLevelMatches(heading, v.version) },
+            )
+        for (matcher in matchers) {
+            for ((heading, body) in named) {
+                val claimed = unclaimed.filter { index -> matcher(heading, body, versions.getValue(index)) }
+                if (claimed.isEmpty()) {
+                    continue
+                }
+                unclaimed -= claimed.toSet()
+                result[heading] = (result[heading].orEmpty() + claimed.flatMap { versions.getValue(it).ids }).distinct().sorted()
+            }
+        }
+
+        if (result.isEmpty() && named.size == 1) {
+            result[named.first().first] = fallbackNpcIds
+        }
+        return result
+    }
+
+    /** One infobox block; pages with several blocks restart `id1..` and put a shared `dropversion` on each. */
+    private fun parseInfoboxVersions(block: String): List<InfoboxVersion> {
+        fun tokens(raw: String?): List<String> = raw.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }
+
+        val blockDropVersions = tokens(blockDropVersionPattern.find(block)?.groupValues?.get(1))
+        val blockVersion = blockCombatPattern.find(block)?.groupValues?.get(1)?.let { "Level $it" }.orEmpty()
+        val dropVersionsByIndex = dropVersionPattern.findAll(block).associate { it.groupValues[1].toInt() to tokens(it.groupValues[2]) }
+        val versionByIndex = infoboxVersionPattern.findAll(block).associate { it.groupValues[1].toInt() to it.groupValues[2].trim() }
+
+        val indexed =
+            npcIdPattern.findAll(block).map { match ->
+                val index = match.groupValues[1].toInt()
+                InfoboxVersion(
+                    ids = parseIdList(match.groupValues[2]),
+                    dropVersions = dropVersionsByIndex[index] ?: blockDropVersions,
+                    version = versionByIndex[index] ?: blockVersion,
+                )
+            }.toList()
+        if (indexed.isNotEmpty()) {
+            return indexed
+        }
+
+        val bareIds = blockIdPattern.find(block)?.groupValues?.get(1)?.let(::parseIdList).orEmpty()
+        return if (bareIds.isEmpty()) emptyList() else listOf(InfoboxVersion(bareIds, blockDropVersions, blockVersion))
+    }
+
+    private fun tableHeadMatches(body: String, dropVersion: String): Boolean =
+        tableHeadDropVersionPattern.findAll(body).any { it.groupValues[1].trim().equals(dropVersion, ignoreCase = true) }
+
+    private fun headingLevelMatches(heading: String, version: String): Boolean {
+        val level = Regex("""(?i)^Level (\d+)\b""").find(version)?.groupValues?.get(1) ?: return false
+        if (!heading.contains("level", ignoreCase = true)) {
+            return false
+        }
+        return Regex("""\d+""").findAll(heading).any { it.value == level }
     }
 
     /** Splits `==Drops==` on infobox drop-version headings (e.g. `===Wilderness Slayer Cave===`), not item subsections. */
@@ -502,13 +630,44 @@ object WikiDropParser {
     private fun parseDropsFromBody(body: String): List<ParsedWikiDrop> {
         val subsections = splitDropSubsections(body)
         val parsed = mutableListOf<ParsedWikiDrop>()
+        val primaryDropVersion = tableHeadDropVersion(body)
 
         for ((heading, sectionBody) in subsections) {
             val section = classifySection(heading)
-            parsed += parseTemplatesInSection(sectionBody, section, heading)
+            if (section != WikiDropSection.Tertiary) {
+                parsed += parseTemplatesInSection(sectionBody, section, heading)
+                continue
+            }
+            if (heading.contains("wilderness slayer", ignoreCase = true)) {
+                parsed += parseTemplatesInSection(sectionBody, section, heading).map { it.copy(wildernessSlayerTask = true) }
+                continue
+            }
+            val location = otherLocationTertiaryVersion(sectionBody, primaryDropVersion)
+            if (location == null) {
+                parsed += parseTemplatesInSection(sectionBody, section, heading)
+                continue
+            }
+            val area = DropVariantAreas.areasForVariant(location).singleOrNull() ?: continue
+            parsed += parseTemplatesInSection(sectionBody, section, heading).map { it.copy(area = area) }
         }
 
         return parsed
+    }
+
+    private fun tableHeadDropVersion(body: String): String? =
+        tableHeadDropVersionPattern.find(body)?.groupValues?.get(1)?.trim()
+
+    /**
+     * Location-only tertiaries (`===Chasm of Fire tertiary===`) carry their own dropversion. They
+     * are gated to that version's area, or left out when it maps to no single area so they are
+     * never rolled everywhere.
+     */
+    private fun otherLocationTertiaryVersion(subsectionBody: String, primaryDropVersion: String?): String? {
+        val version = tableHeadDropVersion(subsectionBody) ?: return null
+        if (primaryDropVersion == null || version.equals(primaryDropVersion, ignoreCase = true)) {
+            return null
+        }
+        return version
     }
 
     private fun parseDropTableSections(wikitext: String): List<Pair<String, String>> {
@@ -598,6 +757,8 @@ object WikiDropParser {
                         ),
                 )
         }
+
+        parsed += WikiDropTableTemplates.expand(body, subsection)
 
         return parsed
     }

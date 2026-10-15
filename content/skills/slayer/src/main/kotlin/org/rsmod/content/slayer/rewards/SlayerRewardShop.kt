@@ -45,20 +45,22 @@ internal object SlayerRewardShop {
 
         val stackPerSet = slayer_item_rewards_quantities.find { it.key.id == type.id }?.value ?: 1
         val totalItems = affordableSets * stackPerSet
-        val totalCost = affordableSets * costPerSet
 
-        if (!SlayerRewardsPoints.spendPoints(access.player, totalCost)) {
-            access.mes("You don't have enough Slayer points to purchase this.")
-            return
+        val delivered = access.invAdd(access.inv, type.internalName, totalItems, strict = false).completed()
+        val deliveredSets = delivered / stackPerSet
+        val partialSet = delivered % stackPerSet
+        if (partialSet > 0) {
+            access.invDel(access.inv, type.internalName, partialSet, strict = false)
         }
-
-        val result = access.invAdd(access.inv, type.internalName, totalItems, strict = false)
-        if (result.err != null) {
-            SlayerRewardsPoints.addPoints(access.player, totalCost)
+        if (deliveredSets <= 0) {
             access.mes("Not enough space in your inventory.")
             return
         }
+        if (deliveredSets < affordableSets) {
+            access.mes("Not enough space in your inventory.")
+        }
 
+        SlayerRewardsPoints.spendPoints(access.player, deliveredSets * costPerSet)
         SlayerRewardsPoints.syncPoints(access)
     }
 

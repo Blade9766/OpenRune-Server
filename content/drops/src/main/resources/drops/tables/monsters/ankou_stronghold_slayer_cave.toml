@@ -1,0 +1,103 @@
+id = "Ankou (Stronghold Slayer Cave) Drops"
+npcs = ["npc.sos_death_ankou_strongholdcave", "npc.sos_death_ankou_strongholdcave_2", "npc.sos_death_ankou_strongholdcave_3"]
+
+[[guaranteed]]
+obj = "obj.bones"
+count = 1
+
+[main]
+total = 100
+name = "Ankou (Stronghold Slayer Cave) Drops"
+
+[[main.entries]]
+weight = 1
+obj = "obj.black_knife"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.black_robe"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.deathrune"
+count = 10
+
+[[main.entries]]
+weight = 6
+obj = "obj.bloodrune"
+count = 11
+
+[[main.entries]]
+weight = 4
+obj = "obj.adamant_arrow"
+count = "5..14"
+
+[[main.entries]]
+weight = 7
+obj = "obj.lawrune"
+count = 2
+
+[[main.entries]]
+weight = 3
+obj = "obj.bloodrune"
+count = 5
+
+[[main.entries]]
+weight = 5
+obj = "obj.cert_blankrune_high"
+count = 15
+
+[[main.entries]]
+weight = 2
+obj = "obj.cert_mithril_ore"
+count = "3..7"
+
+[[main.entries]]
+weight = 33
+obj = "obj.coins"
+count = 8
+
+[[main.entries]]
+weight = 10
+obj = "obj.coins"
+count = "5..204"
+
+[[main.entries]]
+weight = 2
+obj = "obj.bass"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.weapon_poison"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.bowl_mushroom_fried"
+count = 1
+
+[[main.entries]]
+weight = 3
+shared = "herb"
+
+[[main.entries]]
+weight = 1
+shared = "seed"
+
+[[main.entries]]
+weight = 2
+shared = "gem"
+
+[[main.entries]]
+weight = 7
+nothing = true
+
+[[tertiary]]
+numerator = 1
+denominator = 512
+obj = "obj.trail_clue_hard_map001"
+count = 1
+clue_scroll_box = true

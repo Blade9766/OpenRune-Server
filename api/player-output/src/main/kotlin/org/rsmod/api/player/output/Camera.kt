@@ -1,8 +1,6 @@
 package org.rsmod.api.player.output
 
-import net.rsprot.protocol.game.outgoing.camera.CamLookAtV2
 import net.rsprot.protocol.game.outgoing.camera.CamLookAtV3
-import net.rsprot.protocol.game.outgoing.camera.CamMoveToV2
 import net.rsprot.protocol.game.outgoing.camera.CamMoveToV3
 import net.rsprot.protocol.game.outgoing.camera.CamReset
 import net.rsprot.protocol.game.outgoing.camera.CamShake
@@ -37,17 +35,14 @@ public object Camera {
     }
 
     public fun camLookAt(player: Player, dest: CoordGrid, height: Int, rate: Int, rate2: Int) {
-        player.client.write(CamLookAtV2(dest.x, dest.z, height, rate, rate2))
+        camLookAtV3(player, dest, height, rate, rate2)
     }
 
     public fun camMoveTo(player: Player, dest: CoordGrid, height: Int, rate: Int, rate2: Int) {
-        player.client.write(CamMoveToV2(dest.x, dest.z, height, rate, rate2))
+        camMoveToV3(player, dest, height, rate, rate2)
     }
 
-    /**
-     * V3 encodes signed height and can apply it relative to the previous look-at height; V2 is
-     * unsigned and absolute.
-     */
+    /** Height is signed and can be applied relative to the previous look-at height. */
     public fun camLookAtV3(
         player: Player,
         dest: CoordGrid,
@@ -64,10 +59,7 @@ public object Camera {
         player.client.write(CamLookAtV3(dest.x, dest.z, height, rate, rate2, heightRelative))
     }
 
-    /**
-     * V3 encodes signed height and can apply it relative to the previous move-to height; V2 is
-     * unsigned and absolute.
-     */
+    /** Height is signed and can be applied relative to the previous move-to height. */
     public fun camMoveToV3(
         player: Player,
         dest: CoordGrid,

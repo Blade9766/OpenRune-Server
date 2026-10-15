@@ -1,19 +1,27 @@
 package org.rsmod.content.quest.area.lumbridge
 
+import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onPlayerLogin
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.content.quest.manager.ItemRewardDisplay
 import org.rsmod.content.quest.manager.QuestProgressState
 import org.rsmod.content.quest.manager.QuestScript
+import org.rsmod.content.quest.manager.menu
 import org.rsmod.content.quest.manager.rewards
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.ScriptContext
 
-class CooksAssistant : QuestScript(
+class CooksAssistant @Inject constructor(
+    private val lostTribe: LostTribeQuest,
+    private val zanikTour: ZanikTour,
+) : QuestScript(
     "quest_cooksassistant",
     "varp.cookquest",
     rewards { xp("stat.cooking", 300.0) },
@@ -55,10 +63,21 @@ class CooksAssistant : QuestScript(
     }
 
     private suspend fun Dialogue.cookDialogue(npc: Npc) {
+        if (zanikTour.isTouring(player)) {
+            with(zanikTour) { cookIntro() }
+        }
         when {
             quest.isQuestCompleted(player) -> dialogAfterCook(npc)
-            quest.questState(player) == QuestProgressState.IN_PROGRESS -> dialogDuringCook(npc)
-            else -> dialogQuestNotStarted(npc)
+            quest.questState(player) == QuestProgressState.IN_PROGRESS -> {
+                if (!with(lostTribe) { offerCellarQuestion(Witness.Cook) }) {
+                    dialogDuringCook(npc)
+                }
+            }
+            else -> {
+                if (!with(lostTribe) { offerCellarQuestion(Witness.Cook) }) {
+                    dialogQuestNotStarted(npc)
+                }
+            }
         }
     }
 
@@ -220,18 +239,14 @@ class CooksAssistant : QuestScript(
     private suspend fun Dialogue.dialogAfterCook(npc: Npc) {
         chatNpc(happy, "How is the adventuring going, my friend?")
 
-        when (
-            choice4(
-                "Do you have any other quests for me?",
-                1,
-                "I am getting strong and mighty.",
-                2,
-                "I keep on dying.",
-                3,
-                "Can I use your range?",
-                4,
-            )
-        ) {
+        val options = buildList {
+            add("Do you have any other quests for me?" to 1)
+            lostTribe.cellarQuestion(player, Witness.Cook)?.let { add(it to 5) }
+            add("I am getting strong and mighty." to 2)
+            add("I keep on dying." to 3)
+            add("Can I use your range?" to 4)
+        }
+        when (menu(options)) {
             1 -> chatNpc(sad, "I don't have anything for you to do right now, sorry.")
             2 -> {
                 chatPlayer(angry, "I am getting strong and mighty. Grrr")
@@ -249,6 +264,7 @@ class CooksAssistant : QuestScript(
                 chatNpc(shifty, "Well, that's what the salesman told us anyway...")
                 chatPlayer(confused, "Thanks?")
             }
+            5 -> with(lostTribe) { askAboutCellar(Witness.Cook) }
         }
     }
 

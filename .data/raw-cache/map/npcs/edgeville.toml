@@ -264,3 +264,7 @@ coords = "0_48_54_29_53"
 
 ## Edgeville Path Overlay End
 
+
+[[spawn]]
+npc = "npc.ikov_lucien2"
+coords = "0_48_54_50_34"

@@ -3,14 +3,17 @@ package org.rsmod.content.other.pets.cats
 import jakarta.inject.Inject
 import org.rsmod.api.death.PlayerDeathContext
 import org.rsmod.api.death.PlayerDeathHandling
-import org.rsmod.api.death.PlayerDeathHook
+import org.rsmod.api.death.PlayerDeathItemHook
 import org.rsmod.api.invtx.invDel
 import org.rsmod.api.player.output.mes
 import org.rsmod.content.other.pets.PetFollowers
 import org.rsmod.content.other.pets.followerObj
 
-class CatDeathHook @Inject constructor(private val followers: PetFollowers) : PlayerDeathHook {
-    override fun handleDeath(context: PlayerDeathContext): PlayerDeathHandling? {
+class CatDeathHook @Inject constructor(private val followers: PetFollowers) : PlayerDeathItemHook {
+    override fun beforeDrops(context: PlayerDeathContext, handling: PlayerDeathHandling) {
+        if (handling.keepsEverything) {
+            return
+        }
         val player = context.player
         var lost = false
         if (Cats.forObj(player.followerObj) != null) {
@@ -28,6 +31,5 @@ class CatDeathHook @Inject constructor(private val followers: PetFollowers) : Pl
         if (lost) {
             player.mes("Your cat has run away.")
         }
-        return null
     }
 }

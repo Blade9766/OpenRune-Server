@@ -1,6 +1,7 @@
 package org.rsmod.content.bosses.vardorvis
 
 import jakarta.inject.Inject
+import org.rsmod.api.combatachievements.CombatAchievements
 import org.rsmod.api.config.refs.BaseParams
 import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
@@ -14,13 +15,16 @@ public class VardorvisModule : PluginModule() {
     }
 }
 
-public class VardorvisAwakenedKillHook @Inject constructor() : NpcDeathKillHook {
+public class VardorvisAwakenedKillHook
+@Inject
+constructor(private val achievements: CombatAchievements) : NpcDeathKillHook {
     override fun onKill(context: NpcDeathKillContext) {
         if (context.npc.vars["varn.skip_killcount"] != 1) return
         if (!context.npc.isType("npc.vardorvis")) return
         val varp = context.npc.paramOrNull(BaseParams.killcount_varp_awakened) ?: return
         val count = context.hero.vars[varp] + 1
         VarPlayerIntMapSetter.set(context.hero, varp, count)
+        achievements.checkKillcounts(context.hero)
         val notify = context.npc.paramOrNull(BaseParams.killcount_notify) ?: true
         if (notify) {
             context.hero.mes("Your ${context.npc.name} (Awakened) kill count is: <col=ff0000>$count</col>")

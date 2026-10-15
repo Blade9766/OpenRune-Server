@@ -147,7 +147,13 @@ constructor(
         }
     }
 
-    /** Game thread, via [AccountRegistry.handleLogins]. */
+    /**
+     * Game thread, via [AccountRegistry.handleLogins].
+     *
+     * The outgoing mode is saved again here, in the same step as the swap, because the player kept
+     * playing while the save and load ran; the save from [switch] alone would let anything dropped
+     * or traded since then exist in both the world and the old save.
+     */
     private fun applySwitch(
         player: Player,
         response: AccountLoadResponse.Ok,
@@ -161,33 +167,17 @@ constructor(
             player.mes(player.logoutBlockedMessage())
             return
         }
+        val from = player.worldType
+        var swapping = false
         try {
-            val origin = player.coords
-            val from = player.worldType
             val before = snapshot(player)
-
-            player.persistenceSuspended = true
-
-            clearWorldTypeScopedState(player)
-            for (transform in response.transforms) {
-                transform.apply(player)
-            }
-            player.worldType = target
-            if (response.firstVisitToWorldType) {
-                player.newAccount = true
-            }
-            // The applier reloads `modLevel` from the account row, so a dev realm has to re-grant.
-            if (realm.config.devMode) {
-                player.modLevel = Rights.ADMINISTRATOR
-            }
+            val destination =
+                accountManager.saveThenSwapWorldType(player) {
+                    swapping = true
+                    swapState(player, response, firstVisitSpawn)
+                }
             val after = snapshot(player)
 
-            // The appliers assign `coords` outright, which skips the zone bookkeeping a registered
-            // player needs; put them back and move through the engine instead.
-            val loaded = player.coords
-            val destination =
-                if (response.firstVisitToWorldType) firstVisitSpawn ?: loaded else loaded
-            player.coords = origin
             telejumpTo(player, destination)
 
             // A switch usually lands on the same tile, and the scene is otherwise only resent when
@@ -201,6 +191,7 @@ constructor(
 
             eventBus.publish(WorldTypeChangedEvent(player, from = from, to = target))
 
+            player.persistenceSuspended = false
             player.mes("You are now playing ${target.label}.")
             logger.info {
                 "World type switched: player=${player.username} from='${from.key}' " +
@@ -211,16 +202,56 @@ constructor(
                     "state[$before -> $after]"
             }
         } catch (e: Exception) {
-            // A half-swapped player holds a mix of two saves; the outgoing one is already written.
+            if (!swapping) {
+                logger.warn(e) {
+                    "Could not save before switching world type: player=${player.username} " +
+                        "target='${target.key}'"
+                }
+                player.mes("Could not switch world type right now.")
+                return
+            }
+            // A half-swapped player holds a mix of two saves; both modes are already written, so
+            // persistence stays suspended and the logout save writes nothing.
+            player.persistenceSuspended = true
             player.forceDisconnect = true
             logger.error(e) {
                 "Could not switch world type, disconnecting: player=${player.username} " +
                     "target='${target.key}'"
             }
         } finally {
-            player.persistenceSuspended = false
             inFlight.remove(player.characterId)
         }
+    }
+
+    /** Runs under [AccountManager.saveThenSwapWorldType]; returns where the player should stand. */
+    private fun swapState(
+        player: Player,
+        response: AccountLoadResponse.Ok,
+        firstVisitSpawn: CoordGrid?,
+    ): CoordGrid {
+        val origin = player.coords
+        player.persistenceSuspended = true
+
+        clearWorldTypeScopedState(player)
+        for (transform in response.transforms) {
+            transform.apply(player)
+        }
+        player.worldType = response.worldType
+        if (response.firstVisitToWorldType) {
+            player.newAccount = true
+        } else {
+            player.restoreSavedCoords(realm.config.spawnCoord)
+        }
+        // The applier reloads `modLevel` from the account row, so a dev realm has to re-grant.
+        if (realm.config.devMode) {
+            player.modLevel = Rights.ADMINISTRATOR
+        }
+
+        // The appliers assign `coords` outright, which skips the zone bookkeeping a registered
+        // player needs; put them back and move through the engine instead.
+        val loaded = player.coords
+        player.coords = origin
+        return if (response.firstVisitToWorldType) firstVisitSpawn ?: loaded else loaded
     }
 
     private fun telejumpTo(player: Player, destination: CoordGrid) {

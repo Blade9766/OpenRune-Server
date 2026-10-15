@@ -101,7 +101,7 @@ count = 1
 
 [[tertiary]]
 numerator = 1
-denominator = 4
+denominator = 1
 obj = "obj.rag_goblin_bone"
 count = 1
 quest = "quest_ragandboneman1"

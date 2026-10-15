@@ -87,7 +87,7 @@ public object StandardGpCostCalculations {
         var totalValue = 0
         var exchangeCount = 0
 
-        while (exchangeCount < requestedCount && totalValue + currentCost <= availableCurrency) {
+        while (exchangeCount < requestedCount && totalValue.toLong() + currentCost <= availableCurrency) {
             totalValue += currentCost
             exchangeCount++
             currentCost =
@@ -150,7 +150,7 @@ public object StandardGpCostCalculations {
         var totalValue = 0
         var exchangeCount = 0
 
-        while (exchangeCount < requestedCount && totalValue + currentPrice <= currencyCap) {
+        while (exchangeCount < requestedCount && totalValue.toLong() + currentPrice <= currencyCap) {
             totalValue += currentPrice
             exchangeCount++
             currentPrice =

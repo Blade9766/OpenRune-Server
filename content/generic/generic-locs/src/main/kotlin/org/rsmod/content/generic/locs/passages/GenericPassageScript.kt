@@ -1,0 +1,644 @@
+package org.rsmod.content.generic.locs.passages
+
+import com.github.michaelbull.logging.InlineLogger
+import dev.openrune.ServerCacheManager
+import dev.openrune.definition.constants.ConstantProvider
+import dev.openrune.rscm.RSCM
+import dev.openrune.rscm.RSCMType
+import dev.openrune.types.ObjectServerType
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import org.rsmod.api.config.constants
+import org.rsmod.api.config.refs.params
+import org.rsmod.api.player.events.interact.LocDefaultEvents
+import org.rsmod.api.player.events.interact.OpDefaultEvent
+import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.interact.LocInteractions
+import org.rsmod.api.player.output.ChatType
+import org.rsmod.api.player.output.soundSynth
+import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.repo.loc.LocRepository
+import org.rsmod.api.script.onOpLoc1
+import org.rsmod.api.script.onProtectedEvent
+import org.rsmod.content.generic.locs.doors.DoorTranslations
+import org.rsmod.content.generic.locs.gate.GateTranslations
+import org.rsmod.game.entity.PlayerList
+import org.rsmod.game.loc.BoundLocInfo
+import org.rsmod.game.loc.LocAngle
+import org.rsmod.game.loc.LocInfo
+import org.rsmod.game.loc.LocShape
+import org.rsmod.game.queue.WorldQueueList
+import org.rsmod.map.CoordGrid
+import org.rsmod.plugin.scripts.PluginScript
+import org.rsmod.plugin.scripts.ScriptContext
+
+/**
+ * Catch-all for the doors, gates, ladders, staircases, trapdoors, cave mouths and stiles that no
+ * other script claims. It runs only when a loc op has no type, content or category handler, so
+ * the data-driven door, gate and ladder scripts always take precedence.
+ *
+ * Doors and gates find their open or closed twin by cache name: `metalgateclosedl` and
+ * `metalgateopenl` are the same panel, as are `poordoor` and `poordooropen`, whatever the twin's
+ * display name. A closed panel with a matching panel beside it is one half of a double door or a
+ * two-panel gate, and both halves swing together using the same geometry as `DoubleDoorScript`
+ * (each panel on its own post; the fold-to-one-side fence gates stay with `PicketGate`). A panel with no open form in the cache swings its own model instead of
+ * vanishing. Every panel this script opens is remembered until it resets, so closing it puts the
+ * original panels back exactly where they were.
+ *
+ * Ladders and stairs move the player one level, or between the surface and the dungeon copy of
+ * the map 6400 tiles north, and put them at the foot of the matching stairs on the other level
+ * (see [StairNavigator]). Cave mouths do the same surface/dungeon swap.
+ */
+@Singleton
+class GenericPassageScript
+@Inject
+constructor(
+    private val locRepo: LocRepository,
+    private val locInteractions: LocInteractions,
+    private val stairs: StairNavigator,
+    private val worldQueues: WorldQueueList,
+    private val playerList: PlayerList,
+) : PluginScript() {
+    /** Open panels spawned by this script, keyed by where they stand, and how to undo them. */
+    private val openedPanels = HashMap<PanelKey, OpenedPassage>()
+
+    /** Cache name (without the `loc.` prefix) of every named loc, by id. */
+    private val locNames: Map<Int, String> by lazy {
+        // `ConstantProvider.mappings` is the loaded gameval table; `getMappingProvider()` is an
+        // unrelated default provider that stays empty.
+        val table = ConstantProvider.mappings[RSCMType.LOC.prefix].orEmpty()
+        HashMap<Int, String>(table.size).also { names ->
+            for ((name, id) in table) {
+                names[id] = name.removePrefix("loc.").lowercase()
+            }
+        }
+    }
+
+    /** Open or closed forms that share a door's models but not its name, by the door's id. */
+    private val modelTwins: Map<Int, ObjectServerType> by lazy {
+        val ids = ConstantProvider.mappings[RSCMType.LOC.prefix].orEmpty()
+        val stream =
+            GenericPassageScript::class.java.classLoader.getResourceAsStream(MODEL_TWINS_RESOURCE)
+                ?: return@lazy emptyMap()
+        val twins = HashMap<Int, ObjectServerType>()
+        stream.bufferedReader().useLines { lines ->
+            for (line in lines) {
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue
+                }
+                val (from, to) = line.split('\t', limit = 2)
+                val fromId = ids[from] ?: continue
+                val twin = ids[to]?.let(ServerCacheManager::getObject) ?: continue
+                twins[fromId] = twin
+            }
+        }
+        twins
+    }
+
+    /** Every named loc in the cache grouped by [twinKey]. */
+    private val locsByTwinKey: Map<String, List<ObjectServerType>> by lazy {
+        ServerCacheManager.getObjects().values.filter { it.id in locNames }.groupBy { twinKey(it) }
+    }
+
+    override fun ScriptContext.startup() {
+        onProtectedEvent<LocDefaultEvents.Op1>(OpDefaultEvent.ID) { passage(it.loc, it.type, 0) }
+        onProtectedEvent<LocDefaultEvents.Op2>(OpDefaultEvent.ID) { passage(it.loc, it.type, 1) }
+        onProtectedEvent<LocDefaultEvents.Op3>(OpDefaultEvent.ID) { passage(it.loc, it.type, 2) }
+        // The Varrock manhole's server config climbs straight down from the closed cover.
+        onOpLoc1("loc.manholeclosed") { passage(it.loc, it.type, 0) }
+    }
+
+    suspend fun ProtectedAccess.passage(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+        opIndex: Int,
+    ) {
+        val op = type.actions.getOpOrNull(opIndex)
+        val action = op?.let { Passages.classify(type.name, it, loc.shape) }
+        if (action == null) {
+            mes(constants.dm_default, ChatType.Engine)
+            logger.debug { "No generic passage handling for loc '${type.name}' op=$op type=$type" }
+            return
+        }
+        arriveDelay()
+        when (action) {
+            PassageAction.OpenDoor -> openDoor(loc, type)
+            PassageAction.CloseDoor -> closeDoor(loc, type)
+            PassageAction.OpenTrapdoor -> openTrapdoor(loc, type)
+            PassageAction.CloseTrapdoor -> closeTrapdoor(loc, type)
+            PassageAction.ClimbUp -> climb(loc, type, up = true)
+            PassageAction.ClimbDown -> climb(loc, type, up = false)
+            PassageAction.ClimbEither -> climbEither(loc, type)
+            PassageAction.Enter -> enter()
+            PassageAction.ClimbOver -> climbOver(loc)
+        }
+    }
+
+    /* Doors and gates */
+
+    /**
+     * A panel as it stands in the world. [base] is the loc actually in the map (a multi-loc's
+     * parent for gates such as Al Kharid's) and is what gets deleted or put back; [vis] is the
+     * variant the player sees and is what the open or closed twin is worked out from.
+     */
+    private data class Panel(
+        val coords: CoordGrid,
+        val shape: LocShape,
+        val angle: LocAngle,
+        val base: ObjectServerType,
+        val vis: ObjectServerType,
+    )
+
+    private data class PanelKey(val coords: CoordGrid, val locId: Int)
+
+    /** One separate loc that a door's open form is made of, [dx]/[dz] from the closed origin. */
+    private data class OpenLeaf(val loc: String, val dx: Int, val dz: Int)
+
+    private data class OpenedPassage(val opened: List<Panel>, val closed: List<Panel>)
+
+    private fun ProtectedAccess.openDoor(loc: BoundLocInfo, type: ObjectServerType) {
+        // A panel swinging its own model keeps its `Open` op; a second click closes it.
+        if (openedPanels.containsKey(PanelKey(loc.coords, type.id))) {
+            closeDoor(loc, type)
+            return
+        }
+        val sound = type.paramOrNull(params.opensound)
+        if (sound != null) soundSynth(sound) else soundSynth(DEFAULT_OPEN_SOUND)
+
+        val base = ServerCacheManager.getObject(loc.id) ?: type
+        val clicked = Panel(loc.coords, loc.shape, loc.angle, base, type)
+        val plan = planOpen(clicked)
+        val swingsOntoPlayer =
+            clicked.shape == LocShape.WallDiagonal && plan?.opened?.any { it.coords == coords } == true
+        if (plan == null || swingsOntoPlayer) {
+            val dest = Passages.tileAcross(loc, coords)
+            if (dest == null || !stairs.walkable(dest)) {
+                mes("You can't get through the door from here.")
+                return
+            }
+            stepThrough(loc, type, dest)
+            return
+        }
+        logger.debug {
+            val closed = plan.closed.joinToString { "${it.vis.internalNameOrEmpty()}@${it.coords}/${it.angle}" }
+            val opened = plan.opened.joinToString { "${it.vis.internalNameOrEmpty()}@${it.coords}/${it.angle}" }
+            "Opening passage picket=${clicked.isPicketGate()} closed=[$closed] opened=[$opened]"
+        }
+        for (panel in plan.closed) {
+            val info = findPanel(panel)
+            if (info == null) {
+                logger.warn { "Closed panel not found in map: ${panel.vis.internalNameOrEmpty()} at ${panel.coords}" }
+                continue
+            }
+            locRepo.del(info, DOOR_DURATION)
+        }
+        for (panel in plan.opened) {
+            val key = PanelKey(panel.coords, panel.base.id)
+            locRepo.add(panel.coords, panel.base, DOOR_DURATION, panel.angle, panel.shape) {
+                openedPanels.remove(key)
+            }
+            openedPanels[key] = plan
+        }
+    }
+
+    /**
+     * Opens [loc] (and its partner panel) only long enough for the player to step through, walks
+     * them to the far side and shuts it behind them. For entrances that check requirements, which
+     * must never be left standing open for someone else to follow through.
+     *
+     * Deleting the loc ends the player's script, so the walk starts in the same cycle and the
+     * closing sound is left to the world queue.
+     */
+    suspend fun ProtectedAccess.walkThrough(loc: BoundLocInfo, type: ObjectServerType) {
+        arriveDelay()
+        val dest = Passages.tileAcross(loc, coords)
+        if (dest == null) {
+            mes(constants.dm_default, ChatType.Engine)
+            return
+        }
+        val openSound = type.paramOrNull(params.opensound)
+        if (openSound != null) soundSynth(openSound) else soundSynth(DEFAULT_OPEN_SOUND)
+
+        val base = ServerCacheManager.getObject(loc.id) ?: type
+        val plan = planOpen(Panel(loc.coords, loc.shape, loc.angle, base, type))
+        if (plan == null || loc.shape == LocShape.WallDiagonal) {
+            stepThrough(loc, type, dest)
+        } else {
+            for (panel in plan.closed) {
+                findPanel(panel)?.let { locRepo.del(it, WALK_THROUGH_TICKS) }
+            }
+            for (panel in plan.opened) {
+                locRepo.add(panel.coords, panel.base, WALK_THROUGH_TICKS, panel.angle, panel.shape)
+            }
+            player.walk(dest)
+        }
+
+        val closeSound = type.paramOrNull(params.closesound)
+        val uid = player.uid
+        worldQueues.add(WALK_THROUGH_TICKS) {
+            val walker = uid.resolve(playerList) ?: return@add
+            if (closeSound != null) walker.soundSynth(closeSound) else walker.soundSynth(DEFAULT_CLOSE_SOUND)
+        }
+    }
+
+    /**
+     * Moves the player to [dest] through a door that cannot swing on a hinge: a free-standing
+     * door loc (the Underground Pass temple doors, the Dagannoth pressure doors) or a diagonal
+     * door. The door, and the other leaf beside it, show their open form in place for a moment
+     * when the cache has one; otherwise the door stays standing while the player walks through.
+     *
+     * Swapping the door ends the player's script, so nothing here suspends.
+     */
+    private fun ProtectedAccess.stepThrough(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+        dest: CoordGrid,
+    ) {
+        val split = SPLIT_OPEN_FORMS[type.internalNameOrEmpty()]
+        if (split != null) {
+            locRepo.del(loc, SPLIT_OPEN_TICKS)
+            for (leaf in split) {
+                val coords = loc.coords.translate(leaf.dx, leaf.dz)
+                locRepo.add(coords, leaf.loc, SPLIT_OPEN_TICKS, loc.angle, loc.shape)
+            }
+        } else {
+            val leaves = listOf(loc to type) + neighbouringLeaves(loc, type)
+            for ((leaf, leafType) in leaves) {
+                val open = findTwin(leafType, "Close") ?: continue
+                locRepo.change(leaf, open, PASS_THROUGH_TICKS)
+            }
+        }
+        glideTo(dest, WALK_ANIM, PASS_THROUGH_TICKS)
+    }
+
+    /** Closed doors of the same kind standing on a tile orthogonally beside [loc]. */
+    private fun ProtectedAccess.neighbouringLeaves(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+    ): List<Pair<BoundLocInfo, ObjectServerType>> {
+        if (loc.shape == LocShape.WallDiagonal) {
+            return emptyList()
+        }
+        val leaves = mutableListOf<Pair<BoundLocInfo, ObjectServerType>>()
+        for ((dx, dz) in LEAF_OFFSETS) {
+            for (candidate in locRepo.findAll(loc.coords.translate(dx, dz))) {
+                if (candidate.shape != loc.shape) {
+                    continue
+                }
+                val base = ServerCacheManager.getObject(candidate.entity.id) ?: continue
+                val vis = visibleType(candidate, base)
+                if (vis.name != type.name || vis.actions.getOpOrNull(0) != "Open") {
+                    continue
+                }
+                leaves += BoundLocInfo(candidate, base) to vis
+            }
+        }
+        return leaves
+    }
+
+    /**
+     * Works out where the clicked panel, and its partner if it has one, go when opened. Returns
+     * `null` only for shapes that cannot be swung.
+     */
+    private fun ProtectedAccess.planOpen(clicked: Panel): OpenedPassage? {
+        if (!clicked.shape.isTranslatable()) {
+            return null
+        }
+        // The partner sits at the first offset when the clicked panel is the left one.
+        val partnerRight =
+            findClosedPartner(
+                clicked,
+                DoorTranslations.translateClose(clicked.coords, clicked.shape, clicked.angle),
+            )
+        val partnerLeft =
+            if (partnerRight != null) {
+                null
+            } else {
+                findClosedPartner(
+                    clicked,
+                    DoorTranslations.translateCloseOpposite(
+                        clicked.coords,
+                        clicked.shape,
+                        clicked.angle,
+                    ),
+                )
+            }
+        val left = partnerLeft ?: clicked
+        val right = if (partnerLeft != null) clicked else partnerRight
+
+        val picket = clicked.isPicketGate()
+        val leftOpened = left.opened(isLeft = true, alone = right == null, picket = picket)
+        val rightOpened = right?.opened(isLeft = false, alone = false, picket = picket)
+        return OpenedPassage(
+            opened = listOfNotNull(leftOpened, rightOpened),
+            closed = listOfNotNull(left, right),
+        )
+    }
+
+    /**
+     * Where this closed panel stands once open. Doors, metal gates and castle gates follow
+     * `DoorScript` for a lone panel and `DoubleDoorScript` for a pair: every panel moves one tile
+     * out of the doorway and turns on the post it hangs from, the left panel anticlockwise and
+     * the right panel clockwise. Wooden fence gates ([picket]) follow `PicketGate` instead, both
+     * panels folding back to the same side. With no open form in the cache the closed model
+     * itself is turned on its hinge.
+     */
+    private fun Panel.opened(isLeft: Boolean, alone: Boolean, picket: Boolean): Panel {
+        val openType = findTwin(vis, "Close") ?: vis
+        val (openCoords, openAngle) =
+            when {
+                picket && isLeft -> coords + GateTranslations.leftGateOpen(shape, angle) to angle.turn(3)
+                picket -> coords + GateTranslations.rightGateOpen(shape, angle) to angle.turn(3)
+                isLeft && !alone -> DoorTranslations.translateOpen(coords, shape, angle) to angle.turn(3)
+                else -> DoorTranslations.translateOpen(coords, shape, angle) to angle.turn(1)
+            }
+        return Panel(openCoords, shape, openAngle, base = openType, vis = openType)
+    }
+
+    /**
+     * Wooden fence gates fold both panels to one side, unlike metal and castle gates which swing
+     * like double doors. The cache names them by their fence, and the arena gate is one too.
+     */
+    private fun Panel.isPicketGate(): Boolean {
+        if (shape != LocShape.WallStraight) {
+            return false
+        }
+        val name = vis.internalNameOrEmpty()
+        return PICKET_GATE_NAMES.any { name.contains(it) }
+    }
+
+    /**
+     * A closed panel of the same kind as [like] standing at [coords], facing the same way. The
+     * candidate's visible variant is resolved through the player's vars so a multi-loc gate
+     * matches its neighbour by what the player sees, not by its unnamed parent loc.
+     */
+    private fun ProtectedAccess.findClosedPartner(like: Panel, coords: CoordGrid): Panel? {
+        for (candidate in locRepo.findAll(coords)) {
+            if (candidate.shape != like.shape || candidate.angle != like.angle) {
+                continue
+            }
+            val base = ServerCacheManager.getObject(candidate.entity.id) ?: continue
+            val vis = visibleType(candidate, base)
+            if (vis.name != like.vis.name || vis.actions.getOpOrNull(0) != "Open") {
+                continue
+            }
+            return Panel(candidate.coords, candidate.shape, candidate.angle, base, vis)
+        }
+        return null
+    }
+
+    private fun ProtectedAccess.visibleType(
+        info: LocInfo,
+        base: ObjectServerType,
+    ): ObjectServerType {
+        val bound = BoundLocInfo(info, base)
+        val multi = locInteractions.multiLoc(bound, base, player.vars) ?: return base
+        return ServerCacheManager.getObject(multi.id) ?: base
+    }
+
+    private fun findPanel(panel: Panel): LocInfo? = locRepo.findExact(panel.coords, panel.base)
+
+    private fun ProtectedAccess.closeDoor(loc: BoundLocInfo, type: ObjectServerType) {
+        val tracked = openedPanels[PanelKey(loc.coords, type.id)]
+        val restore = tracked?.closed ?: singleClosed(loc, type)?.let(::listOf) ?: return
+        val closesOntoPlayer =
+            loc.shape == LocShape.WallDiagonal && restore.any { it.coords == coords }
+        if (closesOntoPlayer) {
+            mes("You cannot close the door while you are standing in the doorway.")
+            return
+        }
+        val sound = type.paramOrNull(params.closesound)
+        if (sound != null) soundSynth(sound) else soundSynth(DEFAULT_CLOSE_SOUND)
+
+        val remove =
+            tracked?.opened
+                ?: listOf(Panel(loc.coords, loc.shape, loc.angle, base = type, vis = type))
+        for (panel in remove) {
+            val info = findPanel(panel) ?: continue
+            locRepo.del(info, DOOR_DURATION)
+            openedPanels.remove(PanelKey(panel.coords, panel.base.id))
+        }
+        for (panel in restore) {
+            locRepo.add(panel.coords, panel.base, DOOR_DURATION, panel.angle, panel.shape)
+        }
+    }
+
+    /**
+     * Where an open panel this script did not open (one the map itself left open) goes when
+     * closed, treating it as a lone door or gate.
+     */
+    private fun singleClosed(loc: BoundLocInfo, type: ObjectServerType): Panel? {
+        val closedType = findTwin(type, "Open") ?: return null
+        if (!loc.shape.isTranslatable()) {
+            return null
+        }
+        val panel = Panel(loc.coords, loc.shape, loc.angle, base = type, vis = type)
+        return if (panel.isPicketGate()) {
+            Panel(
+                loc.coords + GateTranslations.leftGateClose(loc.shape, loc.angle),
+                loc.shape,
+                loc.angle.turn(-3),
+                base = closedType,
+                vis = closedType,
+            )
+        } else {
+            Panel(
+                DoorTranslations.translateClose(loc.coords, loc.shape, loc.angle),
+                loc.shape,
+                loc.angle.turn(-1),
+                base = closedType,
+                vis = closedType,
+            )
+        }
+    }
+
+    private fun LocShape.isTranslatable(): Boolean =
+        this == LocShape.WallStraight || this == LocShape.WallDiagonal
+
+    /**
+     * The open or closed counterpart of [type]: a loc with the same footprint whose first op is
+     * [firstOp] and whose cache name is the same once "open" and "closed" are taken out of it
+     * (`poordoor`/`poordooropen`, `metalgateclosedl`/`metalgateopenl`, `door_l`/`door_l_open`).
+     * Failing that, the form with the same models listed in [MODEL_TWINS_RESOURCE] (Lumbridge
+     * Castle's doors open into `wild_doubledoor_open_l/r`), then the nearest loc by id with the
+     * same display name and footprint.
+     */
+    private fun findTwin(type: ObjectServerType, firstOp: String): ObjectServerType? {
+        val sameName = locsByTwinKey[twinKey(type)]?.filter { it.id != type.id && it.sameFootprint(type) }
+        val byName =
+            sameName?.firstOrNull { it.actions.getOpOrNull(0) == firstOp }
+                ?: sameName?.firstOrNull { candidate ->
+                    val wantOpen = firstOp == "Close"
+                    val looksOpen = candidate.internalNameOrEmpty().contains("open")
+                    candidate.actions.getOpOrNull(0) == null && looksOpen == wantOpen
+                }
+        if (byName != null) {
+            return byName
+        }
+        modelTwins[type.id]?.takeIf { it.actions.getOpOrNull(0) == firstOp }?.let {
+            return it
+        }
+        for (offset in TWIN_SEARCH_OFFSETS) {
+            val candidate = ServerCacheManager.getObject(type.id + offset) ?: continue
+            if (candidate.name != type.name || !candidate.sameFootprint(type)) {
+                continue
+            }
+            if (candidate.actions.getOpOrNull(0) == firstOp) {
+                return candidate
+            }
+        }
+        return null
+    }
+
+    private fun ObjectServerType.sameFootprint(other: ObjectServerType): Boolean =
+        width == other.width && length == other.length
+
+    private fun ObjectServerType.internalNameOrEmpty(): String = locNames[id] ?: ""
+
+    /** The cache name with every "open"/"closed" marker and underscore removed. */
+    private fun twinKey(type: ObjectServerType): String {
+        val name = type.internalNameOrEmpty()
+        if (name.isEmpty()) {
+            return "#${type.id}"
+        }
+        return name.replace("closed", "").replace("open", "").replace("close", "").replace("_", "")
+    }
+
+    /* Trapdoors */
+
+    private suspend fun ProtectedAccess.openTrapdoor(loc: BoundLocInfo, type: ObjectServerType) {
+        val opened = findTwin(type, "Climb-down") ?: findTwin(type, "Close")
+        if (opened != null) {
+            anim(CLIMB_DOWN_ANIM)
+            soundSynth(if (type.name == "Manhole") MANHOLE_OPEN_SOUND else TRAPDOOR_OPEN_SOUND)
+            locRepo.change(loc, opened, DOOR_DURATION)
+            return
+        }
+        // No open form in the cache: go straight down.
+        climb(loc, type, up = false)
+    }
+
+    private fun ProtectedAccess.closeTrapdoor(loc: BoundLocInfo, type: ObjectServerType) {
+        val closed = findTwin(type, "Open") ?: return
+        anim(CLIMB_DOWN_ANIM)
+        soundSynth(if (type.name == "Manhole") MANHOLE_CLOSE_SOUND else TRAPDOOR_CLOSE_SOUND)
+        locRepo.change(loc, closed, DOOR_DURATION)
+    }
+
+    /* Ladders, stairs and ropes */
+
+    /**
+     * A flight with a single "Climb" op goes whichever way has stairs to meet it; only when both
+     * levels have some, or neither does, is the player asked.
+     */
+    private suspend fun ProtectedAccess.climbEither(loc: BoundLocInfo, type: ObjectServerType) {
+        val hasUp = stairs.hasCounterpart(loc, up = true)
+        val hasDown = stairs.hasCounterpart(loc, up = false)
+        val up =
+            when {
+                hasUp && !hasDown -> true
+                hasDown && !hasUp -> false
+                else -> choice2("Climb up.", true, "Climb down.", false, title = "Climb up or down?")
+            }
+        climb(loc, type, up)
+    }
+
+    private suspend fun ProtectedAccess.climb(
+        loc: BoundLocInfo,
+        type: ObjectServerType,
+        up: Boolean,
+    ) {
+        val dest = stairs.destination(loc, coords, up)
+        if (dest == null) {
+            mes(if (up) "You cannot see a way up from here." else "You cannot see a way down from here.")
+            return
+        }
+        val climbAnim = type.paramOrNull(params.climb_anim)
+        if (climbAnim != null) {
+            anim(RSCM.getReverseMapping(RSCMType.SEQ, climbAnim.id))
+        } else if (up && type.name in LADDER_NAMES) {
+            anim(LADDER_ANIM)
+        } else if (!up && (type.name in LADDER_NAMES || type.name in DROP_DOWN_NAMES)) {
+            anim(CLIMB_DOWN_ANIM)
+        }
+        delay(1)
+        telejump(dest, TeleportType.Exempt)
+    }
+
+    /* Caves, tunnels and other mouths of the underground */
+
+    private suspend fun ProtectedAccess.enter() {
+        val dest = stairs.landing(Passages.enterDestination(coords))
+        if (dest == null) {
+            mes("You cannot see a way through.")
+            return
+        }
+        delay(1)
+        telejump(dest, TeleportType.Exempt)
+    }
+
+    /* Stiles and fences */
+
+    private suspend fun ProtectedAccess.climbOver(loc: BoundLocInfo) {
+        val dest = Passages.farSide(loc, coords)
+        if (dest == null || !stairs.walkable(dest)) {
+            mes("You cannot climb over from here.")
+            return
+        }
+        hopTo(dest, CLIMB_OVER_ANIM, ticks = 2)
+    }
+
+    private companion object {
+        private val logger = InlineLogger()
+
+        /** How long (in cycles) an opened door or trapdoor stays changed before it resets. */
+        private const val DOOR_DURATION = 500
+
+        /** Long enough to walk the one or two tiles through a doorway. */
+        private const val WALK_THROUGH_TICKS = 3
+
+        private const val MODEL_TWINS_RESOURCE = "door-model-twins.tsv"
+
+        private val TWIN_SEARCH_OFFSETS =
+            listOf(1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 8, -8, 10, -10, 12, -12)
+
+        private val LADDER_NAMES = setOf("Ladder", "Rope", "Rope ladder")
+
+        private val DROP_DOWN_NAMES = Passages.HATCH_NAMES + "Hole"
+
+        /** Cache-name fragments of the wooden fence gates that fold to one side. */
+        private val PICKET_GATE_NAMES = listOf("fence", "wooden", "pvpa_access_gate")
+
+        private const val DEFAULT_OPEN_SOUND = "synth.door_open"
+        private const val DEFAULT_CLOSE_SOUND = "synth.door_close"
+        private const val TRAPDOOR_OPEN_SOUND = "synth.trapdoor_open"
+        private const val TRAPDOOR_CLOSE_SOUND = "synth.trapdoor_close"
+        private const val MANHOLE_OPEN_SOUND = "synth.manhole_open"
+        private const val MANHOLE_CLOSE_SOUND = "synth.manhole_close"
+        private const val LADDER_ANIM = "seq.human_reachforladder"
+        private const val CLIMB_DOWN_ANIM = "seq.human_pickupfloor"
+        private const val CLIMB_OVER_ANIM = "seq.human_walk_style"
+        private const val WALK_ANIM = "seq.human_walk_f"
+
+        /** Ticks a door without a hinge stays open while the player walks through it. */
+        private const val PASS_THROUGH_TICKS = 2
+
+        private val LEAF_OFFSETS = listOf(1 to 0, -1 to 0, 0 to 1, 0 to -1)
+
+        /**
+         * Doors whose open form is several locs rather than one, by the closed loc's cache name.
+         * Offsets were matched by eye against the closed model on the map's only spawn of each.
+         */
+        private val SPLIT_OPEN_FORMS =
+            mapOf(
+                "gnome_areagate" to
+                    listOf(
+                        OpenLeaf("loc.gnome_areagate_open_left", dx = 0, dz = 0),
+                        OpenLeaf("loc.gnome_areagate_open_right", dx = 2, dz = 0),
+                    ),
+            )
+
+        /** Split gates stay open a tick past the player's walk so they are not seen closing on them. */
+        private const val SPLIT_OPEN_TICKS = PASS_THROUGH_TICKS + 1
+    }
+}

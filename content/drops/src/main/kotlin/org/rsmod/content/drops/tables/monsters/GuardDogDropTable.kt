@@ -4,6 +4,7 @@ import dtx.rs.RSDropTable
 import dtx.rs.npcs
 import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.rsPlayerGuaranteedTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.game.entity.Player
 
@@ -12,6 +13,9 @@ import org.rsmod.game.entity.Player
 public val guardDogDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Guard dog Drops",
     npcs = npcs("npc.guarddog", "npc.hosidius_guarddog"),
+    guaranteed = rsPlayerGuaranteedTable {
+        "obj.bones" count 1
+    },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 25 weight "obj.arceuus_corpse_dog" count 1
     },

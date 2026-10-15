@@ -6,3 +6,7 @@ coords = "0_41_70_24_34"
 npc = "npc.mm_waydar"
 coords = "0_41_70_24_39"
 
+
+[[spawn]]
+npc = "npc.grandtree_glough_visible"
+coords = "0_37_154_28_44"

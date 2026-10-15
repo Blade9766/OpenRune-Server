@@ -53,6 +53,9 @@ public object DragonfireProtection {
         return cap
     }
 
+    public fun isProtected(player: Player): Boolean =
+        hasAntifire(player) || hasSuperAntifire(player) || hasAntifireShield(player)
+
     private fun hasAntifireShield(player: Player): Boolean =
         antifireShields.any { it in player.worn }
 

@@ -1,0 +1,8 @@
+# Drezel in the mausoleum is a multinpc on varp.priestperil. When the quest policy counts an
+# untouched Priest in Peril as done, the client is shown the endstate, but the server still
+# resolves the saved stage 0, which has no form. The base type carries his Talk-to so the server
+# accepts the click; the client never shows the base type's ops.
+[[npc]]
+id = "npc.priestperiltrappedmonk2"
+inherit = "npc.priestperiltrappedmonk2"
+option1 = "Talk-to"

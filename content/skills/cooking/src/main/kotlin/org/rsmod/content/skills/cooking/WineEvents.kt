@@ -10,6 +10,7 @@ import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.script.onOpHeldU
 import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.script.onPlayerSoftTimer
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.content.skills.openSkillMulti
 import org.rsmod.content.skills.skillMulti
 import org.rsmod.game.entity.Player
@@ -17,7 +18,6 @@ import org.rsmod.game.inv.Inventory
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import skillSuccess
-
 
 private enum class WineKind {
     Normal,
@@ -211,24 +211,37 @@ class WineEvents @Inject constructor() : PluginScript() {
 
         fun rollSuccess(): Boolean = level >= noFailLevel || skillSuccess(50, 256, level)
 
-        fun processContainer(container: Inventory) {
+        fun processContainer(container: Inventory): Boolean {
             val eligible = container.count(unfermented)
-            repeat(eligible) {
-                if (invDel(container, unfermented, 1).failure) {
-                    return@repeat
-                }
-                if (rollSuccess()) {
-                    invAdd(container, product, 1)
-                    successes++
-                } else {
-                    invAdd(container, "obj.jug_bad_wine", 1)
-                    failures++
-                }
+            if (eligible == 0) {
+                return true
             }
+            val good = (0 until eligible).count { rollSuccess() }
+            val bad = eligible - good
+            if (invDel(container, unfermented, eligible).failure) {
+                return false
+            }
+            val goodAdded = good == 0 || invAdd(container, product, good).success
+            val badAdded = goodAdded && (bad == 0 || invAdd(container, "obj.jug_bad_wine", bad).success)
+            if (!badAdded) {
+                if (goodAdded && good > 0) {
+                    invDel(container, product, good)
+                }
+                invAdd(container, unfermented, eligible)
+                return false
+            }
+            successes += good
+            failures += bad
+            return true
         }
 
         processContainer(packInv)
-        processContainer(bankInv)
+        if (bankInv.count(unfermented) > 0) {
+            if (!processContainer(bankInv)) {
+                mes("Your bank is too full for the wine in it to finish fermenting.")
+            }
+            syncBankAfterDirectWrite()
+        }
 
         if (successes > 0) {
             statAdvance("stat.cooking", 200.0 * successes)

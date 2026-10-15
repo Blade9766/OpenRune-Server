@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.content.interfaces.bank)
     implementation(projects.api.attr)
     implementation(projects.api.pluginCommons)
     implementation(projects.content.quest)

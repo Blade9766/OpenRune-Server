@@ -11,3 +11,32 @@ denominator = 3
 obj = "obj.looting_bag"
 count = 1
 should_drop_looting_bag = true
+
+[[tertiary]]
+numerator = 1
+denominator = 303
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 455
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true
+
+[[tertiary]]
+numerator = 1
+denominator = 284
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 533
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true

@@ -1,0 +1,13 @@
+[[inventory]]
+id = "inv.transmog_results"
+size = 480
+scope = "Temp"
+stack = "Always"
+protect = false
+
+[[inventory]]
+id = "inv.transmog_slots"
+size = 14
+scope = "Temp"
+stack = "Always"
+protect = false

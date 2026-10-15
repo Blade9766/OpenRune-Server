@@ -6,16 +6,13 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.content.other.pets.minutesAsText
 import org.rsmod.content.other.pets.ticksToMinutes
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 
 @Singleton
 class CatDialogue @Inject constructor(private val care: CatCare) {
     fun catspeak(player: Player): Boolean =
-        CATSPEAK_AMULET in player.worn ||
-            QuestRequirements.isOnQuest(player, DRAGON_SLAYER_2) ||
-            QuestRequirements.hasCompleted(player, DRAGON_SLAYER_2)
+        CATSPEAK_AMULET in player.worn || CatspeakGrants.granted(player)
 
     suspend fun talk(access: ProtectedAccess, npc: Npc, cat: CatForm) {
         val player = access.player
@@ -688,7 +685,6 @@ class CatDialogue @Inject constructor(private val care: CatCare) {
     private companion object {
         const val CATSPEAK_AMULET = "obj.ics_little_amulet_of_catspeak"
         const val CAT_EARS = "obj.osb7_cat_ears"
-        const val DRAGON_SLAYER_2 = "quest_dragonslayer2"
         const val MEDAL_RATS = 100
     }
 }

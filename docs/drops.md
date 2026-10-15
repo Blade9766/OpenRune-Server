@@ -74,6 +74,9 @@ clue_scroll_box = true
 | `should_drop_brimstone_key = true` | Konar task brimstone key check |
 | `quest` / `quest_mode` | Quest gate (`during`, `completed`, `not_completed`) |
 | `clue_scroll_box = true` | Clue scroll → scroll box after X Marks the Spot (`clueScrollTransformObj`) |
+| `area = "area.x"` | Rolls only while the npc is inside the area; comma-separate several areas for any-of (`"area.catacombs_of_kourend,area.giantsden"`) |
+| `wilderness_slayer_task = true` | Rolls only on a Krystilia task that counts this kill (`onWildernessSlayerTask`) |
+| `dark_totem_piece = true` | Drops the dark totem piece the player holds fewest of (`darkTotemPieceObj`) |
 
 | TOML omits empty defaults (`areas = []`, false booleans, etc.). String values use double quotes. Unresolved wiki drop rates and manual notes are appended as `#` comment lines at the bottom of the file.
 

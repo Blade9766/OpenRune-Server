@@ -7,6 +7,8 @@ import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.api.repo.region.RegionRepository
 import org.rsmod.api.repo.world.WorldRepository
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.manager.ItemRewardDisplay
 import org.rsmod.content.quest.manager.QuestScript
 import org.rsmod.content.quest.manager.rewards
@@ -20,6 +22,8 @@ constructor(
     private val locRepo: LocRepository,
     private val worldRepo: WorldRepository,
     private val aiPlayerInteractions: AiPlayerInteractions,
+    private val lostTribe: LostTribeQuest,
+    private val zanikTour: ZanikTour,
 ) :
     QuestScript(
         "quest_restlessghost",
@@ -34,7 +38,7 @@ constructor(
 
     private val cutscene = TheRestlessGhostCutscene(quest, regionRepo, npcRepo, locRepo, worldRepo)
     private val scenery = TheRestlessGhostScenery(quest, locRepo, npcRepo, worldRepo, cutscene, aiPlayerInteractions)
-    private val dialogue = TheRestlessGhostDialogue(quest)
+    private val dialogue = TheRestlessGhostDialogue(quest, lostTribe, zanikTour)
 
     override fun ScriptContext.init() {
         check(quest.maxSteps == TheRestlessGhostStage.Complete) {

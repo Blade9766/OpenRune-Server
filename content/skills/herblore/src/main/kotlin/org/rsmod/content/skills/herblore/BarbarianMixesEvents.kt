@@ -38,6 +38,10 @@ class BarbarianMixesEvents : PluginScript() {
             return
         }
 
+        if (!knowsHerblore()) {
+            return
+        }
+
         val validCandidates = candidates.filter { mix ->
             mix.statReq.all { statBase(it.t0.internalName) >= it.t1 } &&
                 inv.contains(mix.twoDosePotion.internalName) &&

@@ -1,0 +1,53 @@
+id = "Possessed pickaxe Catacombs of Kourend drops"
+npcs = ["npc.kourend_pickaxe"]
+
+[main]
+total = 500
+name = "Possessed pickaxe Catacombs of Kourend drops"
+
+[[main.entries]]
+weight = 475
+obj = "obj.iron_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.steel_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.mithril_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 4
+obj = "obj.adamant_pickaxe"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.rune_pickaxe"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 243
+obj = "obj.trail_medium_emote_exp1"
+count = 1
+clue_scroll_box = true
+
+[[tertiary]]
+numerator = 1
+denominator = 306
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 460
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true

@@ -1,0 +1,176 @@
+id = "Dagannoth (Waterbirth Island) Drops (Level 88)"
+npcs = ["npc.dungeon_dagganoth_lighter", "npc.dungeon_dagganoth_lighter_deeper"]
+brimstone_key_roll = true
+
+[main]
+total = 128
+name = "Dagannoth (Waterbirth Island) Drops (Level 88)"
+
+[[main.entries]]
+weight = 2
+obj = "obj.vikinggloves"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.viking_top_darkbrown"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.viking_cloak_darkbrown"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.mithril_javelin"
+count = "1..3"
+
+[[main.entries]]
+weight = 10
+obj = "obj.steel_arrow"
+count = "1..30"
+
+[[main.entries]]
+weight = 2
+obj = "obj.dagganoth_range_feet"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.dagganoth_range_gloves"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.viking_shield"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.viking_helmet"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.viking_sword"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.casket"
+count = 1
+
+[[main.entries]]
+weight = 5
+obj = "obj.bigoysterpearls"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.opal_bolttips"
+count = "1..20"
+
+[[main.entries]]
+weight = 30
+obj = "obj.seaweed"
+count = "1..10"
+
+[[main.entries]]
+weight = 8
+obj = "obj.edible_seaweed"
+count = "1..5"
+
+[[main.entries]]
+weight = 5
+obj = "obj.raw_bass"
+count = 1
+
+[[main.entries]]
+weight = 10
+obj = "obj.coins"
+count = "1..140"
+
+[[main.entries]]
+weight = 2
+obj = "obj.dagganoth_range_body_part"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.dagganoth_range_leg_part"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.dagganoth_range_head_part"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.keg_of_beer"
+count = 1
+
+[[main.entries]]
+weight = 8
+shared = "herb"
+
+[[main.entries]]
+weight = 1
+shared = "gem"
+
+[[main.entries]]
+weight = 1
+shared = "rareSeed"
+
+[[main.entries]]
+weight = 6
+nothing = true
+
+[[main.separate_rolls]]
+numerator = 1
+denominator = 2048
+
+[[main.separate_rolls.entries]]
+weight = 1
+obj = "obj.viking_helmet_crush"
+count = 1
+
+[[main.separate_rolls.entries]]
+weight = 1
+obj = "obj.viking_helmet_range"
+count = 1
+
+[[main.separate_rolls.entries]]
+weight = 1
+obj = "obj.viking_helmet_magic"
+count = 1
+
+[[main.separate_rolls.entries]]
+weight = 1
+obj = "obj.viking_helmet_slash"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 4
+obj = "obj.rag_dagganoth_bone"
+count = 1
+quest = "quest_ragandboneman2"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 35
+obj = "obj.arceuus_corpse_dagannoth"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 121
+obj = "obj.trail_medium_emote_exp1"
+count = 1
+clue_scroll_box = true
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (6 weight)

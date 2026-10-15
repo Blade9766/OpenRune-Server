@@ -10,6 +10,7 @@ import org.rsmod.api.specials.SpecialAttackManager
 import org.rsmod.api.specials.SpecialAttackMap
 import org.rsmod.api.specials.SpecialAttackRepository
 import org.rsmod.api.specials.combat.MeleeSpecialAttack
+import org.rsmod.content.other.special.attacks.specialAnim
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.NpcList
 import org.rsmod.game.entity.PathingEntity
@@ -46,6 +47,7 @@ constructor(private val worldRepo: WorldRepository, private val npcList: NpcList
             attack: CombatAttack.Melee,
         ): Boolean {
             val anchor = playSweep(target)
+            manager.playWeaponSound(this, attack)
             val totalDamage = hitTarget(target, attack)
             manager.giveCombatXp(this, target, attack, totalDamage)
             if (target.size == 1) {
@@ -60,6 +62,7 @@ constructor(private val worldRepo: WorldRepository, private val npcList: NpcList
             attack: CombatAttack.Melee,
         ): Boolean {
             playSweep(target)
+            manager.playWeaponSound(this, attack)
             val totalDamage = hitTarget(target, attack)
             manager.giveCombatXp(this, target, attack, totalDamage)
             manager.continueCombat(this, target)
@@ -119,7 +122,7 @@ constructor(private val worldRepo: WorldRepository, private val npcList: NpcList
         }
 
         private fun ProtectedAccess.playSweep(target: PathingEntity): CoordGrid {
-            anim("seq.dragon_halberd_special_attack")
+            specialAnim("seq.dragon_halberd_special_attack")
             val direction = Direction.cardinalBetween(player.bounds(), target.bounds())
             val anchor =
                 if (target.size == 1) {

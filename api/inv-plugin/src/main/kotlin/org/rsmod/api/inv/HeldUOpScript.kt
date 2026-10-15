@@ -47,6 +47,8 @@ constructor(
             return
         }
         protectedAccess.launch(this) {
+            clearPendingAction()
+            player.resetFaceEntity()
             interactions.interact(
                 access = this,
                 inventory = inv,

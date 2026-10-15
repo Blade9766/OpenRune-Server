@@ -72,7 +72,7 @@ constructor(
         val specMaxHit = if (roundUp) ceil(scaled).toInt() else scaled.toInt()
         val postSpecDamage = modifyPostSpec(source, specMaxHit, meleeAttributes, npcAttributes)
 
-        val reductionAttributes = reductions.collectPvP(target, random)
+        val reductionAttributes = reductions.collectPvPMelee(target, random)
         return MaxHitOperations.applyDamageReductions(
             startDamage = postSpecDamage,
             activeDefenceBonus = null,

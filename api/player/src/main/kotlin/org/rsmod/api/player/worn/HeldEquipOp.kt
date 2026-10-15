@@ -12,6 +12,8 @@ import org.rsmod.api.invtx.select
 import org.rsmod.api.invtx.swap
 import org.rsmod.api.invtx.transfer
 import org.rsmod.api.player.events.interact.HeldEquipEvents
+import org.rsmod.api.player.hook.PlayerRestrictions
+import org.rsmod.api.player.hook.RestrictedAction
 import org.rsmod.api.player.righthand
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.utils.format.addArticle
@@ -23,10 +25,17 @@ import org.rsmod.game.type.getInvObj
 import org.rsmod.objtx.TransactionResult
 import org.rsmod.objtx.isErr
 
-public class HeldEquipOp @Inject constructor(private val eventBus: EventBus) {
+public class HeldEquipOp
+@Inject
+constructor(private val eventBus: EventBus, private val restrictions: PlayerRestrictions) {
     public fun equip(player: Player, invSlot: Int, inventory: Inventory): HeldEquipResult {
         val obj = inventory[invSlot] ?: return HeldEquipResult.Fail.InvalidObj
         val objType = getInvObj(obj)
+
+        val restriction = restrictions.check(player, RestrictedAction.Equip(objType))
+        if (restriction != null) {
+            return HeldEquipResult.Fail.Restricted(restriction)
+        }
 
         val result = equip(player, objType)
 
@@ -42,7 +51,8 @@ public class HeldEquipOp @Inject constructor(private val eventBus: EventBus) {
                         ServerCacheManager.getItems().values.firstOrNull { it.id == id.id }
                     }
                 }
-            val unequipPrimary = into[primaryWearpos.slot] != null
+            val previousPrimary = into[primaryWearpos.slot]
+            val unequipPrimary = previousPrimary != null
 
             val transaction =
                 player.invTransaction(inventory, into) {
@@ -89,7 +99,13 @@ public class HeldEquipOp @Inject constructor(private val eventBus: EventBus) {
                 return HeldEquipResult.Fail.NotEnoughInvSpace(message)
             }
 
-            for (wearpos in allWearpos) {
+            val mergedPrimary =
+                previousPrimary != null &&
+                    objType.isStackable &&
+                    into[primaryWearpos.slot]?.id == previousPrimary.id
+            val changedWearpos = if (mergedPrimary) unequipWearpos else allWearpos
+
+            for (wearpos in changedWearpos) {
                 val wornType = if (wearpos == primaryWearpos) objType else unequipObjs[wearpos]
                 if (wornType != null) {
                     val change = HeldEquipEvents.WearposChange(player, wearpos, wornType)
@@ -98,13 +114,18 @@ public class HeldEquipOp @Inject constructor(private val eventBus: EventBus) {
             }
 
             for ((wearpos, type) in unequipObjs) {
+                if (mergedPrimary && wearpos == primaryWearpos) {
+                    continue
+                }
                 val unequipType = type ?: continue
                 val unequip = HeldEquipEvents.Unequip(player, wearpos, unequipType)
                 eventBus.publish(unequip)
             }
 
-            val equip = HeldEquipEvents.Equip(player, invSlot, primaryWearpos, objType)
-            eventBus.publish(equip)
+            if (!mergedPrimary) {
+                val equip = HeldEquipEvents.Equip(player, invSlot, primaryWearpos, objType)
+                eventBus.publish(equip)
+            }
 
             player.rebuildAppearance()
         }
@@ -114,7 +135,7 @@ public class HeldEquipOp @Inject constructor(private val eventBus: EventBus) {
 
     private fun equip(player: Player, type: ItemServerType): HeldEquipResult {
         val statRequirements =
-            type.statRequirements().filter { player.statBase(RSCM.getReverseMapping(RSCMType.STAT,it.stat.id)) < it.level }
+            type.statRequirements().filter { player.statBase(RSCM.getReverseMapping(RSCMType.STAT, it.stat.id)) < it.level }
         if (statRequirements.isNotEmpty()) {
             val messages = type.toMessages(statRequirements)
             return HeldEquipResult.Fail.StatRequirements(messages)

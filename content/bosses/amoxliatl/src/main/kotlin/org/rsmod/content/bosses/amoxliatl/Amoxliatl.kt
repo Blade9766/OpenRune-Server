@@ -15,6 +15,7 @@ import org.rsmod.api.bosses.spec.Effect
 import org.rsmod.api.bosses.spec.ProjectileConfig
 import org.rsmod.api.combat.commons.player.finishNpcHit
 import org.rsmod.api.npc.heal
+import org.rsmod.api.npc.isAliveInWorld
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onEvent
@@ -84,12 +85,16 @@ class Amoxliatl @Inject constructor(deps: BossDeps, private val locRepo: LocRepo
     }
 
     private fun spawnIcyPool(npc: Npc, coord: CoordGrid) {
-        if (locRepo.findLoc(coord, ICE_POOL)) return
+        if (!npc.isAliveInWorld() || locRepo.findLoc(coord, ICE_POOL)) return
         val loc = locRepo.add(coord, ICE_POOL, Int.MAX_VALUE, LocAngle.West, LocShape.CentrepieceStraight)
         deps.repeatTick(
             ticks = POOL_DURATION_TICKS,
             onTick = { remaining ->
                 if (!locRepo.findLoc(coord, ICE_POOL)) return@repeatTick false
+                if (!npc.isAliveInWorld()) {
+                    locRepo.del(loc, Int.MAX_VALUE)
+                    return@repeatTick false
+                }
                 val occupant = deps.playerList.firstOrNull { it.coords == coord && it.hitpoints > 0 }
                 if (occupant != null) {
                     val damage = POOL_DAMAGE_MIN + deps.random.of(POOL_DAMAGE_MAX - POOL_DAMAGE_MIN + 1)
@@ -104,7 +109,7 @@ class Amoxliatl @Inject constructor(deps: BossDeps, private val locRepo: LocRepo
     private fun explodeIceBlock(block: Npc, coord: CoordGrid, heal: Boolean) {
         val npc = iceBlockOwner.remove(block) ?: return
         block.anim(ICE_DESTROY_SEQ)
-        if (heal) {
+        if (heal && npc.isAliveInWorld()) {
             npc.heal(SHATTER_HEAL_MIN + deps.random.of(SHATTER_HEAL_MAX - SHATTER_HEAL_MIN + 1), showHitsplat = true)
         }
         deps.worldQueues.add(ICE_DESTROY_ANIM_TICKS) {

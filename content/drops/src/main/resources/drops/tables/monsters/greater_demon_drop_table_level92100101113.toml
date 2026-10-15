@@ -1,0 +1,204 @@
+id = "Greater demon Level 92, 100, 101, and 113 drops"
+npcs = ["npc.greater_demon", "npc.greater_demon2", "npc.greater_demon3", "npc.greater_demon4", "npc.greater_demon5", "npc.greater_demon_strongholdcave_1", "npc.greater_demon_strongholdcave_2", "npc.greater_demon_strongholdcave_3", "npc.kourend_greater_demon1", "npc.kourend_greater_demon2", "npc.kourend_greater_demon3"]
+brimstone_key_roll = true
+
+[main]
+total = 128
+name = "Greater demon Level 92, 100, 101, and 113 drops"
+
+[[main.entries]]
+weight = 4
+obj = "obj.steel_2h_sword"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.steel_axe"
+count = 1
+
+[[main.entries]]
+weight = 3
+obj = "obj.steel_battleaxe"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.mithril_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.adamant_platelegs"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.rune_full_helm"
+count = 1
+
+[[main.entries]]
+weight = 8
+obj = "obj.firerune"
+count = 75
+
+[[main.entries]]
+weight = 3
+obj = "obj.chaosrune"
+count = 15
+
+[[main.entries]]
+weight = 3
+obj = "obj.deathrune"
+count = 5
+
+[[main.entries]]
+weight = 1
+obj = "obj.firerune"
+count = 37
+
+[[main.entries]]
+weight = 40
+obj = "obj.coins"
+count = 132
+
+[[main.entries]]
+weight = 29
+obj = "obj.coins"
+count = 44
+
+[[main.entries]]
+weight = 10
+obj = "obj.coins"
+count = 220
+
+[[main.entries]]
+weight = 7
+obj = "obj.coins"
+count = 11
+
+[[main.entries]]
+weight = 1
+obj = "obj.coins"
+count = 460
+
+[[main.entries]]
+weight = 2
+nothing = true
+
+[[main.entries]]
+weight = 3
+obj = "obj.tuna"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.gold_bar"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.thread"
+count = 10
+
+[[main.entries]]
+weight = 5
+shared = "gem"
+
+[[tertiary]]
+numerator = 1
+denominator = 3
+obj = "obj.looting_bag"
+count = 1
+should_drop_looting_bag = true
+
+[[tertiary]]
+numerator = 1
+denominator = 40
+obj = "obj.arceuus_corpse_demon"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 121
+obj = "obj.trail_clue_hard_map001"
+count = 1
+clue_scroll_box = true
+exclude_ring_of_wealth = true
+
+[[tertiary]]
+numerator = 1
+denominator = 64
+obj = "obj.trail_clue_hard_map001"
+count = 1
+clue_scroll_box = true
+require_ring_of_wealth = true
+require_wilderness = true
+
+[[tertiary]]
+numerator = 1
+denominator = 81
+obj = "obj.yama_special_contract"
+count = 1
+area = "area.chasm_of_fire"
+
+[[tertiary]]
+numerator = 1
+denominator = 81
+obj = "obj.yama_2h_contract"
+count = 1
+area = "area.chasm_of_fire"
+
+[[tertiary]]
+numerator = 1
+denominator = 81
+obj = "obj.yama_heavyranged_contract"
+count = 1
+area = "area.chasm_of_fire"
+
+[[tertiary]]
+numerator = 1
+denominator = 81
+obj = "obj.yama_binding_contract"
+count = 1
+area = "area.chasm_of_fire"
+
+[[tertiary]]
+numerator = 1
+denominator = 81
+obj = "obj.yama_spell_contract"
+count = 1
+area = "area.chasm_of_fire"
+
+[[tertiary]]
+numerator = 1
+denominator = 256
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 385
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true
+
+[[tertiary]]
+numerator = 1
+denominator = 249
+obj = "obj.slayer_enchantment"
+count = 1
+wilderness_slayer_task = true
+
+[[tertiary]]
+numerator = 1
+denominator = 96
+obj = "obj.slayer_wilderness_key"
+count = 1
+wilderness_slayer_task = true
+
+# Drops need manual (konar_key): Only dropped if killed on a Slayer task given by Konar quo Maten.
+# Drops need manual rate (konar_key): Brimstone key drop rates for level 92, 100, 101 and 113 greater demons are 1/112, 1/100, 1/99 and 1/97 respectively.
+# Drops need manual rate (konar_key): Only dropped if killed on a Slayer task given by Konar quo Maten. Brimstone key drop rates for level 92, 100, 101 and 113 greater demons are 1/112, 1/100, 1/99 and 1/97 respectively.
+# Drops need manual rate (yama contracts): Glyphic Attenuation is 5x and the other contracts 2x more likely when the demon's Chasm of Fire sigil is active and its kill condition is met.

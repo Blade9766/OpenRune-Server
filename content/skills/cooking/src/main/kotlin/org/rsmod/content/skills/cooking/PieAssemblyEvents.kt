@@ -20,7 +20,9 @@ class PieAssemblyEvents : PluginScript() {
         onOpHeldU("obj.pie_shell", "obj.dragonfruit") { fillSimplePie("obj.dragonfruit", "obj.uncooked_dragonfruit_pie") }
 
         // Mud pie
-        onOpHeldU("obj.pie_shell", "obj.bucket_compost") { fillSimplePie("obj.bucket_compost", "obj.uncooked_mud_pie") }
+        onOpHeldU("obj.pie_shell", "obj.bucket_compost") { fillFromBucket("obj.pie_shell", "obj.bucket_compost", "obj.unfinished_mud_pie_1") }
+        onOpHeldU("obj.unfinished_mud_pie_1", "obj.bucket_water") { fillFromBucket("obj.unfinished_mud_pie_1", "obj.bucket_water", "obj.unfinished_mud_pie_2") }
+        onOpHeldU("obj.unfinished_mud_pie_2", "obj.clay") { fillComplex("obj.unfinished_mud_pie_2", "obj.clay", "obj.uncooked_mud_pie") }
 
         // Garden pie
         onOpHeldU("obj.pie_shell", "obj.tomato") { fillSimplePie("obj.tomato", "obj.unfinished_garden_pie_1") }
@@ -59,6 +61,17 @@ class PieAssemblyEvents : PluginScript() {
         invDel(inv, "obj.pie_shell", 1)
         invDel(inv, filling, 1)
         invAdd(inv, result, 1)
+        mes("You add the filling to the pie.")
+    }
+
+    private fun ProtectedAccess.fillFromBucket(base: String, bucket: String, result: String) {
+        if (invDel(inv, base, 1).failure) return
+        if (invDel(inv, bucket, 1).failure) {
+            invAdd(inv, base, 1)
+            return
+        }
+        invAdd(inv, result, 1)
+        invAdd(inv, "obj.bucket_empty", 1)
         mes("You add the filling to the pie.")
     }
 

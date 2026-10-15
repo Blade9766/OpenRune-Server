@@ -1,0 +1,68 @@
+package org.rsmod.content.other.bots.core
+
+/** A bot's view of one of its exchange slots. */
+data class BotOffer(
+    val slot: Int,
+    val itemId: Int,
+    val sell: Boolean,
+    val price: Int,
+    val total: Int,
+    val completed: Int,
+    val collectItems: Int,
+    val collectCoins: Int,
+    val finished: Boolean,
+    val createdAt: Long,
+    val gold: Long,
+    val taxPaid: Long,
+) {
+    val isOpen: Boolean
+        get() = !finished
+
+    val remaining: Int
+        get() = total - completed
+
+    val hasCollectable: Boolean
+        get() = collectItems > 0 || collectCoins > 0
+
+    /** Sale proceeds already taken out of the collect box; never decreases. */
+    val coinsCollected: Long
+        get() = gold - taxPaid - collectCoins
+
+    /** Unsold items already taken back out of the collect box; never decreases. */
+    val itemsCollected: Int
+        get() = (if (finished && completed < total) total - completed else 0) - collectItems
+}
+
+data class MarketTrade(val quantity: Int, val price: Int, val time: Long)
+
+/**
+ * The Grand Exchange as bots use it. Owners are the bot's (negative) account id. [saveCount]
+ * increases every time the exchange's book reaches disk, which is how a bot knows an offer it placed
+ * or a collection it made is durable.
+ */
+interface BotExchange {
+    val available: Boolean
+    val saveCount: Long
+
+    fun offers(owner: Int): List<BotOffer>
+
+    fun offer(owner: Int, slot: Int): BotOffer? = offers(owner).firstOrNull { it.slot == slot }
+
+    fun freeSlot(owner: Int): Int?
+
+    fun sell(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean
+
+    fun abort(owner: Int, slot: Int): Boolean
+
+    fun takeItems(owner: Int, slot: Int, count: Int): Int
+
+    fun takeCoins(owner: Int, slot: Int, count: Int): Int
+
+    fun recentTrades(itemId: Int): List<MarketTrade>
+
+    fun lowestAsk(itemId: Int, excludingOwner: Int): Int?
+
+    fun guidePrice(itemId: Int): Int?
+
+    fun taxPerItem(itemId: Int, price: Int): Int
+}

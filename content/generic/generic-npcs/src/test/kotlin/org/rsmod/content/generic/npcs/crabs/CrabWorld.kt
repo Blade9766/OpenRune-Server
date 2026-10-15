@@ -5,6 +5,7 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.annotations.InternalApi
 import org.rsmod.api.game.process.npc.AiTimerProcessor
+import org.rsmod.api.game.process.npc.hunt.AggressionTolerance as SquareTolerance
 import org.rsmod.api.game.process.npc.hunt.NpcHuntProcessor
 import org.rsmod.api.game.process.npc.hunt.NpcPlayerHuntProcessor
 import org.rsmod.api.hunt.Hunt
@@ -78,7 +79,7 @@ class CrabWorld {
     private val hunt =
         Hunt(RayCastValidator(collision), players, npcs, ObjRegistry(updates), locs)
     private val random = DefaultGameRandom(1L)
-    private val playerHunt = NpcPlayerHuntProcessor(random, clock, hunt, tolerance)
+    private val playerHunt = NpcPlayerHuntProcessor(random, clock, hunt, tolerance, SquareTolerance())
     private val npcHunt =
         NpcHuntProcessor(
             random,

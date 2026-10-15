@@ -60,3 +60,18 @@ wanderRange = 0
 defaultMode = "None"
 moveRestrict = "NoMove"
 
+[[npc]]
+isServerOnly = true
+id = "npc.favour_npc_chair"
+inherit = "npc.favour_npc_chair"
+wanderRange = 0
+defaultMode = "None"
+moveRestrict = "NoMove"
+
+[[npc]]
+isServerOnly = true
+id = "npc.favour_npc_floor"
+inherit = "npc.favour_npc_floor"
+wanderRange = 0
+defaultMode = "None"
+moveRestrict = "NoMove"

@@ -104,7 +104,8 @@ constructor(
         npcAttributes: EnumSet<CombatNpcAttributes>,
     ): Int {
         val effectiveStrength =
-            MeleeMaxHitOperations.calculateEffectiveStrength(source, attackStyle)
+            MeleeMaxHitOperations.calculateEffectiveStrength(source, attackStyle) +
+                MeleeMaxHitOperations.farmingStrengthBonus(source, meleeAttributes, npcAttributes)
         val strengthBonus = bonuses.strengthBonus(source)
         val baseDamage = PlayerMeleeMaxHit.calculateBaseDamage(effectiveStrength, strengthBonus)
         return MeleeMaxHitOperations.modifyBaseDamage(baseDamage, meleeAttributes, npcAttributes)

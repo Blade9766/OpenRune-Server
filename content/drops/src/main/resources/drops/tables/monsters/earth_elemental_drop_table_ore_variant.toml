@@ -1,0 +1,10 @@
+id = "Earth elemental Ore variant drops"
+npcs = ["npc.elem1_qip_earth_elemental_rock_version"]
+
+[[guaranteed]]
+obj = "obj.swamprocks1"
+count = 1
+
+[[guaranteed]]
+obj = "obj.elemental_workshop_ore"
+count = 1

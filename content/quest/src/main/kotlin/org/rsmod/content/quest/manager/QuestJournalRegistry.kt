@@ -65,7 +65,7 @@ object QuestJournalRegistry {
     private fun openQuestLog(access: ProtectedAccess, quest: Quest, content: QuestJournalContent) {
         val lines = (if (quest.isQuestCompleted(access.player)) content.completedLog(access) else content.questLog(access))
             .lines()
-            .flatMap { it.toRs(inheritPreviousTags = true, wrapAt = 64).split("<br>") }
+            .flatMap { it.toRs(wrapAt = 64).split("<br>") }
 
         access.ifOpenMain("interface.questjournal")
         access.runClientScript(5240)

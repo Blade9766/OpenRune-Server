@@ -67,14 +67,23 @@ restless_ghost_return_tile = 63704
 misthalin_return_tile = 63700
 misthalin_mirror_blocker = 63701
 misthalin_puzzle_state = 63702
+# Shades of Mort'ton: remains stored in the coffin (six 5-bit counts, Loar to Urium) and the
+# catacomb doors the player has unlocked this visit.
+shades_coffin = 65330
+shades_catacomb_doors = 65331
 cooks_assistant_ingredients = 63705
 gertrudes_cat_state = 63711
+# Dream Mentor: the two foods Cyrisus ate last, forgotten on logout.
+dream_mentor_recent_food = 65458
+dream_mentor_spellbook_swap = 65459
 
 [gamevals.varbit]
 restless_ghost_progress = 63702
 imp_catcher_progress = 63703
 misthalin_reflections = 63700
 misthalin_gem_row_slot = 63701
+# Dwarf multicannon: whether the player's cannon is the Shattered Relics ornamented one.
+mcannon_ornate = 65768
 cooks_assistant_progress = 63704
 cooks_assistant_milk = 63705
 cooks_assistant_egg = 63706
@@ -83,6 +92,9 @@ gertrudes_cat_progress = 63711
 gertrudes_cat_kitten_crate = 63712
 gertrudes_cat_met_fluffs = 63713
 gertrudes_cat_told_sardines = 63714
+dream_mentor_food_a = 66300
+dream_mentor_food_b = 66301
+dream_mentor_swapped = 66302
 
 [gamevals.models]
 misthalin_gem_diamond = 32333
@@ -93,5 +105,14 @@ misthalin_gem_sapphire = 32345
 misthalin_gem_emerald = 32334
 
 [gamevals.timer]
-restless_ghost_coffin_ghost = 123
-restless_skeleton_attack = 124
+restless_ghost_coffin_ghost = 407
+restless_skeleton_attack = 406
+
+[gamevals.enum]
+dream_mentor_bank_objs = 65440
+dream_mentor_bank_counts = 65441
+dream_mentor_armour_slots = 65442
+dream_mentor_armour_styles = 65443
+dream_mentor_humidify_from = 65444
+dream_mentor_humidify_to = 65445
+dream_mentor_hunter_kit = 65446

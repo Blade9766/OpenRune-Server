@@ -48,4 +48,7 @@ suspend fun <T> Dialogue.menu(
 }
 
 suspend fun Dialogue.startQuestPrompt(quest: Quest): Boolean =
-    choice2("Yes.", true, "No.", false, title = "Start the ${quest.displayName} quest?")
+    choice2("Yes.", true, "No.", false, title = "Start ${quest.displayName.withArticle()} quest?")
+
+/** "the Druidic Ritual" style titles, without doubling the article of "The Lost Tribe". */
+private fun String.withArticle(): String = if (startsWith("The ")) this else "the $this"

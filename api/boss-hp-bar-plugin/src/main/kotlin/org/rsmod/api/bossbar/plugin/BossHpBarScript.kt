@@ -4,7 +4,6 @@ import dev.openrune.rscm.RSCM.asRSCM
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.awt.Color
-import org.rsmod.annotations.InternalApi
 import org.rsmod.api.bossbar.BossHpBarMode
 import org.rsmod.api.config.aliases.ParamInt
 import org.rsmod.api.config.refs.params
@@ -22,6 +21,7 @@ import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onPlayerSoftTimer
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.npc.NpcStateEvents
 import org.rsmod.game.queue.WorldQueueList
 import org.rsmod.plugin.scripts.PluginScript
@@ -32,6 +32,7 @@ public class BossHpBarScript @Inject constructor(
     private val instances: InstanceManager,
     private val contributor: BossHpBarDamageContributor,
     private val worldQueues: WorldQueueList,
+    private val playerList: PlayerList,
 ) : PluginScript() {
 
     internal var Player.bossHudDisabled by boolVarBit("varbit.hpbar_hud_boss_disabled")
@@ -116,17 +117,23 @@ public class BossHpBarScript @Inject constructor(
         }
     }
 
-    @OptIn(InternalApi::class)
+    /**
+     * Slides the bar out and hides it two cycles later. The hide runs on the world queue rather than
+     * a launched player script, because launching one cancels whatever script the player is in (a
+     * dialogue opened right after a boss dies would be closed).
+     */
     public fun onClose(player: Player, npc: Npc, instant: Boolean = false) {
         if (instant) {
             player.ifSetHide("component.hpbar_hud:hp", true)
             return
         }
         player.runClientScript(2889, commonComponents, 0)
+        val uid = player.uid
         val generation = player.bossHudOpenGeneration
-        worldQueues.add(CLOSE_FADE_TICKS) {
-            if (player.isSlotAssigned && player.bossHudOpenGeneration == generation) {
-                player.ifSetHide("component.hpbar_hud:hp", true)
+        worldQueues.add(CLOSE_HIDE_DELAY) {
+            val current = uid.resolve(playerList)
+            if (current != null && current.bossHudOpenGeneration == generation) {
+                current.ifSetHide("component.hpbar_hud:hp", true)
             }
         }
     }
@@ -217,8 +224,9 @@ public class BossHpBarScript @Inject constructor(
     )
 
     public companion object {
+        private const val CLOSE_HIDE_DELAY = 2
+
         public val ORIGINAL_COLORS: Array<Color> = arrayOf(Color(204, 0, 0), Color(149, 0, 0), Color(0, 245, 0))
         private val DEFAULT_REMAINING_COLOR = Color(0, 200, 0)
-        private const val CLOSE_FADE_TICKS = 2
     }
 }

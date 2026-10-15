@@ -45,7 +45,8 @@ fun ProtectedAccess.openGoldCrafting() {
 private fun ProtectedAccess.slotUnlocked(slot: GoldSlot): Boolean =
     slot.products.isEmpty() || slot.products.any { player.meetsUnlocks(it) }
 
-fun ProtectedAccess.hasGoldCraftingBars(): Boolean = inv.contains(CraftingConstants.GOLD_BAR)
+fun ProtectedAccess.hasGoldCraftingBars(): Boolean =
+    inv.contains(CraftingConstants.GOLD_BAR) || inv.contains(PERFECT_GOLD_BAR)
 
 private fun ProtectedAccess.craftableProduct(slot: GoldSlot): CraftingProduct? =
     slot.products.firstOrNull { hasCraftingMaterials(it) }
@@ -82,6 +83,9 @@ internal val goldSlots: List<GoldSlot> by lazy {
         }
         .sortedBy { it.lastType }
 }
+
+/** Family Crest's quest-only bar, which shares the ruby ring and necklace slots. */
+private const val PERFECT_GOLD_BAR = "obj.perfect_gold_bar"
 
 private const val INTERFACE_GOLD_CRAFTING = "interface.crafting_gold"
 

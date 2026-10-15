@@ -22,6 +22,10 @@ class SwampTarEvents : PluginScript() {
     }
 
     private suspend fun ProtectedAccess.createSwampTar(recipe: HerbloreSwampTarRow) {
+        if (!knowsHerblore()) {
+            return
+        }
+
         if (!meetsStatReqs(recipe.statReq)) {
             return
         }
@@ -32,7 +36,7 @@ class SwampTarEvents : PluginScript() {
         }
 
         val hasFinishedTar = inv.contains(recipe.finishedTar.internalName)
-        val neededSlots = if (hasFinishedTar) 0 else SWAMP_TAR_PER_BATCH
+        val neededSlots = if (hasFinishedTar) 0 else 1
         if (inv.freeSpace() < neededSlots) {
             mes("You don't have enough inventory space to make this tar.")
             return
@@ -52,7 +56,7 @@ class SwampTarEvents : PluginScript() {
         if (
             !inv.contains(recipe.herb.internalName) ||
             inv.count(SWAMP_TAR) < SWAMP_TAR_PER_BATCH ||
-            (inv.freeSpace() < SWAMP_TAR_PER_BATCH && !inv.contains(recipe.finishedTar.internalName))
+            (inv.freeSpace() < 1 && !inv.contains(recipe.finishedTar.internalName))
         ) {
             resetAnim()
             return

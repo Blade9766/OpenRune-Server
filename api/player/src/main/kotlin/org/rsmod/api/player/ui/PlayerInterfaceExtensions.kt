@@ -22,6 +22,7 @@ import net.rsprot.protocol.game.outgoing.interfaces.IfSetNpcHead
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetNpcHeadActive
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetObject
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetPlayerHead
+import net.rsprot.protocol.game.outgoing.interfaces.IfSetPosition
 import net.rsprot.protocol.game.outgoing.interfaces.IfSetText
 import net.rsprot.protocol.game.outgoing.misc.player.TriggerOnDialogAbort
 import org.rsmod.annotations.InternalApi
@@ -139,10 +140,12 @@ public fun Player.ifOpenFullOverlay(interf: String, eventBus: EventBus) {
  *
  * @see [cancelActiveDialog]
  */
+@OptIn(InternalApi::class)
 public fun Player.ifClose(eventBus: EventBus) {
     cancelActiveDialog()
     weakQueueList.clear()
     ifCloseModals(eventBus)
+    closeSubs(chatModalTarget(), eventBus)
 }
 
 /**
@@ -234,6 +237,12 @@ public fun Player.ifSetEvents(internal: String, range: IntRange, vararg event: I
     client.write(prot)
 }
 
+/** Moves a component to ([x], [y]) within its parent, keeping its position modes. */
+public fun Player.ifSetPosition(internal: String, x: Int, y: Int) {
+    val target = ServerCacheManager.fromComponent(internal.asRSCM(RSCMType.COMPONENT))
+    client.write(IfSetPosition(target.interfaceId, target.component, x, y))
+}
+
 public fun Player.ifSetText(internal: String, text: String) {
     val target = ServerCacheManager.fromComponent(internal.asRSCM(RSCMType.COMPONENT))
     client.write(IfSetText(target.interfaceId, target.component, text))
@@ -318,7 +327,12 @@ public fun Player.setColour(component: String, colour: Color) {
     client.write(IfSetColour(component.asRSCM(), colour))
 }
 
-private fun Player.openOverlay(interf: String, internal: String, eventBus: EventBus) {
+private fun Player.openOverlay(
+    interf: String,
+    internal: String,
+    eventBus: EventBus,
+    clientType: IfSubType = IfSubType.Overlay,
+) {
     val target = ServerCacheManager.fromComponent(internal.asRSCM(RSCMType.COMPONENT))
     val idComponent = target.toIdComponent()
     val interfaceID = interf.asRSCM(RSCMType.INTERFACE)
@@ -332,7 +346,7 @@ private fun Player.openOverlay(interf: String, internal: String, eventBus: Event
     // Translate any gameframe target component when sent to the client. As far as the server is
     // aware, the interface is being opened on the "base" target component. (when applicable)
     val translated = ui.translate(idComponent)
-    client.write(IfOpenSub(translated.parent, translated.child, interfaceID, IfSubType.Overlay.id))
+    client.write(IfOpenSub(translated.parent, translated.child, interfaceID, clientType.id))
 
     eventBus.publish(OpenSub(this, idInterface, idComponent, IfSubType.Overlay))
 }
@@ -658,8 +672,28 @@ internal fun Player.ifChatNpcSpecific(
 internal fun Player.ifOpenChat(interf: String, widthAndHeightMode: Int, eventBus: EventBus) {
     chatModalUnclamp = widthAndHeightMode
     topLevelChatboxResetBackground(this)
-    openModal(interf, "component.chatbox:chatmodal", eventBus)
+    openModal(interf, CHAT_MODAL_TARGET, eventBus)
 }
+
+/**
+ * Opens [interf] in the chatbox modal slot without making the player busy.
+ *
+ * The client is told it is a modal, so a world click dismisses it and its pause button works, but
+ * the server tracks it as an overlay: queues, interactions and combat carry on underneath it. Meant
+ * for purely informational boxes, such as the level-up display, that must not interrupt whatever
+ * the player is doing. The client's dismissal reaches the server as a close-modal request, which
+ * [ifClose] extends to this slot.
+ */
+public fun Player.ifOpenChatOverlay(interf: String, widthAndHeightMode: Int, eventBus: EventBus) {
+    chatModalUnclamp = widthAndHeightMode
+    topLevelChatboxResetBackground(this)
+    openOverlay(interf, CHAT_MODAL_TARGET, eventBus, clientType = IfSubType.Modal)
+}
+
+private const val CHAT_MODAL_TARGET = "component.chatbox:chatmodal"
+
+private fun chatModalTarget(): Component =
+    ServerCacheManager.fromComponent(CHAT_MODAL_TARGET.asRSCM(RSCMType.COMPONENT)).toIdComponent()
 
 private fun Player.ifSetPauseText(component: String, text: String) {
     if (text.isNotBlank()) {

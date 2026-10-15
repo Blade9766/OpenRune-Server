@@ -2,15 +2,15 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.isOnTreasureTrailKillStep
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -51,18 +51,25 @@ public val mutatedBloodveldDropTable: RSDropTable<Player, DropRollItem> = RSDrop
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 1 weight "obj.trail_elite_emote_exp1" count 1 condition { player ->
-            // Drops Need Manual: The elite clue scroll and casket are only dropped when completing an elite clue scroll asking you to kill a Bloodveld
-             true
+            player.isOnTreasureTrailKillStep()
         }
-        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1
+        1 outOf 1 weight "obj.trail_reward_casket_elite" count 1 condition { player -> player.isOnTreasureTrailKillStep() }
         1 outOf 20 weight "obj.arceuus_corpse_bloodveld" count 1
-        1 outOf 24 weight "obj.prif_crystal_shard" count (3..5) condition { player ->
-            // Drops Need Manual: Crystal shards are only dropped by those found within the Iorwerth Dungeon.
-             true
+        1 outOf 24 weight "obj.prif_crystal_shard" count (3..5) killCondition { player, npc, areaChecker ->
+            areaChecker.inArea("area.iorwerth_dungeon", npc.coords)
         }
         onBuilder { brimstoneKeyRoll(konarTaskBonus = true) }
         1 outOf 121 weight "obj.trail_clue_hard_map001" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_hard_map001")
         }
+        1 outOf 220 weight "obj.cata_shard" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords)
+        }
+        1 outOf 330 chance DropRollItem(
+            "obj.cata_totem1",
+            1,
+            killCondition = { _, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords) },
+            transformObj = { player -> player.darkTotemPieceObj() },
+        )
     },
 )

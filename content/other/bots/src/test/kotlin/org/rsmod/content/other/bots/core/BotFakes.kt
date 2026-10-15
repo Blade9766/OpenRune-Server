@@ -232,4 +232,8 @@ class RecordingLog : BotLog {
     override fun warn(bot: BotRecord, message: String) {
         lines += "WARN ${bot.name}: $message"
     }
+
+    override fun error(message: String) {
+        lines += "ERROR $message"
+    }
 }

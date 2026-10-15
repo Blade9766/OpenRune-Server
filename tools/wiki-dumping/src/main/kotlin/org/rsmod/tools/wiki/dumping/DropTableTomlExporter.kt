@@ -212,6 +212,7 @@ private fun ResolvedDropEntry.toTomlWeightedEntry(): TomlWeightedEntry =
         clueScrollBox = isClueScrollBoxTransform(),
         quest = wikiNotes.questRequirements.firstOrNull()?.questKey,
         questMode = wikiNotes.questRequirements.firstOrNull()?.toTomlQuestMode(),
+        area = area,
         nothing = isNothing,
     )
 
@@ -224,6 +225,7 @@ private fun ResolvedDropEntry.toTomlGuaranteedEntry(): TomlGuaranteedEntry =
         clueScrollBox = isClueScrollBoxTransform(),
         quest = wikiNotes.questRequirements.firstOrNull()?.questKey,
         questMode = wikiNotes.questRequirements.firstOrNull()?.toTomlQuestMode(),
+        area = area,
     )
 
 private fun ResolvedDropEntry.isSimpleTomlTertiaryEntry(): Boolean =
@@ -246,6 +248,9 @@ private fun ResolvedDropEntry.toTomlChanceEntry(): TomlChanceEntry =
         clueScrollBox = isClueScrollBoxTransform(),
         quest = wikiNotes.questRequirements.firstOrNull()?.questKey,
         questMode = wikiNotes.questRequirements.firstOrNull()?.toTomlQuestMode(),
+        area = area,
+        wildernessSlayerTask = wildernessSlayerTask,
+        darkTotemPiece = darkTotemPiece,
     )
 
 private fun ResolvedDropEntry.toTomlChanceEntries(): List<TomlChanceEntry> {

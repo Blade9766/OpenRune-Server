@@ -31,6 +31,7 @@ import org.rsmod.api.player.input.ResumePauseButtonInput
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.LocTInteractions
 import org.rsmod.api.player.interact.LocUInteractions
+import org.rsmod.api.player.interact.NpcInteractions
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessContextFactory
 import org.rsmod.api.player.protect.clearPendingAction
@@ -131,6 +132,32 @@ class TheRestlessGhostInteractionTest {
         f.talk("npc.ghostx")
         f.finish(listOf(1, 1))
         assertEquals(TheRestlessGhostStage.GhostSpoken, f.quest.getQuestStage(f.player))
+    }
+
+    @Test fun `the enchanted amulet also lets the player understand the ghost`() {
+        val f = Fixture(TheRestlessGhostStage.HasAmulet)
+        f.player.worn[Wearpos.Front.slot] = InvObj("obj.amulet_of_ghostspeak_enchanted", 1)
+        f.talk("npc.ghostx")
+        f.finish(listOf(1, 1))
+        assertEquals(TheRestlessGhostStage.GhostSpoken, f.quest.getQuestStage(f.player))
+    }
+
+    @Test fun `the ghost cannot be spoken to before the quest is started`() {
+        val f = Fixture()
+        f.player.worn[Wearpos.Front.slot] = InvObj("obj.amulet_of_ghostspeak", 1)
+        f.talk("npc.ghostx")
+        f.finish(listOf(1))
+        assertTrue(f.quest.isQuestNotStarted(f.player))
+    }
+
+    @Test fun `the altar holds nothing before the ghost has been spoken to`() {
+        val f = Fixture(TheRestlessGhostStage.HasAmulet)
+        f.searchAltar()
+        f.finish()
+        assertEquals(0, f.player.inv.count("obj.ghostskull"))
+        assertEquals(0, f.player.vars["varbit.restless_ghost_altar_var"])
+        assertEquals(0, f.npcs.count { it.isType("npc.skull_skeleton") })
+        assertEquals(TheRestlessGhostStage.HasAmulet, f.quest.getQuestStage(f.player))
     }
 
     @Test fun `altar search retrieves the skull and wakes a skeleton that attacks the player`() {
@@ -277,6 +304,7 @@ class TheRestlessGhostInteractionTest {
             getCollision = { collision }, getNpcList = { npcs },
             getTeleportValidator = { PlayerTeleportValidator(emptySet()) },
             getAreaChecker = { AreaChecker(regions, AreaIndex()) },
+            getNpcInteractions = { NpcInteractions(events) },
         )
         private val movement = PlayerMovementProcessor(collision, RouteFactory(collision), StepFactory(collision), events)
         private val coroutine = GameCoroutine("restless-ghost-test")

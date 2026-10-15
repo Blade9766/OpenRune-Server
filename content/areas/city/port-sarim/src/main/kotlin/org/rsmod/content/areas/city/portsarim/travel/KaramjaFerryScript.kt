@@ -4,6 +4,8 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
+import org.rsmod.content.quest.area.karamja.piratestreasure.confiscateRum
+import org.rsmod.content.quest.area.karamja.piratestreasure.customsBoarding
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -15,7 +17,9 @@ class KaramjaFerryScript : PluginScript() {
             onOpNpc3(sailor) { payAndSail(MUSA_POINT, MUSA_POINT_NAME) }
         }
         onOpNpc1(CUSTOMS_OFFICER) { startDialogue(it.npc) { customsOfficer() } }
-        onOpNpc3(CUSTOMS_OFFICER) { payAndSail(PORT_SARIM, PORT_SARIM_NAME) }
+        onOpNpc3(CUSTOMS_OFFICER) {
+            if (!confiscateRum()) payAndSail(PORT_SARIM, PORT_SARIM_NAME)
+        }
     }
 
     private suspend fun Dialogue.offerTrip() {
@@ -45,19 +49,7 @@ class KaramjaFerryScript : PluginScript() {
                 CustomsTopic.Leave,
             )
         when (topic) {
-            CustomsTopic.Journey -> {
-                chatPlayer(quiz, "Can I journey on this ship?")
-                chatNpc(
-                    neutral,
-                    "You can, but you'll need to pay a boarding charge of $FARE coins.",
-                )
-                if (choice2("Okay.", true, "Oh, I'll not bother then.", false)) {
-                    chatPlayer(neutral, "Okay.")
-                    board(PORT_SARIM, PORT_SARIM_NAME)
-                } else {
-                    chatPlayer(neutral, "Oh, I'll not bother then.")
-                }
-            }
+            CustomsTopic.Journey -> customsBoarding { board(PORT_SARIM, PORT_SARIM_NAME) }
             CustomsTopic.Customs -> {
                 chatPlayer(quiz, "What unusual customs do they have here?")
                 chatNpc(neutral, "I'm not that sort of customs officer.")

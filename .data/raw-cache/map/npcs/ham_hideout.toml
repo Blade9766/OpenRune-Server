@@ -250,7 +250,3 @@ coords = "0_49_150_46_31"
 npc = "npc.lost_tribe_sigmund_ham"
 coords = "0_49_150_33_27"
 
-[[spawn]]
-npc = "npc.lost_tribe_sigmund_there"
-coords = "0_49_150_30_31"
-

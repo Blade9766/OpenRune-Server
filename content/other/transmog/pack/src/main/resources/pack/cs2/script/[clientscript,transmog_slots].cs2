@@ -1,0 +1,11 @@
+[clientscript,transmog_slots](int $selected, int $hidden)
+~transmog_slot(transmog:slot0, 0, $selected, $hidden);
+~transmog_slot(transmog:slot1, 1, $selected, $hidden);
+~transmog_slot(transmog:slot2, 2, $selected, $hidden);
+~transmog_slot(transmog:slot3, 3, $selected, $hidden);
+~transmog_slot(transmog:slot4, 4, $selected, $hidden);
+~transmog_slot(transmog:slot5, 5, $selected, $hidden);
+~transmog_slot(transmog:slot7, 7, $selected, $hidden);
+~transmog_slot(transmog:slot9, 9, $selected, $hidden);
+~transmog_slot(transmog:slot10, 10, $selected, $hidden);
+if_setoninvtransmit("transmog_slots($selected, $hidden){transmog_slots}", transmog:slots_box);

@@ -83,3 +83,7 @@ public fun Player.clueScrollTransformObj(scrollObj: String): String? {
     val tier = clueScrollTierForObj(scrollObj) ?: return null
     return clueScrollBoxObj(tier)
 }
+
+/** Clue "kill X for the key" steps: the key drops only while the clue is carried and unsolved. */
+public fun Player.needsClueKey(clue: String, key: String): Boolean =
+    invMap["inv.inv"]?.contains(clue) == true && !hasObjInInventoryOrBank(key)

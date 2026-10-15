@@ -6,6 +6,7 @@ import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.table.herblore.HerbloreFinishedRow
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.InvObj
 import org.rsmod.game.inv.isType
 
 object AmuletOfChemistry {
@@ -20,10 +21,10 @@ object AmuletOfChemistry {
         "obj.amulet_of_chemistry_imbued_uncharged"
     )
 
-    private val WEARABLE_TYPES = setOf(
-        "obj.amulet_of_chemistry",
-        "obj.amulet_of_chemistry_imbued_charged"
-    )
+    private const val IMBUED_CHARGED = "obj.amulet_of_chemistry_imbued_charged"
+    private const val IMBUED_UNCHARGED = "obj.amulet_of_chemistry_imbued_uncharged"
+
+    private val WEARABLE_TYPES = setOf("obj.amulet_of_chemistry", IMBUED_CHARGED)
 
     private val ALWAYS_FOUR_DOSE_UNF_POTS = setOf("obj.torstol")
     private val DOSE_PATTERN = Regex("^obj\\.(\\d)dose(.+)$")
@@ -32,7 +33,6 @@ object AmuletOfChemistry {
     data class BrewResult(
         val output: String,
         val extraDoseApplied: Boolean,
-        val crumbled: Boolean,
     )
 
     fun isWearing(player: Player): Boolean {
@@ -42,31 +42,41 @@ object AmuletOfChemistry {
 
     fun rollBrewOutput(player: Player, random: GameRandom, potion: HerbloreFinishedRow): BrewResult {
         val baseOutput = potion.outputPotion.internalName
-        if (!isWearing(player) || player.chemistryCharges <= 0) {
-            return BrewResult(baseOutput, extraDoseApplied = false, crumbled = false)
+        if (!isWearing(player) || player.chemistryChargeCount() <= 0) {
+            return BrewResult(baseOutput, extraDoseApplied = false)
         }
 
         val unfPot = potion.unfPot.internalName
         if (!canApplyChemistry(unfPot, baseOutput)) {
-            return BrewResult(baseOutput, extraDoseApplied = false, crumbled = false)
+            return BrewResult(baseOutput, extraDoseApplied = false)
         }
 
-        val upgraded = upgradeOutput(baseOutput) ?: return BrewResult(baseOutput, extraDoseApplied = false, crumbled = false)
+        val upgraded = upgradeOutput(baseOutput) ?: return BrewResult(baseOutput, extraDoseApplied = false)
 
         if (!random.randomBoolean(100 / PROC_CHANCE_PERCENT)) {
-            return BrewResult(baseOutput, extraDoseApplied = false, crumbled = false)
+            return BrewResult(baseOutput, extraDoseApplied = false)
         }
-
-        val remaining = player.chemistryCharges - 1
-        player.chemistryCharges = remaining.coerceAtLeast(0)
-
-        val crumbled = remaining <= 0
-        if (crumbled) {
-            player.front = null
-        }
-
-        return BrewResult(upgraded, extraDoseApplied = true, crumbled = crumbled)
+        return BrewResult(upgraded, extraDoseApplied = true)
     }
+
+    fun consumeCharge(player: Player): Boolean {
+        val remaining = player.chemistryChargeCount() - 1
+        if (remaining > 0) {
+            player.chemistryCharges = remaining
+            return false
+        }
+        player.chemistryCharges = 0
+        val neck = player.front
+        player.front =
+            if (neck.isType(IMBUED_CHARGED)) {
+                InvObj(IMBUED_UNCHARGED, 1)
+            } else {
+                null
+            }
+        return true
+    }
+
+    fun isImbued(player: Player): Boolean = player.front.isType(IMBUED_CHARGED)
 
     /** Parses dose count from `obj.Ndose…` or `obj.name+N` potion ids. */
     fun parseDose(internal: String): Int? {
@@ -112,7 +122,7 @@ object AmuletOfChemistry {
     }
 
     fun resetCharges(player: Player) {
-        player.chemistryCharges = MAX_CHARGES
+        player.chemistryCharges = 0
     }
 }
 
@@ -122,4 +132,6 @@ internal var Player.chemistryStopOnCrumble by boolVarBit(AmuletOfChemistry.STOP_
 
 fun Player.shouldStopBrewingOnChemistryCrumble(): Boolean = chemistryStopOnCrumble
 
-fun Player.chemistryChargeCount(): Int = chemistryCharges.coerceIn(0, AmuletOfChemistry.MAX_CHARGES)
+fun Player.chemistryChargeCount(): Int =
+    chemistryCharges.takeIf { it > 0 }?.coerceAtMost(AmuletOfChemistry.MAX_CHARGES)
+        ?: AmuletOfChemistry.MAX_CHARGES

@@ -2,6 +2,7 @@ package org.rsmod.api.combat.formulas.attributes.collector
 
 import dev.openrune.types.NpcServerType
 import java.util.EnumSet
+import org.rsmod.api.area.checker.isInWildernessBasic
 import org.rsmod.api.combat.formulas.attributes.CombatNpcAttributes
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
@@ -30,7 +31,10 @@ public class CombatNpcAttributeCollector {
             attributes += CombatNpcAttributes.SlayerTask
         }
 
-        // TODO(combat): "In wilderness" area check.
+        // Revenant weapons only get their boost against npcs standing in the Wilderness.
+        if (npc != null && npc.coords.isInWildernessBasic()) {
+            attributes += CombatNpcAttributes.Wilderness
+        }
 
         val sizeAttribute =
             when (val size = type.size) {
@@ -126,6 +130,10 @@ public class CombatNpcAttributeCollector {
             attributes += CombatNpcAttributes.CorporealBeast
         }
 
+        if (TANGLEFOOT_TYPES.any(type::isType)) {
+            attributes += CombatNpcAttributes.Tanglefoot
+        }
+
         if (type.param(params.xerician) != 0) {
             attributes += CombatNpcAttributes.Xerician
         }
@@ -135,5 +143,17 @@ public class CombatNpcAttributeCollector {
         }
 
         return attributes
+    }
+
+    private companion object {
+        /** Magic secateurs draw on Farming against any of these; see `MeleeMaxHitOperations`. */
+        val TANGLEFOOT_TYPES =
+            listOf(
+                "npc.fairy_tanglefoot",
+                "npc.fairy_tanglefoot_sml1",
+                "npc.fairy_tanglefoot_sml2",
+                "npc.nzone_fairy_tanglefoot_normal",
+                "npc.nzone_fairy_tanglefoot_hard",
+            )
     }
 }

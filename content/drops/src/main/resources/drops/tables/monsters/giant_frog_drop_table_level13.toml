@@ -1,0 +1,21 @@
+id = "Giant frog Level 13 drops"
+npcs = ["npc.giant_frog_nodrops"]
+
+[[tertiary]]
+numerator = 1
+denominator = 400
+obj = "obj.dorgesh_construction_bone"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5013
+obj = "obj.dorgesh_construction_bone_curved"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 64
+obj = "obj.trail_clue_beginner"
+count = 1
+clue_scroll_box = true

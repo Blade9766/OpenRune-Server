@@ -172,8 +172,11 @@ public class Player(
      */
     public var worldType: WorldType by Delegates.notNull()
 
-    /** Blocks background saves while this player's state is deliberately inconsistent. */
-    public var persistenceSuspended: Boolean = false
+    /**
+     * Blocks every save, logout included, while this player's state is deliberately inconsistent.
+     * A failed world-type swap leaves it set so the half-swapped state is never written.
+     */
+    @Volatile public var persistenceSuspended: Boolean = false
 
     // Currently unsure of the exact requirements for this value's use case, however, it should
     // **always** be set on login (like the other player identifiers).

@@ -60,10 +60,7 @@ public val phantomMuspahDropTable: RSDropTable<Player, DropRollItem> = RSDropTab
         10 outOf 100 separate "obj.ancient_essence" count 1970..2060
         4 outOf 100 separate "obj.frozen_cache" count 1
         2 outOf 100 separate "obj.ancient_icon" count 1
-        1 outOf 100 separate "obj.venator_shard" count 1 condition { player ->
-            // Drops Need Manual: When a Venator shard is received, no regular loot will be dropped alongside it.
-             true
-        }
+        1 outOf 100 separate "obj.venator_shard" count 1
         1 outOf 9 separate rsPlayerWeightedTable {
             1 weight "obj.shark" count 4..6
             1 weight "obj.summer_pie" count 4..6

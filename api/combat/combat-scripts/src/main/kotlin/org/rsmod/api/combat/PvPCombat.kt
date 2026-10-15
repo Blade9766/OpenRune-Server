@@ -4,23 +4,25 @@ import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
+import org.rsmod.api.combat.commons.hook.PvPAttackRestrictionHook
+import org.rsmod.api.combat.manager.EnchantedBolts
 import org.rsmod.api.combat.manager.PlayerAttackManager
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.combat.player.activateMagicSpecial
 import org.rsmod.api.combat.player.activateMeleeSpecial
 import org.rsmod.api.combat.player.activateRangedSpecial
 import org.rsmod.api.combat.player.activateShieldSpecial
+import org.rsmod.api.combat.player.activateSpellSpecial
 import org.rsmod.api.combat.player.setPkVars
 import org.rsmod.api.combat.player.specialAttackType
-import org.rsmod.api.death.PvPSkullHook
-import org.rsmod.api.death.PvPSpecialAttackHook
 import org.rsmod.api.combat.weapon.WeaponSpeeds
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.death.PvPSkullHook
+import org.rsmod.api.death.PvPSpecialAttackHook
 import org.rsmod.api.player.isValidTarget
 import org.rsmod.api.player.lefthand
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.quiver
 import org.rsmod.api.player.righthand
 import org.rsmod.api.specials.SpecialAttackRegistry
 import org.rsmod.api.specials.SpecialAttackType
@@ -42,9 +44,11 @@ constructor(
     private val weaponsReg: WeaponRegistry,
     private val manager: PlayerAttackManager,
     private val ammunition: RangedAmmoManager,
+    private val enchantedBolts: EnchantedBolts,
     private val spellsReg: SpellAttackRegistry,
     private val skullHooks: Set<PvPSkullHook>,
     private val specialAttackHooks: Set<PvPSpecialAttackHook>,
+    private val attackRestrictionHooks: Set<PvPAttackRestrictionHook>,
 ) {
     suspend fun attack(access: ProtectedAccess, target: Player, attack: CombatAttack.PlayerAttack) {
         when (attack) {
@@ -53,6 +57,27 @@ constructor(
             is CombatAttack.Spell -> access.attackMagicSpell(target, attack)
             is CombatAttack.Staff -> access.attackMagicStaff(target, attack)
         }
+    }
+
+    /**
+     * Returns `false` (and stops combat) when a registered [PvPAttackRestrictionHook] forbids this
+     * particular attack against [target].
+     */
+    private fun ProtectedAccess.isAttackAllowed(
+        target: Player,
+        attack: CombatAttack.PlayerAttack,
+    ): Boolean {
+        val special = specialAttackType != SpecialAttackType.None
+        for (hook in attackRestrictionHooks) {
+            val message = hook.restriction(player, target, attack, special) ?: continue
+            if (special) {
+                specialAttackType = SpecialAttackType.None
+            }
+            manager.stopCombat(player)
+            mes(message)
+            return false
+        }
+        return true
     }
 
     private fun ProtectedAccess.applyPkVars(target: Player) {
@@ -70,6 +95,9 @@ constructor(
 
     private suspend fun ProtectedAccess.attackMelee(target: Player, attack: CombatAttack.Melee) {
         if (!canAttack(target)) {
+            return
+        }
+        if (!isAttackAllowed(target, attack)) {
             return
         }
 
@@ -91,7 +119,9 @@ constructor(
         // attack.
         if (specialAttackType == SpecialAttackType.Weapon) {
             specialAttackType = SpecialAttackType.None
-            val activatedSpec = activateMeleeSpecial(target, attack, specialsReg, specialEnergy)
+            val activatedSpec =
+                activateMeleeSpecial(target, attack, specialsReg, specialEnergy) ||
+                    activateSpellSpecial(target, attack.weapon, specialsReg, specialEnergy)
             if (activatedSpec) {
                 applySpecialAttackHooks(target)
                 applyPkVars(target)
@@ -131,6 +161,9 @@ constructor(
 
     private suspend fun ProtectedAccess.attackRanged(target: Player, attack: CombatAttack.Ranged) {
         if (!canAttack(target)) {
+            return
+        }
+        if (!isAttackAllowed(target, attack)) {
             return
         }
 
@@ -190,7 +223,9 @@ constructor(
             return
         }
 
-        val quiver = player.quiver
+        // The ammo slot, or the ammunition stored in a worn Dizana's quiver when the ammo slot
+        // cannot supply anything this weapon can fire.
+        val quiver = ammunition.activeAmmo(player, righthandType)
         val quiverType = getOrNull(quiver)
 
         val canUseAmmo = ammunition.attemptAmmoUsage(player, righthandType, quiverType)
@@ -220,7 +255,7 @@ constructor(
             return
         }
 
-        val projanimType = RSCM.getReverseMapping(RSCMType.PROJANIM,projectileID)
+        val projanimType = RSCM.getReverseMapping(RSCMType.PROJANIM, projectileID)
 
         // All valid ranged weapons require an `attack_anim_stance1` seq type param to be used in
         // combat.
@@ -237,7 +272,11 @@ constructor(
         // has no `proj_launch` param, a "null" (-1) spotanim will still be sent in the same slot
         // and height as usual.
         val launchSpotanim = weaponType.paramOrNull(params.proj_launch)?.id ?: NULL_SPOTANIM_ID
-        player.spotanim(RSCM.getReverseMapping(RSCMType.SPOTANIM,launchSpotanim), height = 96, slot = constants.spotanim_slot_combat)
+        val launchSpotanimName =
+            launchSpotanim
+                .takeUnless { it == NULL_SPOTANIM_ID }
+                ?.let { RSCM.getReverseMapping(RSCMType.SPOTANIM, it) }
+        spotanim(launchSpotanimName, height = 96, slot = constants.spotanim_slot_combat)
 
         val projanim = manager.spawnProjectile(player, target, travelSpotanim, projanimType)
         val (serverDelay, clientDelay) = projanim.durations
@@ -253,11 +292,11 @@ constructor(
             ammunition.useQuiverAmmo(player, quiverType, target.coords, dropDelay = serverDelay)
         }
 
-        val damage = manager.rollRangedDamage(player, target, attack)
-        manager.giveCombatXp(player, target, attack, damage)
-
         val hitAmmoObj = if (usingThrown) null else quiverType
-        manager.queueRangedHit(player, target, hitAmmoObj, damage, clientDelay, serverDelay)
+        val shot = enchantedBolts.shoot(player, target, attack, hitAmmoObj)
+        manager.giveCombatXp(player, target, attack, shot.damage)
+        manager.queueRangedHit(player, target, hitAmmoObj, shot.damage, clientDelay, serverDelay)
+        enchantedBolts.applyEffect(player, target, shot, clientDelay, serverDelay)
 
         if (usingThrown && player.righthand == null) {
             mes("That was your last one!")
@@ -274,6 +313,9 @@ constructor(
         if (!canAttack(target)) {
             return
         }
+        if (!isAttackAllowed(target, attack)) {
+            return
+        }
 
         if (manager.isAttackDelayed(player)) {
             manager.continueCombat(player, target, attack.spell)
@@ -283,7 +325,23 @@ constructor(
         val attackRate = MAGIC_SPELL_ATTACK_RATE
         manager.setNextAttackDelay(player, attackRate)
 
-        val spell = spellsReg[RSCM.getReverseMapping(RSCMType.OBJ,attack.spell.obj.id)]
+        if (specialAttackType == SpecialAttackType.Weapon) {
+            specialAttackType = SpecialAttackType.None
+            val activatedSpec =
+                activateSpellSpecial(target, attack.weapon, specialsReg, specialEnergy)
+            if (activatedSpec) {
+                return
+            }
+        }
+        if (specialAttackType == SpecialAttackType.Shield) {
+            specialAttackType = SpecialAttackType.None
+            val activatedSpec = activateShieldSpecial(target, player.lefthand, specialsReg)
+            if (activatedSpec) {
+                return
+            }
+        }
+
+        val spell = spellsReg[RSCM.getReverseMapping(RSCMType.OBJ, attack.spell.obj.id)]
         if (spell != null) {
             applyPkVars(target)
             spell.attack(this, target, attack)
@@ -300,6 +358,9 @@ constructor(
         attack: CombatAttack.Staff,
     ) {
         if (!canAttack(target)) {
+            return
+        }
+        if (!isAttackAllowed(target, attack)) {
             return
         }
 

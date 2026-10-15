@@ -2,15 +2,15 @@ package org.rsmod.content.drops.tables.monsters
 
 import dtx.rs.RSDropTable
 import dtx.rs.npcs
-import dtx.rs.areas
-import org.rsmod.api.droptable.rsPlayerGuaranteedTable
+import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.api.droptable.ringNothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
-import org.rsmod.content.drops.tables.shared.SharedDropTables
-import org.rsmod.api.droptable.DropRollItem
+import org.rsmod.content.drops.canReceiveChampionScroll
 import org.rsmod.content.drops.clueScrollTransformObj
-import org.rsmod.api.droptable.ringNothing
-import org.rsmod.api.droptable.RegisterDropTable
+import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
 @field:RegisterDropTable
@@ -44,11 +44,19 @@ public val skeletonCatacombsOfKourendDropTable: RSDropTable<Player, DropRollItem
     },
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 5000 weight "obj.champions_challenge_skeleton" count 1 condition { player ->
-            // Drops Need Manual: Only dropped if access to Champions' Guild is available, and the Skeleton Champion hasn't been previously killed in the Champions' Challenge.
-             true
+            player.canReceiveChampionScroll("skeleton")
         }
         1 outOf 100 weight "obj.trail_clue_beginner" count 1 transformObj { player ->
              player.clueScrollTransformObj("obj.trail_clue_beginner")
         }
+        1 outOf 314 weight "obj.cata_shard" count 1 killCondition {
+            player, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords)
+        }
+        1 outOf 471 chance DropRollItem(
+            "obj.cata_totem1",
+            1,
+            killCondition = { _, npc, areaChecker -> areaChecker.inArea("area.catacombs_of_kourend", npc.coords) },
+            transformObj = { player -> player.darkTotemPieceObj() },
+        )
     },
 )

@@ -2,12 +2,13 @@ package org.rsmod.content.skills.prayer.items.bonecrusher
 
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
+import org.rsmod.api.invtx.invDelAll
 import org.rsmod.api.player.events.interact.HeldUEvents
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.basePrayerLvl
 import org.rsmod.api.script.onOpHeldU
+import org.rsmod.game.inv.InvObj
 import org.rsmod.game.inv.Inventory
-import org.rsmod.game.inv.isType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -55,23 +56,18 @@ public class BonecrusherNecklaceAssemblyScript : PluginScript() {
             return
         }
 
-        val crusherSlot = reagents["obj.bonecrusher"] ?: return
-        val crusherObj = inv[crusherSlot] ?: return
-        val crusherVars = crusherObj.vars
-
-        val deleteOrder = listOf("obj.bonecrusher", "obj.hydra_tail", "obj.dragonbone_necklace").map {
-            type -> type to reagents.getValue(type)
-        }.sortedByDescending { (_, slot) -> slot }
-
-        for ((type, slot) in deleteOrder) {
-            if (invDel(inv, type, count = 1, slot = slot).failure) {
-                return
-            }
-        }
-
-        if (invAdd(inv, "obj.bonecrusher_necklace", count = 1, vars = crusherVars).failure) {
+        val current = inv.findBonecrusherCraftReagents() ?: return
+        if (inv.contains("obj.bonecrusher_necklace")) {
             return
         }
+        val crusherSlot = current["obj.bonecrusher"] ?: return
+        val crusherVars = inv[crusherSlot]?.vars ?: return
+
+        val reagentObjs = listOf("obj.bonecrusher", "obj.hydra_tail", "obj.dragonbone_necklace").map { InvObj(it) }
+        if (player.invDelAll(inv, reagentObjs).failure) {
+            return
+        }
+        invAdd(inv, "obj.bonecrusher_necklace", count = 1, vars = crusherVars)
 
         objbox(
             "obj.bonecrusher_necklace",
@@ -95,5 +91,4 @@ public class BonecrusherNecklaceAssemblyScript : PluginScript() {
         }
         return found.takeIf { it.size == required.size }
     }
-
 }

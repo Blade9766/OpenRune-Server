@@ -4,6 +4,8 @@ import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
 import org.rsmod.api.area.checker.AreaChecker
 import org.rsmod.api.area.checker.isInWilderness
+import org.rsmod.api.player.hook.PlayerRestrictions
+import org.rsmod.api.player.hook.RestrictedAction
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.hitpoints
@@ -23,6 +25,7 @@ class ConsumeFoodScript
 @Inject
 constructor(
     private val areaChecker: AreaChecker,
+    private val restrictions: PlayerRestrictions,
     private val effects: FoodEffectService,
     private val specialEffects: FoodSpecialEffectService,
 ) : PluginScript() {
@@ -180,6 +183,13 @@ constructor(
         type: ItemServerType,
         inventory: Inventory,
     ) {
+        val restriction =
+            restrictions.check(player, RestrictedAction.Food)
+        if (restriction != null) {
+            mes(restriction)
+            return
+        }
+
         val consumableType =
             food.consumableType()
 

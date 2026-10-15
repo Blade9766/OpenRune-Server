@@ -11,6 +11,7 @@ import dtx.core.RollResult
 import dtx.core.flatten
 import jakarta.inject.Inject
 import kotlin.random.Random
+import org.rsmod.api.combatachievements.CombatAchievements
 import org.rsmod.api.droptable.DropTableRegistry
 import org.rsmod.api.droptable.rollCount
 import org.rsmod.api.invtx.invAdd
@@ -54,9 +55,8 @@ constructor(
     private val spawner: BarrowsNpcSpawner,
     private val doors: BarrowsDoors,
     private val dropRegistry: DropTableRegistry,
+    private val achievements: CombatAchievements,
 ) : PluginScript() {
-    private val puzzles = mutableMapOf<Int, BarrowsPuzzle>()
-
     override fun ScriptContext.startup() {
         onArea("area.barrows") { enterSurface() }
         onAreaExit("area.barrows") { leaveSurface() }
@@ -64,7 +64,6 @@ constructor(
         onAreaExit("area.barrows_crypt") { leaveCrypt() }
         onPlayerLogout {
             spawner.despawnAll(player)
-            puzzles.remove(player.uid.packed)
             deliverRewards(player)
         }
         onIfClose(REWARD_INTERFACE) { deliverRewards(player) }
@@ -113,6 +112,7 @@ constructor(
         } else if (cameraEffectsEnabled()) {
             camShake(CamShakeAxis.LEFT_RIGHT, 5, 0, 0)
         }
+        if (player.lockedDoorMask == 0) player.shuffleTunnels()
         player.refreshDoors(hasLockpick())
         if (!player.cryptMapStudied) minimapHideMap()
         player.refreshLadder()
@@ -138,6 +138,7 @@ constructor(
             }
             if (!player.isSlain(brother)) {
                 spawner.spawnBrother(player, brother, "You dare disturb my rest!")
+                return
             }
         }
         spam("You don't find anything.")
@@ -188,14 +189,6 @@ constructor(
             }
         spawner.spawnMonster(player, monster)
     }
-
-    private fun crossingTile(player: CoordGrid, door: CoordGrid, angle: Int): CoordGrid =
-        when (angle) {
-            0 -> CoordGrid(if (player.x < door.x) door.x else door.x - 1, player.z, player.level)
-            2 -> CoordGrid(if (player.x <= door.x) door.x + 1 else door.x, player.z, player.level)
-            1 -> CoordGrid(player.x, if (player.z <= door.z) door.z + 1 else door.z, player.level)
-            else -> CoordGrid(player.x, if (player.z < door.z) door.z else door.z - 1, player.level)
-        }
 
     private fun ProtectedAccess.hasLockpick(): Boolean =
         player.inv.any { it.isType(LOCKPICK) || it.isType(LOCKPICK_FULL) }
@@ -248,6 +241,7 @@ constructor(
             }
         player.barrowsLooted = true
         player.chestCount += 1
+        achievements.checkKillcounts(player)
         mes("Your Barrows chest count is: <col=ff0000>${player.chestCount}</col>.")
 
         val rewardInv = player.invMap.getOrPut(REWARD_INV)
@@ -286,8 +280,7 @@ constructor(
     }
 
     private fun ProtectedAccess.openPuzzle() {
-        val puzzle = BarrowsPuzzle.random()
-        puzzles[player.uid.packed] = puzzle
+        val puzzle = player.puzzle
         ifOpenMain(PUZZLE_INTERFACE)
         for (i in 0 until 3) {
             ifSetModel("component.barrows_puzzle:${i + 1}", puzzle.type.sequence[i])
@@ -296,17 +289,16 @@ constructor(
     }
 
     private fun ProtectedAccess.selectPuzzleOption(slot: Int) {
-        val puzzle = puzzles.remove(player.uid.packed) ?: return
-        if (slot == puzzle.correctSlot) {
+        ifClose()
+        if (player.puzzleSolved) return
+        if (slot == player.puzzle.correctSlot) {
             mes("You hear the doors' locking mechanism grind open.")
             player.puzzleSolved = true
         } else {
             mes("You hear the doors' locking mechanism shut down.")
-            player.corner = BarrowsCorner.entries.filter { it != player.corner }.random()
-            player.shiftDoorways()
+            player.shuffleTunnels()
             player.refreshDoors(hasLockpick())
         }
-        ifClose()
     }
 
     private fun ProtectedAccess.cryptTick() {

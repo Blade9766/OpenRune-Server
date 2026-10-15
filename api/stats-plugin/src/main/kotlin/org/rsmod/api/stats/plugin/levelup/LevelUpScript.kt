@@ -41,7 +41,7 @@ public class LevelUpScript : PluginScript() {
     private suspend fun ProtectedAccess.advanceCombat(level: Int) {
         val label = LevelUpStat.COMBAT_LABEL
         mes(LevelUpText.message(label, level, maxed = false))
-        midiJingle(LevelUpStat.COMBAT_JINGLE)
+        player.midiJingle(LevelUpStat.COMBAT_JINGLE)
 
         if (vars[POPUP_DISABLED_VARBIT] == 0) {
             levelUpDisplay(

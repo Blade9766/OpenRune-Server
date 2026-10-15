@@ -4,19 +4,21 @@ import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.cookingLvl
-import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.content.generic.locs.doors.DoorTranslations
-import org.rsmod.game.loc.BoundLocInfo
+import org.rsmod.content.generic.locs.passages.GenericPassageScript
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class CookingGuildDoor @Inject constructor(
-    private val locRepo: LocRepository,
-) : PluginScript() {
+class CookingGuildDoor @Inject constructor(private val passages: GenericPassageScript) :
+    PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLoc1("loc.chefdoor") {
+            val door = it.vis
+            if (coords.z > door.coords.z) {
+                with(passages) { walkThrough(door, it.type) }
+                return@onOpLoc1
+            }
             when {
                 !player.hasGuildEntryOutfit() && player.cookingLvl >= 32 ->
                     denyEntry {
@@ -51,26 +53,12 @@ class CookingGuildDoor @Inject constructor(
                         )
                     }
 
-                else -> walkThroughDoor(it.vis)
+                else -> with(passages) { walkThrough(door, it.type) }
             }
         }
     }
 
     private suspend fun ProtectedAccess.denyEntry(lines: suspend Dialogue.() -> Unit) {
         startDialogue { lines() }
-    }
-
-    private suspend fun ProtectedAccess.walkThroughDoor(door: BoundLocInfo) {
-        val doorCoords = door.coords
-        val south = coords.z <= doorCoords.z
-        val walkTo = if (south) doorCoords.translateZ(1) else doorCoords.translateZ(-1)
-
-        val openAngle = door.turnAngle(rotations = 1)
-        val openCoords = DoorTranslations.translateOpen(doorCoords, door.shape, door.angle)
-
-        locRepo.del(door, 3)
-        locRepo.add(openCoords, "loc.chefdoor_open", 3, openAngle, door.shape)
-
-        teleport(walkTo)
     }
 }

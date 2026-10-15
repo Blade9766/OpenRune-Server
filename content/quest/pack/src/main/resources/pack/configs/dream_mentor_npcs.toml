@@ -1,0 +1,105 @@
+# Cyrisus recovering in the mine, waiting in town, and 'Bird's-Eye' Jack at his bank booth
+# all stay where they are put. No option is named, so each keeps its cache ops.
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_unconscious"
+inherit = "npc.dream_cyrisus_unconscious"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_barely_conscious"
+inherit = "npc.dream_cyrisus_barely_conscious"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_sitting"
+inherit = "npc.dream_cyrisus_sitting"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus"
+inherit = "npc.dream_cyrisus"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_ranger"
+inherit = "npc.dream_cyrisus_ranger"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_melee"
+inherit = "npc.dream_cyrisus_melee"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_caster"
+inherit = "npc.dream_cyrisus_caster"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_outsidemulti"
+inherit = "npc.dream_cyrisus_outsidemulti"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_cyrisus_outsidebraziermulti"
+inherit = "npc.dream_cyrisus_outsidebraziermulti"
+wanderRange = 0
+defaultMode = "None"
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_birds_eye_jack_multi"
+inherit = "npc.dream_birds_eye_jack_multi"
+wanderRange = 0
+defaultMode = "None"
+
+# Cyrisus' fears chase across the whole arena, and The Inadequacy spits at anyone who keeps
+# their distance, so it attacks from range.
+[[npc]]
+isServerOnly = true
+id = "npc.dream_inadequacy"
+inherit = "npc.dream_inadequacy"
+maxRange = 40
+attackRange = 8
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_everlasting"
+inherit = "npc.dream_everlasting"
+maxRange = 40
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_untouchable"
+inherit = "npc.dream_untouchable"
+maxRange = 40
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_illusive"
+inherit = "npc.dream_illusive"
+maxRange = 40
+
+[[npc]]
+isServerOnly = true
+id = "npc.dream_razorbeast"
+inherit = "npc.dream_razorbeast"
+maxRange = 40
+

@@ -91,16 +91,8 @@ npc = "npc.route_ivan_strom_parent"
 coords = "0_54_153_57_51"
 
 [[spawn]]
-npc = "npc.route_polmafi_ferdygris"
-coords = "0_54_153_58_46"
-
-[[spawn]]
 npc = "npc.route_polmafi_ferdygris_parent"
 coords = "0_54_153_58_46"
-
-[[spawn]]
-npc = "npc.route_radigad_ponfit"
-coords = "0_54_153_53_39"
 
 [[spawn]]
 npc = "npc.route_radigad_ponfit_parent"

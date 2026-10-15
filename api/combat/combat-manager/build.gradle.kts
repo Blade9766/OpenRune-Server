@@ -8,12 +8,14 @@ kotlin {
 
 dependencies {
     implementation(libs.guice)
+    implementation(projects.api.attr)
     implementation(projects.api.combat.combatCommons)
     implementation(projects.api.combat.combatFormulas)
     implementation(projects.api.config)
     implementation(projects.api.death)
     implementation(projects.api.generated)
     implementation(projects.api.invtx)
+    implementation(projects.api.mechanics.toxins)
     implementation(projects.api.npc)
     implementation(projects.api.objCharges)
     implementation(projects.api.player)

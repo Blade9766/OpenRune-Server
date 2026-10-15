@@ -5,6 +5,14 @@ import org.junit.jupiter.api.Test
 
 class VenomToPoisonTest {
     @Test
+    fun `venom hits start at 6 and climb by 2 up to 20`() {
+        assertEquals(6, PlayerVenom.damageForStrikeIndex(0))
+        assertEquals(8, PlayerVenom.damageForStrikeIndex(1))
+        assertEquals(20, PlayerVenom.damageForStrikeIndex(7))
+        assertEquals(20, PlayerVenom.damageForStrikeIndex(50))
+    }
+
+    @Test
     fun `converted poison starts at the damage of the last venom hit`() {
         assertEquals(6, PlayerVenom.lastDamage(strikes = 1))
         assertEquals(6, PlayerVenom.lastDamage(strikes = 2))

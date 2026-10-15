@@ -7,6 +7,7 @@ import org.rsmod.api.droptable.RegisterDropTable
 import org.rsmod.api.droptable.ringNothing
 import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
+import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
@@ -46,6 +47,12 @@ public val pirateDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tertiaries = rsPlayerTertiaryTable {
         1 outOf 6 weight "obj.looting_bag" count 1 condition {
             player -> player.shouldDropLootingBag()
+        }
+        1 outOf 304 weight "obj.slayer_enchantment" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
+        }
+        1 outOf 1074 weight "obj.slayer_wilderness_key" count 1 killCondition {
+            player, npc, areaChecker -> player.onWildernessSlayerTask(npc, areaChecker)
         }
     },
 )

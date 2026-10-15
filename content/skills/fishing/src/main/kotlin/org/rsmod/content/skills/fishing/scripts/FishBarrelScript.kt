@@ -4,7 +4,6 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
-import org.rsmod.api.table.fishing.FishingSpotRow
 import jakarta.inject.Inject
 import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.invtx.invAdd
@@ -15,13 +14,15 @@ import org.rsmod.api.player.events.skilling.SkillingActionContext
 import org.rsmod.api.player.events.skilling.SkillingProductSource
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.script.advanced.onDestroyHeld
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld2
 import org.rsmod.api.script.onOpHeld3
 import org.rsmod.api.script.onOpHeld4
-import org.rsmod.api.script.onOpHeld5
 import org.rsmod.api.script.onOpHeldU
+import org.rsmod.api.table.fishing.FishingSpotRow
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -39,8 +40,13 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
             onOpHeld2(barrel) { dispatch(2, barrel) }
             onOpHeld3(barrel) { dispatch(3, barrel) }
             onOpHeld4(barrel) { dispatch(4, barrel) }
-            onOpHeld5(barrel) { dispatch(5, barrel) }
             onEvent<HeldBanksideEvents.Type>(barrel.asRSCM(RSCMType.OBJ)) { emptyIntoBank(player) }
+        }
+
+        onDestroyHeld {
+            if (type in ALL_BARRELS) {
+                player.attr.remove(FISH_BARREL_ATTR)
+            }
         }
 
         onOpHeldU(FISH_SACK, BARREL_CLOSED) { combine(BARREL_CLOSED, SACK_CLOSED) }
@@ -55,8 +61,9 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
     }
 
     private fun ProtectedAccess.combine(barrel: String, sackBarrel: String) {
-        invDel(inv, FISH_SACK)
-        invDel(inv, barrel)
+        if (invDel(inv, FISH_SACK, 1, barrel, 1).failure) {
+            return
+        }
         invAdd(inv, sackBarrel)
         mes("You attach the fish sack to the barrel, making a fish sack barrel.")
     }
@@ -71,8 +78,14 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
         val iterator = store.entries.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()
-            player.invAdd(bank, entry.key, entry.value)
-            iterator.remove()
+            if (player.invAdd(bank, entry.key, entry.value).success) {
+                iterator.remove()
+            }
+        }
+        player.syncBankAfterDirectWrite()
+        if (store.isNotEmpty()) {
+            player.mes("Your bank is too full to take everything from the fish barrel.")
+            return
         }
         player.mes("You empty the fish barrel into your bank.")
     }
@@ -93,19 +106,7 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
     private fun MutableMap<String, Int>.total(): Int = values.sum()
 
     private fun ProtectedAccess.fill() {
-        val store = contents()
-        var filled = false
-        for (name in rawFish) {
-            if (store.total() >= CAPACITY) break
-            val have = invTotal(inv, name)
-            if (have <= 0) continue
-            val room = CAPACITY - store.total()
-            val move = minOf(have, room)
-            if (move <= 0) break
-            invDel(inv, name, move)
-            store[name] = (store[name] ?: 0) + move
-            filled = true
-        }
+        val filled = FishBarrel.fill(player, contents(), rawFish) > 0
         mes(if (filled) "You fill the fish barrel." else "You have no raw fish to store, or the barrel is full.")
     }
 
@@ -115,18 +116,10 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
             mes("The fish barrel is empty.")
             return
         }
-        val iterator = store.entries.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            val result = invAdd(inv, entry.key, entry.value)
-            val added = if (result.success) entry.value else 0
-            if (added >= entry.value) {
-                iterator.remove()
-            } else {
-                entry.setValue(entry.value - added)
-                mes("You don't have enough inventory space to empty the whole barrel.")
-                return
-            }
+        FishBarrel.empty(player, store)
+        if (store.isNotEmpty()) {
+            mes("You don't have enough inventory space to empty the whole barrel.")
+            return
         }
         mes("You empty the fish barrel.")
     }
@@ -137,7 +130,7 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
             mes("The fish barrel is empty.")
             return
         }
-        mes("The fish barrel contains (${store.total()}/$CAPACITY):")
+        mes("The fish barrel contains (${store.total()}/${FishBarrel.CAPACITY}):")
         for ((name, count) in store) {
             val display = ServerCacheManager.getItem(name.asRSCM(RSCMType.OBJ))?.name ?: name
             mes("$display x $count")
@@ -160,11 +153,9 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
 
     private fun tryAutoDeposit(player: Player, item: String) {
         if (BARREL_OPEN !in player.inv && SACK_OPEN !in player.inv) return
-        val store = player.attr.getOrPut(FISH_BARREL_ATTR) { mutableMapOf() }
-        if (store.values.sum() >= CAPACITY) return
         if (item !in rawFish) return
-        player.invDel(player.inv, item, 1)
-        store[item] = (store[item] ?: 0) + 1
+        val store = player.attr.getOrPut(FISH_BARREL_ATTR) { mutableMapOf() }
+        FishBarrel.deposit(player, store, item)
     }
 
     private companion object {
@@ -173,11 +164,61 @@ class FishBarrelScript @Inject constructor() : PluginScript() {
         private const val SACK_CLOSED = "obj.fish_sack_barrel_closed"
         private const val SACK_OPEN = "obj.fish_sack_barrel_open"
         private const val FISH_SACK = "obj.fish_sack"
-        private const val CAPACITY = 28
 
         private val ALL_BARRELS = listOf(BARREL_CLOSED, BARREL_OPEN, SACK_CLOSED, SACK_OPEN)
 
         private val FISH_BARREL_ATTR =
             AttributeKey<MutableMap<String, Int>>(persistenceKey = "fish_barrel")
+    }
+}
+
+internal object FishBarrel {
+    const val CAPACITY = 28
+
+    fun fill(player: Player, store: MutableMap<String, Int>, fish: Iterable<String>): Int {
+        var moved = 0
+        for (name in fish) {
+            val room = CAPACITY - store.values.sum()
+            if (room <= 0) {
+                break
+            }
+            val move = minOf(player.inv.physicalCount(name), room)
+            if (move <= 0) {
+                continue
+            }
+            if (player.invDel(player.inv, name, move).failure) {
+                continue
+            }
+            store[name] = (store[name] ?: 0) + move
+            moved += move
+        }
+        return moved
+    }
+
+    fun empty(player: Player, store: MutableMap<String, Int>): Int {
+        var moved = 0
+        val iterator = store.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            val added = player.invAdd(player.inv, entry.key, entry.value, strict = false).completed()
+            moved += added
+            if (added >= entry.value) {
+                iterator.remove()
+            } else {
+                entry.setValue(entry.value - added)
+            }
+        }
+        return moved
+    }
+
+    fun deposit(player: Player, store: MutableMap<String, Int>, item: String): Boolean {
+        if (store.values.sum() >= CAPACITY) {
+            return false
+        }
+        if (player.invDel(player.inv, item, 1).failure) {
+            return false
+        }
+        store[item] = (store[item] ?: 0) + 1
+        return true
     }
 }

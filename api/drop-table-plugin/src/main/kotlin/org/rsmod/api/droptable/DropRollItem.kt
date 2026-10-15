@@ -14,6 +14,7 @@ public data class DropRollItem(
     public val transformObj: (Player) -> String? = { null },
     public val bonusDrops: List<DropRollItem> = emptyList(),
     public val isNothing: Boolean = false,
+    public val killTransformObj: ((Player, Npc, AreaChecker) -> String?)? = null,
 ) {
     public constructor(
         obj: String,

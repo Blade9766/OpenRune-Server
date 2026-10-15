@@ -33,12 +33,12 @@ constructor(registry: BossInstanceRegistry) : InstanceScript(registry) {
             return
         }
         if (!hasRequiredKillcount()) return
-        enterPublicRoom(INSTANCE)
+        enterSpendingKillcount { enterPublicRoom(INSTANCE) }
     }
 
     private suspend fun ProtectedAccess.enterZamorakPrivate() {
         if (!hasRequiredKillcount()) return
-        defaultInstanceEntry()
+        enterSpendingKillcount { defaultInstanceEntry() }
     }
 
     private fun ProtectedAccess.peekZamorakPublic() {
@@ -54,7 +54,7 @@ constructor(registry: BossInstanceRegistry) : InstanceScript(registry) {
         }
     }
 
-    private suspend fun ProtectedAccess.hasRequiredKillcount(): Boolean {
+    private fun ProtectedAccess.hasRequiredKillcount(): Boolean {
         val killcount = player.vars["varbit.godwars_counter_zamorak"]
         if (killcount < REQUIRED_KILLCOUNT) {
             mes(
@@ -63,12 +63,23 @@ constructor(registry: BossInstanceRegistry) : InstanceScript(registry) {
             )
             return false
         }
+        return true
+    }
+
+    private suspend fun ProtectedAccess.enterSpendingKillcount(
+        entry: suspend ProtectedAccess.() -> Unit,
+    ) {
+        val wasInside = manager.sessionForPlayer(player) != null
+        entry()
+        if (wasInside || manager.sessionForPlayer(player) == null) {
+            return
+        }
+        val killcount = player.vars["varbit.godwars_counter_zamorak"]
         VarPlayerIntMapSetter.set(
             player,
             "varbit.godwars_counter_zamorak",
-            killcount - REQUIRED_KILLCOUNT,
+            (killcount - REQUIRED_KILLCOUNT).coerceAtLeast(0),
         )
-        return true
     }
 
     private companion object {

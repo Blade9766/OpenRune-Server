@@ -10,6 +10,11 @@ coords = "0_50_53_3_32"
 npc = "npc.artist2"
 coords = "0_51_52_8_61"
 
+# Biohazard: the guard searching everyone heading into the district around Guidor's house.
+[[spawn]]
+npc = "npc.bioguard1"
+coords = "0_51_52_1_58"
+
 [[spawn]]
 npc = "npc.banker1_new"
 coords = "0_49_53_11_56"
@@ -257,10 +262,6 @@ coords = "0_50_54_46_2"
 [[spawn]]
 npc = "npc.imp"
 coords = "0_50_54_61_58"
-
-[[spawn]]
-npc = "npc.juliet"
-coords = "1_49_53_23_34"
 
 [[spawn]]
 npc = "npc.juliet_multi_visible"
@@ -874,10 +875,6 @@ coords = "0_50_53_61_10"
 
 [[spawn]]
 npc = "npc.weaponsmaster"
-coords = "1_50_52_46_56"
-
-[[spawn]]
-npc = "npc.weaponsmaster_vis"
 coords = "1_50_52_46_56"
 
 ## Varrock Jolly Boar Inn

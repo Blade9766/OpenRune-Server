@@ -392,6 +392,7 @@ constructor(
         when (interaction) {
             is InteractionLoc -> !interaction.isValid(this)
             is InteractionNpc -> !interaction.isValid(this)
+            is InteractionObjT -> true
             is InteractionObj -> !interaction.isValid(this)
             is InteractionPlayer -> !interaction.isValid(this)
         }

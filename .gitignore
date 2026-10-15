@@ -49,6 +49,7 @@ bin/
 .DS_Store
 /api/tables/src/main/kotlin/org/rsmod/api/table
 game.yml
+xp-rates.yml
 /.idea
 /api/generated
 
@@ -56,6 +57,6 @@ logs/
 *.log
 /.cursor
 /.data/raw-cache/cs2
-.claude/settings.local.json
+.claude/
 .mcp.json
 /bench

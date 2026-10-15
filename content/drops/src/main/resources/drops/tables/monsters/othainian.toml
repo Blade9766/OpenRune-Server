@@ -1,5 +1,5 @@
 id = "Othainian Drops"
-npcs = ["npc.othainian_vis"]
+npcs = ["npc.othainian", "npc.othainian_vis"]
 
 [[guaranteed]]
 obj = "obj.othainian_amulet"

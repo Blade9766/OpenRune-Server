@@ -47,7 +47,7 @@ constructor(
     }
 
     private fun Npc.resumePausedProcess() {
-        if (canProcess) {
+        if (canProcessCycle) {
             advanceActiveCoroutine()
         }
     }
@@ -57,52 +57,55 @@ constructor(
     }
 
     private fun Npc.processHunt() {
-        if (canProcess) {
+        if (canProcessCycle) {
             hunt.process(this)
         }
     }
 
     private fun Npc.processRegen() {
-        if (canProcess) {
+        if (canProcessCycle) {
             regen.process(this)
         }
     }
 
     private fun Npc.processAiTimer() {
-        if (canProcess) {
+        if (canProcessCycle) {
             aiTimers.process(this)
         }
     }
 
     private fun Npc.processAiQueues() {
-        if (canProcess) {
+        if (canProcessCycle) {
             aiQueues.process(this)
         }
     }
 
     private fun Npc.processQueues() {
-        if (canProcess) {
+        if (canProcessCycle) {
             queues.process(this)
         }
     }
 
     private fun Npc.processTimers() {
-        if (canProcess) {
+        if (canProcessCycle) {
             timers.process(this)
         }
     }
 
     private fun Npc.processModes() {
-        if (canProcess) {
+        if (canProcessCycle) {
             modes.process(this)
         }
     }
 
     private fun Npc.processInteractions() {
-        if (canProcess) {
+        if (canProcessCycle) {
             interactions.process(this)
         }
     }
+
+    private val Npc.canProcessCycle: Boolean
+        get() = isSlotAssigned && canProcess
 
     private inline fun Npc.tryOrDespawn(block: Npc.() -> Unit) =
         try {

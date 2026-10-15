@@ -3,7 +3,9 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.rsprot.api)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.module.kotlin)
     implementation(projects.api.pluginCommons)
-    implementation(projects.api.exchange)
-    implementation(projects.api.registry)
+    implementation(projects.content.interfaces.bank)
 }

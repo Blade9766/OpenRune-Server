@@ -70,7 +70,7 @@ internal fun Player.addPotential(combatLevel: Int) {
 internal fun Player.rollBarrows() {
     hiddenBrother = BarrowsBrother.entries.random()
     corner = BarrowsCorner.entries.random()
-    shiftDoorways()
+    shuffleTunnels()
     puzzleSolved = false
     barrowsRolled = true
 }

@@ -152,10 +152,8 @@ constructor(
     }
 
     private fun SessionStateEvent.Delete.closeSession() {
-        when (val client = player.client) {
-            is RspClient -> client.unregister(service, player)
-            is HeadlessClient -> client.unregister(service, player)
-        }
+        val client = player.client as? RspClient ?: return
+        client.unregister(service, player)
     }
 
     private fun SessionStateEvent.Delete.finalizeCentralSessionIfNeeded() {

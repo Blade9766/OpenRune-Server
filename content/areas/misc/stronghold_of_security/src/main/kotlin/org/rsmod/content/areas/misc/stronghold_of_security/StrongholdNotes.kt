@@ -14,6 +14,7 @@ import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.Inventory
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -102,6 +103,11 @@ class StrongholdNotes @Inject constructor(private val objRepo: ObjRepository) : 
         )
         chatPlayer(confused, "Oh, that's... interesting. Also rather disturbing...")
         chatNpc(neutral, "Try not to think about it.")
+        when {
+            hasSceptre(SkullSceptreScript.IMBUED_SCEPTRE) -> alreadyImbued()
+            hasSceptre(SkullSceptreScript.SKULL_SCEPTRE) && hasBoots() -> offerImbue()
+            hasSceptre(SkullSceptreScript.SKULL_SCEPTRE) -> needBoots()
+        }
         while (true) {
             when (
                 choice3(
@@ -190,6 +196,54 @@ class StrongholdNotes @Inject constructor(private val objRepo: ObjRepository) : 
         chatPlayer(happy, "You, my dead friend, have a deal!")
     }
 
+    private suspend fun Dialogue.alreadyImbued() {
+        chatNpc(
+            happy,
+            "That sceptre of yours already carries my blessing. It will never crumble now.",
+        )
+    }
+
+    private suspend fun Dialogue.offerImbue() {
+        chatNpc(
+            neutral,
+            "I see you carry a skull sceptre, and the boots of one who has walked every level " +
+                "of this stronghold. Would you like me to imbue the sceptre so it never crumbles?",
+        )
+        if (!choice2("Yes please.", true, "No thanks.", false)) {
+            chatNpc(neutral, "As you wish. Come back if you change your mind.")
+            return
+        }
+        chatPlayer(happy, "Yes please.")
+        val sceptre = SkullSceptreScript.SKULL_SCEPTRE
+        val inventory = if (invContains(access.inv, sceptre)) access.inv else access.worn
+        access.invReplace(inventory, sceptre, 1, SkullSceptreScript.IMBUED_SCEPTRE)
+        if (inventory === access.worn) {
+            access.rebuildAppearance()
+        }
+        access.mes("Solztun imbues your skull sceptre with his spirit.")
+        chatNpc(
+            happy,
+            "There. My spirit is bound to it now; spend its charges as freely as you like.",
+        )
+    }
+
+    private suspend fun Dialogue.needBoots() {
+        chatNpc(
+            neutral,
+            "A skull sceptre! I could imbue that for you, but only for someone who has proven " +
+                "themselves here. Show me the boots from the Cradle of Life and we'll talk.",
+        )
+    }
+
+    private fun Dialogue.hasSceptre(obj: String): Boolean =
+        invContains(access.inv, obj) || invContains(access.worn, obj)
+
+    private fun Dialogue.hasBoots(): Boolean =
+        CradleBoots.any { invContains(access.inv, it) || invContains(access.worn, it) }
+
+    private fun Dialogue.invContains(inventory: Inventory, obj: String): Boolean =
+        access.invTotal(inventory, obj) > 0
+
     private enum class SolztunOption {
         Who,
         Why,
@@ -200,6 +254,7 @@ class StrongholdNotes @Inject constructor(private val objRepo: ObjRepository) : 
         const val Notes = "obj.sos_stronghold_book"
         const val Ghostspeak = "obj.amulet_of_ghostspeak"
         const val BookInterface = "interface.indexed_book"
+        val CradleBoots = listOf("obj.sos_boots", "obj.sos_boots2", "obj.sos_boots3")
         val BookInitScript =
             "clientscript.[clientscript,book_indexed_init]".asRSCM(RSCMType.CLIENTSCRIPT)
     }

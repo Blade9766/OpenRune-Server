@@ -211,16 +211,8 @@ npc = "npc.fairy_godfatherarmy_multi2"
 coords = "0_38_69_24_51"
 
 [[spawn]]
-npc = "npc.fairy_henchman1"
-coords = "0_38_69_17_13"
-
-[[spawn]]
 npc = "npc.fairy_henchman1_multi"
 coords = "0_38_69_16_12"
-
-[[spawn]]
-npc = "npc.fairy_henchman2"
-coords = "0_38_69_14_15"
 
 [[spawn]]
 npc = "npc.fairy_henchman2_multi"

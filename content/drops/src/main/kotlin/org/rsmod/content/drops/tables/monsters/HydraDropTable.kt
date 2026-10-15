@@ -10,6 +10,7 @@ import org.rsmod.api.droptable.rsPlayerTertiaryTable
 import org.rsmod.api.droptable.rsPlayerWeightedTable
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.nextHydraPiece
 import org.rsmod.content.drops.tables.shared.SharedDropTables
 import org.rsmod.game.entity.Player
 
@@ -19,9 +20,8 @@ public val hydraDropTable: RSDropTable<Player, DropRollItem> = RSDropTable(
     tableIdentifier = "Hydra Drops",
     npcs = npcs("npc.hydra"),
     preRoll = rsPlayerPrerollTable {
-        1 outOf 1801 weight "obj.hydra_eye" count 1 condition { player ->
-            // Drops Need Manual: The order players receive the items in are: Hydra's eye, Hydra's fang, and finally Hydra's heart.
-             true
+        1 outOf 1801 weight "obj.hydra_eye" count 1 transformObj { player ->
+            player.nextHydraPiece()
         }
         1 outOf 1801 weight "obj.hydra_fang" count 1
         1 outOf 1801 weight "obj.hydra_heart" count 1

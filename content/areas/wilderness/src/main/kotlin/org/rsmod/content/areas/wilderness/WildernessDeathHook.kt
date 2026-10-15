@@ -25,9 +25,9 @@ public class WildernessDeathHook @Inject constructor() : PlayerDeathHook {
         val above20 = context.wildernessLevel > ABOVE_20_THRESHOLD
         return PlayerDeathHandling(
             keepCount = wildernessKeepCount(context.isSkulled, context.hasProtectItem),
-            dropReceiver = context.killer,
+            dropReceiver = context.killer ?: context.player,
             dropDuration = DROP_DURATION_PVP,
-            revealDelay = if (context.killer != null) PVP_REVEAL_DELAY else 0,
+            revealDelay = PVP_REVEAL_DELAY,
             supplyPile = false,
             untradeableHandling = if (above20) UntradeableHandling.COINS else UntradeableHandling.DROP,
         )

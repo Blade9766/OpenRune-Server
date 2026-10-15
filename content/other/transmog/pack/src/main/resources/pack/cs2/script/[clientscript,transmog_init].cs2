@@ -1,0 +1,12 @@
+[clientscript,transmog_init]
+~steelborder(transmog:frame, "Transmog", 0);
+cc_deleteall(transmog:slots_box);
+~thinbox(transmog:slots_box, 0);
+cc_deleteall(transmog:grid_box);
+~thinbox(transmog:grid_box, 0);
+~searchbar_create(transmog:searchbar, null);
+%settings_search_string = "";
+~transmog_search_idle;
+~transmog_button(transmog:clear_all, "Clear all", 0xff981f);
+~transmog_button(transmog:all_slots, "All slots", 0xff981f);
+if_setoninvtransmit("transmog_draw{transmog_results}", transmog:grid);

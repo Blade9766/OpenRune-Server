@@ -100,4 +100,6 @@ interface BotLog {
     fun info(bot: BotRecord, message: String)
 
     fun warn(bot: BotRecord, message: String)
+
+    fun error(message: String)
 }

@@ -4,6 +4,7 @@ import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.util.Wearpos
 import jakarta.inject.Inject
+import org.rsmod.api.achievementdiaries.AchievementDiaries
 import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
@@ -22,6 +23,7 @@ import org.rsmod.plugin.scripts.ScriptContext
 
 class AltarEvents @Inject constructor(
     private val xpMods: XpModifiers,
+    private val diaries: AchievementDiaries,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         val altars = RunecraftingAltarsRow.all()
@@ -70,6 +72,10 @@ class AltarEvents @Inject constructor(
                 val entrance = nearestEntrance(elementalEntrances) ?: return@onOpLocU
                 telejump(entrance)
             }
+            onOpLocU(ruin, ELEMENTAL_TIARA) {
+                val entrance = nearestEntrance(elementalEntrances) ?: return@onOpLocU
+                telejump(entrance)
+            }
         }
 
         listOf(
@@ -91,6 +97,10 @@ class AltarEvents @Inject constructor(
             "loc.wrathtemple_ruined_1op"
         ).forEach { ruin ->
             onOpLocU(ruin, "obj.catalytic_talisman") {
+                val entrance = nearestEntrance(catalyticEntrances) ?: return@onOpLocU
+                telejump(entrance)
+            }
+            onOpLocU(ruin, CATALYTIC_TIARA) {
                 val entrance = nearestEntrance(catalyticEntrances) ?: return@onOpLocU
                 telejump(entrance)
             }
@@ -137,8 +147,17 @@ class AltarEvents @Inject constructor(
             return
         }
 
+        val kourend = KourendAltar.byAltar(altar.altarObject.internalName)
         onOpLoc1(altar.altarObject.internalName) {
+            val rune = altar.rune.output.internalName
+            val before = inv.count(rune)
             craftRune(altar.rune, xpMods)
+            if (kourend != null && inv.count(rune) > before) {
+                kourend.markCrafted(player)
+            }
+            if (rune == "obj.waterrune" && inv.count(rune) > before) {
+                diaries.complete(player, "dbrow.diary_lumbridge_easy_water_runes")
+            }
         }
     }
 
@@ -152,21 +171,31 @@ class AltarEvents @Inject constructor(
         }
     }
 
+    /**
+     * Keeps an altar's "no talisman needed" varbit on while a tiara that opens its ruins is worn:
+     * its own tiara, or the elemental or catalytic tiara for an altar of that kind.
+     */
     private fun ScriptContext.registerTiaraVarbits(altar: RunecraftingAltarsRow) {
         val varbitId = altar.varbit ?: return
         val tiaraDef = altar.tiara ?: return
-        val tiaraItem = tiaraDef.item.internalName
+        val altarLoc = altar.altarObject.internalName
+        val tiaras =
+            listOfNotNull(
+                tiaraDef.item.internalName,
+                ELEMENTAL_TIARA.takeIf { altarLoc in elementalAltarLocs },
+                CATALYTIC_TIARA.takeIf { altarLoc in catalyticAltarLocs },
+            )
         val varbitName = RSCM.getReverseMapping(RSCMType.VARBIT, varbitId)
 
         onWearposChange {
             if (wearpos == Wearpos.Hat) {
-                val equipped = tiaraItem in player.worn
+                val equipped = tiaras.any { it in player.worn }
                 VarPlayerIntMapSetter.set(player, varbitName, if (equipped) 1 else 0)
             }
         }
 
         onPlayerLogin {
-            val equipped = tiaraItem in player.worn
+            val equipped = tiaras.any { it in player.worn }
             VarPlayerIntMapSetter.set(player, varbitName, if (equipped) 1 else 0)
         }
     }
@@ -231,6 +260,9 @@ class AltarEvents @Inject constructor(
     }
 
     private companion object {
+        const val ELEMENTAL_TIARA = "obj.tiara_elemental"
+        const val CATALYTIC_TIARA = "obj.tiara_catalytic"
+
         val elementalAltarLocs =
             setOf(
                 "loc.air_altar",

@@ -182,6 +182,11 @@ internal class TheRestlessGhostScenery(
             return
         }
 
+        if (quest.getQuestStage(player) < TheRestlessGhostStage.GhostSpoken) {
+            mes("You search the altar but find nothing of interest.")
+            return
+        }
+
         if (inv.contains(GhostSkull)) {
             mesbox("You already have the Ghost's skull.")
             return

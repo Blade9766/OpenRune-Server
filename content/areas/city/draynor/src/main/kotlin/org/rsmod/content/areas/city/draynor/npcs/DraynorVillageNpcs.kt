@@ -4,7 +4,6 @@ import jakarta.inject.Inject
 import org.rsmod.api.config.Constants
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.player.stat.baseFarmingLvl
 import org.rsmod.api.player.stat.baseWoodcuttingLvl
 import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.script.onOpNpc1
@@ -12,31 +11,20 @@ import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
 import org.rsmod.content.areas.city.draynor.npcs.DiangoHolidayItems.Companion.openHolidayItems
 import org.rsmod.content.interfaces.omnishop.openOmnishop
-import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.quest.manager.menu
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginScript() {
-    private var Player.morganThanked by intVarBit("varbit.morgan_postquest_dialogue")
-    private var Player.metAggie by intVarBit("varbit.gobdip_met_aggie")
     private var Player.bankJob by intVarBit("varbit.wom_bankjob")
     private var Player.metForester by intVarBit("varbit.forestry_forester_met")
 
     override fun ScriptContext.startup() {
-        onOpNpc1("npc.morgan") { startDialogue(it.npc) { morgan() } }
         onOpNpc1("npc.wgs_lucien_spy") { startDialogue(it.npc) { shadyStranger() } }
         onOpNpc1("npc.wgs_spy2") { startDialogue(it.npc) { suspiciousOutsider() } }
-        onOpNpc1("npc.aggie") { startDialogue(it.npc) { aggie() } }
-        onOpNpc3("npc.aggie") { startDialogue(it.npc) { aggieDyes() } }
-        onOpNpc1("npc.ned") { startDialogue(it.npc) { ned() } }
-        onOpNpc3("npc.ned") { startDialogue(it.npc) { nedRope() } }
-        onOpNpc1("npc.leela") { startDialogue(it.npc) { leela() } }
         onOpNpc1("npc.wom_gossip") { startDialogue(it.npc) { missSchism() } }
         onOpNpc1("npc.wom_bankguard") { startDialogue(it.npc) { bankGuard() } }
-        onOpNpc1("npc.rag_wine_merchant") { startDialogue(it.npc) { fortunato() } }
-        onOpNpc3("npc.rag_wine_merchant") { openWineShop() }
         onOpNpc1("npc.pmod_town_crier_draynor") { startDialogue(it.npc) { townCrier() } }
         onOpNpc1("npc.seed_merchant") { startDialogue(it.npc) { olivia() } }
         onOpNpc3("npc.seed_merchant") { openSeedShop() }
@@ -45,27 +33,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
         onOpNpc1("npc.diary_queen") { startDialogue(it.npc) { twiggy() } }
         onOpNpc1("npc.aprilfoolshorsesalesman") { startDialogue(it.npc) { diango() } }
         onOpNpc3("npc.aprilfoolshorsesalesman") { openToyShop() }
-        onOpNpc1("npc.martin_the_master_farmer") { startDialogue(it.npc) { martin() } }
-    }
-
-    private suspend fun Dialogue.morgan() {
-        if (!QuestRequirements.hasCompleted(player, VAMPYRE_SLAYER)) {
-            chatNpc(worried, "Please, please help us, bold adventurer!")
-            return
-        }
-        if (player.morganThanked == 0) {
-            chatPlayer(happy, "I have some good news. Count Draynor is no more!")
-            player.morganThanked = 1
-            chatNpc(
-                happy,
-                "He's really gone? Finally, we can live without fear! Thank you, thank you! " +
-                    "You're a true hero!",
-            )
-            chatPlayer(happy, "I'm happy to have helped.")
-            return
-        }
-        chatNpc(happy, "Once again, thank you for slaying that vampyre! You will always be a hero!")
-        chatPlayer(happy, "Don't mention it.")
     }
 
     private suspend fun Dialogue.shadyStranger() {
@@ -78,381 +45,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
         chatPlayer(quiz, "Hello there. What are you doing here?")
         chatNpc(quiz, "That's not really any of your business, is it?")
         chatPlayer(confused, "Fair enough.")
-    }
-
-    private suspend fun Dialogue.aggie() {
-        chatNpc(happy, "What can I help you with?")
-        val dyes =
-            if (player.metAggie == 0) "What could you make for me?" to AggieTopic.WhatCanYouMake
-            else "Can you make dyes for me, please?" to AggieTopic.MakeDyes
-        val topic =
-            menu(
-                "Cool, do you turn people into frogs?" to AggieTopic.Frogs,
-                dyes,
-                "You mad old witch, you can't help me." to AggieTopic.Insult,
-                "I'm okay, thanks." to AggieTopic.Leave,
-            )
-        when (topic) {
-            AggieTopic.Frogs -> {
-                chatPlayer(happy, "Cool, do you turn people into frogs?")
-                chatNpc(
-                    neutral,
-                    "Oh, not for years, but if you meet a talking chicken, you have probably met " +
-                        "the professor in the manor north of here. A few years ago it was flying " +
-                        "fish. That machine is a menace.",
-                )
-            }
-            AggieTopic.WhatCanYouMake -> {
-                chatPlayer(quiz, "What could you make for me?")
-                player.metAggie = 1
-                chatNpc(
-                    neutral,
-                    "I mostly just make what I find pretty. I sometimes make dye for clothes to " +
-                        "brighten the place up. I can make red, yellow and blue dyes. If you'd " +
-                        "like some, just bring me the appropriate ingredients.",
-                )
-                dyeMenu(includeDecline = true)
-            }
-            AggieTopic.MakeDyes -> {
-                chatPlayer(quiz, "Can you make dyes for me, please?")
-                aggieDyes()
-            }
-            AggieTopic.Insult -> aggieInsult()
-            AggieTopic.Leave -> chatPlayer(neutral, "I'm okay, thanks.")
-        }
-    }
-
-    private suspend fun Dialogue.aggieDyes() {
-        chatNpc(quiz, "What sort of dye would you like? Red, yellow or blue?")
-        dyeMenu(includeDecline = false)
-    }
-
-    private suspend fun Dialogue.dyeMenu(includeDecline: Boolean) {
-        val options = buildList {
-            for (dye in Dye.entries) add("What do you need to make ${dye.colour} dye?" to dye)
-            if (includeDecline) add("No thanks, I am happy the colour I am." to null)
-        }
-        val dye = menu(options)
-        if (dye == null) {
-            chatPlayer(neutral, "No thanks, I am happy the colour I am.")
-            chatNpc(
-                shifty,
-                "You are easily pleased with yourself then. When you need dyes, come to me.",
-            )
-            return
-        }
-        dyeRecipe(dye)
-    }
-
-    private suspend fun Dialogue.dyeRecipe(dye: Dye) {
-        chatPlayer(quiz, "What do you need to make ${dye.colour} dye?")
-        chatNpc(neutral, dye.recipe)
-        val choice =
-            menu(
-                "Okay, make me some ${dye.colour} dye please." to DyeChoice.Make,
-                "I don't think I have all the ingredients yet." to DyeChoice.NotYet,
-                "I can do without dye at that price." to DyeChoice.TooDear,
-                "Where do I get ${dye.ingredientName}?" to DyeChoice.Where,
-                "What other colours can you make?" to DyeChoice.Others,
-            )
-        when (choice) {
-            DyeChoice.Make -> makeDye(dye)
-            DyeChoice.NotYet -> {
-                chatPlayer(neutral, "I don't think I have all the ingredients yet.")
-                chatNpc(
-                    neutral,
-                    "You know what you need to get, now come back when you have them. Goodbye " +
-                        "for now.",
-                )
-            }
-            DyeChoice.TooDear -> {
-                chatPlayer(neutral, "I can do without dye at that price.")
-                chatNpc(
-                    neutral,
-                    "That's your choice, but I would think you have killed for less. I can see " +
-                        "it in your eyes.",
-                )
-            }
-            DyeChoice.Where -> {
-                chatPlayer(quiz, "Where do I get ${dye.ingredientName}?")
-                chatNpc(neutral, dye.whereToFind)
-                if (menu("What other colours can you make?" to true, "Thanks" to false)) {
-                    otherColours()
-                } else {
-                    chatPlayer(happy, "Thanks.")
-                    chatNpc(happy, "You're welcome!")
-                }
-            }
-            DyeChoice.Others -> otherColours()
-        }
-    }
-
-    private suspend fun Dialogue.otherColours() {
-        chatPlayer(quiz, "What other colours can you make?")
-        chatNpc(neutral, "Red, yellow and blue. Which one would you like?")
-        dyeMenu(includeDecline = false)
-    }
-
-    private suspend fun Dialogue.makeDye(dye: Dye) {
-        chatPlayer(happy, "Okay, make me some ${dye.colour} dye please.")
-        val inv = access.inv
-        if (inv.count(dye.ingredient) < dye.ingredientCount) {
-            mesbox("You don't have enough ${dye.shortName} to make the ${dye.colour} dye.")
-            return
-        }
-        if (inv.count(COINS) < DYE_PRICE) {
-            mesbox("You don't have enough coins to pay for the dye.")
-            return
-        }
-        access.invDel(inv, dye.ingredient, dye.ingredientCount)
-        access.invDel(inv, COINS, DYE_PRICE)
-        access.invAdd(inv, dye.obj)
-        objbox(
-            dye.obj,
-            "You hand the ${dye.shortName} and payment to Aggie. Aggie takes a ${dye.colour} " +
-                "bottle from nowhere and hands it to you.",
-        )
-    }
-
-    private suspend fun Dialogue.aggieInsult() {
-        chatPlayer(angry, "You mad old witch, you can't help me.")
-        val inv = access.inv
-        val coins = inv.count(COINS)
-        val fine =
-            when {
-                coins > 100 -> 20
-                coins > 20 -> 5
-                else -> 0
-            }
-        if (fine > 0) {
-            access.invDel(inv, COINS, fine)
-            chatNpc(angry, "Oh, you like to call a witch names do you?")
-            val amount = if (fine == 20) "20 coins" else "five coins"
-            access.mes("Aggie waves her hands about, and you seem to be $amount poorer.")
-            objbox(COINS_ICON, "Aggie waves her hands about, and you seem to be $amount poorer.")
-            chatNpc(neutral, "That's a fine for insulting a witch. You should learn some respect.")
-            return
-        }
-        if (inv.count(POT_OF_FLOUR) > 0) {
-            access.invDel(inv, POT_OF_FLOUR, 1)
-            chatNpc(angry, "Oh, you like to call a witch names do you?")
-            objbox(
-                POT_OF_FLOUR,
-                "Aggie waves her hands about, and you seem to have a pot of flour less.",
-            )
-            chatNpc(
-                happy,
-                "Thank you for your kind present of some flour. I am sure you never meant to " +
-                    "insult me.",
-            )
-            return
-        }
-        chatNpc(
-            angry,
-            "You should be careful about insulting a witch. You never know what shape you could " +
-                "wake up in.",
-        )
-    }
-
-    private suspend fun Dialogue.ned() {
-        if (!QuestRequirements.hasCompleted(player, DRAGON_SLAYER)) {
-            chatNpc(
-                neutral,
-                "Why, hello there, ${if (isLad()) "lad" else "lass"}. Me friends call me Ned. I " +
-                    "was a man of the sea, but it's past me now. Could I be making or selling " +
-                    "you some rope?",
-            )
-            if (menu("Yes, I would like some rope." to true, NED_DECLINE to false)) {
-                nedRope()
-            } else {
-                nedDecline()
-            }
-            return
-        }
-        chatNpc(
-            neutral,
-            "Hello again, ${if (isLad()) "lad" else "lass"}. Something I can help you with? " +
-                "Want to buy some rope perhaps?",
-        )
-        val topic =
-            menu(
-                "How did you get back from Crandor?" to NedTopic.Crandor,
-                "Yes, I would like some rope." to NedTopic.Rope,
-                NED_DECLINE to NedTopic.Leave,
-            )
-        when (topic) {
-            NedTopic.Crandor -> {
-                chatPlayer(quiz, "How did you get back from Crandor?")
-                chatNpc(neutral, "I got towed back by a passing friendly whale.")
-                chatNpc(happy, "Anyway, would you like me to make some rope while you're here?")
-                val next =
-                    menu(
-                        "Can you take me to Crandor again?" to NedTopic.Crandor,
-                        "Yes, I would like some rope." to NedTopic.Rope,
-                        NED_DECLINE to NedTopic.Leave,
-                    )
-                when (next) {
-                    NedTopic.Crandor -> {
-                        chatPlayer(quiz, "Can you take me back to Crandor again?")
-                        chatNpc(
-                            happy,
-                            "Aye, that I could. I'll meet you at the Port Sarim docks again. " +
-                                "I'll try to steer a little better this time!",
-                        )
-                    }
-                    NedTopic.Rope -> nedRope()
-                    NedTopic.Leave -> nedDecline()
-                }
-            }
-            NedTopic.Rope -> nedRope()
-            NedTopic.Leave -> nedDecline()
-        }
-    }
-
-    private suspend fun Dialogue.nedRope() {
-        chatPlayer(neutral, "Yes, I would like some rope.")
-        chatNpc(
-            happy,
-            "Well, I can sell you some rope for 15 coins. Or I can be making you some if you gets " +
-                "me four balls of wool. I strands them together I does, makes em strong.",
-        )
-        chatPlayer(quiz, "You make rope from wool?")
-        chatNpc(shifty, "Of course you can!")
-        chatPlayer(quiz, "I thought you needed hemp or jute.")
-        chatNpc(angry, "Do you want some rope or not?")
-        val hasWool = access.inv.count(BALL_OF_WOOL) >= WOOL_PER_ROPE
-        val topic =
-            menu(
-                "Okay, please sell me some rope." to RopeTopic.Buy,
-                "That's a little more than I want to pay." to RopeTopic.TooDear,
-                if (hasWool) {
-                    "I have some balls of wool. Could you make me some rope?" to RopeTopic.Wool
-                } else {
-                    "I will go and get some wool." to RopeTopic.GetWool
-                },
-            )
-        when (topic) {
-            RopeTopic.Buy -> buyRope()
-            RopeTopic.TooDear -> {
-                chatPlayer(neutral, "That's a little more than I want to pay.")
-                chatNpc(
-                    neutral,
-                    "Well, if you ever need rope that's the price. Sorry. An old sailor needs " +
-                        "money for a little drop o' rum.",
-                )
-            }
-            RopeTopic.Wool -> {
-                chatPlayer(quiz, "I have some balls of wool. Could you make me some rope?")
-                chatNpc(happy, "Sure I can.")
-                val inv = access.inv
-                if (access.invDel(inv, BALL_OF_WOOL, WOOL_PER_ROPE).failure) return
-                access.invAdd(inv, ROPE)
-                mesbox("You hand over 4 balls of wool. Ned gives you a coil of rope.")
-            }
-            RopeTopic.GetWool -> {
-                chatPlayer(neutral, "I will go and get some wool.")
-                chatNpc(
-                    neutral,
-                    "Aye, you do that. Remember, it takes 4 balls of wool to make strong rope.",
-                )
-            }
-        }
-    }
-
-    private suspend fun Dialogue.buyRope() {
-        val inv = access.inv
-        if (inv.count(COINS) < ROPE_PRICE) {
-            mesbox("You don't have enough coins to buy any rope!")
-            if (QuestRequirements.hasCompleted(player, FREMENNIK_ISLES)) nedConfession()
-            return
-        }
-        chatPlayer(neutral, "Okay, please sell me some rope.")
-        chatNpc(happy, "There you go, finest rope in Gielinor.")
-        access.invDel(inv, COINS, ROPE_PRICE)
-        access.invAdd(inv, ROPE)
-        access.mes("You hand Ned 15 coins. Ned gives you a coil of rope.")
-        mesbox("You hand Ned 15 coins. Ned gives you a coil of rope.")
-        if (QuestRequirements.hasCompleted(player, FREMENNIK_ISLES)) nedConfession()
-    }
-
-    private suspend fun Dialogue.nedConfession() {
-        chatPlayer(shifty, "Thanks. Hmmm, do you know something? This rope has a funny smell.")
-        chatNpc(shifty, "Really?")
-        chatPlayer(
-            shifty,
-            "Yes, It reminds me of... yaks. I was travelling in the Fremennik Isles recently " +
-                "and, do you know what? They made rope out of yak's hair.",
-        )
-        chatNpc(shifty, "What a coincidence?")
-        chatPlayer(
-            shifty,
-            "There was a lady over there who sold wool, she said she traded rope for the wool.",
-        )
-        chatNpc(shifty, "Who would have thought it?")
-        chatPlayer(
-            shifty,
-            "I don't think you make rope at all. I think you trade balls of wool for rope.",
-        )
-        chatNpc(
-            sad,
-            "Oh, I confess. You have found the truth. I used to make the rope myself, but my " +
-                "fingers aren't as nimble as they used to be and so many people wanted my rope. " +
-                "Demand was so high I had to find another",
-        )
-        chatNpc(
-            sad,
-            "source. But I couldn't tell anyone since Ned's Handmade Rope (100% Wool) is a high " +
-                "profile brand now.",
-        )
-        chatPlayer(
-            neutral,
-            "Yes, well, the wool is still pretty good, though yak hair makes fine rope. I don't " +
-                "suppose any harm will come of it.",
-        )
-        val hasSpace = !access.inv.isFull()
-        if (hasSpace) {
-            chatNpc(happy, "Thanks. Here take this, a free sample! Please, don't tell anyone.")
-        }
-        chatPlayer(
-            neutral,
-            "Well, it's always good to keep on the good side of a sailor. Your secret is safe " +
-                "with me.",
-        )
-        if (hasSpace) access.invAdd(access.inv, ROPE)
-        chatNpc(
-            happy,
-            "Oh, if you're in the Isles again, tell Jofridr that her Neddie will be there soon.",
-        )
-        chatPlayer(laugh, "I will do that!")
-    }
-
-    private suspend fun Dialogue.nedDecline() {
-        chatPlayer(neutral, NED_DECLINE)
-        chatNpc(
-            neutral,
-            "Well, old Neddy is always here if you do. Tell your friends. I can always be using " +
-                "the business.",
-        )
-    }
-
-    private suspend fun Dialogue.leela() {
-        if (!QuestRequirements.hasCompleted(player, PRINCE_ALI_RESCUE)) {
-            chatPlayer(quiz, "What are you waiting here for?")
-            chatNpc(neutral, "That is no concern of yours, adventurer.")
-            return
-        }
-        chatNpc(
-            happy,
-            "Al Kharid will forever owe you for your help in saving Prince Ali. It's good to know " +
-                "that we have you as a friend.",
-        )
-        chatPlayer(quiz, "It's no problem. So how come you're still out here?")
-        chatNpc(
-            neutral,
-            "We still don't know why Keli and her bandits took the Prince. I'm hoping I can find " +
-                "out. The place where they imprisoned him seems a good starting point.",
-        )
-        chatPlayer(happy, "Well if you need help, you know where I am. Good luck.")
     }
 
     private suspend fun Dialogue.missSchism() {
@@ -773,28 +365,6 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
         chatNpc(neutral, "Good day, ${if (isLad()) "sir" else "ma'am"}.")
     }
 
-    private suspend fun Dialogue.fortunato() {
-        chatNpc(neutral, "Can I help you at all?")
-        chatNpc(happy, "Ah! Good afternoon to you. I take it you have come for a refill?")
-        if (menu("Yes" to true, "Not today" to false)) {
-            chatPlayer(neutral, "Yes.")
-            access.openWineShop()
-        } else {
-            chatPlayer(neutral, "Not today.")
-        }
-    }
-
-    private fun ProtectedAccess.openWineShop() {
-        shops.open(
-            player = player,
-            title = "Wine Shop.",
-            shopInv = "inv.wine_vinegar_merchant",
-            buyPercentage = 60.0,
-            sellPercentage = 100.0,
-            changePercentage = 2.0,
-        )
-    }
-
     private suspend fun Dialogue.townCrier() {
         chatNpc(happy, "Hello citizen!")
         if (menu("What do you do around here?" to true, "See you later." to false)) {
@@ -1028,174 +598,7 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
         )
     }
 
-    private suspend fun Dialogue.martin() {
-        val topic =
-            menu(
-                buildList {
-                    add("Ask about the Skillcape of Farming." to 0)
-                    if (QuestRequirements.hasCompleted(player, FAIRYTALE_II)) {
-                        add("Ask about the quest." to 1)
-                    }
-                }
-            )
-        if (topic == 1) return martinQuest()
-        if (player.baseFarmingLvl < MAX_LEVEL) {
-            chatPlayer(quiz, "What is that cape you're wearing?")
-            chatNpc(
-                happy,
-                "This is a Skillcape of Farming, isn't it incredible? It's a symbol of my ability " +
-                    "as the finest farmer in the land and wearing it increases my herb yield!",
-            )
-            return
-        }
-        val hood = menu("Skillcape" to false, "Hood" to true)
-        if (hood) {
-            chatPlayer(quiz, "May I have another hood for my cape, please?")
-            if (access.inv.isFull()) return
-            access.invAdd(access.inv, FARMING_HOOD)
-            objbox(FARMING_HOOD, "Martin hands you another hood for your skillcape.")
-            return
-        }
-        chatPlayer(quiz, "Can I buy a Skillcape of Farming from you?")
-        chatNpc(
-            happy,
-            "Of course, fellow farmer. If you wear this cape you'll receive increased yields from " +
-                "your herbs. That'll be 99000 coins.",
-        )
-        if (!menu("I'm not paying that!" to false, "Sure, not many people own one." to true)) {
-            chatPlayer(angry, "I'm not paying that.")
-            chatNpc(
-                neutral,
-                "No skin off my teeth, but if you change your mind, the price will still be the " +
-                    "same.",
-            )
-            return
-        }
-        chatPlayer(happy, "Sure, not many people own one.")
-        val inv = access.inv
-        if (inv.count(COINS) < SKILLCAPE_PRICE) {
-            chatPlayer(sad, "But, unfortunately, I don't have enough money with me.")
-            chatNpc(neutral, "Well, come back and see me when you do.")
-            return
-        }
-        if (inv.freeSpace() < 2) {
-            chatNpc(
-                neutral,
-                "Unfortunately all Skillcapes are only available with a free hood, it's part of a " +
-                    "skill promotion deal; buy one get one free, you know. So you'll need to free " +
-                    "up some inventory space before I can sell you one.",
-            )
-            return
-        }
-        if (access.invDel(inv, COINS, SKILLCAPE_PRICE).failure) return
-        access.invAdd(inv, FARMING_CAPE)
-        access.invAdd(inv, FARMING_HOOD)
-        chatNpc(happy, "That's true; us Master Farmers are a unique breed.")
-    }
-
-    private suspend fun Dialogue.martinQuest() {
-        chatPlayer(
-            happy,
-            "Okay, this time I've really solved your problems! I've woken up the Fairy Queen!",
-        )
-        chatNpc(
-            neutral,
-            "Hmm, right. You'll forgive me if I reserve judgement on this until I actually have " +
-                "some crops grow.",
-        )
-        chatPlayer(
-            neutral,
-            "Of course. The problem was the Godfather, he wanted to take control of Zanaris " +
-                "himself, so he didn't give Fairy Nuff the Queen's secateurs!",
-        )
-        chatNpc(
-            angry,
-            "Godfather...Fairy Nuff...the Queen, I don't know what you're talking about and I " +
-                "don't care. I just want my crops to start growing again. Come back and claim " +
-                "your reward once they've had a chance to grow.",
-        )
-    }
-
     private fun Dialogue.isLad(): Boolean = player.appearance.bodyType == Constants.bodytype_a
-
-    private enum class Dye(
-        val colour: String,
-        val obj: String,
-        val ingredient: String,
-        val ingredientCount: Int,
-        val ingredientName: String,
-        val shortName: String,
-        val recipe: String,
-        val whereToFind: String,
-    ) {
-        Red(
-            colour = "red",
-            obj = "obj.reddye",
-            ingredient = "obj.redberries",
-            ingredientCount = 3,
-            ingredientName = "redberries",
-            shortName = "berries",
-            recipe = "3 lots of redberries and 5 coins to you.",
-            whereToFind =
-                "I pick mine from the woods south of Varrock. The food shop in Port Sarim " +
-                    "sometimes has some as well.",
-        ),
-        Yellow(
-            colour = "yellow",
-            obj = "obj.yellowdye",
-            ingredient = "obj.onion",
-            ingredientCount = 2,
-            ingredientName = "onions",
-            shortName = "onions",
-            recipe =
-                "Yellow is a strange colour to get, comes from onion skins. I need 2 onions and " +
-                    "5 coins to make yellow dye.",
-            whereToFind =
-                "There are some onions growing on a farm to the East of here, next to the sheep " +
-                    "field.",
-        ),
-        Blue(
-            colour = "blue",
-            obj = "obj.bluedye",
-            ingredient = "obj.woadleaf",
-            ingredientCount = 2,
-            ingredientName = "woad leaves",
-            shortName = "woad leaves",
-            recipe = "2 woad leaves and 5 coins to you.",
-            whereToFind =
-                "Woad leaves are fairly hard to find. My other customers tell me the chief " +
-                    "gardener in Falador grows them.",
-        ),
-    }
-
-    private enum class AggieTopic {
-        Frogs,
-        WhatCanYouMake,
-        MakeDyes,
-        Insult,
-        Leave,
-    }
-
-    private enum class DyeChoice {
-        Make,
-        NotYet,
-        TooDear,
-        Where,
-        Others,
-    }
-
-    private enum class NedTopic {
-        Crandor,
-        Rope,
-        Leave,
-    }
-
-    private enum class RopeTopic {
-        Buy,
-        TooDear,
-        Wool,
-        GetWool,
-    }
 
     private enum class SchismTopic {
         News,
@@ -1211,34 +614,16 @@ class DraynorVillageNpcs @Inject constructor(private val shops: Shops) : PluginS
     }
 
     private companion object {
-        const val VAMPYRE_SLAYER = "quest_vampyreslayer"
-        const val DRAGON_SLAYER = "quest_dragonslayer1"
-        const val PRINCE_ALI_RESCUE = "quest_princealirescue"
-        const val FREMENNIK_ISLES = "quest_fremennikisles"
-
         const val COINS = "obj.coins"
-        const val COINS_ICON = "obj.coins_25"
-        const val POT_OF_FLOUR = "obj.pot_flour"
-        const val ROPE = "obj.rope"
-        const val BALL_OF_WOOL = "obj.ball_of_wool"
         const val CHOCOLATE_BAR = "obj.chocolate_bar"
 
-        const val DYE_PRICE = 5
-        const val ROPE_PRICE = 15
-        const val WOOL_PER_ROPE = 4
         const val RECORDING_FEE = 50
         const val FORESTRY_LEVEL = 15
         const val FORESTRY_SHOP = "dbrow.forestry_shop"
-        const val MAX_LEVEL = 99
-        const val SKILLCAPE_PRICE = 99000
-        const val FARMING_CAPE = "obj.skillcape_farming"
-        const val FARMING_HOOD = "obj.skillcape_farming_hood"
-        const val FAIRYTALE_II = "quest_fairytale2"
 
         const val BANKJOB_KNOWN = 1
         const val BANKJOB_WATCHED = 2
 
-        const val NED_DECLINE = "No thanks, Ned. I don't need any."
         const val GUARD_MENU = "What would you like to say?"
         const val GUARD_LEAVE = "Alright, I'll stop bothering you now."
     }

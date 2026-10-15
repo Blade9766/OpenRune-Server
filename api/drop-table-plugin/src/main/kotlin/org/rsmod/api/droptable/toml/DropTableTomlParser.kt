@@ -256,6 +256,7 @@ public object DropTableTomlParser {
             clueScrollBox = clueScrollBox,
             quest = quest,
             questMode = questMode,
+            area = area,
         )
 
     private fun TomlGuaranteedEntry.toHooks(): TomlDropHooks =
@@ -265,6 +266,7 @@ public object DropTableTomlParser {
             clueScrollBox = clueScrollBox,
             quest = quest,
             questMode = questMode,
+            area = area,
         )
 
     private fun TomlChanceEntry.toHooks(): TomlDropHooks =
@@ -277,5 +279,8 @@ public object DropTableTomlParser {
             requireWilderness = requireWilderness,
             quest = quest,
             questMode = questMode,
+            area = area,
+            wildernessSlayerTask = wildernessSlayerTask,
+            darkTotemPiece = darkTotemPiece,
         )
 }

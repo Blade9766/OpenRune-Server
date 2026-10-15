@@ -1,0 +1,49 @@
+[[varp]]
+isServerOnly = true
+id = "varp.halloween_treats"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.halloween_treats_deposited"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.halloween_recent_npc_1"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.halloween_recent_npc_2"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.halloween_recent_npc_3"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.halloween_temp"
+scope = "Temp"
+transmit = "Never"
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.halloween_ghostly_presence"
+varp = "varp.halloween_temp"
+startBit = 0
+endBit = 0
+
+[[varbit]]
+isServerOnly = true
+id = "varbit.halloween_generous_claimed"
+varp = "varp.halloween_temp"
+startBit = 1
+endBit = 8

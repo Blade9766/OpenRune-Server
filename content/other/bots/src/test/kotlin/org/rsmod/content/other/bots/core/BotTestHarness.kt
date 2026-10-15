@@ -1,11 +1,10 @@
 package org.rsmod.content.other.bots.core
 
-import org.rsmod.api.exchange.ExchangeOwner
-import org.rsmod.api.exchange.GrandExchangeBook
-import org.rsmod.api.exchange.OfferSide
-import org.rsmod.api.exchange.PlaceResult
-
-/** A whole bot world over in-memory stores; [restart] rebuilds it from what was persisted. */
+/**
+ * A whole bot world over in-memory stores. The exchange is saved at the end of every tick, as the
+ * server's grand exchange saves at the end of a cycle; [restart] rebuilds everything from what both
+ * stores last persisted.
+ */
 class BotTestHarness(
     val store: InMemoryBotStore = InMemoryBotStore(),
     var now: Long = 10_000_000L,
@@ -13,11 +12,7 @@ class BotTestHarness(
 ) {
     var cycle = 0
     val log = RecordingLog()
-    var exchangeHealthy = true
-    var serviceReference: Int? = 100
-
-    lateinit var book: GrandExchangeBook
-        private set
+    val exchange = FakeExchange { now }
 
     lateinit var spawner: FakeSpawner
         private set
@@ -29,28 +24,26 @@ class BotTestHarness(
         boot()
     }
 
-    fun boot() {
-        book = GrandExchangeBook(clock = { now })
-        val snapshot = store.exchange.load(0)
-        book.load(snapshot.offers, snapshot.trades)
-        book.reserveIds(snapshot.nextOfferId, snapshot.nextTradeId)
+    private fun boot() {
         spawner = FakeSpawner(actorFactory)
-        val market = BotMarket(book, { serviceReference }, { exchangeHealthy })
-        coordinator =
-            BotCoordinator(store, book, market, spawner, TEST_ITEMS::get, log, COINS) { now }
+        coordinator = BotCoordinator(store, exchange, spawner, TEST_ITEMS::get, log, COINS) { now }
         coordinator.load()
     }
 
-    /** Simulates a crash: everything in memory is dropped and rebuilt from the stores. */
+    /** Simulates a crash: unsaved exchange changes and everything in memory are lost. */
     fun restart() {
+        exchange.restoreFromSave()
         boot()
     }
 
-    fun tick(times: Int = 1) {
+    fun tick(times: Int = 1, saveExchange: Boolean = true) {
         repeat(times) {
             cycle++
             now += 600
             coordinator.tick(cycle)
+            if (saveExchange) {
+                exchange.save()
+            }
         }
     }
 
@@ -75,12 +68,12 @@ class BotTestHarness(
 
     fun state(id: Long): BotState = coordinator.find(id.toString())!!.state
 
-    fun playerBuys(qty: Int, price: Int, item: Int = LOGS, player: Int = 99) {
-        val result = book.place(ExchangeOwner.player(player), OfferSide.Buy, item, qty, price)
-        result as PlaceResult.Placed
-        store.exchange.persist(result.mutation)
-        coordinator.onExchangeMutation(result.mutation)
-    }
+    fun record(id: Long): BotRecord = coordinator.find(id.toString())!!
+
+    fun offers(id: Long): List<BotOffer> = exchange.offers(-id.toInt())
+
+    fun playerBuys(qty: Int, price: Int, item: Int = LOGS, player: Int = 99): FakeExchange.Offer =
+        exchange.playerBuys(player, item, qty, price)
 
     companion object {
         fun woodcuttingConfig(

@@ -12,6 +12,7 @@ import org.rsmod.api.player.stopInvTransmit
 import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
+import org.rsmod.content.interfaces.bank.syncBankAfterDirectWrite
 import org.rsmod.content.quest.manager.Quest
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
@@ -74,7 +75,10 @@ class WomRecycling : PluginScript() {
             val banked = bank.count(name)
             val carried = inv.count(name)
             if (banked == 0 && carried == 0) continue
-            if (banked > 0) invDel(bank, name, banked)
+            if (banked > 0) {
+                invDel(bank, name, banked)
+                player.syncBankAfterDirectWrite()
+            }
             if (carried > 0) invDel(inv, name, carried)
             removedAny = true
             if (announce) mes("You have removed ${obj.name}.")

@@ -10,7 +10,11 @@ public suspend fun ProtectedAccess.forcedWalk(dest: CoordGrid, crossTiles: Int):
     forcedWalk(listOf(dest), crossTiles)
 
 /** Bounded scripted crossings bypass collision and restore normal movement on cancellation. */
-public suspend fun ProtectedAccess.forcedWalk(waypoints: List<CoordGrid>, crossTiles: Int) {
+public suspend fun ProtectedAccess.forcedWalk(
+    waypoints: List<CoordGrid>,
+    crossTiles: Int,
+    moveSpeed: MoveSpeed = MoveSpeed.Walk,
+) {
     require(waypoints.isNotEmpty()) { "Waypoints must not be empty." }
     require(crossTiles >= 0) { "Crossing duration must not be negative." }
     require(waypoints.all { it.level == player.coords.level }) {
@@ -25,8 +29,8 @@ public suspend fun ProtectedAccess.forcedWalk(waypoints: List<CoordGrid>, crossT
         player.routeDestination.addAll(waypoints)
         var elapsed = 0
         while (player.coords != dest && elapsed < crossTiles + ARRIVAL_GRACE_TICKS) {
-            player.moveSpeed = MoveSpeed.Walk
-            player.tempMoveSpeed = MoveSpeed.Walk
+            player.moveSpeed = moveSpeed
+            player.tempMoveSpeed = moveSpeed
             delay(1)
             elapsed++
         }

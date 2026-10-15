@@ -1,0 +1,21 @@
+[gamevals.dbtable]
+achievement_diary_tiers =65300
+achievement_diary_tasks =65301
+
+[gamevals.dbrow]
+diary_lumbridge_easy =61000
+diary_lumbridge_medium =61001
+diary_lumbridge_hard =61002
+diary_lumbridge_elite =61003
+diary_lumbridge_easy_draynor_rooftop =61010
+diary_lumbridge_easy_cave_bug =61011
+diary_lumbridge_easy_sedridor =61012
+diary_lumbridge_easy_water_runes =61013
+diary_lumbridge_easy_hans =61014
+diary_lumbridge_easy_pickpocket =61015
+diary_lumbridge_easy_oak_logs =61016
+diary_lumbridge_easy_sewer_zombie =61017
+diary_lumbridge_easy_anchovies =61018
+diary_lumbridge_easy_bread =61019
+diary_lumbridge_easy_iron_ore =61020
+diary_lumbridge_easy_ham_hideout =61021

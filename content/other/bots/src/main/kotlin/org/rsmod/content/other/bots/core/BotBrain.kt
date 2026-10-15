@@ -1,32 +1,36 @@
 package org.rsmod.content.other.bots.core
 
-import org.rsmod.api.exchange.ExchangeOwner
-import org.rsmod.api.exchange.OfferSide
-import org.rsmod.api.exchange.PlaceResult
-
 /**
  * The per-bot state machine. It only decides; every world interaction goes through [BotActor] and
- * every exchange interaction through [BotMarket]. A state that cannot make progress within its
+ * every exchange interaction through [BotExchange]. A state that cannot make progress within its
  * budget fails, failures are retried a bounded number of times, and repeated failures park the
  * bot in [BotState.Error] so it can never spin forever.
+ *
+ * Bot state and the exchange's book are saved separately, so every item movement between them is
+ * done in two steps: the bot's side is recorded and saved first ([PendingListing] /
+ * [PendingCollect]), the exchange is changed on a later tick, and the record is cleared only once
+ * the exchange has saved too. [recovering] marks a brain built from a record loaded at startup,
+ * when the exchange's file is the authority on what actually happened.
  */
 class BotBrain(
     initial: BotRecord,
     private val actor: BotActor,
-    private val market: BotMarket,
+    private val exchange: BotExchange,
     private val items: (String) -> Int?,
     private val log: BotLog,
+    private val storeHealthy: () -> Boolean,
+    private var recovering: Boolean = false,
 ) {
     var record: BotRecord = initial
         private set
 
-    /** Set when the record changed in a way that should reach the database soon. */
+    /** Set when the record changed in a way that should be saved soon. */
     var dirty: Boolean = false
 
-    /** Set when the record (and inventory) must be persisted before anything else happens. */
+    /** Set when the record (and inventory) must be saved before the next tick. */
     var urgent: Boolean = false
 
-    private val owner = ExchangeOwner.bot(initial.id)
+    private val owner = initial.ownerId
 
     private var stateCycle = 0
     private var lastProgressCycle = 0
@@ -35,9 +39,13 @@ class BotBrain(
     private var gatherTarget = BotDestination.Resource
     private var travelTarget = BotDestination.Resource
     private var errorUntil = 0L
+    private var listingOutcome: Boolean? = null
 
     val state: BotState
         get() = record.state
+
+    val hasPendingExchangeWork: Boolean
+        get() = record.hasPendingExchangeWork
 
     fun start(cycle: Int) {
         stateFailures = 0
@@ -59,6 +67,13 @@ class BotBrain(
         transition(BotState.Idle, cycle, "Error cleared")
     }
 
+    /** Settles exchange work only; used while a disabled bot waits to leave the world. */
+    fun settle(now: Long) {
+        if (!actor.isBusy) {
+            settleExchange(now)
+        }
+    }
+
     fun tick(now: Long, cycle: Int) {
         if (record.state == BotState.Disabled) {
             return
@@ -72,6 +87,7 @@ class BotBrain(
             return
         }
         busyTicks = 0
+        settleExchange(now)
         when (record.state) {
             BotState.Disabled -> {}
             BotState.Idle -> decide(now, cycle)
@@ -184,11 +200,12 @@ class BotBrain(
             is DepositOutcome.Deposited -> {
                 val total = outcome.items.values.sumOf { it.toLong() }
                 if (total > 0) {
-                    record = record.copy(stats = record.stats.copy(deposited = record.stats.deposited + total))
+                    val stats = record.stats.copy(deposited = record.stats.deposited + total)
+                    record = record.copy(stats = stats)
                     log.info(
                         record,
-                        "deposited ${describe(outcome.items)} (gathered ${record.stats.gathered}, " +
-                            "deposited ${record.stats.deposited} in total)",
+                        "deposited ${describe(outcome.items)} (gathered ${stats.gathered}, " +
+                            "deposited ${stats.deposited} in total)",
                     )
                 }
             }
@@ -255,26 +272,36 @@ class BotBrain(
         }
     }
 
+    /**
+     * Credits everything the bot's offers hold to its bank and records it as pending; the exchange
+     * is emptied on a later tick by [settleCollects], once the credited bank has been saved.
+     */
     private fun collectProceeds() {
-        if (!market.isAvailable) {
+        if (!exchange.available || !storeHealthy()) {
             return
         }
-        for (offer in market.offers(owner)) {
-            if (!offer.hasCollectable) {
+        val busySlots = record.pendingCollects.mapTo(HashSet()) { it.slot }
+        record.pendingListing?.let { busySlots += it.slot }
+        for (offer in exchange.offers(owner)) {
+            if (!offer.sell || !offer.hasCollectable || offer.slot in busySlots) {
                 continue
             }
-            val owed = market.collectable(owner, offer.id, Int.MAX_VALUE, Long.MAX_VALUE) ?: continue
-            val items = if (owed.items > 0 && actor.creditBank(offer.itemId, owed.items)) owed.items else 0
-            val coins = if (owed.coins > 0) actor.creditBankCoins(owed.coins) else 0L
-            val collected = owed.copy(items = items, coins = coins)
-            if (collected.isEmpty) {
-                log.warn(record, "could not collect offer ${offer.id}: bank has no room")
+            val items = if (offer.collectItems > 0 && actor.creditBank(offer.itemId, offer.collectItems)) offer.collectItems else 0
+            val coins = if (offer.collectCoins > 0) actor.creditBankCoins(offer.collectCoins.toLong()) else 0L
+            if (items == 0 && coins == 0L) {
+                log.warn(record, "could not collect slot ${offer.slot}: bank has no room")
                 continue
             }
-            check(market.confirmCollect(owner, collected)) {
-                "Collection for offer ${offer.id} was rejected after crediting the bank."
-            }
-            log.info(record, "collected offer ${offer.id}: $coins coins, $items items")
+            val pending =
+                PendingCollect(
+                    slot = offer.slot,
+                    createdAt = offer.createdAt,
+                    coinsTarget = offer.coinsCollected + coins,
+                    itemsTarget = offer.itemsCollected + items,
+                )
+            val stats = record.stats.copy(coinsEarned = record.stats.coinsEarned + coins)
+            record = record.copy(pendingCollects = record.pendingCollects + pending, stats = stats)
+            log.info(record, "collected slot ${offer.slot}: $coins coins, $items items")
             urgent = true
         }
     }
@@ -306,6 +333,23 @@ class BotBrain(
     }
 
     private fun list(now: Long, cycle: Int) {
+        if (record.pendingListing != null) {
+            setActivity("Placing offer")
+            return
+        }
+        when (listingOutcome) {
+            true -> {
+                listingOutcome = null
+                travelTo(gatherTarget, cycle)
+                return
+            }
+            false -> {
+                listingOutcome = null
+                transition(BotState.TravelToBank, cycle, "Returning unsold items to the bank")
+                return
+            }
+            null -> {}
+        }
         abortStaleOffers(now)
         val item = saleItemId()
         val held = item?.let(actor::held) ?: 0
@@ -313,8 +357,13 @@ class BotBrain(
             transition(BotState.TravelToBank, cycle, "Nothing to list")
             return
         }
-        if (!saleAllowed(now) || market.hasOpenSale(owner, item)) {
+        if (!saleAllowed(now) || hasOpenSale(item)) {
             transition(BotState.TravelToBank, cycle, "Returning unsold items to the bank")
+            return
+        }
+        val slot = exchange.freeSlot(owner)
+        if (slot == null) {
+            transition(BotState.TravelToBank, cycle, "No free exchange slot")
             return
         }
         val decision = priceFor(item, now)
@@ -328,46 +377,146 @@ class BotBrain(
             transition(BotState.TravelToBank, cycle, "Could not take items to list")
             return
         }
-        when (val result = market.sell(owner, item, held, decision.price, record.listingRef)) {
-            is PlaceResult.Placed -> {
+        val pending = PendingListing(slot, item, held, decision.price)
+        record = record.copy(pendingListing = pending)
+        log.info(record, "listing $held x item $item at ${decision.price} each (${decision.basis})")
+        urgent = true
+    }
+
+    /** Moves pending exchange work forward; see the class documentation. */
+    private fun settleExchange(now: Long) {
+        settleListing(now)
+        settleCollects()
+        countSales()
+        recovering = false
+    }
+
+    private fun settleListing(now: Long) {
+        val pending = record.pendingListing ?: return
+        val offer = exchange.offer(owner, pending.slot)
+        val ours =
+            offer != null && offer.sell && offer.itemId == pending.itemId &&
+                offer.total == pending.quantity && offer.price == pending.price
+        when {
+            ours && (recovering || exchange.saveCount > pending.placedAtSave) -> {
                 record =
                     record.copy(
-                        saleSeq = record.saleSeq + 1,
-                        stats = record.stats.copy(listed = record.stats.listed + held),
+                        pendingListing = null,
+                        stats = record.stats.copy(listed = record.stats.listed + pending.quantity),
                     )
-                log.info(
-                    record,
-                    "listed $held x item $item at ${decision.price} each (${decision.basis}), " +
-                        "offer ${result.offer.id}",
-                )
+                log.info(record, "listed ${pending.quantity} x item ${pending.itemId} in slot ${pending.slot}")
+                listingOutcome = true
                 urgent = true
-                travelTo(gatherTarget, cycle)
             }
-            is PlaceResult.Rejected -> {
-                check(actor.returnHeld(item, held)) {
-                    "Could not return $held x $item after a rejected listing."
+            ours -> {}
+            !pending.placed && !recovering && durable() && exchange.available -> {
+                val placed =
+                    exchange.sell(
+                        owner,
+                        record.name,
+                        pending.slot,
+                        pending.itemId,
+                        pending.quantity,
+                        pending.price,
+                    )
+                if (placed) {
+                    record =
+                        record.copy(
+                            pendingListing = pending.copy(placed = true, placedAtSave = exchange.saveCount)
+                        )
+                    urgent = true
+                } else {
+                    rollBackListing(pending, "the exchange refused the offer", now)
                 }
-                if (result == PlaceResult.DuplicateRef) {
-                    record = record.copy(saleSeq = record.saleSeq + 1)
-                }
-                pauseSales("listing rejected: ${result.message}", now)
-                urgent = true
-                transition(BotState.TravelToBank, cycle, "Listing rejected")
             }
+            !pending.placed && !recovering ->
+                rollBackListing(pending, "the exchange or bot store is unavailable", now)
+            recovering -> rollBackListing(pending, "the offer never reached the exchange's save", now)
+            else -> setActivity("Waiting for the exchange to confirm the offer")
+        }
+    }
+
+    private fun rollBackListing(pending: PendingListing, reason: String, now: Long) {
+        val returned =
+            actor.returnHeld(pending.itemId, pending.quantity) ||
+                actor.creditBank(pending.itemId, pending.quantity)
+        check(returned) {
+            "Could not return ${pending.quantity} x ${pending.itemId} after a failed listing."
+        }
+        record = record.copy(pendingListing = null)
+        log.warn(record, "listing rolled back ($reason); ${pending.quantity} items returned")
+        pauseSales("listing failed: $reason", now)
+        listingOutcome = false
+        urgent = true
+    }
+
+    private fun settleCollects() {
+        if (record.pendingCollects.isEmpty()) {
+            return
+        }
+        val remaining = ArrayList<PendingCollect>()
+        for (pending in record.pendingCollects) {
+            val offer = exchange.offer(owner, pending.slot)?.takeIf { it.createdAt == pending.createdAt }
+            if (offer == null) {
+                continue
+            }
+            val coinsOwed = pending.coinsTarget - offer.coinsCollected
+            val itemsOwed = pending.itemsTarget - offer.itemsCollected
+            when {
+                coinsOwed <= 0 && itemsOwed <= 0 ->
+                    if (!recovering && exchange.saveCount <= pending.takenAtSave) {
+                        remaining += pending
+                    }
+                (!pending.taken || recovering) && durable() -> {
+                    if (coinsOwed > 0) {
+                        exchange.takeCoins(owner, pending.slot, coinsOwed.toInt())
+                    }
+                    if (itemsOwed > 0) {
+                        exchange.takeItems(owner, pending.slot, itemsOwed)
+                    }
+                    remaining += pending.copy(taken = true, takenAtSave = exchange.saveCount)
+                }
+                else -> remaining += pending
+            }
+        }
+        if (remaining != record.pendingCollects) {
+            record = record.copy(pendingCollects = remaining)
+            urgent = true
+        }
+    }
+
+    private fun countSales() {
+        val offers = exchange.offers(owner).filter { it.sell }
+        var counted = record.salesCounted
+        var stats = record.stats
+        for (offer in offers) {
+            val before = counted[offer.createdAt] ?: 0
+            if (offer.completed > before) {
+                val sold = offer.completed - before
+                stats = stats.copy(sold = stats.sold + sold)
+                counted = counted + (offer.createdAt to offer.completed)
+                log.info(record, "sold $sold x item ${offer.itemId} from slot ${offer.slot} at ${offer.price} or better")
+            }
+        }
+        val live = offers.mapTo(HashSet()) { it.createdAt }
+        counted = counted.filterKeys { it in live }
+        if (counted != record.salesCounted || stats != record.stats) {
+            record = record.copy(salesCounted = counted, stats = stats)
+            dirty = true
         }
     }
 
     private fun abortStaleOffers(now: Long) {
         val timeout = record.config.pricing.listingTimeoutMinutes * 60_000L
-        for (offer in market.offers(owner)) {
-            if (!offer.isOpen || offer.side != OfferSide.Sell || now - offer.createdAt < timeout) {
+        for (offer in exchange.offers(owner)) {
+            if (!offer.isOpen || !offer.sell || now - offer.createdAt < timeout) {
                 continue
             }
-            if (!market.abort(owner, offer.id)) {
+            if (!exchange.abort(owner, offer.slot)) {
                 continue
             }
             val retries = record.saleRetries + 1
-            log.info(record, "aborted unsold offer ${offer.id} (${offer.remaining} left), retry $retries")
+            log.info(record, "aborted unsold slot ${offer.slot} (${offer.remaining} left), retry $retries")
             record = record.copy(saleRetries = retries)
             if (retries > record.config.pricing.maxRetries) {
                 pauseSales("unsold after ${record.config.pricing.maxRetries} retries", now)
@@ -379,13 +528,19 @@ class BotBrain(
 
     private fun priceFor(itemId: Int, now: Long): PriceDecision {
         val pricing = record.config.pricing
-        val signal = market.priceSignal(itemId, SalePricing.guideSettings(pricing), now)
+        val signal =
+            PriceGuide.volumeWeighted(
+                exchange.recentTrades(itemId),
+                now,
+                SalePricing.guideSettings(pricing),
+            )
         return SalePricing.decide(
             config = pricing,
             signal = signal,
-            serviceReference = market.referencePrice(itemId),
-            bestCompetingAsk = market.bestCompetingAsk(itemId, owner),
+            serviceReference = exchange.guidePrice(itemId),
+            competingAsk = exchange.lowestAsk(itemId, owner),
             retries = record.saleRetries,
+            tax = { price -> exchange.taxPerItem(itemId, price) },
         )
     }
 
@@ -396,6 +551,12 @@ class BotBrain(
         dirty = true
     }
 
+    /** True once this bot's own last urgent change has been written to the store. */
+    private fun durable(): Boolean = !urgent && storeHealthy()
+
+    private fun hasOpenSale(itemId: Int): Boolean =
+        exchange.offers(owner).any { it.isOpen && it.sell && it.itemId == itemId }
+
     private fun saleItemId(): Int? {
         val sale = record.config.sale
         if (!sale.enabled || sale.item.isBlank() || sale.item !in sale.allowedItems) {
@@ -405,17 +566,17 @@ class BotBrain(
     }
 
     private fun saleAllowed(now: Long): Boolean =
-        saleItemId() != null && market.isAvailable && now >= record.salePausedUntil
+        saleItemId() != null && exchange.available && storeHealthy() && now >= record.salePausedUntil
 
     private fun saleDue(now: Long): Boolean {
         val item = saleItemId() ?: return false
-        if (!saleAllowed(now)) {
+        if (!saleAllowed(now) || record.pendingListing != null) {
             return false
         }
-        if (market.hasOpenSale(owner, item)) {
+        if (hasOpenSale(item)) {
             return hasStaleOffer(now)
         }
-        if (!market.hasFreeSlot(owner)) {
+        if (exchange.freeSlot(owner) == null) {
             return false
         }
         return actor.bankCount(item) >= record.config.sale.threshold
@@ -423,9 +584,7 @@ class BotBrain(
 
     private fun hasStaleOffer(now: Long): Boolean {
         val timeout = record.config.pricing.listingTimeoutMinutes * 60_000L
-        return market.offers(owner).any {
-            it.isOpen && it.side == OfferSide.Sell && now - it.createdAt >= timeout
-        }
+        return exchange.offers(owner).any { it.isOpen && it.sell && now - it.createdAt >= timeout }
     }
 
     private fun gatherLimitReached(now: Long): Boolean {

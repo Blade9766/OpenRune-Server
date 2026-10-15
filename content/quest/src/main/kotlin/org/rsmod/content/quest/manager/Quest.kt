@@ -4,9 +4,9 @@ import com.github.michaelbull.logging.InlineLogger
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
-import net.rsprot.protocol.game.outgoing.sound.MidiJingle
 import org.rsmod.api.attr.AttributeKey
-import org.rsmod.api.player.musicClocks
+import org.rsmod.api.player.midiJingle
+import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.vars.intVarBit
@@ -14,8 +14,6 @@ import org.rsmod.api.player.vars.intVarp
 import org.rsmod.api.table.QuestRow
 import org.rsmod.game.entity.Player
 import org.rsmod.map.CoordGrid
-
-private const val QUEST_COMPLETE_JINGLE = 153
 
 internal const val QUEST_DIALOGUE_CLOSE_TIMER = "timer.quest_dialogue_close"
 internal const val QUEST_SCROLL_CLOSE_TIMER = "timer.quest_scroll_close"
@@ -46,18 +44,33 @@ data class Quest(
     val questVarp: String,
     val rewards: QuestReward,
     val itemDisplay: ItemRewardDisplay,
+    /** Js5 archive 11 group played when the quest is completed; see [QuestScript.completionJingle]. */
+    val completionJingle: Int = DEFAULT_COMPLETION_JINGLE,
+    /**
+     * When set, the stage is stored in this varbit instead of the whole of [questVarp]. Used by
+     * quests whose progress varbit shares its varp with unrelated flags (Mage Arena II lives on
+     * the same varp as the Wilderness warning toggles), so writing the full varp would wipe them.
+     */
     val questVarbit: String? = null,
     val closeDialogue: QuestClose = QuestClose.OnFinished,
     val closeScroll: QuestClose = QuestClose.Never,
 ) {
 
-    private var Player.questState: Int
-        get() = vars[questVarbit ?: questVarp]
-        set(value) { VarPlayerIntMapSetter.set(this, questVarbit ?: questVarp, value) }
+    private var Player.questVarpState by intVarp(questVarp)
     private var Player.questPoints by intVarp("varp.qp")
     private var Player.questsCompleted by intVarBit("varbit.quests_completed_count")
 
     private val attributeRegistry = mutableMapOf<String, QuestAttribute<*>>()
+
+    /** See [onVarSync]. */
+    private var varSync: ((Player) -> Unit)? = null
+
+    /**
+     * Miniquests award no quest points; they do not count towards the completed-quest tally and
+     * finish with a chat message rather than the reward scroll.
+     */
+    val isMiniquest: Boolean
+        get() = questPoints == 0
 
     companion object {
         private val logger = InlineLogger()
@@ -69,11 +82,29 @@ data class Quest(
 
         fun all(): Collection<Quest> = questsByKey.values
 
+        /**
+         * Js5 archive 11 groups of the three "Quest Complete" jingles. The client plays a jingle
+         * by its archive group, which is not the number the `jingle.*` gamevals resolve to; the
+         * groups are the "Cache ID" on each jingle's OSRS wiki page (see
+         * [org.rsmod.api.player.midiJingle]).
+         */
+        /** "Quest Complete 1": usually master-level quests. */
+        const val QUEST_COMPLETE_1_JINGLE = 152
+
+        /** "Quest Complete 2": usually intermediate and expert quests. */
+        const val QUEST_COMPLETE_2_JINGLE = 153
+
+        /** "Quest Complete 3": usually beginner and easy quests. */
+        const val QUEST_COMPLETE_3_JINGLE = 154
+
+        const val DEFAULT_COMPLETION_JINGLE = QUEST_COMPLETE_3_JINGLE
+
         fun register(
             rowKey: String,
             varp: String,
             itemDisplay: ItemRewardDisplay,
             rewards: QuestReward,
+            completionJingle: Int = DEFAULT_COMPLETION_JINGLE,
             varbit: String? = null,
             closeDialogue: QuestClose = QuestClose.OnFinished,
             closeScroll: QuestClose = QuestClose.Never,
@@ -91,9 +122,10 @@ data class Quest(
                 maxSteps = questRow.endstate,
                 questPoints = questRow.questpoints,
                 questVarp = varp,
-                questVarbit = varbit,
                 itemDisplay = itemDisplay,
                 rewards = rewards,
+                completionJingle = completionJingle,
+                questVarbit = varbit,
                 closeDialogue = closeDialogue,
                 closeScroll = closeScroll,
             )
@@ -103,24 +135,65 @@ data class Quest(
     }
 
     fun getQuestStage(access: Player): Int {
-        if (questVarbit != null) return access.questState
+        if (questVarbit != null) return access.vars[questVarbit]
         val stages = access.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
         return stages[key] ?: 0
     }
 
+    private fun storeQuestStage(player: Player, stage: Int) {
+        val clampedStage = stage.coerceIn(0, maxSteps)
+        if (questVarbit != null) {
+            if (player.vars[questVarbit] != clampedStage) {
+                setClientState(player, clampedStage)
+            }
+            return
+        }
+        val stages = player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
+        stages[key] = clampedStage
+    }
+
+    /** Moves a stage saved in the attribute map before the quest kept it in [questVarbit]. */
     fun migrateLegacyStage(player: Player) {
-        if (questVarbit == null) return
+        val varbit = questVarbit ?: return
         val legacy = player.attr[QUEST_STAGE_MAP_ATTR]?.remove(key) ?: return
-        if (player.questState == 0) {
-            player.questState = legacy.coerceIn(0, maxSteps)
+        if (player.vars[varbit] == 0) {
+            VarPlayerIntMapSetter.set(player, varbit, legacy.coerceIn(0, maxSteps))
         }
     }
 
-    private fun storeQuestStage(access: ProtectedAccess, stage: Int) {
-        if (questVarbit != null) return
-        val clampedStage = stage.coerceIn(0, maxSteps)
-        val stages = access.player.attr.getOrPut(QUEST_STAGE_MAP_ATTR) { mutableMapOf() }
-        stages[key] = clampedStage
+    /** The stage as the client currently sees it (the varbit when one is configured, else the varp). */
+    private fun clientState(player: Player): Int {
+        val varbit = questVarbit ?: return player.questVarpState
+        return player.vars[varbit]
+    }
+
+    private fun setClientState(player: Player, stage: Int) {
+        val varbit = questVarbit
+        if (varbit != null) {
+            VarPlayerIntMapSetter.set(player, varbit, stage)
+        } else {
+            player.questVarpState = stage
+        }
+    }
+
+    /** Pushes the stored stage into the quest varp/varbit; called on login and after stage changes. */
+    fun syncState(player: Player) {
+        migrateLegacyStage(player)
+        val stage = getQuestStage(player)
+        if (clientState(player) != stage) {
+            setClientState(player, stage)
+        }
+        varSync?.invoke(player)
+    }
+
+    /**
+     * Registers the quest's own var mirror, for quests that keep sub-state in attributes because
+     * their varbits share the quest varp. It runs after every stage change, including the jumps
+     * and resets the testing commands make, so the world matches the stage straight away instead
+     * of only after a relog.
+     */
+    fun onVarSync(block: (Player) -> Unit) {
+        varSync = block
     }
 
     fun questState(player: Player): QuestProgressState =
@@ -148,24 +221,56 @@ data class Quest(
         return setQuestStage(access, attemptedStage.coerceIn(0, maxSteps))
     }
 
-    fun completeQuest(access: ProtectedAccess): Int = setQuestStage(access, maxSteps)
-
     fun setQuestStage(access: ProtectedAccess, newStage: Int): Int {
         require(newStage in 0..maxSteps) { "Quest '$key' stage must be within 0..$maxSteps." }
         val wasCompleted = getQuestStage(access.player) >= maxSteps
-        storeQuestStage(access, newStage)
+        storeQuestStage(access.player, newStage)
 
         // Quest varps store the real stage (0..endstate). Multinpc / journal clients depend on
         // endstate (e.g. runemysteries=6) rather than a collapsed 0/1/2 progress flag.
-        if (access.player.questState != newStage) {
-            access.player.questState = newStage
-        }
+        syncState(access.player)
 
         if (!wasCompleted && newStage >= maxSteps) {
             completedQuest(access)
         }
 
         return newStage
+    }
+
+    /** Finishes the quest from whatever stage it is at, running the completion rewards once. */
+    fun completeQuest(access: ProtectedAccess): Int {
+        val remaining = maxSteps - getQuestStage(access.player)
+        return if (remaining > 0) advanceQuestStage(access, remaining) else maxSteps
+    }
+
+    /**
+     * Puts the quest back to "not started" for [player]: stage, varp, every registered quest
+     * attribute, and the quest points and completion count if it had been finished. Intended for
+     * testing via the `::resetquest` command.
+     */
+    fun resetQuest(player: Player) {
+        val wasCompleted = isQuestCompleted(player)
+        player.attr[QUEST_STAGE_MAP_ATTR]?.remove(key)
+        setClientState(player, 0)
+        for (attribute in attributeRegistry.values) {
+            attribute.clear(player)
+        }
+        if (wasCompleted && !isMiniquest) {
+            player.questPoints = (player.questPoints - questPoints).coerceAtLeast(0)
+            player.questsCompleted = (player.questsCompleted - 1).coerceAtLeast(0)
+        }
+        varSync?.invoke(player)
+    }
+
+    /**
+     * Jumps the quest to [stage] for [player] without running completion rewards. Intended for
+     * testing via the `::queststage` command; attributes are left untouched.
+     */
+    fun jumpToStage(player: Player, stage: Int) {
+        val clamped = stage.coerceIn(0, maxSteps)
+        storeQuestStage(player, clamped)
+        setClientState(player, clamped)
+        varSync?.invoke(player)
     }
 
     fun <T> attribute(
@@ -196,12 +301,14 @@ data class Quest(
     }
 
     private fun completedQuest(access: ProtectedAccess) {
+        if (isMiniquest) {
+            completedMiniquest(access)
+            return
+        }
 
         access.player.questPoints += questPoints
         access.player.questsCompleted++
-
-        access.player.musicClocks = 0
-        access.player.client.write(MidiJingle(QUEST_COMPLETE_JINGLE))
+        access.player.midiJingle(completionJingle)
 
         scheduleClose(access, closeDialogue, QUEST_DIALOGUE_CLOSE_TIMER) { ifCloseChat() }
         access.ifOpenMain("interface.questscroll")
@@ -209,7 +316,8 @@ data class Quest(
             ifCloseSub("interface.questscroll")
         }
         access.ifSetText("component.questscroll:quest_title", "You have completed ${displayName}!")
-        access.ifSetText("component.questscroll:quest_reward1", "$questPoints Quest Point")
+        val pointsLabel = if (questPoints == 1) "Quest Point" else "Quest Points"
+        access.ifSetText("component.questscroll:quest_reward1", "$questPoints $pointsLabel")
 
         access.ifSetObj("component.questscroll:quest_model", obj = itemDisplay.item, zoom = itemDisplay.zoom)
 
@@ -220,7 +328,8 @@ data class Quest(
                 ?: error("No stat found for $skill")
 
             access.statAdvance(skill, amount)
-            rewardLines.add("${amount.toInt()} ${stat.displayName} XP")
+            val statName = stat.displayName.replaceFirstChar { it.uppercase() }
+            rewardLines.add("${"%,d".format(amount.toInt())} $statName XP")
         }
 
         rewards.items.forEach { (item, amount) ->
@@ -233,12 +342,21 @@ data class Quest(
             rewardLines.add(it)
         }
 
-        val linesToShow = rewardLines.take(6)
+        val linesToShow = (rewards.scrollLines ?: rewardLines).take(6)
 
         for (i in 0 until 6) {
             val componentId = "component.questscroll:quest_reward${i + 2}"
             val text = linesToShow.getOrNull(i) ?: ""
             access.ifSetText(componentId, text)
         }
+    }
+
+    /** Miniquests have no scroll: the rewards are given quietly and the completion is announced in chat. */
+    private fun completedMiniquest(access: ProtectedAccess) {
+        access.player.midiJingle(completionJingle)
+        rewards.xp.forEach { (skill, amount) -> access.statAdvance(skill, amount) }
+        rewards.items.forEach { (item, amount) -> access.invAdd(access.inv, item, amount) }
+        access.player.mes("<col=800000>Congratulations! You have completed the $displayName miniquest.</col>")
+        rewards.extraText?.let { access.player.mes(it) }
     }
 }

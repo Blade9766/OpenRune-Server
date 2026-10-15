@@ -1,0 +1,317 @@
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_costume_items"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.scythe"
+1 = "obj.halloweenmask_red"
+2 = "obj.halloweenmask_green"
+3 = "obj.halloweenmask_blue"
+4 = "obj.halloweenmask_black"
+5 = "obj.hw06_pumpkin_head"
+6 = "obj.hw06_spooky_head"
+7 = "obj.hw06_spooky_body"
+8 = "obj.hw06_spooky_legs"
+9 = "obj.hw06_spooky_gloves"
+10 = "obj.hw06_spooky_boots"
+11 = "obj.hw07_grim_hood"
+12 = "obj.gravedigger_hat"
+13 = "obj.gravedigger_top"
+14 = "obj.gravedigger_legs"
+15 = "obj.gravedigger_boots"
+16 = "obj.gravedigger_gloves"
+17 = "obj.hw16_reward_mask"
+18 = "obj.hw16_reward_top"
+19 = "obj.hw16_reward_bottom"
+20 = "obj.hw16_reward_knife"
+21 = "obj.hw17_reward_mask"
+22 = "obj.hw18_clown_mask"
+23 = "obj.hw18_clown_top"
+24 = "obj.hw18_clown_bowtie"
+25 = "obj.hw18_clown_legs"
+26 = "obj.hw18_clown_feet"
+27 = "obj.hw18_eek"
+28 = "obj.hw19_ghost_hood"
+29 = "obj.hw19_ghost_top"
+30 = "obj.hw19_ghost_legs"
+31 = "obj.hw19_ghost_gloves"
+32 = "obj.hw19_ghost_boots"
+33 = "obj.hw19_ghost_hood_slime"
+34 = "obj.hw19_ghost_top_slime"
+35 = "obj.hw19_ghost_legs_slime"
+36 = "obj.hw19_ghost_gloves_slime"
+37 = "obj.hw19_ghost_boots_slime"
+38 = "obj.hw19_pumpkin_lantern"
+39 = "obj.hw19_skeleton_lantern"
+40 = "obj.hw20_headless_head"
+41 = "obj.hw21_saucepan_hat"
+42 = "obj.hw21_ugly_jumper01"
+43 = "obj.hw21_ugly_jumper02"
+44 = "obj.hw22_witch_hat"
+45 = "obj.hw22_witch_torso"
+46 = "obj.hw22_witch_robes"
+47 = "obj.hw22_witch_boots"
+48 = "obj.hw22_witch_cape"
+49 = "obj.hw22_reward_wig01"
+50 = "obj.hw22_reward_wig02"
+51 = "obj.hw22_reward_wig03"
+52 = "obj.hw22_reward_wig04"
+53 = "obj.hw22_reward_wig05"
+54 = "obj.hw22_reward_wig06"
+55 = "obj.hw23_reward_cobwebcape"
+56 = "obj.hw23_reward_cobwebcape2"
+57 = "obj.hw23_reward_spiderhat"
+58 = "obj.hw23_reward_spiderhat02"
+59 = "obj.hw23_reward_spiderhat03"
+60 = "obj.hw23_reward_spiderhat04"
+61 = "obj.hw23_reward_spiderhat05"
+62 = "obj.hw24_shirt"
+63 = "obj.hw25_grim_reaper_top"
+64 = "obj.hw25_grim_reaper_bottoms"
+65 = "obj.hw25_grim_reaper_gloves"
+66 = "obj.hw25_pumpkin_lantern_reward"
+67 = "obj.hw24_reward_pumpkin_beige_ew"
+68 = "obj.hw24_reward_pumpkin_beige_derp"
+69 = "obj.hw24_reward_pumpkin_beige_evil"
+70 = "obj.hw24_reward_pumpkin_beige_grr"
+71 = "obj.hw24_reward_pumpkin_beige_meh"
+72 = "obj.hw24_reward_pumpkin_beige_oh"
+73 = "obj.hw24_reward_pumpkin_beige_sad"
+74 = "obj.hw24_reward_pumpkin_beige_woo"
+75 = "obj.hw24_reward_pumpkin_beige_yay"
+76 = "obj.hw24_reward_pumpkin_white_ew"
+77 = "obj.hw24_reward_pumpkin_white_derp"
+78 = "obj.hw24_reward_pumpkin_white_evil"
+79 = "obj.hw24_reward_pumpkin_white_grr"
+80 = "obj.hw24_reward_pumpkin_white_meh"
+81 = "obj.hw24_reward_pumpkin_white_oh"
+82 = "obj.hw24_reward_pumpkin_white_sad"
+83 = "obj.hw24_reward_pumpkin_white_woo"
+84 = "obj.hw24_reward_pumpkin_white_yay"
+85 = "obj.hw24_reward_pumpkin_yellow_ew"
+86 = "obj.hw24_reward_pumpkin_yellow_derp"
+87 = "obj.hw24_reward_pumpkin_yellow_evil"
+88 = "obj.hw24_reward_pumpkin_yellow_grr"
+89 = "obj.hw24_reward_pumpkin_yellow_meh"
+90 = "obj.hw24_reward_pumpkin_yellow_oh"
+91 = "obj.hw24_reward_pumpkin_yellow_sad"
+92 = "obj.hw24_reward_pumpkin_yellow_woo"
+93 = "obj.hw24_reward_pumpkin_yellow_yay"
+94 = "obj.hw24_reward_pumpkin_orange_ew"
+95 = "obj.hw24_reward_pumpkin_orange_derp"
+96 = "obj.hw24_reward_pumpkin_orange_evil"
+97 = "obj.hw24_reward_pumpkin_orange_grr"
+98 = "obj.hw24_reward_pumpkin_orange_meh"
+99 = "obj.hw24_reward_pumpkin_orange_oh"
+100 = "obj.hw24_reward_pumpkin_orange_sad"
+101 = "obj.hw24_reward_pumpkin_orange_woo"
+102 = "obj.hw24_reward_pumpkin_orange_yay"
+103 = "obj.hw24_reward_pumpkin_red_ew"
+104 = "obj.hw24_reward_pumpkin_red_derp"
+105 = "obj.hw24_reward_pumpkin_red_evil"
+106 = "obj.hw24_reward_pumpkin_red_grr"
+107 = "obj.hw24_reward_pumpkin_red_meh"
+108 = "obj.hw24_reward_pumpkin_red_oh"
+109 = "obj.hw24_reward_pumpkin_red_sad"
+110 = "obj.hw24_reward_pumpkin_red_woo"
+111 = "obj.hw24_reward_pumpkin_red_yay"
+112 = "obj.hw24_reward_pumpkin_darkgreen_ew"
+113 = "obj.hw24_reward_pumpkin_darkgreen_derp"
+114 = "obj.hw24_reward_pumpkin_darkgreen_evil"
+115 = "obj.hw24_reward_pumpkin_darkgreen_grr"
+116 = "obj.hw24_reward_pumpkin_darkgreen_meh"
+117 = "obj.hw24_reward_pumpkin_darkgreen_oh"
+118 = "obj.hw24_reward_pumpkin_darkgreen_sad"
+119 = "obj.hw24_reward_pumpkin_darkgreen_woo"
+120 = "obj.hw24_reward_pumpkin_darkgreen_yay"
+121 = "obj.hw24_reward_pumpkin_powdergrey_ew"
+122 = "obj.hw24_reward_pumpkin_powdergrey_derp"
+123 = "obj.hw24_reward_pumpkin_powdergrey_evil"
+124 = "obj.hw24_reward_pumpkin_powdergrey_grr"
+125 = "obj.hw24_reward_pumpkin_powdergrey_meh"
+126 = "obj.hw24_reward_pumpkin_powdergrey_oh"
+127 = "obj.hw24_reward_pumpkin_powdergrey_sad"
+128 = "obj.hw24_reward_pumpkin_powdergrey_woo"
+129 = "obj.hw24_reward_pumpkin_powdergrey_yay"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_previous_rewards"
+keyType = "INT"
+valueType = "INT"
+
+[enum.values]
+0 = 2
+1 = 6
+2 = 8
+3 = 9
+4 = 10
+5 = 11
+6 = 12
+7 = 13
+8 = 31
+9 = 36
+10 = 59
+11 = 60
+12 = 61
+13 = 62
+14 = 63
+15 = 73
+16 = 74
+17 = 75
+18 = 76
+19 = 86
+20 = 98
+21 = 99
+22 = 100
+23 = 101
+24 = 102
+25 = 103
+26 = 111
+27 = 112
+28 = 113
+29 = 114
+30 = 115
+31 = 116
+32 = 117
+33 = 118
+34 = 119
+35 = 120
+36 = 121
+37 = 122
+38 = 128
+39 = 129
+40 = 146
+41 = 147
+42 = 148
+43 = 158
+44 = 159
+45 = 160
+46 = 161
+47 = 162
+48 = 163
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_trick_or_treaters"
+keyType = "INT"
+valueType = "NPC"
+
+[enum.values]
+0 = "npc.man"
+1 = "npc.man2"
+2 = "npc.man3"
+3 = "npc.man4"
+4 = "npc.woman"
+5 = "npc.woman2"
+6 = "npc.woman3"
+7 = "npc.varrock_man1"
+8 = "npc.varrock_woman1"
+9 = "npc.falador_man1"
+10 = "npc.falador_man2"
+11 = "npc.falador_man3"
+12 = "npc.falador_man4"
+13 = "npc.falador_woman2"
+14 = "npc.guard1"
+15 = "npc.fai_varrock_guard"
+16 = "npc.fai_falador_guard1"
+17 = "npc.fai_falador_guard2"
+18 = "npc.fai_falador_guard3"
+19 = "npc.fai_falador_guard4"
+20 = "npc.fai_falador_guard5"
+21 = "npc.fai_falador_guard6"
+22 = "npc.fai_varrock_guard02"
+23 = "npc.fai_varrock_guard02_variant01"
+24 = "npc.fai_varrock_guard02_variant02"
+25 = "npc.fai_varrock_guard02_f"
+26 = "npc.fai_varrock_guard02_f_variant01"
+27 = "npc.fai_varrock_guard02_f_variant02"
+28 = "npc.fai_varrock_guard_captain02"
+29 = "npc.fai_falador_guard1_f"
+30 = "npc.fai_falador_guard2_f"
+31 = "npc.fai_falador_guard3_f"
+32 = "npc.fai_falador_guard4_f"
+33 = "npc.fai_falador_guard1_variant02"
+34 = "npc.falador_woman"
+35 = "npc.guard1_f"
+36 = "npc.guard1_variant01"
+37 = "npc.guard1_f_variant01"
+38 = "npc.man_indoor"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_trick_junk"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.hw22_trick_banana"
+1 = "obj.hw22_trick_sock"
+2 = "obj.hw22_trick_egg"
+3 = "obj.hw22_trick_wool"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_trick_transforms"
+keyType = "INT"
+valueType = "NPC"
+
+[enum.values]
+0 = "npc.spider"
+1 = "npc.rat"
+2 = "npc.hallowed_bat_01"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_cauldron_styles"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.hw22_treat_cauldron_0"
+2000 = "obj.hw22_treat_cauldron_1"
+4000 = "obj.hw22_treat_cauldron_2"
+6000 = "obj.hw22_treat_cauldron_3"
+8000 = "obj.hw22_treat_cauldron_4"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_wig_styles"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.hw22_reward_wig01"
+1 = "obj.hw22_reward_wig02"
+2 = "obj.hw22_reward_wig03"
+3 = "obj.hw22_reward_wig04"
+4 = "obj.hw22_reward_wig05"
+5 = "obj.hw22_reward_wig06"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_spider_hat_styles"
+keyType = "INT"
+valueType = "OBJ"
+
+[enum.values]
+0 = "obj.hw23_reward_spiderhat"
+1 = "obj.hw23_reward_spiderhat02"
+2 = "obj.hw23_reward_spiderhat03"
+3 = "obj.hw23_reward_spiderhat04"
+4 = "obj.hw23_reward_spiderhat05"
+
+[[enum]]
+isServerOnly = true
+id = "enum.halloween_generous_treater_spots"
+keyType = "INT"
+valueType = "COORDGRID"
+
+[enum.values]
+0 = 52153691
+1 = 52497747
+2 = 52694372
+3 = 53267796
+4 = 53300548

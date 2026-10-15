@@ -204,6 +204,21 @@ public object MeleeMaxHitOperations {
         return modified
     }
 
+    /**
+     * A Tanglefoot can only be cut with magic secateurs, and how hard depends on how good a
+     * gardener the player is: their Farming level counts towards effective strength on top of
+     * everything else.
+     */
+    public fun farmingStrengthBonus(
+        player: Player,
+        meleeAttributes: EnumSet<CombatMeleeAttributes>,
+        npcAttributes: EnumSet<CombatNpcAttributes>,
+    ): Int {
+        val applies =
+            MeleeAttr.MagicSecateurs in meleeAttributes && NpcAttr.Tanglefoot in npcAttributes
+        return if (applies) player.stat("stat.farming") else 0
+    }
+
     public fun calculateEffectiveStrength(player: Player, attackStyle: MeleeAttackStyle?): Int {
         val strengthLevel = player.stat("stat.strength")
         val soulreaperAxe = EquipmentChecks.isSoulreaperAxe(player.righthand)

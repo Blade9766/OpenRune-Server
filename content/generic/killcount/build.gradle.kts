@@ -8,6 +8,7 @@ kotlin {
 
 dependencies {
     implementation(libs.guice)
+    implementation(projects.api.combatAchievementTasks)
     implementation(projects.api.config)
     implementation(projects.api.death)
     implementation(projects.api.player)

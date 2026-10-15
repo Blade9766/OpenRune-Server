@@ -1,7 +1,849 @@
+# Sound effects used by the quest plugins. The vanilla gamevals dump carries no synth names, so
+# the raw cache ids are declared here (ids taken from the OSRS wiki "List of sound IDs").
+[gamevals.synth]
+kittens_mew = 339
+purr = 340
+cat_hiss = 335
+meeoow = 1169
+coffin_open = 54
+coffin_close = 53
+skeleton_resurrect = 1687
+ghost_disappear = 1598
+drink = 2390
+cauldron_bubbling = 2195
+smokepuff = 1930
+# Plague City / Biohazard
+big_wooden_door_open = 44
+cupboard_close = 57
+cupboard_open = 58
+irondoor_locked = 72
+manhole_close = 74
+manhole_open = 75
+flapping = 880
+digspade = 1470
+grill_pulled = 1473
+exploding_vial = 1486
+throw = 1576
+wing_unfold = 1689
+search_vine = 1957
+bird_twitter_1 = 1984
+bubbling_soup = 2197
+liquid = 2401
+unlock = 2419
+climb_under = 2452
+climb_wall = 2453
+fall_land = 2455
+jump_and_fall = 2463
+ropeclimb = 2482
+squeeze_thru_crack = 2491
+vial_mix = 2611
+bubbling_vials = 3118
+# Mage Arena
+godspell_charge = 1651
+godspell_charge_gone = 1650
+magearena_pool_plop = 1658
+# Dragon Slayer I (dbrow.synth_dragonslayerqip)
+dragonslayer_bgsound_magicdoor = 3739
+dragonslayer_burningfire = 3741
+dragonslayer_crash_ship = 3742
+dragonslayer_cutoffhead = 3743
+dragonslayer_dragonbreath = 3750
+dragonslayer_dragonscream = 3751
+dragonslayer_flapwings = 3754
+dragonslayer_magicdoor = 3758
+dragonslayer_melzar_spell = 3759
+dragonslayer_thunder = 3762
+stone_door = 86
+hammer_and_build = 1767
+# Tree Gnome Village
+chest_close = 51
+chest_open = 52
+scream = 661
+treevillage_catabow_hit = 3487
+treevillage_catabow_launch = 3488
+# The Grand Tree
+trapdoor_open = 91
+trapdoor_close = 90
+twigs_snapping = 3916
+demon_approach = 1584
+grandtree_machinery = 1586
+
+# Monkey Madness I (dbrow.synth_monkeymadness / synth_monkey / synth_agility)
+fire_loop = 1669
+gorilla_bigpunch = 1673
+gorilla_into_human = 1674
+heromonkey = 1675
+human_into_gorilla = 1676
+human_into_monkey = 1677
+human_into_smallmonkey = 1671
+human_into_zombiemonkey = 1680
+monkeycalls = 1682
+monkey_into_human = 1681
+ooks = 1679
+rumbling_fade = 1685
+smallmonkey_into_human = 1683
+snore = 1688
+zombiemonkey_into_human = 1690
+monkey_caught = 631
+monkey_escape = 633
+
+# Vampyre Slayer (dbrow.synth_vampire)
+vampire_arrives = 2991
+
+# Waterfall Quest
+splash_and_river = 1308
+cf_swim = 1436
+cf_tierope = 1439
+contact_rumble = 1464
+turn_book_page = 2417
+watersplash = 2496
+vial_pour = 2613
+
+# Horror from the Deep (dbrow.synth_horrorfromthedeep, plus jump/fire/glass effects)
+dagganoth_attack = 1615
+dagganoth_changes = 1617
+dagganoth_chitters = 1618
+dagganoth_death = 1621
+dagganoth_hit = 1622
+dagganoth_spines = 1623
+strangedoor_close = 1625
+strangedoor_open = 1626
+strangedoor_sound = 1627
+fire_quiet_to_loud = 1672
+glass_chink_1 = 2129
+jump_land_bridge = 2458
+jump = 2461
+
+# Priest in Peril
+big_wooden_door_close = 43
+holy_water_pour = 1733
+knock_knock = 1735
+well_fill = 2615
+prayer_recharge = 2674
+
+# Nature Spirit
+ghast_appear = 432
+ghast_attack = 433
+bloom_branch = 1489
+bloom_mushroom = 1491
+bloom_pears = 1492
+spirit_transform = 1490
+spirit_transform_start = 1495
+swamp_gas = 2138
+
+# Shilo Village
+bone_door_close = 47
+bone_door_open = 48
+grate_close = 68
+grate_open = 69
+ghost_attack = 436
+
+# A Porcine of Interest (dbrow.synth_aporcineofinterest)
+sourhog_hit = 2312
+sourhog_attack_ranged = 2313
+sourhog_attack_melee = 2314
+sourhog_death_cry = 2315
+sourhog_death_collapse = 2317
+
+# The Dig Site (dbrow.synth_digsite)
+digsite_dig_pick = 2373
+digsite_dig_trowel = 2376
+digsite_panning = 2377
+explosion = 1487
+fuse = 1488
+
+# Temple of Ikov (dbrow.synth_ikov)
+ikov_fire_teleport = 1629
+ikov_found_ice_arrows = 1628
+ikov_lava_bridge = 1630
+ikov_lockeddoor = 1631
+
+# The Tourist Trap (dbrow.synth_touristtrapqip), plus the generic sounds its scripts play.
+tt_winching_loop = 3212
+tt_bend_bars = 3213
+tt_cart_loop = 3214
+tt_down_stairs = 3215
+tt_fall_back = 3216
+tt_knocking = 3217
+tt_squeeze_out = 3218
+tt_up_stairs = 3219
+locked = 2402
+pick_lock = 2407
+curtain_open = 59
+anvil02 = 3771
+
+# Death Plateau (dbrow.synth_deathplateau). Its unlock_and_move (1473) is already grill_pulled.
+dice_roll = 1474
+dice_shake = 1475
+
+# Troll Stronghold (dbrow.synth_troll)
+troll_champion_attack = 862
+troll_champion_death = 863
+troll_champion_hit = 864
+troll_champion_swing = 865
+troll_snore = 869
+troll_throw_rock = 870
+trolls_shout = 872
+rock_impact = 851
+
+# The Fremennik Trials
+chopping = 2113
+fry = 2577
+
+# Icthlarin's Little Helper
+collect_sap = 1159
+boil_off = 1160
+cat_angry = 1161
+ics_spectre_appear = 1162
+happy_meeoow = 1163
+hypnotise = 1164
+ics_spectre_remove = 1168
+pit_fall = 1171
+pit_jump = 1172
+pit_jump_fall = 1173
+pit_land = 1174
+tile_move = 1178
+tile_reset = 1179
+wall_crusher = 1182
+pitfall = 1477
+scarabs_appear = 1478
+zap = 224
+# Witch's House: the mouse leaving its hole and the basement gate's shock.
+rat_squeak_1 = 3102
+shock = 2542
+# Shadow of the Storm: the quest sounds from dbrow.synth_unsummoning, plus Agrith-Naar's swing
+# from dbrow.synth_demon.
+demon_attack = 400
+agrith_portalclose = 1311
+agrith_appear = 1312
+agrith_circle = 1313
+agrith_sandstorm = 1314
+agrith_summon = 1315
+# The Golem: the quest sounds from dbrow.synth_thegolem.
+golem_demondoor = 1848
+golem_program = 1849
+golem_repairclay = 1850
+golem_teleport = 1851
+turn_statue = 1852
+
+# Lunar Diplomacy (dbrow.synth_moonclan, plus the Lunar spellbook swap from dbrow.synth_lunarspells)
+moon_kick_letters = 1691
+moon_babahouse = 1692
+moon_dice_roll = 1693
+moon_ejector = 1694
+moon_fall_land = 1695
+moon_hurdle = 1696
+moon_jump = 1697
+moon_press_number = 1698
+moon_rubdown = 1699
+moon_slip = 1700
+moon_watering = 1701
+moon_woodchop = 1702
+lunar_change_spellbook = 3613
+
+# Big Chompy Bird Hunting (dbrow.synth_chompybird)
+chompy_bird_screech = 1448
+chompy_bird_attack = 1449
+chompy_bird_death = 1450
+chompy_bird_hit = 1451
+ogre_bow = 1452
+chompy_bird_squak = 1453
+ogre_bellows_suck = 1454
+ogre_bellows = 1455
+spit_roast = 1456
+toad_burst = 1457
+toad_croak = 1458
+toad_hiss = 1459
+
+# Underground Pass (dbrow.synth_undergroundpass and dbrow.synth_upass4), plus the generic
+# scenery sounds its obstacles play.
+upass_iban_lightning = 1341
+upass_bridgefall = 3159
+upass_springtrap = 1368
+upass_tripwire = 1369
+upass_bigfire = 1344
+upass_fire_arrow = 3577
+upass_arrowlaunch = 2693
+upass_disarm_trap = 4981
+biglever = 2382
+portcullis_open = 83
+portcullis_close = 82
+balancing_ledge = 2451
+cave_collapse = 2039
+cavein = 2294
+fire_crackling_big = 2064
+swamp_step = 7757
+mine_rumbling = 3828
+anger_unicorn_death = 877
+demon_death = 403
+fire_lit = 2596
+tap_fill = 2609
+squeeze_in = 2489
+jump_no_land = 2467
+
+# Merlin's Crystal: the bees in Morgan Le Faye's hives, the candle maker's wick and the
+# crystal coming apart under Excalibur.
+bees_1 = 3046
+light_candle = 2305
+glass_break = 2127
+
+# Murder Mystery
+drawer_open = 64
+drawer_close = 63
+barklike = 652
+mosquitos_1 = 2008
+fill_grain = 2576
+
+# Heroes' Quest: clearing the rock slide to the Ice Queen's lair
+mine_quick = 2659
+
+# The Lost Tribe (dbrow.synth_thelosttribe), plus the maze traps and the swamp gas under them.
+squeeze_through_rocks = 1310
+pitfall_fall = 2476
+gas_explosion = 2299
+
+# Death to the Dorgeshuun (dbrow.synth_deathtothedorgeshun).
+dttd_branding_zanik = 1088
+dttd_bone_crossbow = 1081
+dttd_bone_crossbow_sa = 1080
+dttd_branding = 1089
+dttd_branding_2 = 1090
+dttd_drink = 1085
+dttd_zanik_attack = 1082
+dttd_zanik_death = 1086
+dttd_zanik_hit = 1087
+dttd_juna_meditates = 1091
+dttd_pick_up_zaniks_body = 1092
+dttd_smash_machine = 1093
+dttd_zanik_gets_in_crate = 1094
+dttd_zanik_resurrection = 1095
+
+# Legends' Quest: swinging the bullroarer, Gujuo's blessing and forging the gold bowl, hacking
+# through the Kharazi jungle and Nezikchened's parting fire bolt.
+bullroarer = 1640
+anvil_4 = 2721
+woodchop_4 = 2736
+fire_bolt_all = 2340
+# Legends' Quest: throwing a vial of holy water.
+thrown = 2708
+# Alfred Grimhand's Barcrawl: the Black Skull Ale's hiccups.
+hiccup = 1903
+# Dwarf Cannon: hammering the stockade railings back in and the toolkit repair of the multicannon.
+tbcu_repair_fence = 1275
+hammering_1 = 1143
+rogue_gear_select = 1232
+mousetrap_spring = 1221
+rogue_placegear = 1237
+mcannon_turn = 2877
+# Dwarf multicannon: assembling a part, and the firing heard around the cannon.
+mcannon_setup = 2876
+mcannon_fire = 1667
+# Shades of Mort'ton: shades rising and falling, the sacred flame, and the funeral pyres.
+shade_appear = 744
+shade_attack = 745
+shade_death = 746
+shade_hit = 747
+shade_sigh = 748
+tinderbox_strike = 2599
+oil_pour = 1772
+
 [gamevals.clientscript]
 quest_available_set = 45550
 
+[gamevals.varp]
+# Server-only: 1 while a greegree has the player in monkey form, read by the Ape Atoll hunt modes.
+# 65400-65405 are upstream's motherlode varps; this is a Temp varp so the id is free to move.
+mm_greegree_form = 65410
+
+# The Dig Site: the quest's own flags. The stage itself lives in the cache varp
+# `varp.itexamlevel`, and the multiloc flags on `varp.itdigsitemulti`.
+# A varbit's base varp is a u16 in the cache, so any varp that carries varbits must stay below
+# 65536; above it the id wraps round onto a real varp (65658 landed on `varp.squire`).
+digsite_state = 65441
+
+# Temple of Ikov: the quest's own flags. The stage itself lives in the cache varp `varp.ikov`,
+# and which Lucien is standing where in the cache varbit `varbit.ikov_lucien_vis`.
+ikov_state = 65440
+
+# The Tourist Trap: the quest's own flags. The stage lives in the cache varp `varp.desertrescue`
+# and everything the client draws (Irena, Ana, the escaping slave, the bent bars, the barrels and
+# the cart) in the cache varbits on `varp.tourtrap_qip_var`.
+touristtrap_state = 65442
+
+# Death Plateau: the quest's own flags and Harold's purse. The stage lives in the cache varp
+# `varp.death_equiproom`. The dice varp is Temp: a stake left on the table at logout is lost.
+deathplateau_state = 65455
+deathplateau_dice = 65456
+# Fishing Contest: the current contest round, cleared on logout.
+fishingcontest_round = 65457
+# Rag and Bone Man I: the pot-boiler's boiling steps left, kept across logout.
+rag_boil = 65427
+# Ghosts Ahoy: the flag puzzle and petition (varbits below), and the ghost villager last asked
+# to sign the petition, so the same ghost cannot sign twice in a row.
+ahoy_state = 65428
+ahoy_last_signer = 65429
+
+# The Fremennik Trials: the council's votes and each trial's own progress. The stage itself lives
+# in the cache varp `varp.viking`. The Temp varp holds Koschei's form and the letters dialled into
+# Peer's combination lock.
+fremtrials_state = 65444
+fremtrials_progress = 65445
+fremtrials_temp = 65446
+
+# Big Chompy Bird Hunting: the seasonings the ogre family asked for and the flags the quest keeps
+# outside its stage. The stage lives in the cache varp `varp.chompybird`, which the Rantz multinpc
+# indexes directly, so nothing else may share it. The kill tally is its own varp and carries no
+# varbits.
+chompy_state = 65447
+chompy_kills = 65448
+
+# Family Crest: the brothers' errands and the Witchaven dungeon. The stage itself lives in the
+# cache varp `varp.crestquest`, which the three sons' multinpcs index directly, so nothing else
+# may share it. The temp varp holds the elements Chronozon has been weakened by, which is lost
+# on logout along with the levers' positions.
+famcrest_state = 65449
+famcrest_temp = 65450
+
+# Underground Pass: the quest's own flags and the seed its grid path is generated from. The stage
+# lives in the cache varp `varp.upass`, which the unicorn and Iban's multinpcs index directly, so
+# nothing else may share it; the cache's thirty other flags are varbits on `varp.ibanmulti`.
+upass_state = 65451
+upass_grid = 65452
+
+# Merlin's Crystal: everything the quest remembers besides its stage. The stage itself is the
+# whole of the cache varp `varp.arthur`, which carries no varbits of its own.
+merlin_state = 65453
+
+# Murder Mystery: the evidence the player has gathered. The stage is the whole of the cache varp
+# `varp.murderquest` and the murderer the cache varp `varp.murdersus`; neither carries varbits.
+murder_state = 65420
+
+# The Knight's Sword: whether Thurgo has forged the replacement sword. The stage itself lives in
+# the cache varp `varp.squire`.
+knightssword_state = 65454
+
+# Holy Grail: the milestones the stage cannot express. The stage itself is the whole of the
+# cache varp `varp.grail`.
+holygrail_state = 65426
+
+# Legends' Quest: everything the quest remembers besides its stage, which is the whole of the
+# cache varp `varp.legendsquest`; the Radimus multinpcs index that varp directly.
+legends_state = 65409
+
+# Regicide: the quest's own flags (letter read, messenger seen, camp reported), and the world
+# tile a private quest scene returns the player to if they log out inside it.
+regicide_state = 65430
+regicide_scene_return = 65431
+
+# Roving Elves: what the quest remembers besides its stage (`varp.roving_elves_quest`) and the
+# cache's own `varp.roving_elves_bits`: the Moss Guardian slain and the crystal reward chosen.
+roving_elves_state = 65432
+
+# Mourning's End Part I: whether the player carries the rotten apple taken from behind the
+# Mourner Headquarters. Everything else uses the cache's `varp.mourning_quest_bits`.
+mourning_end_state = 65433
+# Mourning's End Part II: the pillars' contents in the Temple of Light (seven pillars of four bits a
+# varp), the items handed to Thorgel (one bit each), the schema version and Thorgel's random picks
+# on `varp.mourning2_state`, and the Temp flag the shadows' hunt mode reads.
+mourning2_pillars_1 = 65464
+mourning2_pillars_2 = 65465
+mourning2_pillars_3 = 65466
+mourning2_pillars_4 = 65467
+mourning2_pillars_5 = 65468
+mourning2_thorgel_1 = 65469
+mourning2_thorgel_2 = 65470
+mourning2_state = 65471
+mourning2_shadow_peace = 65472
+# Recruitment Drive: the attempt (room order and the current room's puzzle answers) on
+# `varp.rd_session`, the Temp combination lock wheels and patience count on `varp.rd_lock`,
+# and the player's chosen respawn point (Gaze of Saradomin) on `varp.respawn_point_state`.
+rd_session = 65434
+rd_lock = 65435
+respawn_point_state = 65436
+# Clock Tower: which cogs are fitted and whether the cage rats were poisoned.
+clocktower_state = 65371
+# Prince Ali Rescue: the key copy, meeting Leela and Keli's interest in a new recruit.
+princeali_state = 65360
+# Pirate's Treasure: the smuggling and dig flags; see `varbit.piratetreasure_*`.
+piratetreasure_state = 65365
+# Eadgar's Ruse: what has been handed to Eadgar and asked of Parroty Pete. A varbit's base varp
+# must be below 65536, so this one sits outside the 66150-66199 block its varbits use.
+eadgar_ruse_bits = 65372
+# Tears of Guthix: the day of the last drink of the tears and the total XP below a billion then
+# (the billions are the cache's `varbit.tog_xp_billions`).
+tog_last_visit_day = 65377
+tog_xp_at_last_visit = 65378
+
+[gamevals.varbit]
+digsite_answers = 65560
+digsite_asked = 65561
+digsite_opal_requested = 65562
+digsite_bricks_primed = 65563
+digsite_bricks_blown = 65564
+ikov_trap_disarmed = 65565
+ikov_trap_lever_pulled = 65566
+ikov_firewarrior_slain = 65567
+ikov_winelda_paid = 65568
+ikov_lever_fitted = 65569
+ikov_gate_unlocked = 65570
+ikov_arrow_chest = 65571
+ikov_sided_with_lucien = 65572
+touristtrap_evictions = 65573
+touristtrap_bet = 65574
+touristtrap_asked_al_zaba = 65575
+touristtrap_al_zaba_debunked = 65576
+touristtrap_seen_sailing_books = 65577
+touristtrap_siad_distracted = 65578
+touristtrap_tent_access = 65579
+touristtrap_ana_location = 65580
+touristtrap_cart_ready = 65581
+touristtrap_captain_duel = 65582
+touristtrap_met_ana = 65583
+deathplateau_saba_asked = 65600
+deathplateau_dunstan_asked = 65601
+deathplateau_certificate_issued = 65602
+deathplateau_certificate_handed = 65603
+deathplateau_map_drawn = 65604
+deathplateau_path_scouted = 65605
+deathplateau_map_handed = 65606
+deathplateau_combination_handed = 65607
+deathplateau_harold_drunk = 65608
+deathplateau_harold_purse = 65609
+deathplateau_dice_stake = 65610
+deathplateau_dice_harold = 65611
+deathplateau_tenzing_asked = 65612
+fremtrials_vote_olaf = 65613
+fremtrials_vote_manni = 65614
+fremtrials_vote_sigli = 65615
+fremtrials_vote_sigmund = 65616
+fremtrials_vote_thorvald = 65617
+fremtrials_vote_swensen = 65618
+fremtrials_vote_peer = 65619
+fremtrials_olaf_started = 65620
+fremtrials_lalli_talked = 65621
+fremtrials_stew_planned = 65622
+fremtrials_stew_onion = 65623
+fremtrials_stew_cabbage = 65624
+fremtrials_stew_potato = 65625
+fremtrials_stew_rock = 65626
+fremtrials_stew_tasted = 65627
+fremtrials_manni_challenged = 65628
+fremtrials_manni_lost = 65629
+fremtrials_pipe_primed = 65630
+fremtrials_keg_switched = 65631
+fremtrials_sigli_started = 65632
+fremtrials_thorvald_started = 65633
+fremtrials_swensen_started = 65634
+fremtrials_peer_started = 65635
+fremtrials_sigmund_step = 65636
+fremtrials_name_prefix = 65637
+fremtrials_name_suffix = 65638
+fremtrials_peer_riddle = 65639
+fremtrials_peer_door_solved = 65640
+fremtrials_peer_jug_found = 65641
+fremtrials_peer_bucket_found = 65642
+fremtrials_peer_bull_disk = 65643
+fremtrials_peer_unicorn_disk = 65644
+fremtrials_peer_herring_found = 65645
+fremtrials_peer_magnet_found = 65646
+fremtrials_peer_ship_found = 65647
+fremtrials_peer_pick_found = 65648
+fremtrials_peer_thread_found = 65649
+fremtrials_peer_vase_found = 65650
+fremtrials_peer_mural_old = 65651
+fremtrials_peer_mural_new = 65652
+fremtrials_draugen_spot = 65653
+fremtrials_koschei_form = 65654
+fremtrials_lock_a = 65656
+fremtrials_lock_b = 65657
+fremtrials_lock_c = 65658
+fremtrials_lock_d = 65659
+fremtrials_salesman_pitched = 65660
+
+chompy_made_arrows = 65661
+chompy_rantz_flavour = 65662
+chompy_bugs_flavour = 65663
+chompy_fycie_flavour = 65664
+chompy_bought_feathers = 65665
+chompy_bought_tools = 65666
+chompy_quest_started = 65667
+
+famcrest_caleb_asked = 65668
+famcrest_caleb_done = 65669
+famcrest_knows_brothers = 65670
+famcrest_avan_found = 65671
+famcrest_avan_asked = 65672
+famcrest_boot_told = 65673
+famcrest_avan_done = 65674
+famcrest_john_cured = 65675
+famcrest_john_asked = 65676
+famcrest_john_done = 65677
+famcrest_gold_mined = 65678
+famcrest_puzzle_solved = 65679
+famcrest_gauntlets_free = 65680
+famcrest_gauntlets_kind = 65681
+famcrest_chronozon_weaken = 65682
+
+upass_cloth_taken = 65683
+upass_plank_taken = 65684
+upass_railing_taken = 65685
+upass_mud_dug = 65686
+upass_rope_on_swing = 65687
+upass_portcullis_open = 65688
+upass_orb_burnt_1 = 65689
+upass_orb_burnt_2 = 65690
+upass_orb_burnt_3 = 65691
+upass_orb_burnt_4 = 65692
+upass_gauntlets_given = 65693
+upass_doll_taken = 65694
+upass_horn_in_well = 65695
+upass_badges_in_well = 65696
+upass_amulet_doomion = 65697
+upass_amulet_othainian = 65698
+upass_amulet_holthion = 65699
+upass_shadow_chest = 65700
+upass_maze_gate = 65701
+upass_niloof_told = 65702
+upass_klank_told = 65703
+upass_kamen_told = 65704
+upass_doors_open = 65705
+upass_temple_entered = 65706
+upass_badges_given = 65707
+
+merlin_knows_words = 65708
+merlin_candle_promised = 65709
+merlin_excalibur_test = 65710
+merlin_beehive_free = 65711
+merlin_crate_dest = 65712
+merlin_in_crate = 65713
+murder_poison_progress = 65750
+murder_found_thread = 65751
+murder_found_prints = 65752
+
+legends_mapped = 65753
+legends_entered_cavern = 65754
+legends_asked_where = 65755
+legends_asked_who = 65756
+legends_called_vacu = 65757
+legends_runes_placed = 65758
+legends_gems = 65759
+legends_bowl_uses = 65760
+legends_winch_rope = 65761
+legends_bravery = 65762
+legends_crystals = 65763
+legends_killed_viyeldi = 65764
+legends_gave_dagger = 65765
+legends_heroes_slain = 65766
+legends_soaked_ungadulu = 65767
+
+# Elemental Workshop I: server-only flags on spare bits of the cache varp
+# `varp.elemental_workshop_bits`, beside the cache's own machinery varbits.
+elemental_workshop_ore_found = 65771
+elemental_workshop_metal_smelted = 65772
+
+# In Search of the Myreque: which of the five Myreque members (besides Veliaf) the player has
+# introduced themselves to, on free low bits of the cache varp `varp.routequestmulti`.
+route_met_sani = 65773
+route_met_harold = 65774
+route_met_ivan = 65775
+route_met_polmafi = 65776
+route_met_radigad = 65777
+# In Aid of the Myreque: server-only flags on the spare bits of varp.myreque2_extravar.
+burgh_rubble_removed = 65810
+burgh_florin_refused = 65811
+burgh_ivan_food_heal = 65813
+knightssword_sword_forged = 65778
+holygrail_napkin = 65779
+holygrail_whistles_found = 65780
+holygrail_titan_defeated = 65781
+holygrail_castle_entered = 65782
+holygrail_heard_health = 65783
+holygrail_heard_son = 65784
+holygrail_percival_found = 65785
+# Fishing Contest: the contest round waiting to be judged, on a free bit of the cache varp
+# `varp.garlicpipe`, and the seconds left in the current round (in five-tick steps).
+fishingcompo_round_over = 65786
+fishingcontest_round_left = 65787
+# Sheep Herder: Doctor Orbon paid for the protective clothing, and the herding tutorial shown,
+# on free bits of the cache varp `varp.sheepherdervar` above the four sheep varbits.
+sheepherder_clothing_bought = 65788
+sheepherder_prod_tutorial = 65789
+# Rag and Bone Man I: boiling steps left in the pot-boiler, on `varp.rag_boil`.
+rag_boil_steps = 65790
+# Ghosts Ahoy: the wreck flag's solution and the colours dyed on the model ship (three bits a
+# part), which parts the mast has shown, and the petition's approval and presentation, on
+# `varp.ahoy_state`.
+ahoy_flag_top_target = 65791
+ahoy_flag_bottom_target = 65792
+ahoy_flag_skull_target = 65793
+ahoy_flag_top = 65794
+ahoy_flag_bottom = 65795
+ahoy_flag_skull = 65796
+ahoy_flag_seen = 65797
+ahoy_petition_approved = 65798
+ahoy_petition_presented = 65799
+
+# Regicide: Iorwerth's unsealed letter read, the King's Messenger delivered his summons, and
+# the Elf Tracker told of Tyras Camp, on `varp.regicide_state`.
+regicide_read_message = 65800
+regicide_messenger_seen = 65801
+regicide_tracker_report = 65802
+
+# Roving Elves: the Moss Guardian slain by the player and the crystal item they chose as their
+# reward (1 bow, 2 shield), on `varp.roving_elves_state`.
+roving_guardian_slain = 65803
+roving_reward_choice = 65804
+
+# Mourning's End Part I: the Headquarters rotten apple carried for Elena, on `varp.mourning_end_state`.
+mourning_hq_apple = 65805
+
+# Mourning's End Part II: the saved puzzle's schema version and Thorgel's choice of ticket, book
+# and key, on `varp.mourning2_state`.
+mourning2_puzzle_version = 65806
+mourning2_thorgel_ticket = 65807
+mourning2_thorgel_book = 65808
+mourning2_thorgel_key = 65809
+
+# Recruitment Drive: see `varp.rd_session`, `varp.rd_lock` and `varp.respawn_point_state`.
+rd_order = 65584
+rd_statue_answer = 65585
+rd_statue_phase = 65586
+rd_riddle = 65587
+rd_riddle_clue = 65588
+rd_logic_riddle = 65589
+rd_patience_phase = 65590
+rd_lock_a = 65591
+rd_lock_b = 65592
+rd_lock_c = 65593
+rd_lock_d = 65594
+rd_patience_ticks = 65595
+respawn_point = 65596
+rd_cheevers_talks = 65597
+clocktower_red_cog = 66250
+clocktower_black_cog = 66251
+clocktower_blue_cog = 66252
+clocktower_white_cog = 66253
+clocktower_rats_poisoned = 66254
+# Prince Ali Rescue: see `varp.princeali_state`.
+princeali_key = 66050
+princeali_met_leela = 66051
+princeali_keli_recruit = 66052
+# Pirate's Treasure: Luthas's job, his banana crate and the rum hidden in it, the rum waiting in
+# Wydin's back room, Wydin's job and the Falador Park gardener, on `varp.piratetreasure_state`.
+piratetreasure_luthas_job = 66101
+piratetreasure_crate_bananas = 66102
+piratetreasure_crate_rum = 66103
+piratetreasure_rum_shipped = 66104
+piratetreasure_wydin_job = 66105
+piratetreasure_gardener_appeared = 66106
+eadgar_logs_given = 66150
+eadgar_chickens_given = 66151
+eadgar_grain_given = 66152
+eadgar_robe_given = 66153
+eadgar_asked_pete_water = 66154
+eadgar_asked_pete_food = 66155
+
 [gamevals.timer]
-quest_scroll_close = 402
-quest_dialogue_close = 403
+# Quest manager: closing the completion scroll and dialogue after their delay.
+quest_scroll_close = 404
+quest_dialogue_close = 405
 cots_tail = 430
+# Nature Spirit: the two-minute swamp decay countdown in Mort Myre.
+mortmyre_swamp_decay = 124
+# Shilo Village: balance checks while crossing the bridge to Cairn Isle.
+shilo_cairn_bridge = 125
+# The Tourist Trap: the guards' periodic look at anyone inside the Desert Mining Camp.
+touristtrap_guard_watch = 126
+# Soft timers: the Marim jail guards watching the player, and the Ape Atoll tunnel's falling rocks.
+mm_jail = 122
+mm_rockfall = 123
+# The Fremennik Trials: the lit strange object's fuse, Koschei's patience and the Draugen's wandering.
+fremtrials_firecracker = 128
+fremtrials_koschei = 129
+fremtrials_draugen = 130
+# Icthlarin's Little Helper: the traps of Klenter's pyramid, and Klenter's shade haunting Sophanem.
+ilh_pyramid_traps = 131
+ilh_klenter_haunt = 132
+# Witch's House: Nora T. Hagg watching her garden for trespassers.
+witchshouse_garden_watch = 133
+# Lunar Diplomacy: the Dream World rivals (the woodcutter and the racer), and the fight with Me.
+lunar_dream_rival = 134
+lunar_me_fight = 135
+# Dream Mentor: the fight in Cyrisus's dream, and his rest in the mine while the player is near.
+dream_mentor_fight = 154
+dream_mentor_cave = 155
+# Dream Mentor's Spellbook Swap: how long a borrowed spellbook lasts.
+dream_mentor_spellbook_swap = 156
+# Underground Pass: Iban reaching across his own temple for whoever walks into it.
+upass_temple = 136
+# Death to the Dorgeshuun: Zanik following the player, and Zanik riding in her crate.
+dttd_zanik = 137
+# In Aid of the Myreque: the blood tithe fight and Ivan's escort tick loops.
+burgh_tithe_fight = 151
+burgh_escort = 152
+dttd_crate = 138
+# Dwarf multicannon: the barrel stepping round and firing, one direction a tick.
+mcannon_rotate = 139
+# Fishing Contest: the contest round countdown, and the Sinister Stranger creeping back to his spot.
+fishingcontest_round = 140
+fishingcontest_stranger_return = 141
+# Sheep Herder: a prodded sheep growing restless, setting off home, and being put back if stuck.
+sheepherder_restless = 142
+sheepherder_return = 143
+sheepherder_stuck = 144
+# Rag and Bone Man I: the pot-boiler counting down to a polished specimen.
+rag_boil = 145
+# Ghosts Ahoy: the wind over the wreck's quarterdeck rising and dropping.
+ahoy_wind = 146
+# Regicide: the fractionalising still's simulation step, and the King's Messenger finding the player.
+regicide_still = 147
+regicide_messenger = 148
+# Recruitment Drive: Lady Table's ten seconds, and Sir Tinley's patience count.
+rd_statues = 149
+rd_patience = 150
+# Tears of Guthix: the per-cycle countdown and weeping wall streams while collecting. Timer keys
+# are stored as shorts, so this sits outside the 66200 block.
+tog_tears = 6620
+
+[gamevals.queue]
+# A Porcine of Interest: the sourhog's spit blinding the player, landing with the projectile.
+porcine_sourhog_blind = 65421
+# The Tourist Trap: the Mercenary Captain's warning, run the cycle after an attack on him is refused.
+touristtrap_attack_warning = 65419
+# Icthlarin's Little Helper: landing a fall through one of Klenter's pit traps.
+ilh_pit_trap_fall = 65423
+# Icthlarin's Little Helper: putting a player who logged in inside Klenter's pyramid back outside.
+ilh_login_evict = 65424
+# Icthlarin's Little Helper: the fly-out through the secret door a cycle after a pit trap lands.
+ilh_pit_trap_flyout = 65425
+# The Golem: the golem's skull closing again if no program is put inside.
+golem_skull_shut = 65426
+
+# Big Chompy Bird Hunting: a placed bloated toad rolling for a chompy bird, the chompy coming
+# down on it, the toad vanishing under its beak, and Rantz loosing an arrow at one he has spotted.
+chompy_bait_roll = 65427
+chompy_eat_toad = 65428
+chompy_toad_eaten = 65429
+rantz_loose_arrow = 65430
+rantz_arrow_lands = 65431
+
+# Merlin's Crystal: putting a player who logged out inside Arhein's shipping crate back on
+# the dock it was bound for.
+merlin_crate_evict = 65432
+# Romeo & Juliet: Romeo walking up to a player who hasn't started the quest and greeting them.
+romeo_approach = 65433
+# Heroes' Quest: Grip storming over to his drinks cabinet, the warning when attacking him in
+# front of witnesses, and the burn from grabbing a firebird feather bare-handed.
+hero_drinks_cabinet = 65434
+hero_grip_attack_warning = 65435
+hero_hot_feather = 65436
+# Fishing Contest: one cast of the line at a contest fishing spot.
+fishingcontest_catch = 65439
+# Recruitment Drive: a marker that any action clearing weak queues removes during Sir Tinley's test.
+rd_patience_watch = 65400
+# Tears of Guthix: drinking the collected tears once the time in the cave runs out.
+tog_drink = 66202
+
+[gamevals.inv]
+# Rag and Bone Man I: Fortunato's wine shop before he agrees to sell vinegar.
+rag_wine_merchant_no_vinegar = 1103

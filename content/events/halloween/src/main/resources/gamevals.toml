@@ -1,0 +1,70 @@
+[gamevals.varp]
+halloween_treats = 64910
+halloween_treats_deposited = 64911
+halloween_recent_npc_1 = 64912
+halloween_recent_npc_2 = 64913
+halloween_recent_npc_3 = 64914
+halloween_temp = 64915
+
+[gamevals.varbit]
+halloween_ghostly_presence = 66910
+halloween_generous_claimed = 66911
+
+[gamevals.enum]
+halloween_costume_items = 65410
+halloween_previous_rewards = 65411
+halloween_trick_or_treaters = 65412
+halloween_trick_junk = 65413
+halloween_trick_transforms = 65414
+halloween_cauldron_styles = 65415
+halloween_generous_treater_spots = 65416
+halloween_wig_styles = 65417
+halloween_spider_hat_styles = 65418
+
+[gamevals.dbtable]
+halloween_treat_rewards = 65410
+halloween_decorations = 65411
+
+[gamevals.dbrow]
+halloween_treat_reward_1 = 98150
+halloween_treat_reward_2 = 98151
+halloween_treat_reward_3 = 98152
+halloween_treat_reward_4 = 98153
+halloween_treat_reward_5 = 98154
+halloween_treat_reward_6 = 98155
+halloween_treat_reward_7 = 98156
+halloween_treat_reward_8 = 98157
+halloween_treat_reward_9 = 98158
+halloween_decorations_lumbridge = 98200
+halloween_decorations_varrock = 98201
+halloween_decorations_grand_exchange = 98202
+halloween_decorations_falador = 98203
+halloween_decorations_draynor = 98204
+halloween_decorations_draynor_manor = 98205
+halloween_decorations_edgeville = 98206
+halloween_decorations_al_kharid = 98207
+halloween_decorations_port_sarim = 98208
+halloween_decorations_rimmington = 98209
+halloween_decorations_barbarian_village = 98210
+halloween_decorations_taverley = 98211
+halloween_decorations_burthorpe = 98212
+halloween_decorations_catherby = 98213
+halloween_decorations_seers_village = 98214
+halloween_decorations_camelot = 98215
+halloween_decorations_ardougne = 98216
+halloween_decorations_west_ardougne = 98217
+halloween_decorations_port_khazard = 98218
+halloween_decorations_yanille = 98219
+halloween_decorations_canifis = 98220
+halloween_decorations_port_phasmatys = 98221
+halloween_decorations_burgh_de_rott = 98222
+halloween_decorations_rellekka = 98223
+halloween_decorations_brimhaven = 98224
+halloween_decorations_musa_point = 98225
+halloween_decorations_shilo_village = 98226
+halloween_decorations_gnome_stronghold = 98227
+halloween_decorations_hosidius = 98228
+halloween_decorations_shayzien = 98229
+halloween_decorations_arceuus = 98230
+halloween_decorations_lovakengj = 98231
+halloween_decorations_piscarilius = 98232

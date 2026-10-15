@@ -2,12 +2,10 @@ package org.rsmod.content.other.bots.core
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.rsmod.api.exchange.ExchangeOwner
-import org.rsmod.api.exchange.ExchangeTax
-import org.rsmod.api.exchange.OfferSide
-import org.rsmod.api.exchange.OfferStatus
 
 class BotSellingTest {
     private fun BotTestHarness.startBot(config: BotConfig, bankedLogs: Int): Long {
@@ -23,7 +21,32 @@ class BotSellingTest {
         return id
     }
 
-    private fun BotTestHarness.offers(id: Long) = book.offers(ExchangeOwner.bot(id))
+    private fun BotTestHarness.listed(id: Long): Boolean =
+        offers(id).isNotEmpty() && record(id).pendingListing == null
+
+    /** Logs the bot owns on its character and in its exchange slots, as both stores last saved them. */
+    private fun BotTestHarness.persistedLogs(id: Long): Long {
+        val saved = store.bots.getValue(id).save
+        val character =
+            (saved.inv + saved.bank)
+                .filter { it.id == LOGS || it.id == LOGS + NOTE_OFFSET }
+                .sumOf { it.count.toLong() }
+        return character + offers(id).sumOf { it.remaining + it.collectItems.toLong() }
+    }
+
+    private fun BotTestHarness.gathered(id: Long): Long = record(id).stats.gathered
+
+    /** Ticks without saving the exchange until [predicate] holds, so a restart loses that tick. */
+    private fun BotTestHarness.tickUnsavedUntil(predicate: () -> Boolean) {
+        repeat(5_000) {
+            tick(saveExchange = false)
+            if (predicate()) {
+                return
+            }
+            exchange.save()
+        }
+        error("condition not reached; log=${log.lines.takeLast(15)}")
+    }
 
     @Test
     fun `no sale below the threshold`() {
@@ -31,7 +54,7 @@ class BotSellingTest {
         val id = world.startBot(BotTestHarness.woodcuttingConfig(threshold = 1000), bankedLogs = 950)
         world.tickUntil { world.live(id) { it.bankCount(LOGS) >= 977 } }
         assertTrue(world.offers(id).isEmpty())
-        assertFalse(world.log.lines.any { "listed" in it })
+        assertFalse(world.log.lines.any { "listing" in it })
     }
 
     @Test
@@ -40,15 +63,15 @@ class BotSellingTest {
         val config = BotTestHarness.woodcuttingConfig(threshold = 1000, quantity = 600)
         val id = world.startBot(config, bankedLogs = 990)
 
-        world.tickUntil { world.offers(id).isNotEmpty() }
+        world.tickUntil { world.listed(id) }
         val offer = world.offers(id).single()
-        assertEquals(OfferSide.Sell, offer.side)
-        assertEquals(600, offer.quantity)
+        assertTrue(offer.sell)
+        assertEquals(600, offer.total)
         assertEquals(LOGS, offer.itemId)
         assertEquals(100, offer.price, "reference price, no adjustment")
         assertEquals(990 + 27 - 600L, world.actor(id).bankCount(LOGS))
         assertEquals(0, world.actor(id).held(LOGS))
-        assertEquals(600, world.store.exchange.offers.values.single().quantity, "offer persisted")
+        assertEquals(600, world.record(id).stats.listed)
     }
 
     @Test
@@ -71,35 +94,34 @@ class BotSellingTest {
     }
 
     @Test
-    fun `a sale to a player settles once and proceeds are collected to the bank`() {
+    fun `a sale to a player is collected to the bank exactly once`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
-        world.tickUntil { world.offers(id).isNotEmpty() }
-        val offer = world.offers(id).single()
+        world.tickUntil { world.listed(id) }
 
-        world.playerBuys(qty = 1000, price = 120)
-        assertEquals(OfferStatus.Completed, offer.status)
-        val expected = 1000L * 100 - ExchangeTax.total(100, 1000)
+        val buyer = world.playerBuys(qty = 1000, price = 120)
+        assertEquals(1000, buyer.collectItems)
+        assertEquals(20 * 1000, buyer.collectCoins, "the buyer is refunded above the resting price")
+        val expected = 1000L * 100 - 1000L * 2
 
         world.tickUntil { world.live(id) { it.coins() > 0 } }
         assertEquals(expected, world.actor(id).coins())
         world.tick(200)
         assertEquals(expected, world.actor(id).coins(), "collected exactly once")
-        assertTrue(world.offers(id).isEmpty(), "settled offer freed its slot")
-        val stats = world.coordinator.find("$id")!!.stats
+        assertTrue(world.offers(id).isEmpty(), "the emptied offer freed its slot")
+        assertTrue(world.record(id).pendingCollects.isEmpty())
+        val stats = world.record(id).stats
         assertEquals(1000, stats.sold)
         assertEquals(expected, stats.coinsEarned)
     }
 
     @Test
-    fun `only one listing per item and the listing reference is never reused`() {
+    fun `only one listing per item at a time`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 5000)
-        world.tickUntil { world.offers(id).isNotEmpty() }
+        world.tickUntil { world.listed(id) }
         world.tick(1500)
         assertEquals(1, world.offers(id).size)
-        val refs = world.store.exchange.offers.values.mapNotNull { it.clientRef }
-        assertEquals(refs.toSet().size, refs.size)
     }
 
     @Test
@@ -120,125 +142,176 @@ class BotSellingTest {
             world.log.lines.any { "selling paused" in it }
         }
         assertEquals(listOf(100, 90, 80), prices)
-        val pausedUntil = world.coordinator.find("$id")!!.salePausedUntil
-        assertTrue(pausedUntil > world.now)
+        assertTrue(world.record(id).salePausedUntil > world.now)
 
-        val listed = world.store.exchange.offers.size
+        val listings = world.log.lines.count { "listing " in it }
         world.tick(3000)
-        assertEquals(listed, world.store.exchange.offers.size, "no new listings during the cooldown")
+        assertEquals(listings, world.log.lines.count { "listing " in it }, "no new listings during the cooldown")
+        assertEquals(3000 + world.gathered(id), world.actor(id).total(LOGS), "aborted items came back")
     }
 
     @Test
     fun `selling pauses when no safe reference price exists`() {
         val world = BotTestHarness()
-        world.serviceReference = null
+        world.exchange.guide = null
         val config =
             BotTestHarness.woodcuttingConfig().let { it.copy(pricing = it.pricing.copy(referencePrice = null)) }
         val id = world.startBot(config, bankedLogs = 1500)
         world.tick(800)
         assertTrue(world.offers(id).isEmpty())
         assertTrue(world.log.lines.any { "selling paused: no safe reference price" in it })
-        val gathered = world.coordinator.find("$id")!!.stats.gathered
-        assertEquals(1500 + gathered, world.actor(id).total(LOGS))
+        assertEquals(1500 + world.gathered(id), world.actor(id).total(LOGS))
     }
 
     @Test
-    fun `no listing while the exchange store is unhealthy`() {
+    fun `nothing reaches the exchange while the bot store cannot be written`() {
         val world = BotTestHarness()
-        world.exchangeHealthy = false
         val id = world.startBot(BotTestHarness.woodcuttingConfig(), bankedLogs = 1500)
+        world.store.failing = true
         world.tick(800)
         assertTrue(world.offers(id).isEmpty())
+        assertFalse(world.coordinator.storeHealthy)
+        assertEquals(1, world.log.lines.count { it.startsWith("ERROR") }, "reported once, not every tick")
+        assertEquals(1500 + world.gathered(id), world.actor(id).total(LOGS))
     }
 
     @Test
     fun `every log is accounted for across gathering, banking, listing and selling`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 990)
-        world.tickUntil { world.offers(id).isNotEmpty() }
-        world.playerBuys(qty = 400, price = 100)
+        world.tickUntil { world.listed(id) }
+        val buyer = world.playerBuys(qty = 400, price = 100)
         world.tick(400)
 
-        val actor = world.actor(id)
-        val gathered = world.coordinator.find("$id")!!.stats.gathered
         val inExchange = world.offers(id).sumOf { it.remaining + it.collectItems.toLong() }
-        val boughtByPlayer = world.book.offers(ExchangeOwner.player(99)).sumOf { it.collectItems.toLong() }
-        assertEquals(990 + gathered, actor.total(LOGS) + inExchange + boughtByPlayer)
+        assertEquals(990 + world.gathered(id), world.actor(id).total(LOGS) + inExchange + buyer.collectItems)
     }
 
     @Test
-    fun `crash between listing and the next save cannot duplicate items`() {
+    fun `a crash after the listing is written but before it is placed returns the items`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
-        world.tickUntil { world.offers(id).isNotEmpty() }
-        val listingWrite = world.store.writes.last { it.exchange.offers.isNotEmpty() }
-        val savedBot = listingWrite.bots.single()
-        val savedLogs =
-            (savedBot.save.inv + savedBot.save.bank)
-                .filter { it.id == LOGS || it.id == LOGS + NOTE_OFFSET }
-                .sumOf { it.count.toLong() }
-        val escrowed = listingWrite.exchange.offers.single().remaining
-        assertEquals(1000 + savedBot.stats.gathered, savedLogs + escrowed, "one write holds both sides")
+        world.tickUntil { world.record(id).pendingListing != null }
+        assertNotNull(world.store.bots.getValue(id).pendingListing, "written before the exchange is touched")
+        assertTrue(world.offers(id).isEmpty())
 
         world.restart()
         world.tick()
-        assertEquals(1, world.offers(id).size, "restart does not relist")
-        assertEquals(1000, world.offers(id).single().remaining)
-        val persisted = world.store.bots.getValue(id)
-        val persistedLogs =
-            (persisted.save.inv + persisted.save.bank)
-                .filter { it.id == LOGS || it.id == LOGS + NOTE_OFFSET }
-                .sumOf { it.count.toLong() }
-        assertEquals(1000 + persisted.stats.gathered, persistedLogs + 1000)
+        assertTrue(world.offers(id).isEmpty())
+        assertNull(world.record(id).pendingListing)
+        assertEquals(1000 + world.gathered(id), world.actor(id).total(LOGS))
     }
 
     @Test
-    fun `restart after a sale collects proceeds exactly once`() {
+    fun `a crash after placing but before the exchange saved returns the items`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
-        world.tickUntil { world.offers(id).isNotEmpty() }
-        world.playerBuys(qty = 1000, price = 100)
-        world.tickUntil { world.live(id) { it.coins() > 0 } }
-        val coins = world.actor(id).coins()
-        world.tick(20)
+        world.tickUnsavedUntil { world.record(id).pendingListing?.placed == true }
+        assertEquals(1, world.offers(id).size)
 
         world.restart()
-        world.tick(400)
-        assertEquals(coins, world.actor(id).coins())
+        assertTrue(world.offers(id).isEmpty(), "the unsaved offer is gone")
+        world.tick()
+        assertNull(world.record(id).pendingListing)
+        assertEquals(1000 + world.gathered(id), world.actor(id).total(LOGS))
+        assertTrue(world.log.lines.any { "never reached the exchange's save" in it })
     }
 
     @Test
-    fun `a rejected listing returns every item and pauses instead of retrying in a loop`() {
+    fun `a crash after the exchange saved the offer keeps it and does not return the items`() {
         val world = BotTestHarness()
-        val id = world.createBot(BotTestHarness.woodcuttingConfig(quantity = 1000)).id
-        world.book.place(ExchangeOwner.bot(id), OfferSide.Sell, ORE, 1, 500, "bot:$id:sale:0")
-        world.coordinator.editSave(id) {
-            it.copy(inv = listOf(SavedObj(0, AXE, 1)), bank = listOf(SavedObj(0, LOGS, 1000)))
-        }
-        world.coordinator.enable(id)
-        world.coordinator.setMaster(true)
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.record(id).pendingListing?.placed == true }
+        assertEquals(1000 + world.gathered(id), world.persistedLogs(id))
 
-        world.tickUntil { world.log.lines.any { "listing rejected" in it } }
+        world.restart()
+        world.tick()
+        assertNull(world.record(id).pendingListing)
+        assertEquals(1000, world.offers(id).single().remaining)
+        assertEquals(1000 + world.gathered(id), world.actor(id).total(LOGS) + 1000)
+    }
+
+    @Test
+    fun `a crash after crediting proceeds but before the exchange is emptied pays once`() {
+        val world = BotTestHarness()
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.listed(id) }
+        world.playerBuys(qty = 1000, price = 100)
+        world.tickUntil { world.record(id).pendingCollects.isNotEmpty() }
+        assertEquals(98_000, world.offers(id).single().collectCoins, "the exchange still holds the coins")
+
+        world.restart()
+        world.tick(50)
+        assertEquals(98_000, world.actor(id).coins())
+        assertTrue(world.offers(id).isEmpty())
+        assertTrue(world.record(id).pendingCollects.isEmpty())
+    }
+
+    @Test
+    fun `a crash after taking proceeds but before the exchange saved pays once`() {
+        val world = BotTestHarness()
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.listed(id) }
+        world.playerBuys(qty = 1000, price = 100)
+        world.tickUnsavedUntil { world.record(id).pendingCollects.any { it.taken } }
+        assertTrue(world.offers(id).isEmpty(), "taken from the exchange in memory")
+
+        world.restart()
+        assertEquals(98_000, world.offers(id).single().collectCoins, "the take was never saved")
+        world.tick(50)
+        assertEquals(98_000, world.actor(id).coins())
+        assertTrue(world.offers(id).isEmpty())
+    }
+
+    @Test
+    fun `a crash after the exchange saved the collection pays once`() {
+        val world = BotTestHarness()
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.listed(id) }
+        world.playerBuys(qty = 1000, price = 100)
+        world.tickUntil { world.record(id).pendingCollects.any { it.taken } }
+
+        world.restart()
+        world.tick(50)
+        assertEquals(98_000, world.actor(id).coins())
+        assertTrue(world.record(id).pendingCollects.isEmpty())
+    }
+
+    @Test
+    fun `a refused listing returns every item and pauses instead of retrying in a loop`() {
+        val world = BotTestHarness()
+        world.exchange.refuseSells = true
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+
+        world.tickUntil { world.log.lines.any { "listing rolled back" in it } }
         world.tick(600)
-        val rejections = world.log.lines.count { "selling paused: listing rejected" in it }
-        assertEquals(1, rejections)
-        val gathered = world.coordinator.find("$id")!!.stats.gathered
-        assertEquals(1000 + gathered, world.actor(id).total(LOGS))
-        assertEquals(1, world.coordinator.find("$id")!!.saleSeq, "the consumed reference is skipped")
+        assertEquals(1, world.log.lines.count { "selling paused: listing failed" in it })
+        assertEquals(1000 + world.gathered(id), world.actor(id).total(LOGS))
+        assertTrue(world.offers(id).isEmpty())
+    }
+
+    @Test
+    fun `a disabled bot settles its pending listing before leaving the world`() {
+        val world = BotTestHarness()
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.record(id).pendingListing != null }
+        world.coordinator.disable(id)
+        world.tickUntil(limit = 100) { !world.coordinator.isLive(id) }
+        assertNull(world.store.bots.getValue(id).pendingListing)
+        assertEquals(1000 + world.gathered(id), world.persistedLogs(id))
     }
 
     @Test
     fun `removing a bot with offers needs force and cancels them`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
-        world.tickUntil { world.offers(id).isNotEmpty() }
+        world.tickUntil { world.listed(id) }
         world.coordinator.disable(id)
         world.tickUntil { !world.coordinator.isLive(id) }
 
-        assertTrue(world.coordinator.remove(id, force = false) != null)
-        assertEquals(null, world.coordinator.remove(id, force = true))
+        assertNotNull(world.coordinator.remove(id, force = false))
+        assertNull(world.coordinator.remove(id, force = true))
         assertTrue(world.offers(id).isEmpty())
-        assertTrue(world.store.bots[id] == null)
-        assertTrue(world.store.exchange.offers.values.all { it.status == OfferStatus.Closed })
+        assertNull(world.store.bots[id])
     }
 }

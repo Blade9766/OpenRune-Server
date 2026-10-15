@@ -26,8 +26,13 @@ public fun Player.clearInteractionRoute() {
     clearMapFlag()
 }
 
+/**
+ * Queues the player's death. A strong queue is used so the death sequence interrupts whatever the
+ * player is doing - a normal queue can never launch while the player is busy, and a player who has
+ * just been killed is almost always busy fighting back.
+ */
 public fun Player.queueDeath() {
-    queue("queue.death", 1)
+    strongQueue("queue.death", 1)
 }
 
 public fun Player.combatClearQueue() {
@@ -95,6 +100,10 @@ public fun Player.disablePrayers() {
     clearQueue("queue.preserve_activation")
     clearSoftTimer("timer.prayer_drain")
     clearSoftTimer("timer.rapidrestore_regen")
+    // Rapid Heal and Preserve speed up these timers while they are on; put them back to their
+    // normal rates so running out of prayer points does not leave the boosts running.
+    softTimer("timer.health_regen", constants.health_regen_interval)
+    softTimer("timer.stat_boost_restore", constants.stat_boost_restore_interval)
 }
 
 public fun Player.deathResetTimers() {

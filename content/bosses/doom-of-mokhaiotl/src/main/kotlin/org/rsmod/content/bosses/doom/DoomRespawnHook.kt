@@ -12,7 +12,7 @@ internal class DoomRespawnHook
 constructor(private val instances: InstanceManager, private val loot: DoomLoot) : PlayerRespawnHook {
     private val key by lazy { InstanceSettingsRow.getRow(DoomInstance.SETTINGS_ROW).key }
 
-    override fun respawnCoords(player: Player): CoordGrid? {
+    override fun respawn(player: Player): CoordGrid? {
         if (instances.sessionForPlayer(player)?.key != key) return null
         loot.reset(player)
         return DoomArena.LOBBY

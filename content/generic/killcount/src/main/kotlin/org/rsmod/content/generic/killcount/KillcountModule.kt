@@ -1,6 +1,7 @@
 package org.rsmod.content.generic.killcount
 
 import jakarta.inject.Inject
+import org.rsmod.api.combatachievements.CombatAchievements
 import org.rsmod.api.config.refs.BaseParams
 import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
@@ -17,7 +18,9 @@ public class KillcountModule : PluginModule() {
 /**
  * Increments the player's killcount varp for the killed npc.
  */
-public class KillcountNpcKillHook @Inject constructor() : NpcDeathKillHook {
+public class KillcountNpcKillHook
+@Inject
+constructor(private val achievements: CombatAchievements) : NpcDeathKillHook {
     override fun onKill(context: NpcDeathKillContext) {
         if (context.npc.vars["varn.skip_killcount"] == 1) return
         val varp = context.npc.paramOrNull(BaseParams.killcount_varp) ?: return
@@ -27,5 +30,6 @@ public class KillcountNpcKillHook @Inject constructor() : NpcDeathKillHook {
         if (notify) {
             context.hero.mes("Your ${context.npc.name} kill count is: <col=ff0000>$count</col>")
         }
+        achievements.checkKillcounts(context.hero)
     }
 }

@@ -94,7 +94,7 @@ constructor(
         val region = regionRepo.add(placement.regionTemplate)
         if (region == null) {
             areaResolver.release(spec.area, placement)
-            if (spec.fee > 0) owner.invAdd(owner.inv, "obj.coins", spec.fee)
+            refundFee(owner, spec.fee)
             return Result.Failed("No instance space available, try again shortly.")
         }
 
@@ -300,10 +300,17 @@ constructor(
             ownerIndex.remove(playerId)
             return
         }
-        if (playerId in session.occupants) {
+        if (session.entered || session.occupants.isNotEmpty()) {
             return
         }
         destroy(session)
+        refundFee(player, session.spec.fee)
+    }
+
+    private fun refundFee(player: Player, fee: Int) {
+        if (fee > 0) {
+            player.invAdd(player.inv, "obj.coins", fee)
+        }
     }
 
     private fun abandonOwnedSessionIfEmpty(
@@ -319,7 +326,7 @@ constructor(
         val owned = sessions[ownedId] ?: return
         if (playerId in owned.occupants) {
             removeOccupant(player, owned, currentTick)
-        } else if (owned.owner == playerId) {
+        } else if (owned.owner == playerId && owned.occupants.isEmpty()) {
             destroy(owned)
         }
     }
@@ -640,7 +647,7 @@ constructor(
         for (occupant in session.occupants) {
             val player = playerList.firstOrNull { it.uuid == occupant } ?: continue
             if (exitCoord != CoordGrid.ZERO) {
-                player.attr[InstanceAttributes.LOGIN_EXIT_COORD] = exitCoord.packed
+                player.coords = exitCoord
             }
             player.clearInstance()
         }

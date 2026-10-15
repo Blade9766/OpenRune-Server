@@ -2,6 +2,8 @@ package org.rsmod.content.quest.area.lumbridge
 
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
+import io.mockk.every
+import io.mockk.mockk
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.startCoroutine
@@ -24,6 +26,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessContextFactory
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.manager.QUEST_STAGE_MAP_ATTR
 import org.rsmod.coroutine.GameCoroutine
 import org.rsmod.events.EventBus
@@ -131,7 +134,11 @@ class CooksAssistantInteractionTest {
             worn = Inventory(checkNotNull(ServerCacheManager.getInventory("inv.worn".asRSCM())), arrayOfNulls(14))
         }
 
-        val script = CooksAssistant()
+        val script =
+            CooksAssistant(
+                lostTribe = LostTribeQuest(),
+                zanikTour = mockk { every { isTouring(any()) } returns false },
+            )
 
         init {
             with(script) { ScriptContext(events, CheatCommandMap(), EngineQueueCache()).startup() }

@@ -12,6 +12,8 @@ import org.rsmod.api.script.onOpLocCategoryU
 import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.table.smithing.SmithingBarsRow
+import org.rsmod.content.quest.area.falador.doricsquest.DoricsAnvils
+import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.crafting.interfaces.MakeQuantity
 import org.rsmod.content.skills.crafting.interfaces.MakeQuantityColumn
 import org.rsmod.content.skills.crafting.interfaces.makeQuantity
@@ -24,7 +26,10 @@ import org.rsmod.content.skills.smithing.util.SmithingUtils.hasHammer
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) : PluginScript() {
+class AnvilSmithingScript @Inject constructor(
+    private val xpMods: XpModifiers,
+    private val doricsAnvils: DoricsAnvils,
+) : PluginScript() {
 
     private val hammers = setOf(
         "obj.hammer",
@@ -45,11 +50,13 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
 
         SmithingData.barOutputInternals.forEach { barInternal ->
             onOpLocCategoryU(SmithingData.ANVIL_CATEGORY, barInternal) {
+                if (!with(doricsAnvils) { mayUse(it.type) }) return@onOpLocCategoryU
                 SmithingData.barsByOutput[barInternal]?.let { queueOpenSmithing(it) }
             }
         }
 
         onOpLocCategory1(SmithingData.ANVIL_CATEGORY) {
+            if (!with(doricsAnvils) { mayUse(it.type) }) return@onOpLocCategory1
             val bar = selectedBar()
             if (bar == null) {
                 mesbox("You need a bronze bar and a hammer to smith equipment on this anvil.")
@@ -176,7 +183,10 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
             return
         }
 
-        performSmith(task.meta)
+        if (!performSmith(task.meta)) {
+            resetAnim()
+            return
+        }
 
         val completed = task.completed + 1
         if (completed >= task.amount) {
@@ -197,19 +207,22 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
         )
     }
 
-    private fun ProtectedAccess.performSmith(meta: SmithingProductMeta) {
-        val barRemoved =
-            invDel(inv, meta.bar.output.internalName, meta.barCount, strict = true).success
-        if (!barRemoved) {
-            resetAnim()
-            return
+    private fun ProtectedAccess.performSmith(meta: SmithingProductMeta): Boolean {
+        val bar = meta.bar.output.internalName
+        if (invDel(inv, bar, meta.barCount, strict = true).failure) {
+            return false
         }
 
-        if (invAdd(inv, meta.product.internalName, meta.numProduced).success) {
-            spam(forgedMessage(meta))
-            val xp = meta.barCount * meta.bar.smithxp * xpMods.get(player, "stat.smithing")
-            statAdvance("stat.smithing", xp.toDouble())
+        if (invAdd(inv, meta.product.internalName, meta.numProduced).failure) {
+            invAdd(inv, bar, meta.barCount)
+            mes("You don't have enough inventory space to do that.")
+            return false
         }
+
+        spam(forgedMessage(meta))
+        val xp = meta.barCount * meta.bar.smithxp * xpMods.get(player, "stat.smithing")
+        statAdvance("stat.smithing", xp.toDouble())
+        return true
     }
 
     private fun forgedMessage(meta: SmithingProductMeta): String {
@@ -220,6 +233,16 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
 
     private suspend fun ProtectedAccess.canSmithProduct(meta: SmithingProductMeta): Boolean {
         if (!canSmithBar(meta.bar)) {
+            return false
+        }
+
+        if (meta.name.endsWith("dart tip") && !QuestRequirements.hasCompleted(player, TOURIST_TRAP)) {
+            mesbox("You need to complete The Tourist Trap quest to make dart tips.")
+            return false
+        }
+
+        if (meta.name.endsWith("claws") && !QuestRequirements.hasCompleted(player, DEATH_PLATEAU)) {
+            mesbox("You need to complete Death Plateau to make claws.")
             return false
         }
 
@@ -258,6 +281,12 @@ class AnvilSmithingScript @Inject constructor(private val xpMods: XpModifiers) :
         private const val ANVIL_FIRST_DELAY = 3
         private const val MAKEX_STEP_X = 0
         private const val MAKEX_STEP_Y = 45
+
+        /** Al Shabim's advisors teach dart making at the end of the Bedabin part of the quest. */
+        private const val TOURIST_TRAP = "quest_touristtrap"
+
+        /** Denulth teaches claw making as the Death Plateau reward. */
+        private const val DEATH_PLATEAU = "quest_deathplateau"
     }
 }
 

@@ -1,0 +1,7 @@
+## Sourhog Cave
+
+# A Porcine of Interest: the scimitar beside the gnawed skeleton, for players who arrive without
+# anything sharp enough to cut the sourhog's foot off.
+[[spawn]]
+obj = "obj.bronze_scimitar"
+coords = "0_49_151_27_13"

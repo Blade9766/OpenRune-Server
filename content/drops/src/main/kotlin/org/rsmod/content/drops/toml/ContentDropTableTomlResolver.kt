@@ -13,9 +13,12 @@ import org.rsmod.api.droptable.toml.TomlDropHooks
 import org.rsmod.api.droptable.wearingRingOfWealth
 import org.rsmod.content.drops.brimstoneKeyRoll
 import org.rsmod.content.drops.clueScrollTransformObj
+import org.rsmod.content.drops.darkTotemPieceObj
+import org.rsmod.content.drops.onWildernessSlayerTask
 import org.rsmod.content.drops.shouldDropBrimstoneKey
 import org.rsmod.content.drops.shouldDropLootingBag
 import org.rsmod.content.drops.tables.shared.SharedDropTables
+import org.rsmod.content.quest.manager.QuestItemDrops
 import org.rsmod.content.quest.manager.QuestRequirement
 import org.rsmod.content.quest.manager.QuestRequirementResolver
 import org.rsmod.game.entity.Player
@@ -66,7 +69,9 @@ constructor(
                                 "Use 'during', 'completed', or 'not_completed'.",
                         )
                 }
+            val obj = config.obj
             config.condition = andCondition(config.condition, questCondition)
+            config.condition = andCondition(config.condition) { player -> QuestItemDrops.isNeeded(player, obj) }
         }
         if (hooks.requireRingOfWealth) {
             config.condition = andCondition(config.condition) { player -> player.wearingRingOfWealth() }
@@ -81,6 +86,24 @@ constructor(
             config.killCondition = { player, npc, areaChecker ->
                 player.shouldDropBrimstoneKey(npc, areaChecker)
             }
+        }
+        if (hooks.wildernessSlayerTask) {
+            val existing = config.killCondition
+            config.killCondition = { player, npc, areaChecker ->
+                player.onWildernessSlayerTask(npc, areaChecker) &&
+                    (existing == null || existing(player, npc, areaChecker))
+            }
+        }
+        hooks.area?.let { area ->
+            val areas = area.split(',').map(String::trim)
+            val existing = config.killCondition
+            config.killCondition = { player, npc, areaChecker ->
+                areas.any { areaChecker.inArea(it, npc.coords) } &&
+                    (existing == null || existing(player, npc, areaChecker))
+            }
+        }
+        if (hooks.darkTotemPiece) {
+            config.transformObj = { player -> player.darkTotemPieceObj() }
         }
         if (hooks.clueScrollBox) {
             val scrollObj = config.obj

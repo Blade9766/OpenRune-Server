@@ -9,6 +9,7 @@ import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.runBlocking
 import org.rsmod.tools.wiki.dumping.wiki.ParsedStoreLine
 import org.rsmod.tools.wiki.dumping.wiki.ParsedStoreTable
+import org.rsmod.tools.wiki.dumping.wiki.ParsedWikiShopInfobox
 import org.rsmod.tools.wiki.dumping.wiki.WikiClient
 import org.rsmod.tools.wiki.dumping.wiki.WikiShopInfoboxParser
 import org.rsmod.tools.wiki.dumping.wiki.WikiShopStoreParser
@@ -26,6 +27,8 @@ private const val DEFAULT_OUTPUT_RELATIVE = ".data/raw-cache/server/shops"
  * what the wiki's Bucket API exposes, not matching bugs: no amount of selector/name-matching logic
  * can recover the data because the bucket has zero (or ambiguous, indistinguishable) rows for it.
  */
+private const val GENERAL_STORE_SIZE = 40
+
 private val BUCKET_UNSERVABLE_REASONS: Map<String, String> =
     mapOf(
         // bucket=No opt-out: the page's real {{StoreTableHead}} sets `bucket=No`, so the
@@ -67,6 +70,7 @@ data class ShopDumpResult(
     val skippedReason: String? = null,
     val table: ParsedStoreTable? = null,
     val shopName: String? = null,
+    val generalStore: Boolean = false,
 )
 
 class ShopWikiDumper(
@@ -82,17 +86,17 @@ class ShopWikiDumper(
      */
     private val capeSiblingArticles: Set<String> = emptySet(),
 ) {
-    private var shopNamesByTitleCache: Map<String, String>? = null
+    private var shopsByTitleCache: Map<String, List<ParsedWikiShopInfobox>>? = null
 
-    private suspend fun shopNamesByTitle(): Map<String, String> {
-        shopNamesByTitleCache?.let {
+    private suspend fun shopsByTitle(): Map<String, List<ParsedWikiShopInfobox>> {
+        shopsByTitleCache?.let {
             return it
         }
         val map =
             checkNotNull(buckets) { "bucket mode requires ShopBuckets" }
                 .listShops()
-                .associate { it.pageTitle to it.infoboxName }
-        shopNamesByTitleCache = map
+                .groupBy { it.pageTitle }
+        shopsByTitleCache = map
         return map
     }
 
@@ -109,14 +113,16 @@ class ShopWikiDumper(
         }
 
         val shopName: String?
+        val generalStore: Boolean
         val table: ParsedStoreTable?
 
         if (buckets != null) {
             shopName =
                 ShopSpecialHandlers.resolveShopDisplayName(
                     resolvedRow.inv,
-                    shopNamesByTitle()[wikiTitle],
+                    shopsByTitle()[wikiTitle]?.firstOrNull()?.infoboxName,
                 )
+            generalStore = shopsByTitle()[wikiTitle].orEmpty().any { it.generalStore }
             val tables = buckets.storeTables(wikiTitle)
             table =
                 WikiShopStoreParser.skillcapeTrimmed(resolvedRow.inv)?.let { trimmed ->
@@ -132,11 +138,10 @@ class ShopWikiDumper(
                 return skipped(resolvedRow, "wiki page not found: $wikiTitle")
             }
 
+            val infobox = WikiShopInfoboxParser.parseShopInfobox(wikiTitle, source)
             shopName =
-                ShopSpecialHandlers.resolveShopDisplayName(
-                    resolvedRow.inv,
-                    WikiShopInfoboxParser.parseShopInfobox(wikiTitle, source)?.infoboxName,
-                )
+                ShopSpecialHandlers.resolveShopDisplayName(resolvedRow.inv, infobox?.infoboxName)
+            generalStore = infobox?.generalStore == true
 
             table =
                 WikiShopStoreParser.skillcapeTrimmed(resolvedRow.inv)?.let { trimmed ->
@@ -210,6 +215,7 @@ class ShopWikiDumper(
             skippedReason = null,
             table = table.copy(lines = stockLines),
             shopName = shopName,
+            generalStore = generalStore,
         )
     }
 
@@ -386,7 +392,14 @@ class ShopWikiDumper(
         val output = outputDir.resolve("${result.inv}.toml")
         output.parent?.createDirectories()
         output.writeText(
-            formatToml(result.inv, result.shopName, table, result.stock, result.unresolvedItems)
+            formatToml(
+                result.inv,
+                result.shopName,
+                result.generalStore,
+                table,
+                result.stock,
+                result.unresolvedItems,
+            )
         )
         return output
     }
@@ -404,6 +417,7 @@ class ShopWikiDumper(
     private fun formatToml(
         inv: String,
         shopName: String?,
+        generalStore: Boolean,
         table: ParsedStoreTable,
         stock: List<ResolvedShopStock>,
         unresolved: List<String>,
@@ -422,12 +436,13 @@ class ShopWikiDumper(
         if (table.sellMultiplier != null || table.buyMultiplier != null || table.delta != null) {
             appendLine()
         }
-        appendLine("size = ${stock.size.coerceAtLeast(1)}")
+        val minSize = if (generalStore) GENERAL_STORE_SIZE else 1
+        appendLine("size = ${stock.size.coerceAtLeast(minSize)}")
         appendLine()
         appendLine("protect = false")
         appendLine("runWeight = false")
         appendLine("restock = true")
-        appendLine("allStock = false")
+        appendLine("allStock = $generalStore")
         appendLine("placeholders = false")
         appendLine()
 

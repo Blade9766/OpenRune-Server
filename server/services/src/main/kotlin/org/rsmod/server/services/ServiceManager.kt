@@ -59,6 +59,7 @@ private constructor(
     private val scheduledErrors = ConcurrentLinkedQueue<Throwable>()
 
     private val shutdownLatch = CountDownLatch(1)
+    private val shutdownCompleteLatch = CountDownLatch(1)
     private val shutdownRequest = AtomicBoolean(false)
     private val shutdownInProgress = AtomicBoolean(false)
 
@@ -189,17 +190,22 @@ private constructor(
 
         val canShutdown = shutdownInProgress.compareAndSet(false, true)
         if (!canShutdown) {
+            shutdownCompleteLatch.await()
             return ShutdownResult.AlreadyShutDown
         }
 
-        val signalTimeout = signalTimeoutSecs * 1000L
-        signalShutdown(signalTimeout)
+        try {
+            val signalTimeout = signalTimeoutSecs * 1000L
+            signalShutdown(signalTimeout)
 
-        val cleanupTimeout = cleanupTimeoutSecs * 1000L
-        cleanupThreads(cleanupTimeout)
+            val cleanupTimeout = cleanupTimeoutSecs * 1000L
+            cleanupThreads(cleanupTimeout)
 
-        val shutdownTimeout = shutdownTimeoutSecs * 1000L
-        shutdownServices(shutdownTimeout)
+            val shutdownTimeout = shutdownTimeoutSecs * 1000L
+            shutdownServices(shutdownTimeout)
+        } finally {
+            shutdownCompleteLatch.countDown()
+        }
 
         val errors = scheduledErrors
         return if (errors.isNotEmpty()) {

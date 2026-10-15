@@ -46,3 +46,15 @@ coords = "0_40_51_58_61"
 obj = "obj.spade"
 coords = "0_40_52_6_2"
 
+# Biohazard: Jerico's pigeon cages, on the ground behind his house.
+[[spawn]]
+obj = "obj.pigeons"
+coords = "0_40_51_59_59"
+
+[[spawn]]
+obj = "obj.pigeons"
+coords = "0_40_51_59_60"
+
+[[spawn]]
+obj = "obj.pigeons"
+coords = "0_40_51_59_61"

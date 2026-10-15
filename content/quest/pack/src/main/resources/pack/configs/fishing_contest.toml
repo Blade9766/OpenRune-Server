@@ -1,0 +1,44 @@
+# Fishing Contest: the contest fishing spots and the competitors stay put. Left to wander, the
+# spots drift out of the lake onto the bank and the anglers leave the spots they are meant to hold.
+
+[[npc]]
+isServerOnly = true
+id = "npc.0_41_53_sinisterfishspot"
+inherit = "npc.0_41_53_sinisterfishspot"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.0_41_53_compofishspot"
+inherit = "npc.0_41_53_compofishspot"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.0_41_53_bigdavefishspot"
+inherit = "npc.0_41_53_bigdavefishspot"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.0_41_53_joshuafishspot"
+inherit = "npc.0_41_53_joshuafishspot"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.bigdave"
+inherit = "npc.bigdave"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.joshua"
+inherit = "npc.joshua"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.sinister_stranger"
+inherit = "npc.sinister_stranger"
+wanderRange = 0

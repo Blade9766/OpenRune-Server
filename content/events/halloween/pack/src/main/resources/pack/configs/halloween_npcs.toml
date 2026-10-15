@@ -1,0 +1,237 @@
+[[npc]]
+id = "npc.man4"
+inherit = "npc.man4"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.varrock_man1"
+inherit = "npc.varrock_man1"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.varrock_woman1"
+inherit = "npc.varrock_woman1"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.falador_man1"
+inherit = "npc.falador_man1"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.falador_man2"
+inherit = "npc.falador_man2"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.falador_man3"
+inherit = "npc.falador_man3"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.falador_woman2"
+inherit = "npc.falador_woman2"
+option1 = "Talk-to"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.guard1"
+inherit = "npc.guard1"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard"
+inherit = "npc.fai_varrock_guard"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_falador_guard4"
+inherit = "npc.fai_falador_guard4"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.king_roald"
+inherit = "npc.king_roald"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.aggie_1op"
+inherit = "npc.aggie_1op"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.aggie_2ops"
+inherit = "npc.aggie_2ops"
+option1 = "Talk-to"
+option3 = "Dyes"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.duke_of_lumbridge"
+inherit = "npc.duke_of_lumbridge"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.varrock_granny_1"
+inherit = "npc.varrock_granny_1"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.varrock_granny_2"
+inherit = "npc.varrock_granny_2"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.pmod_town_crier_falador"
+inherit = "npc.pmod_town_crier_falador"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard02"
+inherit = "npc.fai_varrock_guard02"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard02_variant01"
+inherit = "npc.fai_varrock_guard02_variant01"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard02_variant02"
+inherit = "npc.fai_varrock_guard02_variant02"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard02_f"
+inherit = "npc.fai_varrock_guard02_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard02_f_variant01"
+inherit = "npc.fai_varrock_guard02_f_variant01"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard02_f_variant02"
+inherit = "npc.fai_varrock_guard02_f_variant02"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.fai_varrock_guard_captain02"
+inherit = "npc.fai_varrock_guard_captain02"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.falador_woman"
+inherit = "npc.falador_woman"
+option1 = "Talk-to"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.guard1_f"
+inherit = "npc.guard1_f"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.guard1_variant01"
+inherit = "npc.guard1_variant01"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+id = "npc.guard1_f_variant01"
+inherit = "npc.guard1_f_variant01"
+option2 = "Attack"
+option3 = "Pickpocket"
+option4 = "Trick-or-treat"
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_costumed_child_1"
+inherit = "npc.hw22_costumed_child_1"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_costumed_child_2"
+inherit = "npc.hw22_costumed_child_2"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_costumed_child_3"
+inherit = "npc.hw22_costumed_child_3"
+wanderRange = 0
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_generous_treater_1"
+inherit = "npc.hw22_generous_treater_1"
+wanderRange = 2
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_generous_treater_2"
+inherit = "npc.hw22_generous_treater_2"
+wanderRange = 2
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_generous_treater_3"
+inherit = "npc.hw22_generous_treater_3"
+wanderRange = 2
+
+[[npc]]
+isServerOnly = true
+id = "npc.hw22_generous_treater_4"
+inherit = "npc.hw22_generous_treater_4"
+wanderRange = 2

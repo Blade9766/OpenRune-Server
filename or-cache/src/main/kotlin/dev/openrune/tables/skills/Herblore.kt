@@ -136,7 +136,6 @@ object Herblore {
                     category("Unfinished Potions")
                 }
             }
-
         }
 
     /**
@@ -297,11 +296,11 @@ object Herblore {
             }
             row("dbrow.herblore_super_antifire") {
                 production {
-                    input("obj.lantadymevial")
+                    input("obj.4dose1antidragon")
                     input("obj.crushed_dragon_bones")
                     statReq("stat.herblore", 92)
-                    xp(180)
-                    output("obj.3dose2antidragon")
+                    xp(130)
+                    output("obj.4dose3antidragon")
                     category("Potions")
                 }
             }
@@ -789,7 +788,6 @@ object Herblore {
                     category("Potions")
                 }
             }
-
         }
 
     /**
@@ -936,8 +934,57 @@ object Herblore {
                     category("Herbs")
                 }
             }
-        }
 
+            row("dbrow.herblore_clean_snake_weed") {
+                production {
+                    input("obj.unidentified_snake_weed")
+                    statReq("stat.herblore", 3)
+                    xp(2)
+                    output("obj.snake_weed")
+                    category("Herbs")
+                }
+            }
+
+            row("dbrow.herblore_clean_ardrigal") {
+                production {
+                    input("obj.unidentified_ardrigal")
+                    statReq("stat.herblore", 3)
+                    xp(2)
+                    output("obj.ardrigal")
+                    category("Herbs")
+                }
+            }
+
+            row("dbrow.herblore_clean_sito_foil") {
+                production {
+                    input("obj.unidentified_sito_foil")
+                    statReq("stat.herblore", 3)
+                    xp(2)
+                    output("obj.sito_foil")
+                    category("Herbs")
+                }
+            }
+
+            row("dbrow.herblore_clean_volencia_moss") {
+                production {
+                    input("obj.unidentified_volencia_moss")
+                    statReq("stat.herblore", 3)
+                    xp(2)
+                    output("obj.volencia_moss")
+                    category("Herbs")
+                }
+            }
+
+            row("dbrow.herblore_clean_rogues_purse") {
+                production {
+                    input("obj.unidentified_rogues_purse")
+                    statReq("stat.herblore", 3)
+                    xp(2)
+                    output("obj.rogues_purse")
+                    category("Herbs")
+                }
+            }
+        }
 
     /**
      * Table for creating barbarian mixes (two-dose potion + roe/caviar)
@@ -1145,7 +1192,6 @@ object Herblore {
                     category("Barbarian Mixes")
                 }
             }
-
         }
 
     /**
@@ -1199,7 +1245,6 @@ object Herblore {
                     category("Swamp Tar")
                 }
             }
-
         }
 
     /**

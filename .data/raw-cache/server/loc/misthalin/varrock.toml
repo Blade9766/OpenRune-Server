@@ -1,4 +1,4 @@
-## TODO: Straight staircases need a contentGroup then can be implemented
+## Straight staircases are handled generically by GenericPassageScript / StairNavigator (no contentGroup needed).
 ## Stairs / Ladders
 
 [[object]]

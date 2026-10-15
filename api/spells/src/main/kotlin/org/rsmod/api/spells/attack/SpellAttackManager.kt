@@ -1,8 +1,6 @@
 package org.rsmod.api.spells.attack
 
 import dev.openrune.types.ItemServerType
-import dev.openrune.types.aconverted.SpotanimType
-import dev.openrune.types.aconverted.SynthType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.commons.magic.MagicSpell
@@ -120,7 +118,8 @@ constructor(private val manager: PlayerAttackManager, private val runes: MagicRu
         target: PathingEntity,
         attack: CombatAttack.Spell,
         castResult: MagicRuneManager.CastResult,
-    ): Boolean = !rollSpellAccuracy(source, target, attack, castResult)
+        conflictionEligible: Boolean = true,
+    ): Boolean = !rollSpellAccuracy(source, target, attack, castResult, conflictionEligible)
 
     /** @see [PlayerAttackManager.rollSpellAccuracy] */
     public fun rollSpellAccuracy(
@@ -128,6 +127,7 @@ constructor(private val manager: PlayerAttackManager, private val runes: MagicRu
         target: PathingEntity,
         attack: CombatAttack.Spell,
         castResult: MagicRuneManager.CastResult,
+        conflictionEligible: Boolean = true,
     ): Boolean =
         manager.rollSpellAccuracy(
             source = source.player,
@@ -135,6 +135,7 @@ constructor(private val manager: PlayerAttackManager, private val runes: MagicRu
             spell = attack.spell.obj,
             spellbook = attack.spell.spellbook,
             sunfireRune = castResult.consumedRune() && castResult.usedSunfire,
+            conflictionEligible = conflictionEligible,
         )
 
     /** @see [PlayerAttackManager.rollSpellMaxHit] */

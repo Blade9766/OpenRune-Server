@@ -26,6 +26,15 @@ constructor(
     @OptIn(InternalApi::class)
     override fun handle(player: Player, message: IfScriptTrigger) {
         val componentType = ServerCacheManager.fromComponent(message.asComponent.packed)
+        val interfaceType = ServerCacheManager.fromInterface(message.asComponent.packed)
+        val ui = player.ui
+        if (
+            !ui.containsOverlay(interfaceType) &&
+                !ui.containsTopLevel(interfaceType) &&
+                !ui.containsModal(interfaceType)
+        ) {
+            return
+        }
 
         val parameterTypes = IfScriptParameterRegistry[componentType.packed]
         val args =

@@ -9,13 +9,13 @@ wiki, only that it exists.
 
 🟢 added · 🔴 not added
 
-Skills **20/23** · Bosses **23/169** · Raids **0/4** · Minigames **1/52**
+Skills **23/23** · Bosses **38/169** · Raids **0/4** · Minigames **0/51**
 
 These counts only cover skills, bosses, raids and minigames. Interfaces, areas,
 quests, drops and travel are real work that no category above points at, so check
 the module table at the bottom before reading a 0 as "nothing exists".
 
-### Skills <sup>20/23</sup>
+### Skills <sup>23/23</sup>
 
 | | Feature | Status | |
 |---|---|---|---|
@@ -24,63 +24,78 @@ the module table at the bottom before reading a 0 as "nothing exists".
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/Defence_icon.png?ca0cd" height="20" alt=""> Defence | in `api/combat` | [wiki](https://oldschool.runescape.wiki/w/Defence) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/Ranged_icon.png?01b0e" height="20" alt=""> Ranged | in `api/combat` | [wiki](https://oldschool.runescape.wiki/w/Ranged) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/Hitpoints_icon.png?a4819" height="20" alt=""> Hitpoints | in `api/combat` | [wiki](https://oldschool.runescape.wiki/w/Hitpoints) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Magic_icon.png?334cf" height="20" alt=""> [Magic](content/skills/magic) | 3,564 loc | [wiki](https://oldschool.runescape.wiki/w/Magic) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Prayer_icon.png?7e70b" height="20" alt=""> [Prayer](content/skills/prayer) | 2,601 loc | [wiki](https://oldschool.runescape.wiki/w/Prayer) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Runecraft_icon.png?c278c" height="20" alt=""> [Runecraft](content/skills/runecrafting) | 2,565 loc | [wiki](https://oldschool.runescape.wiki/w/Runecraft) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Slayer_icon.png?cd34f" height="20" alt=""> [Slayer](content/skills/slayer) | 5,502 loc | [wiki](https://oldschool.runescape.wiki/w/Slayer) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Mining_icon.png?00870" height="20" alt=""> [Mining](content/skills/mining) | 1,054 loc | [wiki](https://oldschool.runescape.wiki/w/Mining) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Smithing_icon.png?d26c5" height="20" alt=""> [Smithing](content/skills/smithing) | 2,087 loc | [wiki](https://oldschool.runescape.wiki/w/Smithing) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Woodcutting_icon.png?6ead4" height="20" alt=""> [Woodcutting](content/skills/woodcutting) | 429 loc | [wiki](https://oldschool.runescape.wiki/w/Woodcutting) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Magic_icon.png?334cf" height="20" alt=""> [Magic](content/skills/magic) | 2,737 loc | [wiki](https://oldschool.runescape.wiki/w/Magic) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Prayer_icon.png?7e70b" height="20" alt=""> [Prayer](content/skills/prayer) | 2,633 loc | [wiki](https://oldschool.runescape.wiki/w/Prayer) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Runecraft_icon.png?c278c" height="20" alt=""> [Runecraft](content/skills/runecrafting) | 2,645 loc | [wiki](https://oldschool.runescape.wiki/w/Runecraft) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Slayer_icon.png?cd34f" height="20" alt=""> [Slayer](content/skills/slayer) | 5,519 loc | [wiki](https://oldschool.runescape.wiki/w/Slayer) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Mining_icon.png?00870" height="20" alt=""> [Mining](content/skills/mining) | 1,059 loc | [wiki](https://oldschool.runescape.wiki/w/Mining) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Smithing_icon.png?d26c5" height="20" alt=""> [Smithing](content/skills/smithing) | 2,108 loc | [wiki](https://oldschool.runescape.wiki/w/Smithing) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Woodcutting_icon.png?6ead4" height="20" alt=""> [Woodcutting](content/skills/woodcutting) | 409 loc | [wiki](https://oldschool.runescape.wiki/w/Woodcutting) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/Firemaking_icon.png?45ea0" height="20" alt=""> [Firemaking](content/skills/firemaking) | 589 loc | [wiki](https://oldschool.runescape.wiki/w/Firemaking) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Cooking_icon.png?a0156" height="20" alt=""> [Cooking](content/skills/cooking) | 1,380 loc | [wiki](https://oldschool.runescape.wiki/w/Cooking) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Herblore_icon.png?ffa9e" height="20" alt=""> [Herblore](content/skills/herblore) | 1,246 loc | [wiki](https://oldschool.runescape.wiki/w/Herblore) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Cooking_icon.png?a0156" height="20" alt=""> [Cooking](content/skills/cooking) | 1,350 loc | [wiki](https://oldschool.runescape.wiki/w/Cooking) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Herblore_icon.png?ffa9e" height="20" alt=""> [Herblore](content/skills/herblore) | 1,289 loc | [wiki](https://oldschool.runescape.wiki/w/Herblore) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/Fishing_icon.png?15a98" height="20" alt=""> [Fishing](content/skills/fishing) | 1,608 loc | [wiki](https://oldschool.runescape.wiki/w/Fishing) |
-| 🔴 | <img src="https://oldschool.runescape.wiki/images/Agility_icon.png?389e0" height="20" alt=""> Agility | nothing yet | [wiki](https://oldschool.runescape.wiki/w/Agility) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Thieving_icon.png?973fe" height="20" alt=""> [Thieving](content/skills/thieving) | 406 loc | [wiki](https://oldschool.runescape.wiki/w/Thieving) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Crafting_icon.png?a1f71" height="20" alt=""> [Crafting](content/skills/crafting) | 6,383 loc | [wiki](https://oldschool.runescape.wiki/w/Crafting) |
-| 🔴 | <img src="https://oldschool.runescape.wiki/images/Fletching_icon.png?15cda" height="20" alt=""> Fletching | nothing yet | [wiki](https://oldschool.runescape.wiki/w/Fletching) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Construction_icon.png?f9bf7" height="20" alt=""> Construction | no module, code in content/areas/city | [wiki](https://oldschool.runescape.wiki/w/Construction) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/Farming_icon.png?558fa" height="20" alt=""> Farming | no module, code in content/areas/city | [wiki](https://oldschool.runescape.wiki/w/Farming) |
-| 🔴 | <img src="https://oldschool.runescape.wiki/images/Hunter_icon.png?8762f" height="20" alt=""> Hunter | nothing yet | [wiki](https://oldschool.runescape.wiki/w/Hunter) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Agility_icon.png?389e0" height="20" alt=""> [Agility](content/skills/agility) | 3,577 loc | [wiki](https://oldschool.runescape.wiki/w/Agility) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Thieving_icon.png?973fe" height="20" alt=""> [Thieving](content/skills/thieving) | 2,352 loc | [wiki](https://oldschool.runescape.wiki/w/Thieving) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Crafting_icon.png?a1f71" height="20" alt=""> [Crafting](content/skills/crafting) | 6,413 loc | [wiki](https://oldschool.runescape.wiki/w/Crafting) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Fletching_icon.png?15cda" height="20" alt=""> [Fletching](content/skills/fletching) | 2,401 loc | [wiki](https://oldschool.runescape.wiki/w/Fletching) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Construction_icon.png?f9bf7" height="20" alt=""> [Construction](content/skills/construction) | 2,342 loc | [wiki](https://oldschool.runescape.wiki/w/Construction) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Farming_icon.png?558fa" height="20" alt=""> [Farming](content/skills/farming) | 2,344 loc | [wiki](https://oldschool.runescape.wiki/w/Farming) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/Hunter_icon.png?8762f" height="20" alt=""> [Hunter](content/skills/hunter) | 6,751 loc | [wiki](https://oldschool.runescape.wiki/w/Hunter) |
 
-### Bosses <sup>23/169</sup>
+### Bosses <sup>38/169</sup>
 
 | | Feature | Status | |
 |---|---|---|---|
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Amoxliatl.png/48px-Amoxliatl.png?01b12" height="20" alt=""> [Amoxliatl](content/bosses/amoxliatl) | 387 loc | [wiki](https://oldschool.runescape.wiki/w/Amoxliatl) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Agrith_Naar.png/48px-Agrith_Naar.png?fcbf6" height="20" alt=""> Agrith Naar | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Agrith_Naar) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Amoxliatl.png/48px-Amoxliatl.png?01b12" height="20" alt=""> [Amoxliatl](content/bosses/amoxliatl) | 363 loc | [wiki](https://oldschool.runescape.wiki/w/Amoxliatl) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Artio.png/48px-Artio.png?bfba7" height="20" alt=""> Artio | no module, code in content/bosses/callisto | [wiki](https://oldschool.runescape.wiki/w/Artio) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Barrows_minigame.png/48px-Barrows_minigame.png?f7aaf" height="20" alt=""> [Barrows](content/bosses/barrows) | 1,566 loc | [wiki](https://oldschool.runescape.wiki/w/Barrows) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Callisto.png/48px-Callisto.png?bfba7" height="20" alt=""> [Callisto](content/bosses/callisto) | 568 loc | [wiki](https://oldschool.runescape.wiki/w/Callisto) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Commander_Zilyana.png/48px-Commander_Zilyana.png?c5eaa" height="20" alt=""> [Commander Zilyana](content/bosses/zilyana) | 164 loc | [wiki](https://oldschool.runescape.wiki/w/Commander_Zilyana) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Corrupted_Hunllef.png/48px-Corrupted_Hunllef.png?0cd55" height="20" alt=""> Corrupted Hunllef | no module, code in content/minigames/gauntlet | [wiki](https://oldschool.runescape.wiki/w/Corrupted_Hunllef) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Crystalline_Hunllef.png/48px-Crystalline_Hunllef.png?7737a" height="20" alt=""> Crystalline Hunllef | no module, code in content/minigames/gauntlet | [wiki](https://oldschool.runescape.wiki/w/Crystalline_Hunllef) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Barrows_minigame.png/48px-Barrows_minigame.png?f7aaf" height="20" alt=""> [Barrows](content/bosses/barrows) | 1,644 loc | [wiki](https://oldschool.runescape.wiki/w/Barrows) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Callisto.png/48px-Callisto.png?bfba7" height="20" alt=""> [Callisto](content/bosses/callisto) | 569 loc | [wiki](https://oldschool.runescape.wiki/w/Callisto) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Chronozon.png/48px-Chronozon.png?5ecf8" height="20" alt=""> Chronozon | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Chronozon) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Commander_Zilyana.png/48px-Commander_Zilyana.png?c5eaa" height="20" alt=""> [Commander Zilyana](content/bosses/zilyana) | 165 loc | [wiki](https://oldschool.runescape.wiki/w/Commander_Zilyana) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Count_Draynor.png/48px-Count_Draynor.png?95156" height="20" alt=""> Count Draynor | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Count_Draynor) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Dad.png/48px-Dad.png?18a30" height="20" alt=""> Dad | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Dad) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Dagannoth_mother_white.png/48px-Dagannoth_mother_white.png?945b1" height="20" alt=""> Dagannoth mother | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Dagannoth_mother) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Delrith.png/48px-Delrith.png?ceece" height="20" alt=""> Delrith | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Delrith) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Doom_of_Mokhaiotl.png/48px-Doom_of_Mokhaiotl.png?e5edb" height="20" alt=""> [Doom of Mokhaiotl](content/bosses/doom-of-mokhaiotl) | 3,146 loc | [wiki](https://oldschool.runescape.wiki/w/Doom_of_Mokhaiotl) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Duke_Sucellus.png/48px-Duke_Sucellus.png?d588a" height="20" alt=""> [Duke Sucellus](content/bosses/duke-sucellus) | 1,262 loc | [wiki](https://oldschool.runescape.wiki/w/Duke_Sucellus) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Gemstone_Crab.png/48px-Gemstone_Crab.png?79415" height="20" alt=""> [Gemstone Crab](content/bosses/gemstone-crab) | 662 loc | [wiki](https://oldschool.runescape.wiki/w/Gemstone_Crab) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Duke_Sucellus.png/48px-Duke_Sucellus.png?d588a" height="20" alt=""> [Duke Sucellus](content/bosses/duke-sucellus) | 1,240 loc | [wiki](https://oldschool.runescape.wiki/w/Duke_Sucellus) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Elvarg.png/48px-Elvarg.png?336d5" height="20" alt=""> Elvarg | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Elvarg) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Gemstone_Crab.png/48px-Gemstone_Crab.png?79415" height="20" alt=""> [Gemstone Crab](content/bosses/gemstone-crab) | 659 loc | [wiki](https://oldschool.runescape.wiki/w/Gemstone_Crab) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/General_Graardor.png/48px-General_Graardor.png?4dd90" height="20" alt=""> [General Graardor](content/bosses/graardor) | 166 loc | [wiki](https://oldschool.runescape.wiki/w/General_Graardor) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Giant_Roc.png/48px-Giant_Roc.png?bd2c8" height="20" alt=""> Giant Roc | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Giant_Roc) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/K%27ril_Tsutsaroth.png/48px-K%27ril_Tsutsaroth.png?73bda" height="20" alt=""> [K'ril Tsutsaroth](content/bosses/kril) | 191 loc | [wiki](https://oldschool.runescape.wiki/w/K'ril_Tsutsaroth) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Kalphite_Queen.png/48px-Kalphite_Queen.png?a4955" height="20" alt=""> Kalphite Queen | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Kalphite_Queen) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/King_Black_Dragon.png/48px-King_Black_Dragon.png?d25f0" height="20" alt=""> [King Black Dragon](content/bosses/kbd) | 143 loc | [wiki](https://oldschool.runescape.wiki/w/King_Black_Dragon) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Koschei_the_deathless.png/48px-Koschei_the_deathless.png?37d97" height="20" alt=""> Koschei the deathless | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Koschei_the_deathless) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Kraken.png/48px-Kraken.png?a4955" height="20" alt=""> Kraken | no module, code in content/other/pets | [wiki](https://oldschool.runescape.wiki/w/Kraken) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Kree%27arra.png/48px-Kree%27arra.png?ba75c" height="20" alt=""> [Kree'arra](content/bosses/kreearra) | 229 loc | [wiki](https://oldschool.runescape.wiki/w/Kree'arra) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Phantom_Muspah_%28ranged%29.png/48px-Phantom_Muspah_%28ranged%29.png?9cf6a" height="20" alt=""> [Phantom Muspah](content/bosses/muspah) | 1,295 loc | [wiki](https://oldschool.runescape.wiki/w/Phantom_Muspah) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Scurrius.png/48px-Scurrius.png?e66a5" height="20" alt=""> [Scurrius](content/bosses/scurrius) | 384 loc | [wiki](https://oldschool.runescape.wiki/w/Scurrius) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Spindel.png/48px-Spindel.png?2c818" height="20" alt=""> [Spindel](content/bosses/spindel) | 522 loc | [wiki](https://oldschool.runescape.wiki/w/Spindel) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Leviathan.png/48px-The_Leviathan.png?d588a" height="20" alt=""> [The Leviathan](content/bosses/leviathan) | 1,397 loc | [wiki](https://oldschool.runescape.wiki/w/The_Leviathan) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Whisperer.png/48px-The_Whisperer.png?aedab" height="20" alt=""> [The Whisperer](content/bosses/whisperer) | 1,853 loc | [wiki](https://oldschool.runescape.wiki/w/The_Whisperer) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Me.png/48px-Me.png?65f08" height="20" alt=""> Me | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Me) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Melzar_the_Mad.png/48px-Melzar_the_Mad.png?b3424" height="20" alt=""> Melzar the Mad | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Melzar_the_Mad) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Nezikchened.png/48px-Nezikchened.png?8ee94" height="20" alt=""> Nezikchened | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Nezikchened) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Phantom_Muspah_%28ranged%29.png/48px-Phantom_Muspah_%28ranged%29.png?9cf6a" height="20" alt=""> [Phantom Muspah](content/bosses/muspah) | 1,263 loc | [wiki](https://oldschool.runescape.wiki/w/Phantom_Muspah) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Scurrius.png/48px-Scurrius.png?e66a5" height="20" alt=""> [Scurrius](content/bosses/scurrius) | 403 loc | [wiki](https://oldschool.runescape.wiki/w/Scurrius) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Sigmund.png/48px-Sigmund.png?00361" height="20" alt=""> Sigmund | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Sigmund) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Sir_Mordred.png/48px-Sir_Mordred.png?e2886" height="20" alt=""> Sir Mordred | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Sir_Mordred) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Spindel.png/48px-Spindel.png?2c818" height="20" alt=""> [Spindel](content/bosses/spindel) | 523 loc | [wiki](https://oldschool.runescape.wiki/w/Spindel) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Draugen.png/48px-The_Draugen.png?74e5c" height="20" alt=""> The Draugen | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/The_Draugen) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Leviathan.png/48px-The_Leviathan.png?d588a" height="20" alt=""> [The Leviathan](content/bosses/leviathan) | 1,402 loc | [wiki](https://oldschool.runescape.wiki/w/The_Leviathan) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Whisperer.png/48px-The_Whisperer.png?aedab" height="20" alt=""> [The Whisperer](content/bosses/whisperer) | 1,854 loc | [wiki](https://oldschool.runescape.wiki/w/The_Whisperer) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Thermonuclear_smoke_devil.png/48px-Thermonuclear_smoke_devil.png?de858" height="20" alt=""> Thermonuclear smoke devil | no module, code in content/quest/src | [wiki](https://oldschool.runescape.wiki/w/Thermonuclear_smoke_devil) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Vanguard_%28magic%29.png/48px-Vanguard_%28magic%29.png?db160" height="20" alt=""> Vanguard | no module, code in content/other/pets | [wiki](https://oldschool.runescape.wiki/w/Vanguard) |
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Vardorvis.png/48px-Vardorvis.png?48af8" height="20" alt=""> [Vardorvis](content/bosses/vardorvis) | 1,287 loc | [wiki](https://oldschool.runescape.wiki/w/Vardorvis) |
+| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Vardorvis.png/48px-Vardorvis.png?48af8" height="20" alt=""> [Vardorvis](content/bosses/vardorvis) | 1,292 loc | [wiki](https://oldschool.runescape.wiki/w/Vardorvis) |
 | 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/Venenatis.png/48px-Venenatis.png?13693" height="20" alt=""> Venenatis | no module, code in content/bosses/spindel | [wiki](https://oldschool.runescape.wiki/w/Venenatis) |
 
 <details>
-<summary>🔴 <b>146 not started</b></summary>
+<summary>🔴 <b>132 not started</b></summary>
 
-**Drop table already done (76)** — needs the encounter scripting.
+**Drop table already done (70)** — needs the encounter scripting.
 
-[Abyssal Sire](https://oldschool.runescape.wiki/w/Abyssal_Sire) · [Ahrim the Blighted](https://oldschool.runescape.wiki/w/Ahrim_the_Blighted) · [Akkha](https://oldschool.runescape.wiki/w/Akkha) · [Alchemical Hydra](https://oldschool.runescape.wiki/w/Alchemical_Hydra) · [Araxxor](https://oldschool.runescape.wiki/w/Araxxor) · [Arrg](https://oldschool.runescape.wiki/w/Arrg) · [Ba-Ba](https://oldschool.runescape.wiki/w/Ba-Ba) · [Black Knight Titan](https://oldschool.runescape.wiki/w/Black_Knight_Titan) · [Branda the Fire Queen](https://oldschool.runescape.wiki/w/Branda_the_Fire_Queen) · [Brutus](https://oldschool.runescape.wiki/w/Brutus) · [Calvar'ion](https://oldschool.runescape.wiki/w/Calvar'ion) · [Cerberus](https://oldschool.runescape.wiki/w/Cerberus) · [Chaos Elemental](https://oldschool.runescape.wiki/w/Chaos_Elemental) · [Chaos Fanatic](https://oldschool.runescape.wiki/w/Chaos_Fanatic) · [Chronozon](https://oldschool.runescape.wiki/w/Chronozon) · [Corporeal Beast](https://oldschool.runescape.wiki/w/Corporeal_Beast) · [Crazy archaeologist](https://oldschool.runescape.wiki/w/Crazy_archaeologist) · [Culinaromancer](https://oldschool.runescape.wiki/w/Culinaromancer) · [Dad](https://oldschool.runescape.wiki/w/Dad) · [Dagannoth Prime](https://oldschool.runescape.wiki/w/Dagannoth_Prime) · [Dagannoth Rex](https://oldschool.runescape.wiki/w/Dagannoth_Rex) · [Dagannoth Supreme](https://oldschool.runescape.wiki/w/Dagannoth_Supreme) · [Dagannoth mother](https://oldschool.runescape.wiki/w/Dagannoth_mother) · [Damis](https://oldschool.runescape.wiki/w/Damis) · [Demonic Brutus](https://oldschool.runescape.wiki/w/Demonic_Brutus) · [Deranged archaeologist](https://oldschool.runescape.wiki/w/Deranged_archaeologist) · [Dharok the Wretched](https://oldschool.runescape.wiki/w/Dharok_the_Wretched) · [Eldric the Ice King](https://oldschool.runescape.wiki/w/Eldric_the_Ice_King) · [Elidinis' Warden](https://oldschool.runescape.wiki/w/Elidinis'_Warden) · [Giant Mole](https://oldschool.runescape.wiki/w/Giant_Mole) · [Giant Roc](https://oldschool.runescape.wiki/w/Giant_Roc) · [Giant Scarab](https://oldschool.runescape.wiki/w/Giant_Scarab) · [Giant Sea Snake](https://oldschool.runescape.wiki/w/Giant_Sea_Snake) · [Glod](https://oldschool.runescape.wiki/w/Glod) · [Guthan the Infested](https://oldschool.runescape.wiki/w/Guthan_the_Infested) · [Hespori](https://oldschool.runescape.wiki/w/Hespori) · [Ice demon](https://oldschool.runescape.wiki/w/Ice_demon) · [Kalphite Queen](https://oldschool.runescape.wiki/w/Kalphite_Queen) · [Kamil](https://oldschool.runescape.wiki/w/Kamil) · [Karil the Tainted](https://oldschool.runescape.wiki/w/Karil_the_Tainted) · [Kephri](https://oldschool.runescape.wiki/w/Kephri) · [Melzar the Mad](https://oldschool.runescape.wiki/w/Melzar_the_Mad) · [Moss Guardian](https://oldschool.runescape.wiki/w/Moss_Guardian) · [Muttadile](https://oldschool.runescape.wiki/w/Muttadile) · [Nex](https://oldschool.runescape.wiki/w/Nex) · [Nylocas Vasilias](https://oldschool.runescape.wiki/w/Nylocas_Vasilias) · [Pestilent Bloat](https://oldschool.runescape.wiki/w/Pestilent_Bloat) · [Phosani's Nightmare](https://oldschool.runescape.wiki/w/Phosani's_Nightmare) · [Salarin the twisted](https://oldschool.runescape.wiki/w/Salarin_the_twisted) · [Sarachnis](https://oldschool.runescape.wiki/w/Sarachnis) · [Scorpia](https://oldschool.runescape.wiki/w/Scorpia) · [Shellbane gryphon](https://oldschool.runescape.wiki/w/Shellbane_gryphon) · [Skotizo](https://oldschool.runescape.wiki/w/Skotizo) · [Slagilith](https://oldschool.runescape.wiki/w/Slagilith) · [Slash Bash](https://oldschool.runescape.wiki/w/Slash_Bash) · [Sotetseg](https://oldschool.runescape.wiki/w/Sotetseg) · [Tekton](https://oldschool.runescape.wiki/w/Tekton) · [The Hueycoatl](https://oldschool.runescape.wiki/w/The_Hueycoatl) · [The Maiden of Sugadinti](https://oldschool.runescape.wiki/w/The_Maiden_of_Sugadinti) · [The Nightmare](https://oldschool.runescape.wiki/w/The_Nightmare) · [Thermonuclear smoke devil](https://oldschool.runescape.wiki/w/Thermonuclear_smoke_devil) · [Torag the Corrupted](https://oldschool.runescape.wiki/w/Torag_the_Corrupted) · [Treus Dayth](https://oldschool.runescape.wiki/w/Treus_Dayth) · [Tumeken's Warden](https://oldschool.runescape.wiki/w/Tumeken's_Warden) · [TzTok-Jad](https://oldschool.runescape.wiki/w/TzTok-Jad) · [Vasa Nistirio](https://oldschool.runescape.wiki/w/Vasa_Nistirio) · [Verac the Defiled](https://oldschool.runescape.wiki/w/Verac_the_Defiled) · [Verzik Vitur](https://oldschool.runescape.wiki/w/Verzik_Vitur) · [Vespula](https://oldschool.runescape.wiki/w/Vespula) · [Vet'ion](https://oldschool.runescape.wiki/w/Vet'ion) · [Vorkath](https://oldschool.runescape.wiki/w/Vorkath) · [Xarpus](https://oldschool.runescape.wiki/w/Xarpus) · [Yama](https://oldschool.runescape.wiki/w/Yama) · [Zalcano](https://oldschool.runescape.wiki/w/Zalcano) · [Zebak](https://oldschool.runescape.wiki/w/Zebak) · [Zulrah](https://oldschool.runescape.wiki/w/Zulrah)
+[Abyssal Sire](https://oldschool.runescape.wiki/w/Abyssal_Sire) · [Ahrim the Blighted](https://oldschool.runescape.wiki/w/Ahrim_the_Blighted) · [Akkha](https://oldschool.runescape.wiki/w/Akkha) · [Alchemical Hydra](https://oldschool.runescape.wiki/w/Alchemical_Hydra) · [Araxxor](https://oldschool.runescape.wiki/w/Araxxor) · [Arrg](https://oldschool.runescape.wiki/w/Arrg) · [Ba-Ba](https://oldschool.runescape.wiki/w/Ba-Ba) · [Black Knight Titan](https://oldschool.runescape.wiki/w/Black_Knight_Titan) · [Branda the Fire Queen](https://oldschool.runescape.wiki/w/Branda_the_Fire_Queen) · [Brutus](https://oldschool.runescape.wiki/w/Brutus) · [Calvar'ion](https://oldschool.runescape.wiki/w/Calvar'ion) · [Cerberus](https://oldschool.runescape.wiki/w/Cerberus) · [Chaos Elemental](https://oldschool.runescape.wiki/w/Chaos_Elemental) · [Chaos Fanatic](https://oldschool.runescape.wiki/w/Chaos_Fanatic) · [Corporeal Beast](https://oldschool.runescape.wiki/w/Corporeal_Beast) · [Crazy archaeologist](https://oldschool.runescape.wiki/w/Crazy_archaeologist) · [Culinaromancer](https://oldschool.runescape.wiki/w/Culinaromancer) · [Dagannoth Prime](https://oldschool.runescape.wiki/w/Dagannoth_Prime) · [Dagannoth Rex](https://oldschool.runescape.wiki/w/Dagannoth_Rex) · [Dagannoth Supreme](https://oldschool.runescape.wiki/w/Dagannoth_Supreme) · [Damis](https://oldschool.runescape.wiki/w/Damis) · [Demonic Brutus](https://oldschool.runescape.wiki/w/Demonic_Brutus) · [Deranged archaeologist](https://oldschool.runescape.wiki/w/Deranged_archaeologist) · [Dharok the Wretched](https://oldschool.runescape.wiki/w/Dharok_the_Wretched) · [Eldric the Ice King](https://oldschool.runescape.wiki/w/Eldric_the_Ice_King) · [Elidinis' Warden](https://oldschool.runescape.wiki/w/Elidinis'_Warden) · [Giant Mole](https://oldschool.runescape.wiki/w/Giant_Mole) · [Giant Scarab](https://oldschool.runescape.wiki/w/Giant_Scarab) · [Giant Sea Snake](https://oldschool.runescape.wiki/w/Giant_Sea_Snake) · [Glod](https://oldschool.runescape.wiki/w/Glod) · [Guthan the Infested](https://oldschool.runescape.wiki/w/Guthan_the_Infested) · [Hespori](https://oldschool.runescape.wiki/w/Hespori) · [Ice demon](https://oldschool.runescape.wiki/w/Ice_demon) · [Kamil](https://oldschool.runescape.wiki/w/Kamil) · [Karil the Tainted](https://oldschool.runescape.wiki/w/Karil_the_Tainted) · [Kephri](https://oldschool.runescape.wiki/w/Kephri) · [Moss Guardian](https://oldschool.runescape.wiki/w/Moss_Guardian) · [Muttadile](https://oldschool.runescape.wiki/w/Muttadile) · [Nex](https://oldschool.runescape.wiki/w/Nex) · [Nylocas Vasilias](https://oldschool.runescape.wiki/w/Nylocas_Vasilias) · [Pestilent Bloat](https://oldschool.runescape.wiki/w/Pestilent_Bloat) · [Phosani's Nightmare](https://oldschool.runescape.wiki/w/Phosani's_Nightmare) · [Salarin the twisted](https://oldschool.runescape.wiki/w/Salarin_the_twisted) · [Sarachnis](https://oldschool.runescape.wiki/w/Sarachnis) · [Scorpia](https://oldschool.runescape.wiki/w/Scorpia) · [Shellbane gryphon](https://oldschool.runescape.wiki/w/Shellbane_gryphon) · [Skotizo](https://oldschool.runescape.wiki/w/Skotizo) · [Slagilith](https://oldschool.runescape.wiki/w/Slagilith) · [Slash Bash](https://oldschool.runescape.wiki/w/Slash_Bash) · [Sotetseg](https://oldschool.runescape.wiki/w/Sotetseg) · [Tekton](https://oldschool.runescape.wiki/w/Tekton) · [The Hueycoatl](https://oldschool.runescape.wiki/w/The_Hueycoatl) · [The Maiden of Sugadinti](https://oldschool.runescape.wiki/w/The_Maiden_of_Sugadinti) · [The Nightmare](https://oldschool.runescape.wiki/w/The_Nightmare) · [Torag the Corrupted](https://oldschool.runescape.wiki/w/Torag_the_Corrupted) · [Treus Dayth](https://oldschool.runescape.wiki/w/Treus_Dayth) · [Tumeken's Warden](https://oldschool.runescape.wiki/w/Tumeken's_Warden) · [TzTok-Jad](https://oldschool.runescape.wiki/w/TzTok-Jad) · [Vasa Nistirio](https://oldschool.runescape.wiki/w/Vasa_Nistirio) · [Verac the Defiled](https://oldschool.runescape.wiki/w/Verac_the_Defiled) · [Verzik Vitur](https://oldschool.runescape.wiki/w/Verzik_Vitur) · [Vespula](https://oldschool.runescape.wiki/w/Vespula) · [Vet'ion](https://oldschool.runescape.wiki/w/Vet'ion) · [Vorkath](https://oldschool.runescape.wiki/w/Vorkath) · [Xarpus](https://oldschool.runescape.wiki/w/Xarpus) · [Yama](https://oldschool.runescape.wiki/w/Yama) · [Zalcano](https://oldschool.runescape.wiki/w/Zalcano) · [Zebak](https://oldschool.runescape.wiki/w/Zebak) · [Zulrah](https://oldschool.runescape.wiki/w/Zulrah)
 
-**Nothing yet (70)**
+**Nothing yet (62)**
 
-[Agrith Naar](https://oldschool.runescape.wiki/w/Agrith_Naar) · [Agrith-Na-Na](https://oldschool.runescape.wiki/w/Agrith-Na-Na) · [Arzinian Avatar of Magic](https://oldschool.runescape.wiki/w/Arzinian_Avatar_of_Magic) · [Arzinian Avatar of Ranging](https://oldschool.runescape.wiki/w/Arzinian_Avatar_of_Ranging) · [Arzinian Avatar of Strength](https://oldschool.runescape.wiki/w/Arzinian_Avatar_of_Strength) · [Arzinian Being of Bordanzan](https://oldschool.runescape.wiki/w/Arzinian_Being_of_Bordanzan) · [Barrelchest](https://oldschool.runescape.wiki/w/Barrelchest) · [Black demon](https://oldschool.runescape.wiki/w/Black_demon) · [Black golem](https://oldschool.runescape.wiki/w/Black_golem) · [Blood Moon](https://oldschool.runescape.wiki/w/Blood_Moon) · [Blue Moon](https://oldschool.runescape.wiki/w/Blue_Moon) · [Bouncer](https://oldschool.runescape.wiki/w/Bouncer) · [Bouncer (ghost)](https://oldschool.runescape.wiki/w/Bouncer_(ghost)) · [Bryophyta](https://oldschool.runescape.wiki/w/Bryophyta) · [Count Draynor](https://oldschool.runescape.wiki/w/Count_Draynor) · [Dawn](https://oldschool.runescape.wiki/w/Dawn) · [Delrith](https://oldschool.runescape.wiki/w/Delrith) · [Dessourt](https://oldschool.runescape.wiki/w/Dessourt) · [Dessous](https://oldschool.runescape.wiki/w/Dessous) · [Dusk](https://oldschool.runescape.wiki/w/Dusk) · [Eclipse Moon](https://oldschool.runescape.wiki/w/Eclipse_Moon) · [Elvarg](https://oldschool.runescape.wiki/w/Elvarg) · [Evil spirit](https://oldschool.runescape.wiki/w/Evil_spirit) · [Fareed](https://oldschool.runescape.wiki/w/Fareed) · [Flambeed](https://oldschool.runescape.wiki/w/Flambeed) · [Gadderanks](https://oldschool.runescape.wiki/w/Gadderanks) · [Galvek](https://oldschool.runescape.wiki/w/Galvek) · [Gelatinnoth Mother](https://oldschool.runescape.wiki/w/Gelatinnoth_Mother) · [General Khazard](https://oldschool.runescape.wiki/w/General_Khazard) · [Glough](https://oldschool.runescape.wiki/w/Glough) · [Great Olm](https://oldschool.runescape.wiki/w/Great_Olm) · [Grey golem](https://oldschool.runescape.wiki/w/Grey_golem) · [Grotesque Guardians](https://oldschool.runescape.wiki/w/Grotesque_Guardians) · [Ice Troll King](https://oldschool.runescape.wiki/w/Ice_Troll_King) · [Judge of Yama (A Kingdom Divided)](https://oldschool.runescape.wiki/w/Judge_of_Yama_(A_Kingdom_Divided)) · [Jungle Demon](https://oldschool.runescape.wiki/w/Jungle_Demon) · [Karamel](https://oldschool.runescape.wiki/w/Karamel) · [Koschei the deathless](https://oldschool.runescape.wiki/w/Koschei_the_deathless) · [Lowerniel Drakan](https://oldschool.runescape.wiki/w/Lowerniel_Drakan) · [Mad Angel](https://oldschool.runescape.wiki/w/Mad_Angel) · [Maggot King](https://oldschool.runescape.wiki/w/Maggot_King) · [Me](https://oldschool.runescape.wiki/w/Me) · [Moons of Peril](https://oldschool.runescape.wiki/w/Moons_of_Peril) · [Nezikchened](https://oldschool.runescape.wiki/w/Nezikchened) · [Obor](https://oldschool.runescape.wiki/w/Obor) · [Penance Queen](https://oldschool.runescape.wiki/w/Penance_Queen) · [Revenant maledictus](https://oldschool.runescape.wiki/w/Revenant_maledictus) · [Royal Titans](https://oldschool.runescape.wiki/w/Royal_Titans) · [Sea Troll Queen](https://oldschool.runescape.wiki/w/Sea_Troll_Queen) · [Sigmund](https://oldschool.runescape.wiki/w/Sigmund) · [Sir Leye](https://oldschool.runescape.wiki/w/Sir_Leye) · [Sir Mordred](https://oldschool.runescape.wiki/w/Sir_Mordred) · [Slug Prince](https://oldschool.runescape.wiki/w/Slug_Prince) · [Sol Heredit](https://oldschool.runescape.wiki/w/Sol_Heredit) · [Tarn](https://oldschool.runescape.wiki/w/Tarn) · [Tempoross](https://oldschool.runescape.wiki/w/Tempoross) · [The Draugen](https://oldschool.runescape.wiki/w/The_Draugen) · [The Everlasting](https://oldschool.runescape.wiki/w/The_Everlasting) · [The Illusive](https://oldschool.runescape.wiki/w/The_Illusive) · [The Inadequacy](https://oldschool.runescape.wiki/w/The_Inadequacy) · [The Mimic](https://oldschool.runescape.wiki/w/The_Mimic) · [The Untouchable](https://oldschool.runescape.wiki/w/The_Untouchable) · [Tolna](https://oldschool.runescape.wiki/w/Tolna) · [Tree spirit (Lost City)](https://oldschool.runescape.wiki/w/Tree_spirit_(Lost_City)) · [TzKal-Zuk](https://oldschool.runescape.wiki/w/TzKal-Zuk) · [Ulfric](https://oldschool.runescape.wiki/w/Ulfric) · [White golem](https://oldschool.runescape.wiki/w/White_golem) · [Wintertodt](https://oldschool.runescape.wiki/w/Wintertodt) · [Wrathmaw](https://oldschool.runescape.wiki/w/Wrathmaw) · [Xamphur](https://oldschool.runescape.wiki/w/Xamphur)
+[Agrith-Na-Na](https://oldschool.runescape.wiki/w/Agrith-Na-Na) · [Arzinian Avatar of Magic](https://oldschool.runescape.wiki/w/Arzinian_Avatar_of_Magic) · [Arzinian Avatar of Ranging](https://oldschool.runescape.wiki/w/Arzinian_Avatar_of_Ranging) · [Arzinian Avatar of Strength](https://oldschool.runescape.wiki/w/Arzinian_Avatar_of_Strength) · [Arzinian Being of Bordanzan](https://oldschool.runescape.wiki/w/Arzinian_Being_of_Bordanzan) · [Barrelchest](https://oldschool.runescape.wiki/w/Barrelchest) · [Black demon](https://oldschool.runescape.wiki/w/Black_demon) · [Black golem](https://oldschool.runescape.wiki/w/Black_golem) · [Blood Moon](https://oldschool.runescape.wiki/w/Blood_Moon) · [Blue Moon](https://oldschool.runescape.wiki/w/Blue_Moon) · [Bouncer](https://oldschool.runescape.wiki/w/Bouncer) · [Bouncer (ghost)](https://oldschool.runescape.wiki/w/Bouncer_(ghost)) · [Bryophyta](https://oldschool.runescape.wiki/w/Bryophyta) · [Corrupted Hunllef](https://oldschool.runescape.wiki/w/Corrupted_Hunllef) · [Crystalline Hunllef](https://oldschool.runescape.wiki/w/Crystalline_Hunllef) · [Dawn](https://oldschool.runescape.wiki/w/Dawn) · [Dessourt](https://oldschool.runescape.wiki/w/Dessourt) · [Dessous](https://oldschool.runescape.wiki/w/Dessous) · [Dusk](https://oldschool.runescape.wiki/w/Dusk) · [Eclipse Moon](https://oldschool.runescape.wiki/w/Eclipse_Moon) · [Evil spirit](https://oldschool.runescape.wiki/w/Evil_spirit) · [Fareed](https://oldschool.runescape.wiki/w/Fareed) · [Flambeed](https://oldschool.runescape.wiki/w/Flambeed) · [Gadderanks](https://oldschool.runescape.wiki/w/Gadderanks) · [Galvek](https://oldschool.runescape.wiki/w/Galvek) · [Gelatinnoth Mother](https://oldschool.runescape.wiki/w/Gelatinnoth_Mother) · [General Khazard](https://oldschool.runescape.wiki/w/General_Khazard) · [Glough](https://oldschool.runescape.wiki/w/Glough) · [Great Olm](https://oldschool.runescape.wiki/w/Great_Olm) · [Grey golem](https://oldschool.runescape.wiki/w/Grey_golem) · [Grotesque Guardians](https://oldschool.runescape.wiki/w/Grotesque_Guardians) · [Ice Troll King](https://oldschool.runescape.wiki/w/Ice_Troll_King) · [Judge of Yama (A Kingdom Divided)](https://oldschool.runescape.wiki/w/Judge_of_Yama_(A_Kingdom_Divided)) · [Jungle Demon](https://oldschool.runescape.wiki/w/Jungle_Demon) · [Karamel](https://oldschool.runescape.wiki/w/Karamel) · [Lowerniel Drakan](https://oldschool.runescape.wiki/w/Lowerniel_Drakan) · [Mad Angel](https://oldschool.runescape.wiki/w/Mad_Angel) · [Maggot King](https://oldschool.runescape.wiki/w/Maggot_King) · [Moons of Peril](https://oldschool.runescape.wiki/w/Moons_of_Peril) · [Obor](https://oldschool.runescape.wiki/w/Obor) · [Penance Queen](https://oldschool.runescape.wiki/w/Penance_Queen) · [Revenant maledictus](https://oldschool.runescape.wiki/w/Revenant_maledictus) · [Royal Titans](https://oldschool.runescape.wiki/w/Royal_Titans) · [Sea Troll Queen](https://oldschool.runescape.wiki/w/Sea_Troll_Queen) · [Sir Leye](https://oldschool.runescape.wiki/w/Sir_Leye) · [Slug Prince](https://oldschool.runescape.wiki/w/Slug_Prince) · [Sol Heredit](https://oldschool.runescape.wiki/w/Sol_Heredit) · [Tarn](https://oldschool.runescape.wiki/w/Tarn) · [Tempoross](https://oldschool.runescape.wiki/w/Tempoross) · [The Everlasting](https://oldschool.runescape.wiki/w/The_Everlasting) · [The Illusive](https://oldschool.runescape.wiki/w/The_Illusive) · [The Inadequacy](https://oldschool.runescape.wiki/w/The_Inadequacy) · [The Mimic](https://oldschool.runescape.wiki/w/The_Mimic) · [The Untouchable](https://oldschool.runescape.wiki/w/The_Untouchable) · [Tolna](https://oldschool.runescape.wiki/w/Tolna) · [Tree spirit (Lost City)](https://oldschool.runescape.wiki/w/Tree_spirit_(Lost_City)) · [TzKal-Zuk](https://oldschool.runescape.wiki/w/TzKal-Zuk) · [Ulfric](https://oldschool.runescape.wiki/w/Ulfric) · [White golem](https://oldschool.runescape.wiki/w/White_golem) · [Wintertodt](https://oldschool.runescape.wiki/w/Wintertodt) · [Wrathmaw](https://oldschool.runescape.wiki/w/Wrathmaw) · [Xamphur](https://oldschool.runescape.wiki/w/Xamphur)
 
 </details>
 
@@ -89,118 +104,21 @@ the module table at the bottom before reading a 0 as "nothing exists".
 | | Feature | Status | |
 |---|---|---|---|
 | 🔴 | <img src="https://oldschool.runescape.wiki/images/thumb/Chambers_of_Xeric_logo.png/48px-Chambers_of_Xeric_logo.png?34a98" height="20" alt=""> Chambers of Xeric | nothing yet | [wiki](https://oldschool.runescape.wiki/w/Chambers_of_Xeric) |
-| 🔴 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Fractured_Archive_logo.png/48px-The_Fractured_Archive_logo.png?2eb86" height="20" alt=""> The Fractured Archive | nothing yet | [wiki](https://oldschool.runescape.wiki/w/The_Fractured_Archive) |
+| 🔴 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Fractured_Archive_logo.png/48px-The_Fractured_Archive_logo.png?072fb" height="20" alt=""> The Fractured Archive | nothing yet | [wiki](https://oldschool.runescape.wiki/w/The_Fractured_Archive) |
 | 🔴 | <img src="https://oldschool.runescape.wiki/images/thumb/Theatre_of_Blood_logo.png/48px-Theatre_of_Blood_logo.png?e6e68" height="20" alt=""> Theatre of Blood | nothing yet | [wiki](https://oldschool.runescape.wiki/w/Theatre_of_Blood) |
 | 🔴 | <img src="https://oldschool.runescape.wiki/images/thumb/Tombs_of_Amascut.png/48px-Tombs_of_Amascut.png?f9992" height="20" alt=""> Tombs of Amascut | nothing yet | [wiki](https://oldschool.runescape.wiki/w/Tombs_of_Amascut) |
 
-### Minigames <sup>1/52</sup>
-
-| | Feature | Status | |
-|---|---|---|---|
-| 🟢 | <img src="https://oldschool.runescape.wiki/images/thumb/The_Gauntlet.png/48px-The_Gauntlet.png?1a926" height="20" alt=""> [The Gauntlet](content/minigames/gauntlet) | 3,514 loc | [wiki](https://oldschool.runescape.wiki/w/The_Gauntlet) |
+### Minigames <sup>0/51</sup>
 
 <details>
 <summary>🔴 <b>51 not started</b></summary>
 
 **Nothing yet (51)**
 
-[Barbarian Assault](https://oldschool.runescape.wiki/w/Barbarian_Assault) · [Blast Furnace](https://oldschool.runescape.wiki/w/Blast_Furnace) · [Bounty Hunter](https://oldschool.runescape.wiki/w/Bounty_Hunter) · [Brimhaven Agility Arena](https://oldschool.runescape.wiki/w/Brimhaven_Agility_Arena) · [Burthorpe Games Room](https://oldschool.runescape.wiki/w/Burthorpe_Games_Room) · [Castle Wars](https://oldschool.runescape.wiki/w/Castle_Wars) · [Chompy bird hunting](https://oldschool.runescape.wiki/w/Chompy_bird_hunting) · [Clan Wars](https://oldschool.runescape.wiki/w/Clan_Wars) · [Dorgesh-Kaan market trading](https://oldschool.runescape.wiki/w/Dorgesh-Kaan_market_trading) · [Duel Arena](https://oldschool.runescape.wiki/w/Duel_Arena) · [Emir's Arena](https://oldschool.runescape.wiki/w/Emir's_Arena) · [Farming contracts](https://oldschool.runescape.wiki/w/Farming_contracts) · [Fishing Trawler](https://oldschool.runescape.wiki/w/Fishing_Trawler) · [Fortis Colosseum](https://oldschool.runescape.wiki/w/Fortis_Colosseum) · [Giants' Foundry](https://oldschool.runescape.wiki/w/Giants'_Foundry) · [Gnome Ball](https://oldschool.runescape.wiki/w/Gnome_Ball) · [Gnome Restaurant](https://oldschool.runescape.wiki/w/Gnome_Restaurant) · [Golem crafting](https://oldschool.runescape.wiki/w/Golem_crafting) · [Guardians of the Rift](https://oldschool.runescape.wiki/w/Guardians_of_the_Rift) · [Hallowed Sepulchre](https://oldschool.runescape.wiki/w/Hallowed_Sepulchre) · [Impetuous Impulses](https://oldschool.runescape.wiki/w/Impetuous_Impulses) · [Inferno](https://oldschool.runescape.wiki/w/Inferno) · [Intelligence Gathering](https://oldschool.runescape.wiki/w/Intelligence_Gathering) · [Keldagrim tasks](https://oldschool.runescape.wiki/w/Keldagrim_tasks) · [Last Man Standing](https://oldschool.runescape.wiki/w/Last_Man_Standing) · [Mage Arena](https://oldschool.runescape.wiki/w/Mage_Arena) · [Mage Training Arena](https://oldschool.runescape.wiki/w/Mage_Training_Arena) · [Mahogany Homes](https://oldschool.runescape.wiki/w/Mahogany_Homes) · [Mastering Mixology](https://oldschool.runescape.wiki/w/Mastering_Mixology) · [Mess](https://oldschool.runescape.wiki/w/Mess) · [Nightmare Zone](https://oldschool.runescape.wiki/w/Nightmare_Zone) · [Pest Control](https://oldschool.runescape.wiki/w/Pest_Control) · [Pete Kayer's Challenges](https://oldschool.runescape.wiki/w/Pete_Kayer's_Challenges) · [Pyramid Plunder](https://oldschool.runescape.wiki/w/Pyramid_Plunder) · [Rat Pits](https://oldschool.runescape.wiki/w/Rat_Pits) · [Rogues' Den](https://oldschool.runescape.wiki/w/Rogues'_Den) · [Shades of Mort'ton (minigame)](https://oldschool.runescape.wiki/w/Shades_of_Mort'ton_(minigame)) · [Sorceress's Garden](https://oldschool.runescape.wiki/w/Sorceress's_Garden) · [Soul Wars](https://oldschool.runescape.wiki/w/Soul_Wars) · [Stealing artefacts](https://oldschool.runescape.wiki/w/Stealing_artefacts) · [Stealing valuables](https://oldschool.runescape.wiki/w/Stealing_valuables) · [Tai Bwo Wannai Cleanup](https://oldschool.runescape.wiki/w/Tai_Bwo_Wannai_Cleanup) · [Tears of Guthix (minigame)](https://oldschool.runescape.wiki/w/Tears_of_Guthix_(minigame)) · [Temple Trekking](https://oldschool.runescape.wiki/w/Temple_Trekking) · [Tithe Farm](https://oldschool.runescape.wiki/w/Tithe_Farm) · [Trouble Brewing](https://oldschool.runescape.wiki/w/Trouble_Brewing) · [TzHaar Fight Cave](https://oldschool.runescape.wiki/w/TzHaar_Fight_Cave) · [TzHaar Fight Pit](https://oldschool.runescape.wiki/w/TzHaar_Fight_Pit) · [TzHaar-Ket-Rak's Challenges](https://oldschool.runescape.wiki/w/TzHaar-Ket-Rak's_Challenges) · [Vale Totems](https://oldschool.runescape.wiki/w/Vale_Totems) · [Volcanic Mine](https://oldschool.runescape.wiki/w/Volcanic_Mine)
+[Barbarian Assault](https://oldschool.runescape.wiki/w/Barbarian_Assault) · [Blast Furnace](https://oldschool.runescape.wiki/w/Blast_Furnace) · [Bounty Hunter](https://oldschool.runescape.wiki/w/Bounty_Hunter) · [Brimhaven Agility Arena](https://oldschool.runescape.wiki/w/Brimhaven_Agility_Arena) · [Burthorpe Games Room](https://oldschool.runescape.wiki/w/Burthorpe_Games_Room) · [Castle Wars](https://oldschool.runescape.wiki/w/Castle_Wars) · [Chompy bird hunting](https://oldschool.runescape.wiki/w/Chompy_bird_hunting) · [Clan Wars](https://oldschool.runescape.wiki/w/Clan_Wars) · [Dorgesh-Kaan market trading](https://oldschool.runescape.wiki/w/Dorgesh-Kaan_market_trading) · [Duel Arena](https://oldschool.runescape.wiki/w/Duel_Arena) · [Emir's Arena](https://oldschool.runescape.wiki/w/Emir's_Arena) · [Farming contracts](https://oldschool.runescape.wiki/w/Farming_contracts) · [Fishing Trawler](https://oldschool.runescape.wiki/w/Fishing_Trawler) · [Fortis Colosseum](https://oldschool.runescape.wiki/w/Fortis_Colosseum) · [Giants' Foundry](https://oldschool.runescape.wiki/w/Giants'_Foundry) · [Gnome Ball](https://oldschool.runescape.wiki/w/Gnome_Ball) · [Gnome Restaurant](https://oldschool.runescape.wiki/w/Gnome_Restaurant) · [Golem crafting](https://oldschool.runescape.wiki/w/Golem_crafting) · [Guardians of the Rift](https://oldschool.runescape.wiki/w/Guardians_of_the_Rift) · [Hallowed Sepulchre](https://oldschool.runescape.wiki/w/Hallowed_Sepulchre) · [Impetuous Impulses](https://oldschool.runescape.wiki/w/Impetuous_Impulses) · [Inferno](https://oldschool.runescape.wiki/w/Inferno) · [Intelligence Gathering](https://oldschool.runescape.wiki/w/Intelligence_Gathering) · [Keldagrim tasks](https://oldschool.runescape.wiki/w/Keldagrim_tasks) · [Last Man Standing](https://oldschool.runescape.wiki/w/Last_Man_Standing) · [Mage Arena](https://oldschool.runescape.wiki/w/Mage_Arena) · [Mage Training Arena](https://oldschool.runescape.wiki/w/Mage_Training_Arena) · [Mahogany Homes](https://oldschool.runescape.wiki/w/Mahogany_Homes) · [Mastering Mixology](https://oldschool.runescape.wiki/w/Mastering_Mixology) · [Mess](https://oldschool.runescape.wiki/w/Mess) · [Nightmare Zone](https://oldschool.runescape.wiki/w/Nightmare_Zone) · [Pest Control](https://oldschool.runescape.wiki/w/Pest_Control) · [Pyramid Plunder](https://oldschool.runescape.wiki/w/Pyramid_Plunder) · [Rat Pits](https://oldschool.runescape.wiki/w/Rat_Pits) · [Rogues' Den](https://oldschool.runescape.wiki/w/Rogues'_Den) · [Shades of Mort'ton (minigame)](https://oldschool.runescape.wiki/w/Shades_of_Mort'ton_(minigame)) · [Sorceress's Garden](https://oldschool.runescape.wiki/w/Sorceress's_Garden) · [Soul Wars](https://oldschool.runescape.wiki/w/Soul_Wars) · [Stealing artefacts](https://oldschool.runescape.wiki/w/Stealing_artefacts) · [Stealing valuables](https://oldschool.runescape.wiki/w/Stealing_valuables) · [Tai Bwo Wannai Cleanup](https://oldschool.runescape.wiki/w/Tai_Bwo_Wannai_Cleanup) · [Tears of Guthix (minigame)](https://oldschool.runescape.wiki/w/Tears_of_Guthix_(minigame)) · [Temple Trekking](https://oldschool.runescape.wiki/w/Temple_Trekking) · [The Gauntlet](https://oldschool.runescape.wiki/w/The_Gauntlet) · [Tithe Farm](https://oldschool.runescape.wiki/w/Tithe_Farm) · [Trouble Brewing](https://oldschool.runescape.wiki/w/Trouble_Brewing) · [TzHaar Fight Cave](https://oldschool.runescape.wiki/w/TzHaar_Fight_Cave) · [TzHaar Fight Pit](https://oldschool.runescape.wiki/w/TzHaar_Fight_Pit) · [TzHaar-Ket-Rak's Challenges](https://oldschool.runescape.wiki/w/TzHaar-Ket-Rak's_Challenges) · [Vale Totems](https://oldschool.runescape.wiki/w/Vale_Totems) · [Volcanic Mine](https://oldschool.runescape.wiki/w/Volcanic_Mine)
 
 </details>
 
-### Sub-features and mechanics
-
-Pulled from wiki section headings. A lot of this has no cache symbol to match against
-(run energy, failure rates, formulas), so the entity scan cannot see it at all. Listed
-here so it at least shows up. Nothing is ticked until someone claims it.
-
-<details>
-<summary>🔴 <b>Agility</b> — 30 sub-features</summary>
-
-- [ ] Run energy
-- [ ] Agility training areas
-- [ ] Failure
-- [ ] Stamina
-- [ ] Regular courses
-- [ ] Gnome Stronghold Agility Course
-- [ ] Shayzien Agility Course
-- [ ] Penguin Agility Course
-- [ ] Barbarian Outpost Agility Course
-- [ ] Ape Atoll Agility Course
-- [ ] Wilderness Agility Course
-- [ ] Colossal Wyrm Agility Course
-- [ ] Werewolf Agility Course
-- [ ] Prifddinas Agility Course
-- [ ] Rooftop Agility courses
-- [ ] Other courses
-- [ ] Brimhaven Agility Arena
-- [ ] Agility Pyramid
-- [ ] Dorgesh-Kaan
-- [ ] Hallowed Sepulchre
-- [ ] Other training methods
-- [ ] Barbarian Fishing
-- [ ] Blast Furnace
-- [ ] Gnome Ball
-- [ ] Toy mouse
-- [ ] Underwater Agility and Thieving
-- [ ] Werewolf Skullball
-- [ ] Wintertodt Pillars
-- [ ] Shortcuts
-- [ ] Collection log
-
-</details>
-
-<details>
-<summary>🔴 <b>Fletching</b> — 9 sub-features</summary>
-
-- [ ] Materials used
-- [ ] General
-- [ ] Making weapons
-- [ ] Making projectiles
-- [ ] Making the items
-- [ ] Weapons
-- [ ] Shields
-- [ ] Projectiles
-- [ ] Training
-
-</details>
-
-<details>
-<summary>🔴 <b>Hunter</b> — 31 sub-features</summary>
-
-- [ ] Hunting techniques
-- [ ] Aerial fishing
-- [ ] Bird house trapping
-- [ ] Bird snaring
-- [ ] Box trapping
-- [ ] Butterfly netting
-- [ ] Crab trapping
-- [ ] Deadfall trapping
-- [ ] Drift net fishing
-- [ ] Falconry
-- [ ] Goat hunting
-- [ ] Net trapping
-- [ ] Magic box trapping
-- [ ] Pitfall trapping
-- [ ] Rabbit snaring
-- [ ] Tracking
-- [ ] Hunter areas
-- [ ] Miscellaneous
-- [ ] Bait and smoking traps
-- [ ] Multiple traps
-- [ ] Hunter shops
-- [ ] Hunter Guild &amp; Hunters' Rumours
-- [ ] Hunter spell
-- [ ] Hunter crossbow
-- [ ] Hunter and camouflage clothing
-- [ ] Storage items
-- [ ] Hunter pets
-- [ ] Baby chinchompa
-- [ ] Herbi
-- [ ] Quetzin
-- [ ] Mr McGroot
-
-</details>
 
 ### All content modules
 
@@ -208,122 +126,150 @@ Found the same way `settings.gradle.kts` finds them: any dir with a `build.gradl
 
 | Module | Files | Lines | Tests | TODO | Last touched |
 |---|---:|---:|---:|---:|---|
+| `areas/city/alkharid` | 2 | 575 | 0 | 0 | 2026-09-18 |
 | `areas/city/ardougne` | 1 | 139 | 0 | 0 | 2026-09-25 |
-| `areas/city/barbarian-village` | 9 | 526 | 0 | 0 | 2026-10-09 |
-| `areas/city/draynor` | 17 | 3,777 | 4 | 0 | 2026-10-10 |
+| `areas/city/draynor` | 16 | 3,139 | 4 | 0 | 2026-09-23 |
 | `areas/city/draynor/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
-| `areas/city/falador` | 7 | 1,354 | 0 | 0 | 2026-09-24 |
+| `areas/city/falador` | 6 | 1,272 | 0 | 0 | 2026-09-24 |
 | `areas/city/falador/pack` | 1 | 6 | 0 | 0 | 2026-09-22 |
-| `areas/city/lumbridge` | 26 | 6,229 | 0 | 3 | 2026-10-09 |
-| `areas/city/lumbridge/pack` | 1 | 6 | 0 | 0 | 2026-10-09 |
-| `areas/city/port-sarim` | 13 | 1,977 | 0 | 0 | 2026-10-09 |
+| `areas/city/lumbridge` | 26 | 6,315 | 0 | 3 | 2026-09-28 |
+| `areas/city/lumbridge/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
+| `areas/city/port-sarim` | 12 | 1,669 | 0 | 0 | 2026-09-24 |
 | `areas/city/port-sarim/pack` | 1 | 6 | 0 | 0 | 2026-09-22 |
 | `areas/city/prifddinas` | 1 | 82 | 0 | 0 | 2026-08-18 |
-| `areas/city/rimmington` | 6 | 773 | 0 | 0 | 2026-09-23 |
+| `areas/city/rimmington` | 6 | 734 | 0 | 0 | 2026-09-23 |
 | `areas/city/rimmington/pack` | 1 | 6 | 0 | 0 | 2026-09-22 |
 | `areas/city/taverley` | 1 | 77 | 0 | 0 | 2026-06-25 |
-| `areas/city/varrock` | 9 | 823 | 1 | 1 | 2026-10-07 |
+| `areas/city/varrock` | 8 | 712 | 0 | 1 | 2026-09-26 |
 | `areas/godwars` | 2 | 154 | 0 | 0 | 2026-08-19 |
+| `areas/guilds` | 2 | 196 | 0 | 0 | 2026-09-23 |
 | `areas/misc/dog_shelter` | 2 | 151 | 0 | 0 | 2026-09-25 |
-| `areas/misc/dwarven-mine` | 3 | 621 | 0 | 0 | 2026-09-17 |
+| `areas/misc/dwarven-mine` | 3 | 599 | 0 | 0 | 2026-09-20 |
+| `areas/misc/kharidian-desert` | 3 | 486 | 0 | 0 | 2026-09-18 |
 | `areas/misc/mining-guild` | 8 | 714 | 0 | 0 | 2026-09-17 |
 | `areas/misc/motherlode-mine` | 13 | 1,402 | 0 | 0 | 2026-09-17 |
 | `areas/misc/motherlode-mine/pack` | 1 | 6 | 0 | 0 | 2026-09-17 |
 | `areas/misc/multiways` | 2 | 36 | 0 | 0 | 2026-05-03 |
-| `areas/misc/stronghold_of_security` | 7 | 1,437 | 2 | 0 | 2026-10-06 |
-| `areas/misc/stronghold_of_security/pack` | 2 | 134 | 0 | 0 | 2026-10-06 |
+| `areas/misc/stronghold_of_security` | 8 | 1,580 | 0 | 0 | 2026-09-23 |
 | `areas/misc/ver_sinhaza` | 1 | 139 | 0 | 0 | 2026-09-25 |
-| `areas/misc/wizards_tower` | 4 | 1,123 | 0 | 0 | 2026-09-23 |
+| `areas/misc/wizards_tower` | 4 | 1,087 | 0 | 0 | 2026-09-23 |
 | `areas/misc/wizards_tower/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
-| `areas/wilderness` | 19 | 1,397 | 0 | 0 | 2026-10-04 |
+| `areas/wilderness` | 20 | 1,529 | 0 | 0 | 2026-09-09 |
 | `areas/zeah` | 3 | 234 | 0 | 0 | 2026-08-18 |
-| `bosses/amoxliatl` | 2 | 387 | 0 | 0 | 2026-10-01 |
-| `bosses/barrows` | 16 | 1,566 | 1 | 0 | 2026-10-09 |
-| `bosses/callisto` | 2 | 568 | 0 | 0 | 2026-09-30 |
-| `bosses/demonic-gorilla` | 1 | 320 | 0 | 0 | 2026-10-01 |
-| `bosses/doom-of-mokhaiotl` | 19 | 3,146 | 3 | 0 | 2026-10-05 |
-| `bosses/duke-sucellus` | 3 | 1,262 | 0 | 0 | 2026-10-04 |
-| `bosses/gemstone-crab` | 6 | 662 | 0 | 0 | 2026-10-09 |
-| `bosses/graardor` | 2 | 166 | 0 | 0 | 2026-09-30 |
-| `bosses/kbd` | 2 | 143 | 0 | 1 | 2026-09-30 |
-| `bosses/kreearra` | 2 | 229 | 0 | 0 | 2026-09-30 |
-| `bosses/kril` | 2 | 191 | 0 | 0 | 2026-09-30 |
-| `bosses/leviathan` | 8 | 1,397 | 0 | 0 | 2026-09-30 |
-| `bosses/muspah` | 4 | 1,295 | 0 | 0 | 2026-10-04 |
-| `bosses/scurrius` | 2 | 384 | 0 | 0 | 2026-10-01 |
-| `bosses/spindel` | 2 | 522 | 0 | 0 | 2026-09-30 |
-| `bosses/tormented-demon` | 2 | 531 | 0 | 0 | 2026-10-01 |
-| `bosses/vardorvis` | 7 | 1,287 | 0 | 0 | 2026-10-01 |
-| `bosses/whisperer` | 5 | 1,853 | 0 | 0 | 2026-09-30 |
-| `bosses/zilyana` | 2 | 164 | 0 | 0 | 2026-09-30 |
-| `drops` | 253 | 14,170 | 0 | 0 | 2026-10-10 |
-| `events/raging-echoes-league` | 2 | 49 | 0 | 0 | 2026-10-06 |
+| `bosses/amoxliatl` | 2 | 363 | 0 | 0 | 2026-09-15 |
+| `bosses/barrows` | 16 | 1,638 | 3 | 0 | — |
+| `bosses/barrows/pack` | 1 | 6 | 0 | 0 | — |
+| `bosses/callisto` | 2 | 569 | 0 | 0 | — |
+| `bosses/demonic-gorilla` | 1 | 308 | 0 | 0 | 2026-09-04 |
+| `bosses/duke-sucellus` | 3 | 1,240 | 0 | 0 | — |
+| `bosses/gemstone-crab` | 6 | 659 | 0 | 0 | — |
+| `bosses/graardor` | 2 | 166 | 0 | 0 | 2026-08-03 |
+| `bosses/kbd` | 2 | 143 | 0 | 1 | 2026-07-07 |
+| `bosses/kreearra` | 2 | 229 | 0 | 0 | 2026-08-03 |
+| `bosses/kril` | 2 | 191 | 0 | 0 | 2026-08-03 |
+| `bosses/leviathan` | 8 | 1,402 | 0 | 0 | — |
+| `bosses/muspah` | 4 | 1,263 | 0 | 0 | 2026-09-22 |
+| `bosses/scurrius` | 2 | 403 | 0 | 0 | 2026-07-07 |
+| `bosses/spindel` | 2 | 523 | 0 | 0 | 2026-09-15 |
+| `bosses/tormented-demon` | 2 | 556 | 0 | 0 | 2026-09-05 |
+| `bosses/vardorvis` | 7 | 1,292 | 0 | 0 | 2026-09-27 |
+| `bosses/whisperer` | 5 | 1,854 | 0 | 0 | 2026-09-26 |
+| `bosses/zilyana` | 2 | 165 | 0 | 0 | 2026-08-03 |
+| `drops` | 258 | 14,417 | 0 | 0 | 2026-09-26 |
 | `events/shooting-stars` | 9 | 1,261 | 0 | 0 | 2026-08-30 |
 | `events/shooting-stars/pack` | 2 | 440 | 0 | 0 | 2026-08-21 |
-| `generic/generic-items` | 1 | 55 | 0 | 0 | 2026-10-08 |
-| `generic/generic-items/pack` | 1 | 6 | 0 | 0 | 2026-10-08 |
-| `generic/generic-locs` | 29 | 1,477 | 1 | 1 | 2026-10-09 |
-| `generic/generic-npcs` | 9 | 1,391 | 2 | 2 | 2026-10-10 |
-| `generic/generic-npcs/pack` | 1 | 6 | 0 | 0 | 2026-10-10 |
-| `generic/killcount` | 1 | 32 | 0 | 0 | 2026-09-12 |
-| `interfaces/bank` | 15 | 2,313 | 3 | 1 | 2026-08-19 |
+| `generic/generic-locs` | 32 | 2,964 | 1 | 1 | 2026-09-27 |
+| `generic/generic-npcs` | 8 | 1,481 | 0 | 2 | 2026-09-25 |
+| `generic/generic-npcs/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
+| `generic/killcount` | 1 | 36 | 0 | 0 | 2026-09-27 |
+| `interfaces/bank` | 15 | 2,316 | 3 | 1 | 2026-09-08 |
 | `interfaces/collection-log` | 4 | 543 | 0 | 0 | 2026-08-18 |
-| `interfaces/combat-tab` | 1 | 613 | 1 | 0 | 2026-06-21 |
+| `interfaces/combat-tab` | 1 | 616 | 1 | 0 | 2026-09-17 |
 | `interfaces/deposit-box` | 6 | 459 | 0 | 1 | 2026-08-08 |
-| `interfaces/emotes` | 2 | 634 | 2 | 0 | 2026-10-05 |
+| `interfaces/emotes` | 2 | 634 | 2 | 0 | 2026-09-09 |
 | `interfaces/equipment` | 3 | 682 | 0 | 0 | 2026-09-25 |
 | `interfaces/fade-overlay` | 1 | 20 | 0 | 0 | 2026-05-03 |
 | `interfaces/gameframe` | 6 | 498 | 0 | 1 | 2026-08-18 |
-| `interfaces/journal-tab` | 4 | 265 | 0 | 0 | 2026-08-18 |
+| `interfaces/journal-tab` | 4 | 272 | 0 | 0 | 2026-09-27 |
 | `interfaces/logout-tab` | 1 | 30 | 0 | 0 | 2026-05-03 |
 | `interfaces/menu` | 1 | 23 | 0 | 1 | 2026-05-03 |
-| `interfaces/omnishop` | 2 | 266 | 0 | 0 | 2026-09-23 |
-| `interfaces/prayer-tab` | 10 | 771 | 0 | 0 | 2026-09-12 |
-| `interfaces/settings` | 10 | 1,131 | 0 | 0 | 2026-09-28 |
+| `interfaces/music-tab` | 1 | 151 | 0 | 0 | 2026-09-06 |
+| `interfaces/omnishop` | 2 | 284 | 0 | 0 | 2026-09-27 |
+| `interfaces/prayer-tab` | 10 | 793 | 0 | 0 | 2026-09-15 |
+| `interfaces/settings` | 11 | 1,169 | 0 | 0 | 2026-09-12 |
 | `interfaces/skill-guides` | 1 | 114 | 0 | 0 | 2026-07-04 |
-| `interfaces/spellbook` | 1 | 45 | 0 | 0 | 2026-06-18 |
+| `interfaces/spellbook` | 1 | 45 | 0 | 0 | 2026-09-05 |
+| `interfaces/spellbook/pack` | 1 | 12 | 0 | 0 | 2026-09-05 |
 | `interfaces/worldmap` | 1 | 104 | 0 | 0 | 2026-07-04 |
-| `interfaces/xp-drops` | 1 | 44 | 0 | 0 | 2026-09-28 |
-| `minigames/gauntlet` | 35 | 3,514 | 2 | 0 | 2026-10-09 |
-| `other/commands` | 5 | 1,566 | 0 | 0 | 2026-10-06 |
-| `other/consumables` | 40 | 8,629 | 5 | 0 | 2026-10-09 |
+| `interfaces/xp-drops` | 1 | 41 | 0 | 0 | 2026-08-19 |
+| `other/castle-wars` | 16 | 4,966 | 1 | 0 | 2026-09-27 |
+| `other/castle-wars/pack` | 1 | 6 | 0 | 0 | 2026-09-27 |
+| `other/cheat-menu` | 3 | 1,133 | 1 | 0 | 2026-09-22 |
+| `other/combat-achievements` | 6 | 991 | 0 | 0 | 2026-09-27 |
+| `other/combat-achievements/pack` | 0 | 0 | 0 | 0 | 2026-09-27 |
+| `other/commands` | 7 | 2,034 | 0 | 0 | 2026-09-27 |
+| `other/consumables` | 38 | 8,742 | 0 | 0 | 2026-09-27 |
 | `other/dave/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
+| `other/defend-anims` | 2 | 188 | 1 | 0 | 2026-09-05 |
 | `other/discord` | 2 | 80 | 0 | 0 | 2026-07-01 |
+| `other/dizanas-quiver` | 3 | 270 | 0 | 0 | 2026-09-09 |
+| `other/emirs-arena` | 11 | 2,515 | 3 | 0 | 2026-09-27 |
+| `other/grand-exchange` | 7 | 1,847 | 1 | 0 | 2026-09-07 |
 | `other/ironman` | 5 | 352 | 0 | 0 | 2026-07-19 |
-| `other/login` | 1 | 183 | 0 | 0 | 2026-07-14 |
+| `other/level-up` | 5 | 639 | 1 | 0 | 2026-09-12 |
+| `other/login` | 1 | 193 | 0 | 0 | 2026-09-17 |
 | `other/mapclock` | 1 | 49 | 0 | 0 | 2026-08-18 |
-| `other/pets` | 100 | 7,838 | 0 | 0 | 2026-10-09 |
-| `other/pets/pack` | 7 | 1,292 | 0 | 0 | 2026-10-09 |
+| `other/npc-aggression` | 2 | 142 | 1 | 0 | 2026-09-23 |
+| `other/npc-combat-anims` | 2 | 155 | 1 | 0 | 2026-09-27 |
+| `other/pets` | 101 | 7,852 | 0 | 0 | 2026-09-26 |
+| `other/pets/pack` | 7 | 1,292 | 0 | 0 | 2026-09-25 |
+| `other/playtime` | 1 | 72 | 0 | 0 | 2026-09-05 |
+| `other/poison` | 1 | 183 | 0 | 0 | 2026-09-22 |
+| `other/pouches` | 8 | 1,225 | 2 | 0 | 2026-09-26 |
 | `other/sandstorm` | 2 | 364 | 0 | 0 | 2026-08-18 |
 | `other/spawn` | 1 | 333 | 0 | 0 | 2026-09-23 |
 | `other/spawn/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
-| `other/special-attacks` | 5 | 629 | 0 | 0 | 2026-10-05 |
-| `other/special-weapons` | 11 | 1,111 | 0 | 1 | 2026-09-14 |
+| `other/special-attacks` | 21 | 3,332 | 0 | 0 | 2026-09-22 |
+| `other/special-weapons` | 18 | 3,151 | 0 | 1 | 2026-09-17 |
+| `other/transform-rings` | 1 | 143 | 0 | 0 | 2026-09-05 |
 | `other/windmill` | 2 | 133 | 0 | 0 | 2026-09-23 |
 | `other/windmill/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
-| `quest` | 59 | 11,537 | 10 | 0 | 2026-10-09 |
-| `quest/pack` | 1 | 6 | 0 | 0 | 2026-10-07 |
-| `skills/cooking` | 12 | 1,380 | 0 | 0 | 2026-10-09 |
-| `skills/crafting` | 30 | 3,684 | 0 | 0 | 2026-09-23 |
-| `skills/crafting/pack` | 2 | 2,699 | 0 | 0 | 2026-09-22 |
+| `other/xp-rates` | 3 | 553 | 1 | 0 | 2026-09-17 |
+| `quest` | 602 | 135,036 | 18 | 0 | 2026-09-28 |
+| `quest/pack` | 1 | 6 | 0 | 0 | 2026-09-28 |
+| `skills/agility` | 13 | 3,577 | 3 | 0 | 2026-09-26 |
+| `skills/construction` | 16 | 2,342 | 1 | 0 | 2026-09-16 |
+| `skills/cooking` | 12 | 1,350 | 0 | 0 | 2026-09-22 |
+| `skills/crafting` | 30 | 3,688 | 0 | 0 | 2026-09-23 |
+| `skills/crafting/pack` | 2 | 2,725 | 0 | 0 | 2026-09-22 |
+| `skills/farming` | 15 | 2,280 | 2 | 0 | 2026-09-16 |
+| `skills/farming/pack` | 2 | 64 | 0 | 0 | 2026-09-16 |
 | `skills/firemaking` | 6 | 589 | 0 | 0 | 2026-08-08 |
 | `skills/fishing` | 13 | 1,402 | 0 | 0 | 2026-09-25 |
 | `skills/fishing/pack` | 3 | 206 | 0 | 0 | 2026-09-25 |
-| `skills/herblore` | 11 | 1,246 | 0 | 0 | 2026-10-05 |
+| `skills/fletching` | 5 | 2,395 | 0 | 0 | 2026-09-20 |
+| `skills/fletching/pack` | 1 | 6 | 0 | 0 | 2026-09-18 |
+| `skills/herblore` | 12 | 1,289 | 0 | 0 | 2026-09-18 |
+| `skills/hunter` | 28 | 6,751 | 0 | 0 | 2026-09-29 |
 | `skills/magic/alchemy` | 1 | 253 | 0 | 0 | 2026-06-21 |
-| `skills/magic/arceuus-spells` | 14 | 1,387 | 1 | 1 | 2026-10-04 |
-| `skills/magic/spell-attacks` | 8 | 1,505 | 3 | 0 | 2026-10-04 |
-| `skills/magic/spell-teleports` | 1 | 382 | 0 | 0 | 2026-10-04 |
-| `skills/magic/spellbook-altars` | 1 | 37 | 0 | 0 | 2026-09-29 |
-| `skills/mining` | 11 | 1,054 | 0 | 0 | 2026-10-09 |
-| `skills/prayer` | 29 | 2,601 | 0 | 0 | 2026-10-05 |
-| `skills/runecrafting` | 24 | 2,565 | 0 | 0 | 2026-09-22 |
-| `skills/slayer` | 45 | 5,502 | 0 | 0 | 2026-10-05 |
-| `skills/smithing` | 15 | 2,087 | 0 | 0 | 2026-10-05 |
-| `skills/thieving` | 2 | 406 | 0 | 0 | 2026-10-04 |
-| `skills/utils` | 2 | 316 | 0 | 0 | 2026-10-09 |
-| `skills/woodcutting` | 5 | 429 | 2 | 2 | 2026-10-09 |
+| `skills/magic/spell-attacks` | 11 | 2,018 | 3 | 0 | 2026-09-27 |
+| `skills/magic/spell-teleports` | 1 | 324 | 0 | 0 | 2026-09-05 |
+| `skills/magic/spellbook-altars` | 1 | 37 | 0 | 0 | — |
+| `skills/magic/telegrab` | 1 | 105 | 0 | 0 | 2026-09-12 |
+| `skills/mining` | 11 | 1,059 | 0 | 0 | 2026-09-25 |
+| `skills/prayer` | 30 | 2,633 | 0 | 0 | 2026-09-22 |
+| `skills/runecrafting` | 24 | 2,645 | 0 | 0 | 2026-09-22 |
+| `skills/slayer` | 45 | 5,519 | 0 | 0 | 2026-09-28 |
+| `skills/smithing` | 15 | 2,108 | 0 | 0 | 2026-09-26 |
+| `skills/thieving` | 11 | 2,352 | 0 | 0 | 2026-09-26 |
+| `skills/utils` | 2 | 316 | 0 | 0 | 2026-05-10 |
+| `skills/woodcutting` | 5 | 409 | 2 | 2 | 2026-07-22 |
+| `travel/ardougne-cloak` | 1 | 101 | 0 | 0 | 2026-09-23 |
 | `travel/canoe` | 6 | 1,122 | 1 | 2 | 2026-07-22 |
+| `travel/fairy-rings` | 3 | 440 | 1 | 0 | 2026-09-08 |
+| `travel/jewellery` | 2 | 504 | 1 | 0 | 2026-09-08 |
+| `travel/magic-carpet` | 3 | 688 | 0 | 0 | 2026-09-23 |
+| `travel/radas-blessing` | 1 | 160 | 0 | 0 | 2026-09-09 |
 
 ---
 

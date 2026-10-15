@@ -149,3 +149,18 @@ denominator = 121
 obj = "obj.trail_medium_emote_exp1"
 count = 1
 clue_scroll_box = true
+
+[[tertiary]]
+numerator = 1
+denominator = 286
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 430
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true

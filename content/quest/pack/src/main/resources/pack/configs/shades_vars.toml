@@ -1,0 +1,11 @@
+[[varp]]
+isServerOnly = true
+id = "varp.shades_coffin"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.shades_catacomb_doors"
+scope = "Temp"
+transmit = "Never"

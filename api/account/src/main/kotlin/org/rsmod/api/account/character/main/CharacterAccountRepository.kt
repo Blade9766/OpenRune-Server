@@ -18,6 +18,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 import org.rsmod.api.account.character.CharacterAccountLoginSegment
 import org.rsmod.api.account.character.CharacterMetadataList
+import org.rsmod.api.account.character.appearance.CharacterAppearancePersistence
 import org.rsmod.api.account.persistence.GamePersistenceRscmKeys
 import org.rsmod.api.db.DatabaseConnection
 import org.rsmod.api.db.util.getIntOrNull
@@ -275,7 +276,10 @@ constructor(
                 ServerCacheManager.getVarp(id)?.scope == VarpLifetime.Perm
             }
 
-        val persistentAttrs = player.attr.toPersistentMap()
+        // Appearance has no columns of its own; it rides along in `character_attrs`.
+        val persistentAttrs =
+            player.attr.toPersistentMap() +
+                CharacterAppearancePersistence.encode(player.appearance)
 
         val identitySql = OpenRuneSql.text("game/character/characters_update_identity.sql")
         connection.prepareStatement(identitySql).use {
@@ -432,6 +436,9 @@ constructor(
     /**
      * Returns true when another game world has a recent heartbeat for this character (duplicate
      * login guard). Same-world stale sessions are cleared at startup or overwritten on login.
+     *
+     * Presence is stored per world type, so this reads the cross-mode `progress_all` view: a
+     * character online in one mode must block a login into any other mode on another world.
      */
     public fun isActiveSessionOnOtherWorld(
         connection: DatabaseConnection,
@@ -439,20 +446,18 @@ constructor(
         thisWorldId: Int,
         staleAfterSeconds: Long,
     ): Boolean {
-        val sql = OpenRuneSql.text("game/character/characters_select_online_session.sql")
-        return connection.prepareStatement(sql).use { ps ->
+        return connection.prepareStatement(SELECT_ONLINE_SESSIONS_ALL_WORLD_TYPES).use { ps ->
             ps.setInt(1, characterId)
             ps.executeQuery().use { rs ->
-                if (!rs.next()) {
-                    return@use false
+                while (rs.next()) {
+                    val onlineWorld = rs.getIntOrNull("online_central_world_id") ?: continue
+                    val heartbeat = rs.getLocalDateTime("online_session_heartbeat") ?: continue
+                    val ageSeconds = ChronoUnit.SECONDS.between(heartbeat, LocalDateTime.now())
+                    if (ageSeconds <= staleAfterSeconds && onlineWorld != thisWorldId) {
+                        return@use true
+                    }
                 }
-                val onlineWorld = rs.getIntOrNull("online_central_world_id") ?: return@use false
-                val heartbeat = rs.getLocalDateTime("online_session_heartbeat") ?: return@use false
-                val ageSeconds = ChronoUnit.SECONDS.between(heartbeat, LocalDateTime.now())
-                if (ageSeconds > staleAfterSeconds) {
-                    return@use false
-                }
-                onlineWorld != thisWorldId
+                false
             }
         }
     }
@@ -509,5 +514,11 @@ constructor(
             }
             ps.executeBatch()
         }
+    }
+
+    private companion object {
+        private const val SELECT_ONLINE_SESSIONS_ALL_WORLD_TYPES =
+            "SELECT online_central_world_id, online_session_heartbeat " +
+                "FROM public.progress_all WHERE character_id = ?"
     }
 }

@@ -18,3 +18,18 @@ count = 1
 [[main.entries]]
 weight = 64
 nothing = true
+
+[[tertiary]]
+numerator = 1
+denominator = 256
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 385
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true

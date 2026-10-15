@@ -80,14 +80,13 @@ class MiningProductPrepareScript @Inject constructor(private val random: GameRan
         if (!hasInfernal) {
             return
         }
-        if (random.of(3) != 0) {
+        if (product.item !in ORE_TO_BAR || random.of(3) != 0) {
             return
         }
         val bar = ORE_TO_BAR[product.item] ?: return
         val smithXp = BAR_SMITH_XP[bar] ?: return
-        product.item = bar
-        product.count = 1
-        product.player.statAdvance("stat.smithing", smithXp)
+        product.player.statAdvance("stat.smithing", smithXp / 2)
+        product.consumed = true
     }
 
     private fun isSoftClayRock(data: MiningRocksRow): Boolean {

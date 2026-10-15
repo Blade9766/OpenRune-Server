@@ -8,16 +8,17 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ItemServerType
 import dev.openrune.types.NpcMode
+import dev.openrune.types.StatType
 import jakarta.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 import org.rsmod.annotations.InternalApi
 import org.rsmod.api.area.checker.AreaChecker
-import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
-import org.rsmod.api.death.prepareAdminDieTest
+import org.rsmod.api.death.adminDeathProtectionEnabled
 import org.rsmod.api.death.preparePvpDeath
+import org.rsmod.api.death.setAdminDeathProtection
 import org.rsmod.api.instances.BossInstanceRegistry
 import org.rsmod.api.instances.InstanceArea
 import org.rsmod.api.invtx.invAdd
@@ -25,6 +26,7 @@ import org.rsmod.api.invtx.invClear
 import org.rsmod.api.mechanics.toxins.impl.PlayerDisease
 import org.rsmod.api.mechanics.toxins.impl.PlayerPoison
 import org.rsmod.api.mechanics.toxins.impl.PlayerVenom
+import org.rsmod.api.player.cheat.adminBoltProc
 import org.rsmod.api.player.cheat.adminGodMode
 import org.rsmod.api.player.cheat.adminMaxHit
 import org.rsmod.api.player.debug.componentClickDebug
@@ -48,7 +50,6 @@ import org.rsmod.api.player.vars.resyncVar
 import org.rsmod.api.registry.region.RegionRegistry
 import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.npc.NpcRepository
-import org.rsmod.api.spells.autocast.MagicSpellbookManager
 import org.rsmod.api.utils.format.formatAmount
 import org.rsmod.api.utils.system.SafeServiceExit
 import org.rsmod.game.GameUpdate
@@ -56,6 +57,7 @@ import org.rsmod.game.cheat.Cheat
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.PlayerList
+import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocInfo
@@ -88,7 +90,6 @@ constructor(
     private val deathKillHooks: Set<NpcDeathKillHook>,
     private val instanceRegistry: BossInstanceRegistry,
     private val injector: Injector,
-    private val spellbooks: MagicSpellbookManager,
 ) : PluginScript() {
     private val logger = InlineLogger()
 
@@ -99,6 +100,9 @@ constructor(
     override fun ScriptContext.startup() {
         onCommand("master", "Max out all stats", ::master)
         onCommand("reset", "Reset all stats", ::reset)
+        onCommand("setlevel", "Set one stat's level (ex: ::setlevel agility 35)", ::setLevel) {
+            invalidArgs = "Use as ::setlevel stat level (ex: ::setlevel agility 35)"
+        }
         onCommand("mypos", "Get current coordinates", ::mypos)
         onCommand("tele", "Teleport to coordgrid", ::tele) {
             invalidArgs = "Usage: ::tele mx mz [level](e.g. ::tele 3200 3200 0)"
@@ -222,13 +226,11 @@ constructor(
                 "Usage: ::die pvm|pvp [true|false]  (second arg = in Wilderness, default false)"
         }
         onCommand(
-            "spellbook",
-            "Swap spellbook (standard|ancients|lunars|arceuus)",
-            ::spellbook,
-            aliases = listOf("book"),
-        ) {
-            invalidArgs = "Use as ::spellbook standard|ancients|lunars|arceuus"
-        }
+            "adminprotect",
+            "Toggle keeping your items on death: ::adminprotect [on|off]",
+            ::adminProtect,
+            aliases = listOf("keepitems"),
+        )
         onCommand("god", "Toggle god mode (invincibility)", ::god)
         onCommand(
             "componentdebug",
@@ -236,9 +238,16 @@ constructor(
             ::componentDebug,
         )
         onCommand("maxhit", "Toggle always max hit", ::maxhit)
-        onCommand("openbank", "Open the bank", ::bank)
-        onCommand("transmog", "Transmog player to NPC appearance (no args to reset)", ::transmog) {
-            invalidArgs = "Use as ::transmog npcNameOrId (ex: goblin or 126) or ::transmog to reset"
+        onCommand("boltproc", "Toggle enchanted bolt effects on every shot", ::boltProc)
+        onCommand("openbank", "Open the bank from anywhere", ::bank, aliases = listOf("bank"))
+        onCommand(
+            "npctransmog",
+            "Transmog player to NPC appearance (no args to reset)",
+            ::transmog,
+            aliases = listOf("transmognpc"),
+        ) {
+            invalidArgs =
+                "Use as ::npctransmog npcNameOrId (ex: goblin or 126) or ::npctransmog to reset"
         }
         onCommand("gamemode", "Set account gamemode (normal|ironman|uim|hcim)", ::gamemode) {
             invalidArgs = "Use as ::gamemode normal|ironman|uim|hcim"
@@ -292,36 +301,6 @@ constructor(
             player.mes("Gamemode set to $mode (varbit.ironman synced; persists on logout).")
         }
 
-    private fun spellbook(cheat: Cheat) =
-        with(cheat) {
-            val book =
-                when (args.getOrNull(0)?.lowercase()) {
-                    "standard",
-                    "normal",
-                    "modern",
-                    "0" -> Spellbook.Standard
-                    "ancients",
-                    "ancient",
-                    "1" -> Spellbook.Ancients
-                    "lunars",
-                    "lunar",
-                    "2" -> Spellbook.Lunars
-                    "arceuus",
-                    "necro",
-                    "3" -> Spellbook.Arceuus
-                    else -> {
-                        player.mes("Use as ::spellbook standard|ancients|lunars|arceuus")
-                        return
-                    }
-                }
-            when (spellbooks.setSpellbook(player, book)) {
-                is MagicSpellbookManager.ChangeResult.Changed ->
-                    player.mes("Spellbook set to $book.")
-                is MagicSpellbookManager.ChangeResult.Unchanged ->
-                    player.mes("You are already on the $book spellbook.")
-            }
-        }
-
     private fun god(cheat: Cheat) =
         with(cheat) {
             player.adminGodMode = !player.adminGodMode
@@ -332,6 +311,13 @@ constructor(
         with(cheat) {
             player.adminMaxHit = !player.adminMaxHit
             player.mes("Max hit ${if (player.adminMaxHit) "enabled" else "disabled"}.")
+        }
+
+    private fun boltProc(cheat: Cheat) =
+        with(cheat) {
+            player.adminBoltProc = !player.adminBoltProc
+            val state = if (player.adminBoltProc) "enabled" else "disabled"
+            player.mes("Bolt effects on every shot $state.")
         }
 
     private fun componentDebug(cheat: Cheat) =
@@ -383,6 +369,31 @@ constructor(
     private fun master(cheat: Cheat) = with(cheat) { player.setStatLevels(level = 99) }
 
     private fun reset(cheat: Cheat) = with(cheat) { player.setStatLevels(level = 1) }
+
+    private fun setLevel(cheat: Cheat) =
+        with(cheat) {
+            val stat = resolveStat(args[0])
+            if (stat == null) {
+                player.mes("There is no stat called '${args[0]}'.")
+                return
+            }
+            val level = args[1].toIntOrNull()
+            if (level == null || level !in stat.minLevel..stat.maxLevel) {
+                player.mes("The level must be between ${stat.minLevel} and ${stat.maxLevel}.")
+                return
+            }
+            val internal = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
+            player.setStatLevel(internal, level)
+            player.mes("Set ${stat.displayName.replaceFirstChar { it.uppercase() }} to level $level.")
+        }
+
+    private fun resolveStat(input: String): StatType? {
+        val query = input.lowercase().removePrefix("stat.")
+        val wanted = STAT_ALIASES[query] ?: query
+        val stats = ServerCacheManager.getStats().values
+        val named = stats.associateBy { RSCM.getReverseMapping(RSCMType.STAT, it.id).removePrefix("stat.") }
+        return named[wanted] ?: named.entries.singleOrNull { it.key.startsWith(wanted) }?.value
+    }
 
     private fun mypos(cheat: Cheat) =
         with(cheat) {
@@ -514,32 +525,44 @@ constructor(
 
     private fun anim(cheat: Cheat) =
         with(cheat) {
-            val typeId = RSCM.getRSCM("seq.${args.asTypeName()}")
-            if (typeId == -1) {
+            val typeId = resolveTypeId("seq", args.asTypeName())
+            if (typeId == null) {
                 player.mes("There is no seq mapped to: '${args.asTypeName()}'")
                 return
             }
             val type = ServerCacheManager.getAnim(typeId)
             if (type == null) {
-                player.mes("That seq does not exist: $typeId")
+                player.mes("That seq does not exist: ${args.asTypeName()}")
                 return
             }
-            player.anim("seq.${args.asTypeName()}")
-            player.mes("Anim: '${args.asTypeName()}' (priority=${type.priority})")
+            // `anim` takes a name, so an id argument is mapped back to one first.
+            val name = args.asTypeName()
+            val seqName =
+                if (name.toIntOrNull() != null) {
+                    runCatching { RSCM.getReverseMapping(RSCMType.SEQ, typeId) }.getOrNull()
+                } else {
+                    "seq.$name"
+                }
+            if (seqName == null) {
+                player.mes("That seq has no name to play it by: $typeId")
+                return
+            }
+            player.anim(seqName)
+            player.mes("Anim: '$name' (priority=${type.priority})")
             logger.debug { "Anim: $type" }
         }
 
     private fun spotanim(cheat: Cheat) =
         with(cheat) {
             val (typeName, heightArg) = args.asTypeNameAndNumber(defaultNumber = 0)
-            val typeId = "spotanim.${typeName}".asRSCM()
-            if (typeId == -1) {
+            val typeId = resolveTypeId("spotanim", typeName)
+            if (typeId == null) {
                 player.mes("There is no spotanim mapped to: '${typeName}'")
                 return
             }
 
             val height = min(heightArg.toInt(), Short.MAX_VALUE.toInt())
-            player.spotanim("spotanim.${typeName}", delay = 0, height = height, slot = 0)
+            PathingEntityCommon.spotanim(player, typeId, delay = 0, height = height, slot = 0)
             player.mes("Spotanim: '${typeName}' (height=$height)")
             logger.debug { "Spotanim: $typeName" }
         }
@@ -558,8 +581,8 @@ constructor(
                 return
             }
             val typeName = arg.removePrefix("synth.")
-            val typeId = "synth.$typeName".asRSCM()
-            if (typeId == -1) {
+            val typeId = resolveTypeId("synth", typeName)
+            if (typeId == null) {
                 player.mes("There is no synth mapped to: '$typeName'")
                 return
             }
@@ -569,11 +592,11 @@ constructor(
 
     private fun locAdd(cheat: Cheat) =
         with(cheat) {
-            val typeId = "loc.${args[1]}".asRSCM()
+            val typeId = resolveTypeId("loc", args[1])
 
-            val type = ServerCacheManager.getObject(typeId)!!
+            val type = typeId?.let(ServerCacheManager::getObject)
             if (type == null) {
-                player.mes("That loc does not exist: $typeId")
+                player.mes("That loc does not exist: ${args[1]}")
                 return
             }
             val duration = args[0].toInt()
@@ -609,11 +632,11 @@ constructor(
 
     private fun npcAdd(cheat: Cheat) =
         with(cheat) {
-            val typeId = "npc.${args[1]}".asRSCM()
+            val typeId = resolveTypeId("npc", args[1])
 
-            val type = ServerCacheManager.getNpc(typeId)
+            val type = typeId?.let(ServerCacheManager::getNpc)
             if (type == null) {
-                player.mes("That npc does not exist: $typeId")
+                player.mes("That npc does not exist: ${args[1]}")
                 return
             }
             val duration = args[0].toInt()
@@ -650,8 +673,8 @@ constructor(
                 )
                 return
             }
-            val typeId = "npc.${args[0]}".asRSCM()
-            val type = ServerCacheManager.getNpc(typeId)
+            val typeId = resolveTypeId("npc", args[0])
+            val type = typeId?.let(ServerCacheManager::getNpc)
             if (type == null) {
                 player.mes("That npc does not exist: npc.${args[0]}")
                 return
@@ -691,11 +714,11 @@ constructor(
 
     private fun setVarp(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varp.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varp", args[0])
 
-            val type = ServerCacheManager.getVarp(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarp)
             if (type == null) {
-                player.mes("That varp does not exist: $typeId")
+                player.mes("That varp does not exist: ${args[0]}")
                 return
             }
             val value = args[1].toInt()
@@ -706,11 +729,11 @@ constructor(
 
     private fun setVarBit(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varbit.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varbit", args[0])
 
-            val type = ServerCacheManager.getVarbit(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarbit)
             if (type == null) {
-                player.mes("That varbit does not exist: $typeId")
+                player.mes("That varbit does not exist: ${args[0]}")
                 return
             }
             val value = args[1].toInt()
@@ -720,11 +743,11 @@ constructor(
 
     private fun getVarp(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varp.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varp", args[0])
 
-            val type = ServerCacheManager.getVarp(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarp)
             if (type == null) {
-                player.mes("That varp does not exist: $typeId")
+                player.mes("That varp does not exist: ${args[0]}")
                 return
             }
             player.mes("Varp '${args[0]}' (id=$typeId) = ${player.vars[type]}")
@@ -732,32 +755,35 @@ constructor(
 
     private fun getVarBit(cheat: Cheat) =
         with(cheat) {
-            val typeId = "varbit.${args[0]}".asRSCM()
+            val typeId = resolveTypeId("varbit", args[0])
 
-            val type = ServerCacheManager.getVarbit(typeId)
+            val type = typeId?.let(ServerCacheManager::getVarbit)
             if (type == null) {
-                player.mes("That varbit does not exist: $typeId")
+                player.mes("That varbit does not exist: ${args[0]}")
                 return
             }
             player.mes("Varbit '${args[0]}' (id=$typeId) = ${player.vars[type]}")
         }
 
-    @OptIn(InternalApi::class)
     private fun Player.setStatLevels(level: Int) {
-        val xp = PlayerSkillXPTable.getXPFromLevel(level)
         for (stat in ServerCacheManager.getStats().values) {
-            val statInternal = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
-
-            val baseLevel = statMap.getBaseLevel(statInternal)
-            val targetLevel = max(stat.minLevel, level)
-            if (baseLevel > targetLevel) {
-                statRevert(statInternal, targetLevel, xp)
-                continue
-            }
-            val xpDelta = xp - statMap.getXP(statInternal)
-            statMap.setCurrentLevel(statInternal, targetLevel.toByte())
-            statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0)
+            setStatLevel(RSCM.getReverseMapping(RSCMType.STAT, stat.id), level)
         }
+    }
+
+    @OptIn(InternalApi::class)
+    private fun Player.setStatLevel(statInternal: String, level: Int) {
+        val stat = ServerCacheManager.getStats(statInternal.asRSCM(RSCMType.STAT)) ?: return
+        val targetLevel = max(stat.minLevel, level)
+        val xp = PlayerSkillXPTable.getXPFromLevel(targetLevel)
+        val baseLevel = statMap.getBaseLevel(statInternal)
+        if (baseLevel > targetLevel) {
+            statRevert(statInternal, targetLevel, xp)
+            return
+        }
+        val xpDelta = xp - statMap.getXP(statInternal)
+        statMap.setCurrentLevel(statInternal, targetLevel.toByte())
+        statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0)
     }
 
     // There is, by design, no helper function to decrease stat xp, as xp reduction is not a
@@ -925,6 +951,26 @@ constructor(
         Load,
         Reload,
     }
+    private fun adminProtect(cheat: Cheat) =
+        with(cheat) {
+            val enabled =
+                when (args.getOrNull(0)?.lowercase()) {
+                    null -> !player.adminDeathProtectionEnabled()
+                    "on", "true", "1" -> true
+                    "off", "false", "0" -> false
+                    else -> null
+                }
+            if (enabled == null) {
+                player.mes("Usage: ::adminprotect [on|off] (no argument toggles)")
+            } else {
+                player.setAdminDeathProtection(enabled)
+                if (enabled) {
+                    player.mes("Admin death protection ON: you keep everything when you die.")
+                } else {
+                    player.mes("Admin death protection OFF: you drop items like a normal player.")
+                }
+            }
+        }
 
     private fun dieTest(cheat: Cheat) =
         with(cheat) {
@@ -934,7 +980,6 @@ constructor(
                 "pvm" -> {
                     if (inWildy) player.insideWilderness = true
                     player.mes("Simulating PvM death${if (inWildy) " in Wilderness" else ""}.")
-                    player.prepareAdminDieTest()
                     player.queueDeath()
                 }
                 "pvp" -> {
@@ -943,7 +988,6 @@ constructor(
                     player.mes(
                         "Simulating PvP death${if (inWildy) " in Wilderness" else ""}. (self as killer)"
                     )
-                    player.prepareAdminDieTest()
                     player.queueDeath()
                 }
                 else -> player.mes("Usage: ::die pvm|pvp [true|false]  (true = in Wilderness)")
@@ -1034,14 +1078,26 @@ constructor(
                 } else {
                     "interface.${args.asTypeName()}"
                 }
-            val typeId = interfName.asRSCM()
-            if (typeId == -1 || ServerCacheManager.getInterface(typeId) == null) {
+            val typeId = resolveTypeId("interface", interfName)
+            if (typeId == null || ServerCacheManager.getInterface(typeId) == null) {
                 player.mes("That interface does not exist: '$interfName'")
                 return
             }
             protectedAccess.launch(player) { ifOpenMain(interfName) }
             player.mes("Opened interface: '$interfName' (id=$typeId)")
         }
+
+    /**
+     * The id [input] refers to, or null when nothing matches.
+     *
+     * A plain number is taken as the id itself, which is what every `debugNameOrId` argument
+     * promises but none of these commands used to honour. A name goes to the gameval table through
+     * a `runCatching`, because a missing key raises there rather than reporting a miss - without it
+     * a typo reaches the player as "Uncaught exception" instead of a readable message.
+     */
+    private fun resolveTypeId(prefix: String, input: String): Int? =
+        input.toIntOrNull()
+            ?: runCatching { "$prefix.${input.removePrefix("$prefix.")}".asRSCM() }.getOrNull()
 
     private fun resolveArgTypeId(arg: String, names: Map<String, Int>): Int? {
         val argAsInt = arg.toIntOrNull()
@@ -1071,7 +1127,8 @@ constructor(
         if (id != null) {
             return ServerCacheManager.getItem(id)
         }
-        return ServerCacheManager.getItem("obj.$input".asRSCM(RSCMType.OBJ))
+        val typeId = resolveTypeId("obj", input) ?: return null
+        return ServerCacheManager.getItem(typeId)
     }
 
     private fun List<String>.asTypeName(): String = joinToString("_")
@@ -1092,3 +1149,28 @@ constructor(
         return if (bestMatchScore >= 0.5) bestMatchName else null
     }
 }
+
+private val STAT_ALIASES =
+    mapOf(
+        "atk" to "attack",
+        "att" to "attack",
+        "def" to "defence",
+        "defense" to "defence",
+        "str" to "strength",
+        "hp" to "hitpoints",
+        "range" to "ranged",
+        "pray" to "prayer",
+        "mage" to "magic",
+        "wc" to "woodcutting",
+        "fm" to "firemaking",
+        "fletch" to "fletching",
+        "herb" to "herblore",
+        "agil" to "agility",
+        "thief" to "thieving",
+        "farm" to "farming",
+        "rc" to "runecrafting",
+        "runecraft" to "runecrafting",
+        "hunt" to "hunter",
+        "con" to "construction",
+        "cons" to "construction",
+    )

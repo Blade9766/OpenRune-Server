@@ -15,7 +15,6 @@ import org.rsmod.plugin.scripts.ScriptContext
 
 class PortSarimDocksScript @Inject constructor(private val shops: Shops) : PluginScript() {
     override fun ScriptContext.startup() {
-        onOpNpc1("npc.klarense") { startDialogue(it.npc) { klarense() } }
         onOpNpc1("npc.port_task_master_port_sarim") { startDialogue(it.npc) { portMaster() } }
         onOpNpc1("npc.vc_face") { startDialogue(it.npc) { theFace() } }
 
@@ -37,24 +36,6 @@ class PortSarimDocksScript @Inject constructor(private val shops: Shops) : Plugi
         for (crate in CRATES) {
             onOpLoc1(crate) { mes("You search the crate, but find nothing of note.") }
         }
-    }
-
-    private suspend fun Dialogue.klarense() {
-        chatPlayer(quiz, "Hey, that's my ship!")
-        chatNpc(
-            neutral,
-            "No, it's not. It may, to the untrained eye, at first appear to be the Lady Lumbridge, " +
-                "but it is definitely not. It's my new ship. It just happens to look slightly " +
-                "similar, is all.",
-        )
-        chatPlayer(
-            angry,
-            "It has Lady Lumbridge painted out and 'Klarense's Cruiser' painted over it!",
-        )
-        chatNpc(neutral, "Nope, you're mistaken. It's my new boat.")
-        chatPlayer(quiz, "Well will you at least take me to Crandor in it?")
-        chatNpc(neutral, "Nope. I don't take passengers on my ship.")
-        chatPlayer(angry, "Argh!")
     }
 
     private suspend fun Dialogue.portMaster() {

@@ -5,7 +5,13 @@ import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.shops.Shops
-import org.rsmod.content.quest.manager.QuestRequirements
+import org.rsmod.content.quest.area.burthorpe.heroesquest.HeroesQuest
+import org.rsmod.content.quest.area.burthorpe.heroesquest.lavaEelAdvice
+import org.rsmod.content.quest.area.burthorpe.heroesquest.lavaEelOption
+import org.rsmod.content.quest.area.karamja.piratestreasure.PiratesTreasureQuest
+import org.rsmod.content.quest.area.karamja.piratestreasure.askWydinForJob
+import org.rsmod.content.quest.area.karamja.piratestreasure.wydinEmployee
+import org.rsmod.content.quest.area.karamja.piratestreasure.wydinJobOption
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -22,12 +28,16 @@ private enum class PortSarimShop(
     Fishing("npc.gerrant", "Gerrant's Fishy Business.", "inv.fishingshop", 100.0, 70.0, 1.0),
     Food("npc.wydin", "Food Store", "inv.wydinstore", 100.0, 70.0, 1.0),
     Jewellery("npc.grum", "Grum's Gold Exchange.", "inv.goldshop", 100.0, 70.0, 2.0),
-    Magic("npc.betty", "Betty's Magic Emporium.", "inv.magicshop", 100.0, 60.0, 0.1),
     Battleaxes("npc.brian", "Brian's Battleaxe Bazaar.", "inv.battleaxeshop", 100.0, 55.0, 1.0),
 }
 
-class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
-    PluginScript() {
+class PortSarimShopkeepersScript
+@Inject
+constructor(
+    private val shops: Shops,
+    private val heroes: HeroesQuest,
+    private val piratesTreasure: PiratesTreasureQuest,
+) : PluginScript() {
     override fun ScriptContext.startup() {
         for (shop in PortSarimShop.entries - PortSarimShop.Jewellery) {
             onOpNpc3(shop.npc) { player.openShop(shop) }
@@ -36,7 +46,6 @@ class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
         onTalkAcross(PortSarimShop.Jewellery.npc) { startDialogue(it) { grum() } }
         onOpNpc1(PortSarimShop.Fishing.npc) { startDialogue(it.npc) { gerrant() } }
         onOpNpc1(PortSarimShop.Food.npc) { startDialogue(it.npc) { wydin() } }
-        onOpNpc1(PortSarimShop.Magic.npc) { startDialogue(it.npc) { betty() } }
         onOpNpc1(PortSarimShop.Battleaxes.npc) { startDialogue(it.npc) { brian() } }
     }
 
@@ -46,22 +55,42 @@ class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
             "Welcome! You can buy fishing equipment at my store. We'll also buy anything you " +
                 "catch off you.",
         )
-        if (choice2("Let's see what you've got then.", true, "Sorry, I'm not interested.", false)) {
-            chatPlayer(neutral, "Let's see what you've got then.")
-            player.openShop(PortSarimShop.Fishing)
-        } else {
-            chatPlayer(neutral, "Sorry, I'm not interested.")
+        val lavaEel = lavaEelOption(heroes)
+        val topic =
+            if (lavaEel != null) {
+                choice3("Let's see what you've got then.", 1, "Sorry, I'm not interested.", 2, lavaEel, 3)
+            } else {
+                choice2("Let's see what you've got then.", 1, "Sorry, I'm not interested.", 2)
+            }
+        when (topic) {
+            1 -> {
+                chatPlayer(neutral, "Let's see what you've got then.")
+                player.openShop(PortSarimShop.Fishing)
+            }
+            2 -> chatPlayer(neutral, "Sorry, I'm not interested.")
+            else -> lavaEelAdvice(heroes)
         }
     }
 
     private suspend fun Dialogue.wydin() {
+        if (wydinEmployee { player.openShop(PortSarimShop.Food) }) {
+            return
+        }
         chatNpc(happy, "Welcome to my food store! Would you like to buy anything?")
-        when (choice3("Yes please.", 1, "No, thank you.", 2, "What can you recommend?", 3)) {
+        val job = wydinJobOption(piratesTreasure, player)
+        val topic =
+            if (job != null) {
+                choice4("Yes please.", 1, "No, thank you.", 2, "What can you recommend?", 3, job, 4)
+            } else {
+                choice3("Yes please.", 1, "No, thank you.", 2, "What can you recommend?", 3)
+            }
+        when (topic) {
             1 -> {
                 chatPlayer(happy, "Yes please.")
                 player.openShop(PortSarimShop.Food)
             }
             2 -> chatPlayer(neutral, "No, thank you.")
+            4 -> askWydinForJob()
             else -> {
                 chatPlayer(quiz, "What can you recommend?")
                 chatNpc(
@@ -99,38 +128,6 @@ class PortSarimShopkeepersScript @Inject constructor(private val shops: Shops) :
         }
         chatPlayer(sad, "No, I'm not that rich.")
         chatNpc(angry, "Get out then! We don't want any riff-raff in here.")
-    }
-
-    private suspend fun Dialogue.betty() {
-        chatNpc(quiz, "Hello again. What can I do for you?")
-        val sellsDye = QuestRequirements.hasCompleted(player, HAND_IN_THE_SAND)
-        val topic =
-            if (sellsDye) {
-                choice3(
-                    "Can I see your wares?",
-                    BettyTopic.Wares,
-                    "Could I buy some more pink dye?",
-                    BettyTopic.Dye,
-                    "I'm good, thanks.",
-                    BettyTopic.Leave,
-                )
-            } else {
-                choice2(
-                    "Can I see your wares?",
-                    BettyTopic.Wares,
-                    "I'm good, thanks.",
-                    BettyTopic.Leave,
-                )
-            }
-        when (topic) {
-            BettyTopic.Wares -> {
-                chatPlayer(quiz, "Can I see your wares?")
-                chatNpc(happy, "Of course.")
-                player.openShop(PortSarimShop.Magic)
-            }
-            BettyTopic.Dye -> buyPinkDye()
-            BettyTopic.Leave -> chatPlayer(neutral, "I'm good, thanks.")
-        }
     }
 
     private suspend fun Dialogue.buyPinkDye() {

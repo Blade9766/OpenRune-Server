@@ -4,11 +4,20 @@ import dev.openrune.util.Wearpos
 import org.rsmod.api.config.constants
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.script.onOpNpc1
+import org.rsmod.content.quest.area.lumbridge.dorgeshuun.ZanikTour
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest.Witness
 import org.rsmod.content.quest.manager.Quest
+import org.rsmod.content.quest.manager.menu
+import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.isType
 import org.rsmod.plugin.scripts.ScriptContext
 
-internal class TheRestlessGhostDialogue(private val quest: Quest) {
+internal class TheRestlessGhostDialogue(
+    private val quest: Quest,
+    private val lostTribe: LostTribeQuest? = null,
+    private val zanikTour: ZanikTour? = null,
+) {
 
     fun ScriptContext.register() {
         onOpNpc1(Aereck) { startDialogue(it.npc) { aereck() } }
@@ -17,6 +26,19 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
     }
 
     private suspend fun Dialogue.aereck() {
+        val zanikTour = zanikTour
+        if (zanikTour != null && zanikTour.isTouring(player)) {
+            with(zanikTour) { aereckVisit() }
+            return
+        }
+
+        val lostTribe = lostTribe
+        if (!quest.isQuestNotStarted(player) && lostTribe != null) {
+            if (with(lostTribe) { offerCellarQuestion(Witness.Aereck) }) {
+                return
+            }
+        }
+
         if (quest.isQuestCompleted(player)) {
             chatNpc(
                 happy,
@@ -34,21 +56,20 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
         }
 
         chatNpc(happy, "Welcome to the church of holy Saradomin.")
-        when (
-            choice3(
-                "Who's Saradomin?",
-                1,
-                "Nice place you've got here.",
-                2,
-                "I'm looking for a quest!",
-                3,
-            )
-        ) {
+        val cellarQuestion = lostTribe?.cellarQuestion(player, Witness.Aereck)
+        val options = buildList {
+            add("Who's Saradomin?" to 1)
+            add("Nice place you've got here." to 2)
+            add("I'm looking for a quest!" to 3)
+            cellarQuestion?.let { add(it to 4) }
+        }
+        when (menu(options)) {
             1 -> whoIsSaradomin()
             2 -> {
                 chatPlayer(neutral, "Nice place you've got here.")
                 chatNpc(happy, "It is, isn't it? It was built over 230 years ago.")
             }
+            4 -> with(checkNotNull(lostTribe)) { askAboutCellar(Witness.Aereck) }
             else -> offerQuest()
         }
     }
@@ -336,14 +357,13 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
         chatPlayer(happy, "I've lost the Amulet of Ghostspeak.")
         mesbox("Father Urhney sighs.")
 
-        val carried = access.inv.contains(Amulet)
-        val worn = player.worn[Wearpos.Front.slot]?.isType(Amulet) == true
-        if (carried || worn) {
+        val carried = Amulets.any { access.inv.contains(it) }
+        if (carried || player.wearingGhostspeak()) {
             chatNpc(angry, "What are you talking about? I can see you've got it with you!")
             return
         }
 
-        if (access.bank.contains(Amulet)) {
+        if (Amulets.any { access.bank.contains(it) }) {
             chatNpc(
                 angry,
                 "You come here wasting my time... Has it even occurred to you that you've got it " +
@@ -382,12 +402,12 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
     private suspend fun Dialogue.ghost() {
         chatPlayer(neutral, "Hello ghost, how are you?")
 
-        val wearingAmulet = player.worn[Wearpos.Front.slot]?.isType(Amulet) == true
-        if (!wearingAmulet) {
+        if (!player.wearingGhostspeak()) {
             ghostNonsense()
             return
         }
 
+        val stage = quest.getQuestStage(player)
         when {
             quest.isQuestCompleted(player) -> {
                 chatNpcSpecific(
@@ -405,9 +425,11 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
                 )
             }
 
-            quest.getQuestStage(player) >= TheRestlessGhostStage.GhostSpoken -> ghostSkullProgress()
+            stage >= TheRestlessGhostStage.GhostSpoken -> ghostSkullProgress()
 
-            else -> ghostFirstMeeting()
+            stage >= TheRestlessGhostStage.Started -> ghostFirstMeeting()
+
+            else -> ghostNonsense()
         }
     }
 
@@ -659,6 +681,11 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
         chatPlayer(neutral, "Bye.")
     }
 
+    private fun Player.wearingGhostspeak(): Boolean {
+        val front = worn[Wearpos.Front.slot]
+        return Amulets.any { front.isType(it) }
+    }
+
     private enum class UrhneyOption(val label: String) {
         Friendly("Well, that's friendly."),
         SentByAereck("Father Aereck sent me to talk to you."),
@@ -673,6 +700,7 @@ internal class TheRestlessGhostDialogue(private val quest: Quest) {
         const val GhostTitle = "Restless ghost"
 
         const val Amulet = "obj.amulet_of_ghostspeak"
+        val Amulets = listOf(Amulet, "obj.amulet_of_ghostspeak_enchanted")
         const val GhostSkull = "obj.ghostskull"
 
         const val RecommendedCombatLevel = 10

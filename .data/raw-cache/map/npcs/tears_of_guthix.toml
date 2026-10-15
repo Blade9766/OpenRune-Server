@@ -42,3 +42,19 @@ coords = "2_50_148_26_45"
 npc = "npc.wgs_armadyl_guardian_male_multi"
 coords = "2_50_148_26_46"
 
+[[spawn]]
+npc = "npc.tog_light_creature"
+coords = "2_50_148_21_54"
+
+[[spawn]]
+npc = "npc.tog_light_creature"
+coords = "2_50_148_33_54"
+
+[[spawn]]
+npc = "npc.tog_light_creature"
+coords = "2_50_148_37_50"
+
+[[spawn]]
+npc = "npc.tog_light_creature"
+coords = "2_50_148_24_34"
+

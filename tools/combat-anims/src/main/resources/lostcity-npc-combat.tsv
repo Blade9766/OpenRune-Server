@@ -1,0 +1,664 @@
+# key	name	osrs_ids	models	attack_anim	defend_anim	death_anim	attack_sound	defend_sound	death_sound
+0_45_48_seabird1	Gull		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+0_45_48_seabird2	Cormorant		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+0_45_48_seabird3	Albatross		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+aggressive_black_knight	Black Knight	517	218,306,164,179,268,185,518	human_sword_slash	human_sword_def		2H_slash	steel	
+al_kharid_warrior	Al-Kharid warrior	3292	215,490,251,292,151,176,254,181,541,191	human_sword_slash	human_sword_def		hacksword_slash	brassclash2	
+alomone_hazeel_cultist	Alomone	12093	208,251,292,162,176,256,286	human_sword_slash	human_sword_def		stabsword_slash		
+aluft_gianne	Aluft Gianne		2909,2889,2917			midget_death			gnome_death
+ardougne_archer	Archer	3301	220,185,253,296,151,179,262,563	human_bow					
+ardougne_guard	Guard	5418	225,301,162,179,274,185,502	human_blunt_pound	human_blunt_block		warhammer_crush	blade2_mail	
+ardougne_paladin2	Paladin	1144	225,185,313,164,179,268,323,241,518,523,3330	human_sword_slash	human_sword_def		hacksword_slash	blade3	
+ardougnian_female1	Woman	3299	378,361,462,341,353,428,483,445					female_hit	female_death
+arena_bouncer	Bouncer	1224	2997	hell_attack	hell_block	hell_death	growl6	growl5	
+arena_guard1	Khazard Guard	1208	230,252,306,152,176,254,185,550	human_axe_hack	human_axe_def		baxe_slash	blade3_mail	
+arena_guard2	Khazard Guard		230,253,306,152,176,254,185,550	human_axe_hack	human_axe_def		baxe_slash	blade3_mail	
+arena_guard3	Khazard Guard		219,246,306,152,176,254,185,550	human_axe_hack	human_axe_def		baxe_slash	blade3_mail	
+arena_guard4	Khazard Guard	1211	219,253,306,152,176,254,185,550	human_axe_hack	human_axe_def		baxe_slash	blade3_mail	
+arena_leadguard	Khazard Guard		230,252,306,152,176,254,185,550	human_axe_hack	human_axe_def		baxe_slash	blade3_mail	
+arena_ogre	Khazard Ogre	1225	2880,2876	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+arena_scorpion	Khazard Scorpion	1226	2967	scorpion_attack	scorpion_parry	scorpion_death	insect_attack	insect_hit	insect_death
+babybluedragon	Baby blue dragon	241	2998	bdrag_attack	bdrag_block	bdrag_death	babydragon_attack	babydragon_hit	babydragon_death
+babydragon	Baby dragon		2998	bdrag_attack	bdrag_block	bdrag_death	babydragon_attack	babydragon_hit	babydragon_death
+ballboy	Boy		2897,2909,2917			midget_death			
+barbarian	Barbarian	3256	219,252,311,173,176,274,242,185,550	human_axe_hack	human_axe_def		baxe_slash		
+barbarian_guard	Barbarian guard	1028	219,252,301,159,176,274,242,185,550	human_axe_hack	human_axe_block		baxe_slash	swordclash2	
+barbarian_woman	Barbarian woman	3262	390,469,332,353,443,361,376,540,414	human_spear_spike	human_spear_block		staff_stab	female_hit	female_death
+bat	Giant bat	2834	2941	bat_attack	bat_parry	bat_death	bat_attack	bat_hit	bat_death
+bedabin_fighter	Bedabin Nomad Fighter		230,247,191,292,170,176,265,185,490	human_sword_slash	human_sword_def		hacksword_slash		
+bedabin_guard	Bedabin Nomad Guard	4639	230,248,188,292,170,176,265,185,490	human_sword_slash	human_sword_def		hacksword_slash		
+billy_rehnison	Billy Rehnison		2897,2909,2918			midget_death			
+black_demon	Black Demon	2048	2942	demon_attack	demon_block	demon_death	demon_attack	demon_hit	demon_death
+black_dragon	Black dragon	252	2853,2854	dragon_attack	dragon_block	dragon_death	dragon_attack	dragon_hit	dragon_death
+black_heather	Black Heather	301	401,456,348,353,435,490,481	human_sword_slash	human_sword_def		hacksword_slash		
+black_knight	Black Knight	516	218,306,164,179,268,185,518	human_sword_slash	human_sword_def		hacksword_slash	steel	
+black_knight_titan	Black Knight Titan	4067	2864,2872	giant_attack	giant_block	giant_death		blade5	
+black_unicorn	Black unicorn	2849	2933	unicorn_attack	unicorn_block	unicorn_death	cow_attack	horse_hit	
+black_unicorn_foal	Black unicorn Foal		2933	unicorn_attack	unicorn_block	unicorn_death	cow_attack	horse_hit	
+blessed_giantrat	Blessed Giant rat	4534	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+blessed_spider	Blessed spider	4533	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+blue_dragon	Blue dragon	265	2853,2854	dragon_attack	dragon_block	dragon_death	dragon_attack	dragon_hit	dragon_death
+blurberry	Blurberry		2909,2900,2917			midget_death			gnome_death
+blurberrybarmen	Barman		2909,2900,2915			midget_death			gnome_death
+boot_the_dwarf	Boot	4985	2971,2981,2979,2983,2985,2990			dwarf_death			
+brawling_bandit	Bandit	1026	215,248,292,151,176,254,185,243,323,518	human_sword_stab	human_sword_def		stabsword_stab		
+browclothedgnome	Gnome	6095	2909,2890,2915	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+brownbear	Bear	2838	2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+brownbear_cub_1	Bear Cub		2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+brownbear_cub_2	Bear Cub		2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+bugs	Bugs	1472	2878,3441			ogre_death			giant_death
+camel	Camel		2939			camel_death			cow_death
+canafis_man1	Man		217,246,292,151,176,254,181				half_werewolf_attack	half_werewolf_hit	half_werewolf_death
+canafis_man2	Man		217,246,292,170,176,267,181				half_werewolf_attack	half_werewolf_hit	half_werewolf_death
+canafis_man3	Man		235,248,292,151,176,254,181				half_werewolf_attack	half_werewolf_hit	half_werewolf_death
+canafis_werewolf_man1	Wolfman		3557	werewolf_attack	werewolf_block	werewolf_death	wolf_attack	wolf_hit	wolf_death
+canafis_werewolf_man2	Wolfman		3557	werewolf_attack	werewolf_block	werewolf_death	wolf_attack	wolf_hit	wolf_death
+canafis_werewolf_man3	Wolfman		3557	werewolf_attack	werewolf_block	werewolf_death	wolf_attack	wolf_hit	wolf_death
+canafis_werewolf_woman1	Wolfwoman		3557	werewolf_attack	werewolf_block	werewolf_death	wolf_attack	wolf_hit	wolf_death
+canafis_werewolf_woman2	Wolfwoman		3557	werewolf_attack	werewolf_block	werewolf_death	wolf_attack	wolf_hit	wolf_death
+canafis_werewolf_woman3	Wolfwoman		3557	werewolf_attack	werewolf_block	werewolf_death	wolf_attack	wolf_hit	wolf_death
+canafis_woman1	Woman		390,456,332,353,421,358				half_werewolf_attack	half_werewolf_hit	half_werewolf_death
+canafis_woman2	Woman		378,471,332,353,431,358				half_werewolf_attack	half_werewolf_hit	half_werewolf_death
+canafis_woman3	Woman		393,456,351,356,435,414				half_werewolf_attack	half_werewolf_hit	half_werewolf_death
+cavewitchcat	Witches cat		3010,3006			cat_death			
+chantergnome	Local Gnome	4979	2909,2890,2917			midget_death			gnome_death
+chaos_druid_warrior	Chaos druid warrior	532	206,181,246,294,170,176,260,502	human_blunt_pound	human_blunt_block		warhammer_crush	steel_mail	
+chicken	Chicken	1173	2849	chicken_attack	chicken_block	chicken_death	chicken_attack	chicken_hit	chicken_death
+chicken_brown	Chicken	1174	2849	chicken_attack	chicken_block	chicken_death	chicken_attack	chicken_hit	chicken_death
+chompy_bird	Chompy bird	1475	3445	chompy_attack	pog_terror_bird_defend	pog_terror_bird_ready_extra	chompy_bird_attack	chompy_bird_hit	chompy_bird_death
+chronozon	Chronozon	4987	2942	demon_attack	demon_block	demon_death_greater	black_demon_attack	black_demon_hit	black_demon_death
+city_guard	City guard	4373	2878,2876	ogre_attack	ogre_block	ogre_death	mace_crush	giant_hit	giant_death
+clivet_hazeel_cultist	Clivet		226,246,299,162,176,256,286,534,567	human_staff_pummel	human_staff_block		staff_hit		
+clocktower_rat	Dungeon rat	3607	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+colonel_radick	Colonel Radick	4406	214,244,250,313,164,179,268,185,323,550,3330	human_axe_hack	human_axe_block		baxe_slash	blade2	
+commander_montai	Commander Montai		2909,2903,2919			midget_death			gnome_death
+count_draynor	Count Draynor	3481	227,323,292,320,256,163,176,238,283		human_unarmedblock		vampire_attack	vampire_hit	vampire_death
+cow	Cow	2790	3341,3342	cow_attack	cow_block	cow_death	cow_attack	cow_hit	cow_death
+cow2	Cow	2791	3341,3342	cow_attack	cow_block	cow_death	cow_attack	cow_hit	cow_death
+cow_beef	Cow	2793	3341,3342	cow_attack	cow_block	cow_death	cow_attack	cow_hit	cow_death
+cyclops	Cyclops	2097	2870,2867	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+d_skingnomeknight	Gnome troop	4974	2914,2903,2919	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+dark_warrior	Dark warrior	531	219,306,164,179,268,185,518,246	human_sword_slash	human_sword_def		hacksword_slash	steel	
+darkbear	Bear	2839	2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+darkskinned_gnome	Gnome	6096	2909,2890,2915	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+deadly_red_spider	Deadly red spider	3021	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+death_archer1	Archer		220,246,303,167,179,277,185,563	human_bow					
+death_archer2	Archer		220,250,303,151,179,277,185,563	human_bow					
+death_archer_trapped	Archer		220,248,303,167,179,277,185,563	human_bow					
+death_cook	Eadburg		393,374,305,332,353,428,358					female_hit	female_death
+death_guard1	Guard		219,248,294,167,179,274,185,542,541	human_blunt_pound	human_blunt_block		warhammer_crush	blade3_mail	
+death_guard2	Guard		219,253,298,159,179,263,185,542,541	human_blunt_pound	human_blunt_block		warhammer_crush	blade2_mail	
+death_ig_solider_wander	Soldier		225,295,150,254,185,317,3780		human_unarmedblock		null	null	null
+death_troll_commander	Rock		3753,3759,3756,3768,3770,3760,3773	troll_attack	troll_block	troll_death	troll_champion_attack	troll_hit	troll_death
+death_troll_guard1	Pee Hat		3753,3758,3756,3766,3762	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_guard2	Kraka		3753,3759,3756,3773,3766,3763	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_leuitanant	Stick		3754,3758,3756,3766,3763	troll_attack	troll_block	troll_death	troll_champion_attack	troll_hit	troll_death
+death_troll_melee1	Mountain Troll		3753,3758,3756,3762	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_melee2	Mountain Troll		3753,3759,3755,3763	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_melee3	Mountain Troll		3753,3758,3756,3762,3766	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_melee4	Mountain Troll		3753,3758,3755,3763	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_melee5	Mountain Troll		3753,3759,3756,3762,3766	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_melee6	Mountain Troll		3754,3758,3755,3763	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_melee7	Mountain Troll		3753,3759,3755,3762	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+death_troll_thrower1	Thrower Troll		3753,3758,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+death_troll_thrower2	Thrower Troll		3753,3759,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+death_troll_thrower3	Thrower Troll		3753,3758,3756,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+death_troll_thrower4	Thrower Troll		3754,3758,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+death_troll_thrower5	Thrower Troll		3753,3759,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+death_white_knight	White Knight		218,306,164,179,268,185,546	human_dhsword_chop	human_sword_def		2H_stab	steel_mail	
+death_woman_indoors1	Hild		378,456,332,353,431,358,447					female_hit	female_death
+death_woman_outdoors1	Hygd		398,470,348,356,421,361					female_hit	female_death
+death_woman_outdoors2	Ceolburg		398,470,348,356,421,361,444					female_hit	female_death
+deathwing	Death wing	509	2940	bat_attack	bat_parry	bat_death	bat_attack	bat_hit	bat_death
+delrith	Delrith	5079	2943	demon_attack	demon_block	demon_death	black_demon_attack	black_demon_hit	black_demon_death
+delrith_weakened	Weakened Delrith		2943,3019			demon_portalend			black_demon_death
+desert_wolf	Desert Wolf	4649	2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+desertminingcaptain	Mercenary Captain	4635	230,191,247,294,167,179,254,185,490,517,323	human_sword_slash	human_sword_def		hacksword_slash	blade2_mail	
+desertminingmercenary1	Mercenary	4665	230,246,294,167,179,254,185,490,517,191	human_sword_slash	human_sword_def		hacksword_slash	blade2_mail	
+desertminingmercenary2	Mercenary	4669	230,191,246,294,167,179,254,185,490,517	human_sword_slash	human_sword_def		hacksword_slash	blade2_mail	
+direwolf	Dire Wolf		2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+dog	Dog		2935			dog_death			wolf_death
+donny_the_lad	Donny the lad	302	235,246,292,151,176,254,185,243,323,490	human_sword_slash	human_sword_def		hacksword_slash		
+doomion	Doomion	8995	2942	demon_attack	demon_block	demon_death_greater	black_demon_attack	black_demon_hit	black_demon_death
+doric	Doric		2974,2981,2979,2983,2985			dwarf_death			
+dragonslayer_demon	Lesser demon	3982	2943	demon_attack	demon_block	demon_death	demon_attack	demon_hit	demon_death
+dragonslayer_ghost	Ghost	3975	2961,2964,2965	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+dragonslayer_giantrat	Giant rat	3969	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+dragonslayer_skeleton	Skeleton	3972	2944,2946	skeleton_attack	skeleton_block	skeleton_death	stabsword_slash	skelly_hit	skeleton_death
+dragonslayer_zombie	Zombie	3980	2931,2932	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+drogo	Drogo dwarf	5895	2970,2981,2979,2983,2985,2990			dwarf_death			
+dryhad	Dryad		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+dskin_w_ardoungechild1	Child		2897,2909,2918			midget_death			
+dskin_w_ardoungecitizen2	Woman	1119	408,361,474,332,353,438					female_hit	female_death
+dskin_w_ardoungecitizenlady1	Woman	1131	378,474,351,353,438,358					female_hit	female_death
+dskin_w_ardoungecitizenlady3	Woman	1139	399,474,351,353,437,358					female_hit	female_death
+dskin_w_ardoungecitizenlady4	Woman	1140	404,478,351,353,437,358					female_hit	female_death
+duck	Duck	1838	2847	null	duck_defend	duck_death	quack	duck_hit	duck_death
+duck_female	Duck	1839	2847	null	duck_defend	duck_death	quack	duck_hit	duck_death
+duckling	Duckling	2001	2847	null	duck_defend	duck_death	quack	duck_hit	duck_death
+dungeon_rat	Dungeon rat	2865	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+dungeonspider	Poison spider	5373	2883	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+dwarf_chaos	Chaos dwarf	291	2970,2982,2977,2983,2985,2989,2993,2991	dwarf_attack	dwarf_block	dwarf_death	warhammer_crush	dwarf_hit	dwarf_death
+dwarf_mountain	Dwarf	292	2970,2980,2978,2984,2985,2993	dwarf_attack	dwarf_block	dwarf_death	warhammer_crush	dwarf_hit	dwarf_death
+dwarf_normal	Dwarf	290	2970,2981,2979,2983,2985,2990	dwarf_attack	dwarf_block	dwarf_death	baxe_crush	dwarf_hit	dwarf_death
+dwarf_tunnel	Dwarf		2970,2980,2978,2984,2985,2993	dwarf_attack	dwarf_block	dwarf_death	warhammer_crush	dwarf_hit	dwarf_death
+dwarfchildtw1	Dwarf youngster	5190	2976,2981,2979,2983,2985			dwarf_death			
+dwarven_shopkeeper	Dwarf		2971,2981,2979,2983,2985,2990			dwarf_death			
+earth_elemental_rock_version	Earth elemental		175	elemental_earth_attack	elemental_earth_defend	elemental_earth_death	earth_elemental_attack	earth_elemental_hit	earth_elemental_death
+earthwarrior	Earth warrior	2840	213,306,164,176,268,184,520	human_axe_chop	human_axe_def	human_transdeath	warhammer_crush	blade5	
+echned_zekin	Echned Zekin	3968	2961,2964,2965			ghost_death			ghost_death
+elemental_air	Air elemental		172	elemental_air_attack	elemental_air_defend	elemental_air_death	air_elemental_attack	air_elemental_hit	air_elemental_death
+elemental_earth	Earth elemental		175	elemental_earth_attack	elemental_earth_defend	elemental_earth_death	earth_elemental_attack	earth_elemental_hit	earth_elemental_death
+elemental_fire	Fire elemental		335	elemental_fire_attack	elemental_fire_defend	elemental_fire_death	fire_elemental_attack	fire_elemental_hit	fire_elemental_death
+elemental_water	Water elemental		334	elemental_water_attack	elemental_water_defend	elemental_water_death	water_elemental_attack	water_elemental_hit	water_elemental_death
+elkoy	Elkoy		2909,2890,2917			midget_death			gnome_death
+elkoy_village	Elkoy		2909,2890,2917			midget_death			gnome_death
+elvarg	Elvarg	817	2853,2854	dragon_attack	dragon_block	dragon_death	dragon_attack	dragon_hit	dragon_death
+enclave_guard	Enclave guard	4381	2880,2876	ogre_attack	ogre_block	ogre_death	mace_stab	blade3_mail	giant_death
+fairy	Fairy		2857			fairy_death			
+fairy_banker	Banker		2860			fairy_death			
+fairy_ladder_attendant	Fairy		2857			fairy_death			
+fairy_lunderwin	Lunderwin		2857			fairy_death			
+fairy_queen	Fairy Queen		2858			fairy_death			
+falador_gardener	Gardener	3276	230,251,292,327,151,179,274,185,495	human_farmersfork_stab	human_farmersfork_def		farmersfork_stab		
+falseogretrader	Ogre trader	4404	2878,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+farmer1	Farmer	3114	217,246,292,151,176,254,185,495	human_farmersfork_stab	human_farmersfork_def		farmersfork_stab		
+fire_bird	Entrana Fire Bird	4927	2861	firebird_attack	firebird_block	firebird_death	terrorbird_attack	terrorbird_hit	terrorbird_death
+firegiant	Fire giant	2078	2870,2864	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+forester	Forester	3296	217,247,292,151,179,274,181,196,326,323,510	human_axe_hack	human_axe_def		baxe_slash		
+fortressguard	Fortress Guard	4772	233,246,294,151,176,254,185,540	human_spear_spike	human_spear_block		staff_stab		
+fycie	Fycie	1471	2878,3441			ogre_death			giant_death
+general_bentnoze	General Bentnoze		2952,2953,2955,2956			goblin_death			goblin_death
+general_khazard	General Khazard	12025	209,306,164,179,268,185,546,323	human_dhsword_chop	human_dhsword_def		2H_slash		
+general_wartface	General Wartface		2951,2953,2955,2956			goblin_death			goblin_death
+generalassistant8	Fairy shop assistant		2857			fairy_death			
+generalshopkeeper8	Fairy shop keeper		2857			fairy_death			
+gertrudescat	Gertrudes cat		3010,3006	cat_attack		cat_death			
+ghast_invis	Ghast	945	3559	ghast_attack	ghast_block	ghast_death	ghast_attack	ghast_hit	ghast_death
+ghast_vis	Ghast	946	3559	ghast_attack	ghast_block	ghast_death	ghast_attack	ghast_hit	ghast_death
+ghost	Ghost	85	2961,2964,2965	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+ghoul	Ghoul		4077,4078,4076,275,181				ghoul_attack	ghoul_hit	ghoul_death
+giant	Giant	2098	2870,2862	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+giantrat	Giant rat	2856	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+giantrat1	Giant rat	2862	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+giantskeleton	Skeleton	82	2944,2946	skeleton_attack	skeleton_block	skeleton_death	stabsword_slash	skelly_hit	skeleton_death
+giantspider1	Giant spider	3017	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+giantspider2	Giant spider	3018	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+gnome	Gnome	6094	2909,2890,2915	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+gnome_brimstail	Brimstail		2909,2898,2915			midget_death			gnome_death
+gnome_gulluck	Gulluck		2892,2909,2915			midget_death			gnome_death
+gnome_heckelfunch	Heckel Funch		2901,2909,2915			midget_death			gnome_death
+gnome_hudo	Hudo		2901,2909,2915			midget_death			gnome_death
+gnome_rometti	Rometti		2900,2909,2916			midget_death			gnome_death
+gnome_waiter	Gnome Waiter		2909,2900,2915			midget_death			gnome_death
+gnomeballer	Gnome baller		2914,2905,2924			midget_death			gnome_death
+gnomeballer_green	Gnome winger		2914,2905,2924			midget_death			gnome_death
+gnomeballer_green_withball	Gnome winger		2914,2905,2921			midget_death			gnome_death
+gnomeballer_orange	Gnome baller		2914,2905,2924			midget_death			gnome_death
+gnomeballer_orange_withball	Gnome baller		2914,2905,2921			midget_death			gnome_death
+gnomeballer_red	Gnome baller		2914,2905,2924			midget_death			gnome_death
+gnomeballer_red_withball	Gnome baller		2914,2905,2921			midget_death			gnome_death
+gnomeballer_yellow	Gnome baller		2914,2905,2924			midget_death			gnome_death
+gnomeballer_yellow_withball	Gnome baller		2914,2905,2921			midget_death			gnome_death
+gnomebanker	Gnome banker		2909,2900,2915			midget_death			gnome_death
+gnomecheerleader	Cheerleader		2913,2904,2923			midget_death			gnome_death
+gnomechild	Gnome child	6079	2909,2899,2918	midget_attackunarmed	midget_block	midget_death	gnome_attack	gnome_hit	gnome_death
+gnomechildblue	Gnome child	6078	2909,2899,2918	midget_attackunarmed	midget_block	midget_death	gnome_attack	gnome_hit	gnome_death
+gnomechildgreen	Gnome child	6077	2909,2899,2918	midget_attackunarmed	midget_block	midget_death	gnome_attack	gnome_hit	gnome_death
+gnomefemale	Gnome woman	6086	2911,2907,2917	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+gnomefemale_dskinned	Gnome woman	6087	2911,2907,2917	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+gnomekingsguard	Gnome guard	6081	2909,2893,2915	midget_attacksword	midget_block	midget_death	gnome_attack	scythe_slash	gnome_death
+gnomekingsguard2	Gnome guard	6082	2909,2892,2922	midget_attacksword	midget_blockshield	midget_death	hacksword_slash	brassclash	gnome_death
+gnomeknight	Gnome troop	4973	2914,2903,2919	midget_attackbow	midget_block	midget_death		gnome_hit	gnome_death
+gnomepilot	Gnome pilot		2909,2908,2922			midget_death			gnome_death
+gnomereferee	Gnome ball referee		2909,2900,2915			midget_death			gnome_death
+gnomeshopkeeper	Gnome shop keeper		2909,2901,2917			midget_death			gnome_death
+gnometrainer	Gnome trainer		2909,2890,2922			midget_death			gnome_death
+goblin	Goblin	3028	2951,2953,2955,2956	goblin_attack_unarmed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+goblin_armed	Goblin	3045	2951,2953,2955,2956,2957	goblin_attack_armed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+goblin_greenarmour	Goblin	677	2951,2953,2955,2956,2957	goblin_attack_armed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+goblin_guard	Goblin guard	5369	2951,2953,2955,2956,2957	goblin_attack_armed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+goblin_helmet	Goblin	3046	2952,2953,2955,2956	goblin_attack_unarmed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+goblin_redarmour	Goblin	678	2951,2953,2955,2956,2957	goblin_attack_armed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+golem	Golem	2836	2969	golem_attack	golem_block	golem_death	golem_attack	golem_hit	golem_death
+golrie_waterfall_quest	Golrie		2900,2914,2915			midget_death			gnome_death
+gorad	Gorad	4367	2880,2876	ogre_attack	ogre_block	ogre_death	mace_crush	blade3_mail	giant_death
+grandtree_anita	Anita		2911,2907,2917			midget_death			gnome_death
+grandtree_blackdemon	Black Demon	1432	2942	demon_attack	demon_block	demon_death	demon_attack	demon_hit	demon_death
+grandtree_femi	Femi		2907,2911,2922			midget_death			gnome_death
+grandtree_foreman	Foreman	1429	214,247,302,173,179,254,185				gnome_attack	gnome_hit	gnome_death
+grandtree_glough	Glough		2909,2903,2919			midget_death			gnome_death
+grandtree_hazelmere	Hazelmere		2909,2901,2916			midget_death			gnome_death
+grandtree_narnode	King Narnode Shareen		2909,2891,2916			midget_death			gnome_death
+grave_scorpion	Grave Scorpion	5372	2968	smallscorpion_attack	smallscorpion_block	smallscorpion_death	insect_attack	insect_hit	insect_death
+greater_demon	Greater demon	2025	2942	demon_attack	demon_block	demon_death_greater	black_demon_attack	black_demon_hit	black_demon_death
+green_dragon	Green dragon	260	2853,2854	dragon_attack	dragon_block	dragon_death	dragon_attack	dragon_hit	dragon_death
+grew	Grew		2880,2874			giant_death			giant_death
+grip	Grip	4919	218,294,246,165,259,550	human_axe_hack	human_axe_def		baxe_slash	blade3_mail	
+growncat	Cat		3010,3006			cat_death			
+growncat_black	Cat		3010,3006			cat_death			
+growncat_bluegrey	Cat		3010,3006			cat_death			
+growncat_brown	Cat		3010,3006			cat_death			
+growncat_browngrey	Cat		3010,3006			cat_death			
+growncat_light	Cat		3010,3006			cat_death			
+guard1	Guard	3254	233,246,294,151,176,254,185,519,541	human_sword_stab	human_sword_def		stabsword_stab	blade4	
+guard2	Guard	3270	233,246,294,151,176,254,185,508	human_crossbow					
+guard_bandit	Guard Bandit	1027	215,248,292,151,176,254,185,243,323,518,517	human_sword_stab	human_sword_def		stabsword_stab	brassclash	
+guarddog	Guard dog	114	2936	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+guild_towerarcher1	Tower Archer	6065	220,253,311,169,176,262,185,563	human_bow				null	null
+guild_towerarcher2	Tower Archer	6065	220,253,296,169,176,262,185,563	human_bow				null	null
+guild_towerarcher3	Tower Archer	6067	220,253,303,169,176,277,185,563	human_bow				null	null
+guild_towerarcher4	Tower Archer	6068	220,253,314,169,176,258,185,563	human_bow				null	null
+guilddwarf	Dwarf		2970,2981,2979,2983,2985,2990,2988			dwarf_death			
+gull1	Gull	284	2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+gull2	Gull	285	2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+gunthor_the_brave	Gunthor the brave	299	219,251,299,173,176,274,242,185,550,523	human_axe_hack	human_axe_def		baxe_slash	swordclash2	
+guthix_mage	Battle mage	1612	2909,2898,2920	midget_attackunarmed	midget_block	midget_death	gnome_attack	gnome_hit	gnome_death
+hazeel_cultist	Hazeel Cultist		226,246,292,170,176,256,286,534	human_staff_pummel	human_staff_block		staff_hit		
+headthief_blanket	Head Thief	4248	215,247,311,169,179,254,185,518	human_sword_slash	human_sword_def		stabsword_slash		
+hellhound	Hellhound	104	2997	hell_attack	hell_block	hell_death	growl6	growl5	
+hero	Hero	3295	217,306,164,179,268,185,518,246,541	human_sword_slash	human_blunt_block		hacksword_slash	brassclash	
+highwayman	Highwayman	518	215,246,292,170,176,254,185,243,323,519	human_sword_stab	human_sword_block		hacksword_slash		
+hobgoblin_armed	Hobgoblin	3050	2994,2995	hobgoblin_attack	hobgoblin_block	hobgoblin_death	goblin_attack	goblin_hit	goblin_death
+hobgoblin_unarmed	Hobgoblin	3049	2994	hobgoblin_attackunarmed	hobgoblin_block	hobgoblin_death	goblin_attack	goblin_hit	goblin_death
+holthion	Holthion	8996	2942	demon_attack	demon_block	demon_death_greater	black_demon_attack	black_demon_hit	black_demon_death
+horror_dagannoth_jr1	Dagannoth	976	4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagannoth_jr2	Dagannoth	977	4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagannoth_jr3	Dagannoth	978	4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagannoth_jr4	Dagannoth	979	4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagannoth_medium	Dagannoth		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagannoth_medium_darker	Dagannoth		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagannoth_medium_lighter	Dagannoth		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_air	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_aira	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_airb	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_airc	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_earth	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_fire	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_jr	Dagannoth		4587	horror_dagannoth_rangeattack	horror_dagannoth_defend	horror_dagannoth_death		dagganoth_hit	dagganoth_death
+horror_dagganoth_jr_darker	Dagannoth		4587	horror_dagannoth_rangeattack	horror_dagannoth_defend	horror_dagannoth_death		dagganoth_hit	dagganoth_death
+horror_dagganoth_jr_lighter	Dagannoth		4587	horror_dagannoth_rangeattack	horror_dagannoth_defend	horror_dagannoth_death		dagganoth_hit	dagganoth_death
+horror_dagganoth_melee	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_ranged	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_dagganoth_water	Dagannoth mother		4587	horror_dagannoth_attack	horror_dagannoth_defend	horror_dagannoth_death	dagganoth_attack	dagganoth_hit	dagganoth_death
+horror_rockcrab	Rock Crab		4399,4400	horror_crab_attack	horror_crab_defend	horror_crab_hide	insect_attack	insect_hit	insect_death
+horror_rockcrab_inactive	Rocks		4399,4400	horror_crab_attack	horror_crab_defend	horror_crab_hide	insect_attack	insect_hit	insect_death
+horror_rockcrab_small	Rock Crab		4399,4400	horror_crab_attack	horror_crab_defend	horror_crab_hide	insect_attack	insect_hit	insect_death
+horror_rockcrab_small_inactive	Rocks		4399,4400	horror_crab_attack	horror_crab_defend	horror_crab_hide	insect_attack	insect_hit	insect_death
+house_ghost	Ghost	473	2961,2964,2965	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+hudon_waterfall_quest	Hudon		2897,2910,2918			midget_death			
+ice_queen	Ice Queen	4922	379,368,468,440,353,339					ice_warrior_hit	female_death
+ice_spider	Ice spider	3022	2885	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+icegiant	Ice giant	2085	2870,2868	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+icewarrior	Ice warrior	2841	213,306,164,176,268,184,511	human_sword_transslash	human_sword_transdef	human_transdeath	hacksword_slash	ice_warrior_hit	ice_warrior_death
+icewarrior_queen	Ice warrior	2851	213,306,164,176,268,184,511	human_sword_slash	human_sword_def	human_transdeath	hacksword_slash	ice_warrior_hit	ice_warrior_death
+ikov_firewarrior	Fire Warrior of Lesarkus	3448	230,301,268,163,176,328,323,246,184		null		giant_attack	giant_hit	giant_death
+ikov_guardianfemale	Guardian of Armadyl	3446	390,456,432,343,353,481,361,482,518,523	human_sword_slash	human_sword_def		stabsword_slash	steel2	
+ikov_guardianmale	Guardian of Armadyl	3445	214,313,268,162,176,323,185,250,518,523,3330	human_sword_slash	human_sword_def		stabsword_slash	steel2	
+ikov_lucien2	Lucien	13607	218,181,292,170,179,265,533	human_sword_stab	human_sword_def		stabsword_stab		
+imp	Imp	5007	2887	imp_attack	imp_block	imp_death	imp_attack	imp_hit	imp_death
+irvig_senay	Irvig Senay	3965	2944,2947	skeleton_trans_attack	skeleton_trans_block	skeleton_trans_death	skeleton_attack	skelly_hit	skeleton_death
+jailer	Jailer	300	230,306,268,253,185,156,179	human_unarmedkick			unarmed_kick	brassclash2	
+jailguard	Jail guard	4276	217,246,311,151,179,257,502	human_blunt_pound	human_blunt_block		mace_crush		
+jakut	Jakut		2857			fairy_death			
+jeremy_servil	Jeremy Servil		2918,2910,2906			midget_death			
+jeremy_servil_arena	Jeremy Servil		2918,2910,2906			midget_death			
+jogre	Jogre	2094	2870,2866	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+jungle_savage	Jungle Savage	3959	231,246,309,173,176,266,181,540	human_spear_spike	human_spear_def		staff_stab		
+jungle_spider	Jungle spider	3020	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+jungle_wolf	Jungle Wolf	232	2937	dog_attack	dog_block	dog_death	wolf_attack2	wolf_hit	wolf_death
+kalphite_flyingqueen	Kalphite Queen		3854		kalphite_queen_block	kalphite_queen_death	kalphite_flyingqueen_attack	kalphite_flyingqueen_hit	kalphite_flyingqueen_death
+kalphite_lord	Kalphite Guardian		3849		kalphite_block	kalphite_death	kalthite_lord_attack	kalthite_lord_hit	kalthite_lord_death
+kalphite_lord_chamber	Kalphite Guardian		3849		kalphite_block	kalphite_death	kalthite_lord_attack	kalthite_lord_hit	kalthite_lord_death
+kalphite_queen	Kalphite Queen		3850		kalphite_block	kalphite_death	kalthite_queen_attack	kalthite_queen_hit	
+kalphite_soldier	Kalphite Soldier		3851		kalphite_block	kalphite_death	kalthite_soldier_attack	kalthite_soldier_hit	kalthite_soldier_death
+kalphite_worker	Kalphite Worker		3852		kalphite_block	kalphite_death	kalthite_worker_attack	kalthite_worker_hit	kalthite_worker_death
+kalphite_worker_chamber	Kalphite Worker		3852		kalphite_block	kalphite_death	kalthite_worker_attack	kalthite_worker_hit	kalthite_worker_death
+kalrag	Kalrag	8993	2884	giantspider_attack	giantspider_block	giantspider_death	kilrag_attack	kilrag_hit	kilrag_death
+kanel	Kanel		2897,2909,2918			midget_death			
+kennith	Kennith		2897,2918,2909			midget_death			
+kharidbanker2	Banker		378,470,343,353,419,358						female_death
+khazard_commander	Khazard commander	4972	206,252,306,152,176,268,185,540,323	human_spear_spike	human_spear_block		staff_stab	blade2	
+khazard_troop	Khazard trooper	4969	219,252,306,152,176,269,185,502,523	human_blunt_pound	human_blunt_def		warhammer_crush	blade2	
+khazard_troop_spearmen	Khazard trooper	4970	219,252,306,152,176,269,185,540	human_spear_lunge	human_spear_def		staff_stab	blade5	
+khazard_warlord	Khazard warlord	7622	225,246,306,152,176,268,185,542,523,323	human_blunt_pound	human_blunt_def		warhammer_crush	blade2	
+king_bolren	King Bolren		2909,2891,2916			midget_death			gnome_death
+king_dragon	King black dragon	239	2853,2855	dragon_attack	dragon_block	dragon_death	dragon_attack	dragon_hit	dragon_death
+kingscorpion	King Scorpion	3027	2967	scorpion_attack	scorpion_parry	scorpion_death	insect_attack	insect_hit	insect_death
+kittenpet1	Kitten		3010,3006			cat_death			
+kittenpet_black	Kitten		3010,3006			cat_death			
+kittenpet_bluegrey	Kitten		3010,3006			cat_death			
+kittenpet_brown	Kitten		3010,3006			cat_death			
+kittenpet_browngrey	Kitten		3010,3006			cat_death			
+kittenpet_light	Kitten		3010,3006			cat_death			
+knight_of_ardougne	Knight of Ardougne	3297	218,313,164,179,268,185,518,3330	human_sword_slash	human_sword_def		stabsword_slash	blade5	
+knight_of_ardougne2	Knight of Ardougne	3300	232,313,164,179,268,185,518,3330	human_sword_slash	human_sword_def		stabsword_slash	blade5	
+koldemon	Kolodion	1609	2942	demon_attack	demon_block	demon_death_greater	black_demon_attack	black_demon_hit	black_demon_death
+kolethereal	Kolodion	1608	221,246,292,162,176,267,181	human_trans_axe_chop	human_sword_transdef	human_transdeath	otherworld_attack	screech2	otherworld_death
+kologre	Kolodion	1606	2863,2871	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+kolspider	Kolodion	1607	2884	giantspider_attack	giantspider_block	giantspider_death	kilrag_attack	kilrag_hit	kilrag_death
+lady_pirate	Pirate	524	388,469,348,353,434,417,410,490	human_sword_slash	human_sword_def		hacksword_slash	female_hit	female_death
+lathastrainingogre	Ogre	1153	2878,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+lawgof2	Dwarf Commander	5191	2970,2981,2979,2983,2985			dwarf_death			
+leprechaun	Leprechaun	1162	2909,2896,2915	midget_attackunarmed	midget_block	midget_death	gnome_attack	gnome_hit	gnome_death
+lesser_demon	Lesser demon	2005	2943	demon_attack	demon_block	demon_death	demon_attack	demon_hit	demon_death
+lizardman	Lizard man		2888	lizardman_attack	lizardman_block	lizardman_death	lizardman_attack	lizardman_hit	lizardman_death
+localgnome	Local Gnome	4978	2909,2890,2917			midget_death			gnome_death
+lord_daquarius	Lord Daquarius	4929	217,306,268,246,185,156,179,323	human_unarmedkick			unarmed_kick		
+lostgnome	Kalron	4980	2909,2890,2917			midget_death			gnome_death
+lostkitten	Kitten		3010,3006			cat_death			
+macro_dryhadguardian_1	Tree spirit		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+macro_dryhadguardian_2	Tree spirit		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+macro_dryhadguardian_3	Tree spirit		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+macro_dryhadguardian_4	Tree spirit		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+macro_dryhadguardian_5	Tree spirit		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+macro_dryhadguardian_6	Tree spirit		2856	dryhad_attack	dryhad_block	dryhad_death	null	null	null
+macro_dwarf	Drunken Dwarf		2974,2986,2983,2979,2981,2985,2992	dwarf_stone_launch	null	null	thrown		
+macro_golemguardian_1	Rock Golem		2969	golem_attack	golem_block	golem_death	golem_attack	null	null
+macro_golemguardian_2	Rock Golem		2969	golem_attack	golem_block	golem_death	golem_attack	null	null
+macro_golemguardian_3	Rock Golem		2969	golem_attack	golem_block	golem_death	golem_attack	null	null
+macro_golemguardian_4	Rock Golem		2969	golem_attack	golem_block	golem_death	golem_attack	null	null
+macro_golemguardian_5	Rock Golem		2969	golem_attack	golem_block	golem_death	golem_attack	null	null
+macro_golemguardian_6	Rock Golem		2969	golem_attack	golem_block	golem_death	golem_attack	null	null
+macro_rivertrollguardian_1	River troll		3752	troll_attack	troll_block	troll_death	null	null	null
+macro_rivertrollguardian_2	River troll		3752	troll_attack	troll_block	troll_death	null	null	null
+macro_rivertrollguardian_3	River troll		3752	troll_attack	troll_block	troll_death	null	null	null
+macro_rivertrollguardian_4	River troll		3752	troll_attack	troll_block	troll_death	null	null	null
+macro_rivertrollguardian_5	River troll		3752	troll_attack	troll_block	troll_death	null	null	null
+macro_rivertrollguardian_6	River troll		3752	troll_attack	troll_block	troll_death	null	null	null
+macro_shade1	Shade		226,306,174,265	human_sword_transslash	human_sword_transdef	human_transdeath	stabsword_slash	ghost_hit	ghost_death
+macro_shade2	Shade		226,306,174,265	human_sword_transslash	human_sword_transdef	human_transdeath	stabsword_slash	ghost_hit	ghost_death
+macro_shade3	Shade		226,306,174,265	human_sword_transslash	human_sword_transdef	human_transdeath	stabsword_slash	ghost_hit	ghost_death
+macro_shade4	Shade		226,306,174,265	human_sword_transslash	human_sword_transdef	human_transdeath	stabsword_slash	ghost_hit	ghost_death
+macro_shade5	Shade		226,306,174,265	human_sword_transslash	human_sword_transdef	human_transdeath	stabsword_slash	ghost_hit	ghost_death
+macro_shade6	Shade		226,306,174,265	human_sword_transslash	human_sword_transdef	human_transdeath	stabsword_slash	ghost_hit	ghost_death
+macro_swarm	Swarm		2950	swarm_attack	swarm_block	null	swarm_attack	null	null
+macro_triffidseed_angry	Strange plant		3371	triffid_angry_attack	triffid_angry_block	triffid_angry_death	triffid_attack	null	null
+macro_watchman1	Watchman		232,251,294,169,176,274,185,502,523	human_blunt_pound	human_blunt_def		mace_crush	blade3_mail	
+macro_watchman2	Watchman		232,251,294,169,176,274,185,502,523	human_blunt_pound	human_blunt_def		mace_crush	blade3_mail	
+macro_watchman3	Watchman		232,251,294,169,176,274,185,502,523	human_blunt_pound	human_blunt_def		mace_crush	blade3_mail	
+macro_watchman4	Watchman		232,251,294,169,176,274,185,502,523	human_blunt_pound	human_blunt_def		mace_crush	blade3_mail	
+macro_watchman5	Watchman		232,251,294,169,176,274,185,502,523	human_blunt_pound	human_blunt_def		mace_crush	blade3_mail	
+macro_watchman6	Watchman		232,251,294,169,176,274,185,502,523	human_blunt_pound	human_blunt_def		mace_crush	blade3_mail	
+macro_zombie1	Zombie		2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+macro_zombie2	Zombie		2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+macro_zombie3	Zombie		2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+macro_zombie4	Zombie		2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+macro_zombie5	Zombie		2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+macro_zombie6	Zombie		2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+mad_skavid	Mad skavid		2999			skavid_death			imp_death
+magicaxe	Magic axe	2844	3000	magicaxe_attack	magicaxe_block	magicaxe_death	baxe_slash	sword_hit2	brassclash2
+mammoth	Mammoth	6604	3005	mammoth_attack	mammoth_block	mammoth_death	mammoth_attack	mammoth_hit	mammoth_death
+mcannonguard	Dwarf	5185	2970,2981,2979,2983,2985,2990,2986,2991	dwarf_attack	dwarf_block	dwarf_death	gnome_hit	brassclash2	gnome_death
+melzar_the_mad	Melzar the mad	823	208,181,251,292,170,176,265	human_unarmedkick			unarmed_kick		
+milli	Milli Rehnison		2902,2911,2918			midget_death			
+mmsnailpoint_blue	Bruise Blamish Snail		4109		snail_defend	snail_death		snail_hit	snail_death
+mmsnailpoint_red+black	Blood Blamish Snail		4109	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailpoint_swamp	Myre Blamish Snail		4109	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailpoint_yellow	Ochre Blamish Snail		4109	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailround_blue	Bruise Blamish Snail		4108	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailround_orange	Bark Blamish Snail		4108	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailround_red+black	Blood Blamish Snail		4108	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailround_swamp	Myre Blamish Snail		4108	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+mmsnailround_yellow	Ochre Blamish Snail		4108	snail_attack	snail_defend	snail_death		snail_hit	snail_death
+monkey	Monkey	2848	3004	monkey_attack	monkey_block	monkey_death	monkey_attack	monkey_hit	monkey_death
+mort_afflicted_man	Afflicted	1293	217,246,292,170,176,275,181				zombie_attack	zombie_hit	zombie_death
+mort_afflicted_man2	Afflicted	1297	230,251,310,151,176,265,181				zombie_attack	zombie_hit	zombie_death
+mort_afflicted_woman	Afflicted	1294	390,456,351,353,438,358				zombie_attack	zombie_hit	zombie_death
+mort_afflicted_woman2	Afflicted	1298	399,474,346,353,429,358				zombie_attack	zombie_hit	zombie_death
+mossgiant	Moss giant	2090	2870,2865	giant_attack	giant_block	giant_death	giant_attack	giant_hit	giant_death
+mourner2	Mourner	9013	212,295,150,273,185,323,553	human_staff_pummel	human_staff_block		staff_hit		
+mourner_armed	Mourner		212,295,150,273,185,323,555	human_staff_spike	human_staff_block		staff_stab		
+mugger	Mugger	513	215,246,292,151,176,254,185,243		human_unarmedblock				
+mummy	Mummy		2925	mummy_attack	mummy_block	mummy_death	mummy_attack	mummy_hit	mummy_death
+murder_mystery_guarddog	Sinclair Guard dog		2936			dog_death			
+nasty_tree	Tree	4418	3014	deadtree_attack			nasty_tree_attack		
+nasty_tree_swamp	Tree	3240	3014	deadtree_attack			nasty_tree_attack		
+newbiechicken	Chicken	3316	2849	chicken_attack	chicken_block	chicken_death	chicken_attack	chicken_hit	chicken_death
+newbiegiantrat	Giant rat	3313	2959	giantrat_attack	giantrat_block	giantrat_death	rat_attack	rat_hit	rat_death
+nezikchened	Nezikchened	3962	2942	demon_attack	demon_block	demon_death	demon_attack	demon_hit	demon_death
+non_combat_bat	Giant bat		2941			bat_death			bat_death
+nulodion	Nulodion		2970,2981,2979,2983,2985			dwarf_death			
+nurmof	Nurmof	8686	2970,2983,2979,2981,2985			dwarf_death			
+og	Og		2880,2874			giant_death			giant_death
+ogre	Ogre	2095	2878,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre2	Ogre	2096	2878,2876	ogre_attack	ogre_block	ogre_death	giant_attack	mace_crush	giant_death
+ogre_chieftan	Ogre chieftain	4363	2880,2876	ogre_attack	ogre_block	ogre_death	mace_crush	blade3_mail	giant_death
+ogre_guard	Ogre guard	4368	2880,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_guard1	Ogre guard	4369	2880,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_guard2	Ogre guard	4370	2880,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_guard3	Ogre guard	4371	2880,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_guard4	Ogre guard	4372	2880,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_merchant	Ogre merchant	4402	2878,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_shaman	Ogre shaman	4382	2879,2877	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_trader1	Ogre trader	4401	2878,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+ogre_trader2	Ogre trader	4403	2878,2874	ogre_attack	ogre_block	ogre_death	giant_attack	giant_hit	giant_death
+oomlie_bird	Oomlie Bird	2062	2849	chicken_attack	chicken_block	chicken_death	chicken_attack	chicken_hit	chicken_death
+orc	Orc	2106	2926	orc_attack	orc_block	orc_death	orc_attack	orc_hit	orc_death
+othainian	Othainian	8994	2942	demon_attack	demon_block	demon_death_greater	black_demon_attack	black_demon_hit	black_demon_death
+otherworldly_being	Otherworldly being	2843	292,170,260,202				otherworld_attack	otherworld_hit	otherworld_death
+overgrowncat	Overgrown cat		3010,3006			cat_death			
+overgrowncat_black	Overgrown cat		3010,3006			cat_death			
+overgrowncat_bluegrey	Overgrown cat		3010,3006			cat_death			
+overgrowncat_brown	Overgrown cat		3010,3006			cat_death			
+overgrowncat_browngrey	Overgrown cat		3010,3006			cat_death			
+overgrowncat_light	Overgrown cat		3010,3006			cat_death			
+pack_wolf	Wolf	110	2937	dog_attack	dog_block	dog_death	wolf_attack2	wolf_hit	wolf_death
+paladin	Paladin	3293	217,248,313,156,176,268,185,518,541,3330	human_sword_slash	human_sword_def		hacksword_slash	blade3	
+penguin	Penguin	2063	3003	penguin_attack	penguin_block	penguin_death	penguin_attack	penguin_hit	penguin_death
+philipe_carnillean	Philipe Carnillean		2894,2909,2918			midget_death			
+philop	Philop		2897,2909,2918			midget_death			
+pirate1	Pirate	521	211,246,292,173,176,271,181,490,236	human_sword_slash	human_sword_def		hacksword_slash		
+pirate2	Pirate	522	215,252,299,159,176,259,193,236,518	human_sword_slash	human_sword_def		hacksword_slash		
+pirate_aggressive	Pirate	523	215,250,299,159,179,259,190,236,518	human_sword_slash	human_sword_def		hacksword_slash		
+pirate_guard	Pirate Guard	4926	219,294,151,254,185,179,246,518	human_sword_slash	human_sword_def		stabsword_slash	big_bar_mail	
+plaguesheep_1	Diseased sheep 1	3986	3786,3784,3787			sheep_death			
+plaguesheep_2	Diseased sheep 2	3987	3786,3784,3787			sheep_death			
+plaguesheep_3	Diseased sheep 3	3988	3786,3784,3787			sheep_death			
+plaguesheep_4	Diseased sheep 4	3989	3786,3784,3787			sheep_death			
+poison_scorpion	Poison Scorpion	3025	2967	scorpion_attack	scorpion_parry	scorpion_death	insect_attack	insect_hit	insect_death
+poisonspider	Poison spider	3023	2883	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+priestperilguarddog	Temple guardian	3487	2934	dm_attack	dm_block	dm_death	wolf_attack	wolf_hit	wolf_death
+questchicken	Ernest		2849			chicken_death			chicken_death
+questscorpiona	Kharid Scorpion		2968			smallscorpion_death			insect_death
+questscorpionb	Kharid Scorpion		2968			smallscorpion_death			insect_death
+questscorpionc	Kharid Scorpion		2968			smallscorpion_death			insect_death
+ranalph_devere	Ranalph Devere	3966	2944,2948	skeleton_trans_attack	skeleton_trans_block	skeleton_trans_death	skeleton_attack	skelly_hit	skeleton_death
+ranging_guild_guard	Guard	6056	220,185,253,296,151,179,262,563	human_bow				null	null
+rantz	Rantz	1470	2878,3442			ogre_death			giant_death
+rat	Rat	2854	2927	rat_attack	rat_block	rat_death	rat_attack	rat_hit	rat_death
+red_dragon	Red dragon	249	2853,2854	dragon_attack	dragon_block	dragon_death	dragon_attack	dragon_hit	dragon_death
+regicide_bunny1	Rabbit		4042	rabbit_attack	rabbit_block	rabbit_death	rabbit_attack	rabbit_hit	rabbit_death
+regicide_bunny2	Rabbit		4042	rabbit_attack	rabbit_block	rabbit_death	rabbit_attack	rabbit_hit	rabbit_death
+regicide_darkbear	Grizzly bear		2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+regicide_darkbear_cub1	Grizzly bear cub		2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+regicide_darkbear_cub2	Grizzly bear cub		2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+regicide_darkelf	Elf warrior		4014,4018,4022,4024,4044	human_bow	human_spear_block			crystal_armour_1	elf_death
+regicide_darkelf2	Elf warrior		4014,4018,4022,4024,4033	human_spear_spike	human_spear_block		crystal_polearm	crystal_armour_2	elf_death
+regicide_old_camp_guard	Tyras guard		164,185,179,4019,3329,313,555	human_staff_pummel	human_spear_block		scythe_slash	big_bar_mail	
+regicide_rabbit	Rabbit		4042	rabbit_attack	rabbit_block	rabbit_death	rabbit_attack	rabbit_hit	rabbit_death
+regicide_tyras_camp_guard	Tyras guard		164,185,179,4019,3329,313,555	human_spear_spike	human_spear_block		scythe_slash	big_bar_mail	
+regicide_tyras_guard	Tyras guard		164,185,179,4019,3329,313,555	human_spear_spike	human_spear_block		scythe_slash	big_bar_mail	
+remsai	Remsai		2909,2890,2917			midget_death			gnome_death
+renegade_knight	Renegade Knight	3517	232,306,164,179,268,185,518,246	human_sword_slash	human_sword_def		stabsword_stab	blade4	
+rogue	Rogue	526	230,248,311,159,176,254,181,533	human_sword_stab	human_sword_def		hacksword_stab		
+rooster	Rooster	1175	2849	chicken_attack	chicken_block	chicken_death	chicken_attack	chicken_hit	chicken_death
+rowdymineguard	Rowdy Guard	4654	219,246,294,167,179,254,185,490,517	human_sword_slash	human_sword_def		hacksword_slash	blade2_mail	
+san_tojalon	San Tojalon	3964	2944,2945	skeleton_trans_attack	skeleton_trans_block	skeleton_trans_death	skeleton_attack	skelly_hit	skeleton_death
+saradomin_mage	Battle mage	1611	217,250,292,170,176,265,323,185,554		human_staff_block				
+scared_skavid	Scared skavid		2999			skavid_death			imp_death
+scorpion	Scorpion	3024	2967	scorpion_attack	scorpion_parry	scorpion_death	insect_attack	insect_hit	insect_death
+seabird1	Gull	281	2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+seabird2	Cormorant	282	2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+seabird3	Albatross	283	2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+shade_level1	Loar Shade	1277	4140	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shade_level2	Phrin Shade	1280	4140	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shade_level3	Riyl Shade	1282	4140	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shade_level4	Asyn Shade	1284	4140	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shade_level5	Fiyr Shade	1286	4140	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shadeshadow_level1	Loar Shadow	1276	4143	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shadeshadow_level2	Phrin Shadow	1279	4143	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shadeshadow_level3	Riyl Shadow	1281	4143	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shadeshadow_level4	Asyn Shadow	1283	4143	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shadeshadow_level5	Fiyr Shadow	1285	4143	shade_attack	shade_block	shade_sink	shade_attack	shade_hit	shade_death
+shadow_spider	Shadow spider	3016	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+shadow_warrior	Shadow warrior	2853	213,306,164,179,268,184,550	human_trans_axe_chop	human_trans_axe_def	human_transdeath	baxe_slash	steel	
+shantay_guard	Shantay Guard	4643	230,246,311,167,176,254,276,185,519	human_sword_slash	human_sword_def		stabsword_slash		
+shantay_guard_still	Shantay Guard	4648	230,246,311,167,176,254,276,185,519	human_sword_slash	human_sword_def		stabsword_slash		
+shapeshifterbear	Witches experiment third form	3998	2966	bear_attack	bear_block	bear_death	bear_attack	bear_hit	bear_death
+shapeshifterglob	Witches experiment	3996	2999	skavid_attack	skavid_block	skavid_death	unarmed_punch	imp_hit	imp_death
+shapeshifterspider	Witches experiment second form	3997	2884	giantspider_attack	giantspider_block	giantspider_death	insect_attack	insect_hit	insect_death
+shapeshifterwolf	Witches experiment fourth form	3999	2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+sheepsheered	Sheep		3783,3786,3787	sheep_attack	sheep_block	sheep_death			
+sheepunsheered	Sheep		3786,3784,3787	sheep_attack	sheep_block	sheep_death			
+shilop	Shilop		2897,2909,2918			midget_death			
+shipyardworker2	Shipyard worker	5729	230,246,305,173,179,271,185,491	human_blunt_pound	human_blunt_block		warhammer_crush		
+sir_mordred	Sir Mordred	3527	225,306,164,179,268,185,513,246,541,240	human_sword_slash	human_sword_def		2H_slash	steel2	
+skavid	Skavid	2846	2999	skavid_attack	skavid_block	skavid_death	imp_attack	imp_hit	imp_death
+skavidtalker1	Skavid		2999			skavid_death			imp_death
+skavidtalker2	Skavid		2999			skavid_death			imp_death
+skavidtalker3	Skavid		2999			skavid_death			imp_death
+skavidtalker4	Skavid		2999			skavid_death			imp_death
+skavidtalker5	Skavid		2999			skavid_death			imp_death
+skeleton_armed	Skeleton	77	2944,2946	skeleton_attack	skeleton_block	skeleton_death	stabsword_slash	skelly_hit	skeleton_death
+skeleton_unagressive	Skeleton	70	2944	skeleton_attack	skeleton_block	skeleton_death	skeleton_attack	skelly_hit	skeleton_death
+skeleton_unarmed	Skeleton	74	2944	skeleton_attack	skeleton_block	skeleton_death	skeleton_attack	skelly_hit	skeleton_death
+skeletonmage	Skeleton Mage	84	209,251,292,170,256,325				skeleton_attack	skelly_hit	skeleton_death
+skull_skeleton	Skeleton	924	2944	skeleton_attack	skeleton_block	skeleton_death	skeleton_attack	skelly_hit	skeleton_death
+slave_rowdy	Rowdy slave		217,250,292,170,176,265,185,509		human_unarmedblock		baxe_crush		
+small_bat	Bat		3782	bat_attack	bat_parry	bat_death	bat_attack	bat_hit	bat_death
+smallscorpion	Pit Scorpion	3026	2968	smallscorpion_attack	smallscorpion_block	smallscorpion_death	insect_attack	insect_hit	insect_death
+snake	Snake	2845	3002	snake_attack	snake_block	snake_death	snake_attack	snake_hit	snake_death
+souless	Souless	508	2958	souless_attack	souless_block	souless_death	zombie_attack	zombie_hit	zombie_death
+speedy_keith	Speedy Keith	303	206,249,292,151,176,254,185,243,323,490	human_sword_slash	human_sword_def		hacksword_slash		
+spider	Spider	3019	2996	spider_attack	spider_block	spider_death	insect_attack	insect_hit	insect_death
+spirit_of_scorpius	Spirit of Scorpius		2961,2964,2965			ghost_death			ghost_death
+stankers	Stankers	3364	2970,2981,2979,2983,2985,2990,2988			dwarf_death			
+suit_of_armour	Suit of armour	5043	218,313,164,179,268,185,518,486,3330	human_sword_slash	human_sword_def		stabsword_slash	brassclash	swordclash2
+summonedimp	Imp		2887	imp_attack	imp_block	imp_death	imp_attack	imp_hit	imp_death
+summonedzombie	Summoned Zombie	69	2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+tbwt_beast	The Shaikahan		3879	lion_attack	lion_block	lion_death	beast_attack	beast_hit	beast_death
+tbwt_beast_cutscene	The Shaikahan		3879	lion_attack	lion_block	lion_death	beast_attack	beast_hit	beast_death
+terrorbird	Terrorbird	2064	3011	terrorbird_attack	terrorbird_block	terrorbird_death	terrorbird_attack	terrorbird_hit	terrorbird_death
+terrorbird2	Mounted terrorbird gnome	2067	3012	terrorbird_mounted_attack	terrorbird_mounted_block	terrorbird_mounted_death	terrorbird_attack	terrorbird_hit	terrorbird_death
+terrorbird3	Mounted terrorbird gnome	2068	3013	terrorbird_mounted_attack_spear	terrorbird_mounted_block	terrorbird_mounted_death	terrorbird_attack	terrorbird_hit	terrorbird_death
+thief_blanket	Thief	4247	215,246,311,169,179,254,185,519	human_sword_stab	human_sword_def		stabsword_stab		
+thrantax	Thrantax The Mighty	3518	2961,2964,2965	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+thug	Thug	525	215,248,299,159,176,254,181,533	human_sword_stab	human_sword_def		hacksword_stab		
+thurgo	Thurgo		2971,2981,2979,2983,2985			dwarf_death			
+toban	Toban		2880,2874			giant_death			giant_death
+tower_guard	Tower guard	4405	233,246,301,151,179,254,185,517,519	human_sword_stab	human_sword_def		stabsword_stab	blade3_mail	
+tracker1	Gnome		2909,2890,2915			midget_death			gnome_death
+tracker2	Gnome		2909,2890,2915			midget_death			gnome_death
+tracker3	Gnome		2909,2890,2915			midget_death			gnome_death
+trail_hard2	Saradomin Wizard	2955	230,181,249,292,323,170,176,265,539	human_ddagger_lunge	human_ddagger_block		null	null	null
+tree_spirit	Tree spirit	1163	2961,2965,2964	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+treevillage_shopkeeper1	Bolkoy		2909,2901,2917			midget_death			gnome_death
+tribesman	Tribesman	530	231,181,246,315,173,176,279,540,201	human_spear_spike	human_spear_block		staff_stab		
+troll	Troll	936	3752	troll_attack	troll_block	troll_death	troll_attack	troll_hit	troll_death
+troll_champion	Dad		3753,3759,3756,3773,3761	troll_attack	troll_block	troll_death	troll_champion_attack	troll_champion_hit	troll_champion_death
+troll_general	Troll General		3753,3759,3756,3768,3770,3760,3757,3774	troll_attack	troll_block	troll_death	2H_crush	stone_armour3	troll_death
+troll_general2	Troll General		3754,3759,3756,3769,3770,3760,3757,3774	troll_attack	troll_block	troll_death	warhammer_crush	stone_armour3	troll_death
+troll_general3	Troll General		3753,3759,3755,3769,3770,3760,3757,3774	troll_attack	troll_block	troll_death	mace_crush	stone_armour3	troll_death
+troll_melee1	Mountain Troll		3753,3759,3755,3769	troll_attack	troll_block	troll_death	warhammer_crush	troll_hit	troll_death
+troll_prison_guard1	Twig		3754,3758,3756,3769,3771	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+troll_prison_guard1_awake	Twig		3754,3758,3756,3769,3771	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+troll_prison_guard2	Berry		3754,3758,3756,3763,3771	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+troll_prison_guard2_awake	Berry		3754,3758,3756,3763,3771	troll_attack	troll_block	troll_death	troll_guard_attack	troll_hit	troll_death
+troll_spectator1	Troll Spectator		3753,3758,3756,3762	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_spectator2	Troll Spectator		3753,3759,3755,3763	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_spectator3	Troll Spectator		3753,3758,3756,3762,3766	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_spectator4	Troll Spectator		3753,3758,3755,3763	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_spectator5	Troll Spectator		3753,3759,3756,3762,3766	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_spectator6	Troll Spectator		3754,3758,3755,3763	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_spectator7	Troll Spectator		3753,3759,3755,3762	troll_attack	troll_block	troll_death	mace_crush	troll_hit	troll_death
+troll_thrower1	Thrower Troll		3753,3758,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+troll_thrower2	Thrower Troll		3753,3759,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+troll_thrower3	Thrower Troll		3753,3758,3756,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+troll_thrower4	Thrower Troll		3754,3758,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+troll_thrower5	Thrower Troll		3753,3759,3755,3765	troll_rock_throw	troll_block	troll_death		troll_hit	troll_death
+tunnel_dwarf	Mountain Dwarf		2970,2980,2978,2984,2985,2993			dwarf_death			
+ugthanki	Ugthanki	4652	2939	camel_attack	camel_block	camel_death	cow_attack	cow_hit	cow_death
+ungadulu_bad	Ungadulu	3958	214,250,292,170,176,265,181,534	human_staff_pummel	human_staff_block		staff_double		
+ungadulu_good	Ungadulu	3957	214,250,292,170,176,265,181,534	human_staff_pummel	human_staff_block		staff_double		
+unicorn	Unicorn	2837	2933	unicorn_attack	unicorn_block	unicorn_death	cow_attack	horse_hit	
+unicorn_foal_1	Unicorn Foal		2933	unicorn_attack	unicorn_block	unicorn_death	cow_attack	horse_hit	
+unicorn_upass	Unicorn	9209	2933	unicorn_attack	unicorn_block	unicorn_death	cow_attack	horse_hit	
+upass_little_spider	Spider	4561	2996	spider_attack	spider_block	spider_death	insect_attack	insect_hit	insect_death
+upass_paladin1	Sir Jerro	8987	217,248,313,156,176,268,185,518,541,3330	human_sword_slash	human_sword_def		hacksword_slash	blade4	
+upass_paladin2	Sir Carl	8988	214,250,313,156,176,268,185,518,541,3330	human_sword_slash	human_sword_def		hacksword_slash	blade4	
+upass_paladin3	Sir Harry	8989	214,250,313,156,176,268,185,518,541,3330	human_sword_slash	human_sword_def		hacksword_slash	blade4	
+upassdwarf1	Nilhoof		2970,2984,2981,2979,2985,2990			dwarf_death			
+upassdwarf2	Klank		2971,2984,2981,2979,2985			dwarf_death			
+upassdwarf3	Kamen		2972,2984,2981,2979,2985,2990			dwarf_death			
+vampire_count	vampire_count	3239	4089,306,174,176,265,546				vampire_attack	vampire_hit	vampire_death
+vampire_flyer	Vampire		4089,4090,4088,275,181	vamp_claw	human_unarmedblock		vampire_attack	vampire_hit	vampire_death
+vampire_juve	Vampire		4089,310,151,4088,275,181	vamp_claw	human_unarmedblock		vampire_attack	vampire_hit	vampire_death
+vampire_juve_hound	vampire_juve_hound		2937	dog_attack	dog_block	dog_death	null	null	null
+vampire_leech	Leech		4083	leechattack	leechblock	leechdeath	leech_suck	leech_hit	leech_death
+viking_bunny_1	Bunny		4042	rabbit_attack	rabbit_block	rabbit_death	rabbit_attack	rabbit_hit	rabbit_death
+viking_bunny_2	Bunny		4042	rabbit_attack	rabbit_block	rabbit_death	rabbit_attack	rabbit_hit	rabbit_death
+viking_draugen	The Draugen		4386	human_sword_slash	human_sword_def		unarmed_punch	ghost_hit	
+viking_enemy1	Koschei the deathless		203,252,315,165,3381,4226,4218,4236	human_sword_slash	human_sword_def		staff_stab		
+viking_enemy2	Koschei the deathless		203,252,315,165,3381,4226,4218,4236	human_sword_slash	human_sword_def		staff_stab		
+viking_enemy3	Koschei the deathless		203,252,315,165,3381,4226,4218,4236	human_sword_slash	human_sword_def		staff_stab		
+viking_enemy4	Koschei the deathless		203,252,315,165,3381,4226,4218,4236	human_sword_slash	human_sword_def		staff_stab		
+viking_fox	Fox		4397	dog_attack	dog_block	dog_death	null	null	null
+viking_guard	Market Guard		4220,252,292,162,179,4226,4218,4236,326,4235,317,4219	human_sword_slash	human_sword_def		hacksword_slash	blade5	
+viking_guard2	Warrior		4220,252,292,162,179,4226,4218,542,326,4235,317,4219	human_blunt_pound	human_blunt_def		warhammer_crush	blade5	
+viking_man	Agnar		4220,252,292,162,176,4221,4219,4226,4218,550,4235,4391	human_blunt_pound	human_axe_def		baxe_crush	blade5	
+viking_man2	Freidir		206,252,292,162,176,4226,4218,4391		human_unarmedblock				
+viking_man3	Borrokar		4220,252,299,162,179,4226,4218,550,4221,4219	human_blunt_pound	human_blunt_def		baxe_crush		
+viking_man4	Lanzig		208,252,292,170,176,265,185,317,4391,3711		human_unarmedblock				
+viking_man5	Pontak		4220,252,292,162,176,4221,4219,4226,4218,4236,317,4391	human_sword_slash	human_sword_def		hacksword_slash		
+viking_seagull	Gull		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+viking_seagull2	Gull		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+viking_seagull3	Gull		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+viking_seagull4	Gull		2850	bird_attack	bird_block	bird_death	bird_attack	bird_hit	bird_death
+viking_wolf	Wolf		2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+viking_woman	Freygerd		387,343,456,421,353,479,361		human_unarmedblock			female_hit	female_death
+viking_woman2	Lensa		382,470,343,353,421,358,479		human_unarmedblock			female_hit	female_death
+viking_woman3	Jennella		390,343,456,421,353,479,361,417		human_unarmedblock			female_hit	female_death
+viking_woman4	Sassilik		382,483,456,479,348,353,421,358		human_unarmedblock			female_hit	female_death
+viking_woman_indoors	Inga		378,343,470,421,483,479,353,361		human_unarmedblock			female_hit	female_death
+viyeldi	Viyeldi	3963	202,292,170,256,534,209	human_staff_pummel	human_staff_block		staff_double	otherworld_hit	otherworld_death
+w_ardoungechild1	Child		2897,2909,2918			midget_death			
+w_ardoungecitizenlady1	Woman	1130	390,474,351,353,438,358					female_hit	female_death
+w_ardoungecitizenlady2	Woman	1141	404,462,351,353,437,358					female_hit	female_death
+w_ardoungecitizenlady4	Woman	1142	404,462,351,353,437,358					female_hit	female_death
+warrior_woman	Warrior woman	3260	390,468,337,353,432,361,376,519,541	human_sword_stab	human_sword_def		hacksword_stab	steel	female_death
+weaponsmaster	Weaponsmaster	14137	230,249,306,156,176,254,185,518				stabsword_slash	blade3	
+white_knight	White Knight	1798	218,306,164,179,268,185,546	human_dhsword_chop	human_sword_def		2H_crush	blade3	
+whitewolf	White wolf	108	2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+whitewolf_sentry	White wolf	107	2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+wilough	Wilough		2897,2909,2918			midget_death			
+witch1	Witch	514	405,470,348,353,428,361,377	human_unarmedkick			unarmed_kick	female_hit	female_death
+witch2	Witch	515	405,470,348,353,428,361,377	human_unarmedkick			unarmed_kick	female_hit	female_death
+witchrat	Mouse		2927			rat_death			rat_death
+wizard_grayzag	Wizard Grayzag		235,181,248,292,170,176,265,202	human_unarmedkick			unarmed_kick		
+wolf	Wolf	106	2937	dog_attack	dog_block	dog_death	wolf_attack	wolf_hit	wolf_death
+wolfpack_leader	Big Wolf	109	2937	dog_attack	dog_block	dog_death	wolf_attack2	wolf_hit	wolf_death
+woman	Woman	3111	390,456,332,353,421,358					female_hit	female_death
+woman2	Woman	3112	391,471,332,353,419,358,414					female_hit	female_death
+woman3	Woman	3113	393,456,351,356,435,414					female_hit	female_death
+wormbrain	Wormbrain	820	2951,2953,2955,2956	goblin_attack_unarmed	goblin_block	goblin_death	goblin_attack	goblin_hit	goblin_death
+wyson	Wyson the gardener	3276	230,246,292,327,151,179,274,185,495	human_farmersfork_stab	human_farmersfork_def		farmersfork_stab		
+yanille_soldier	Soldier	5421	219,301,167,179,274,185,249,518	human_sword_slash	human_sword_def		hacksword_slash	blade3_mail	
+yanille_watchman	Watchman	5420	219,301,167,179,274,185,249					blade3_mail	
+yeti	Yeti	2847	3001	yeti_attack	yeti_block	yeti_death	giant_attack	giant_hit	giant_death
+zadimus_ghost	Zadimus' spirit.		2962,2964,2965			ghost_death			ghost_death
+zamorak_mage	Battle mage	1610	207,246,243,310,168,176,260,323,185,544		human_staff_block				
+zamorakghost	Ghost	5370	2961,2964,2965	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+zanarisleprechaun	Shamus	1162	2909,2896,2915	midget_attackunarmed	midget_block	midget_death	gnome_attack	gnome_hit	gnome_death
+zombie2	Zombie	42	2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+zombie_armed	Zombie	49	2931,2932	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+zombie_entranan	Zombie	64	2931,2932	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+zombie_unarmed	Zombie	26	2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+zq_mainzombie1	Nazastarool	5353	2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+zq_mainzombie2	Nazastarool	5354	2944,2946	skeleton_attack	skeleton_block	skeleton_death	stabsword_slash	zombie_hit	zombie_death
+zq_mainzombie3	Nazastarool	5355	2961,2964,2965	ghost_attack	ghost_block	ghost_death	ghost_attack	ghost_hit	ghost_death
+zqskeleton_armed	Undead One	5344	2944,2946	skeleton_attack	skeleton_block	skeleton_death	stabsword_slash	skelly_hit	skeleton_death
+zqskeleton_unarmed	Undead One	5342	2944	skeleton_attack	skeleton_block	skeleton_death	skeleton_attack	skelly_hit	skeleton_death
+zqzombie_armed	Undead One	5349	2931,2932	zombie_attack	zombie_block	zombie_death	baxe_crush	zombie_hit	zombie_death
+zqzombie_unarmed	Undead One	5346	2931	zombie_attack	zombie_block	zombie_death	zombie_attack	zombie_hit	zombie_death
+zqzombiequeen	Rashiliyia	5352	2960,2963,2965			ghost_death			ghost_death

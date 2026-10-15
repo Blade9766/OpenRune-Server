@@ -22,6 +22,32 @@ data class BotStats(
     val coinsEarned: Long = 0,
 )
 
+/**
+ * A listing whose items have left the bot's inventory but whose offer is not yet known to be on
+ * disk. Written before the offer is placed, cleared once the exchange has saved it.
+ */
+data class PendingListing(
+    val slot: Int,
+    val itemId: Int,
+    val quantity: Int,
+    val price: Int,
+    val placed: Boolean = false,
+    val placedAtSave: Long = 0,
+)
+
+/**
+ * A collection already credited to the bot's bank but not yet known to be taken out of the
+ * exchange on disk. The targets are the offer's ever-increasing collected totals.
+ */
+data class PendingCollect(
+    val slot: Int,
+    val createdAt: Long,
+    val coinsTarget: Long,
+    val itemsTarget: Int,
+    val taken: Boolean = false,
+    val takenAtSave: Long = 0,
+)
+
 data class BotRecord(
     val id: Long,
     val name: String,
@@ -32,16 +58,22 @@ data class BotRecord(
     val lastError: String? = null,
     val save: BotSave = BotSave(),
     val stats: BotStats = BotStats(),
-    /** Incremented with every successful listing; part of the listing's idempotency key. */
-    val saleSeq: Long = 0,
     val saleRetries: Int = 0,
     val salePausedUntil: Long = 0,
     val errorRecoveries: Int = 0,
     val gatherWindowStart: Long = 0,
     val gatherWindowCount: Int = 0,
+    val pendingListing: PendingListing? = null,
+    val pendingCollects: List<PendingCollect> = emptyList(),
+    /** Completed count already credited to [stats] per offer, keyed by its creation time. */
+    val salesCounted: Map<Long, Int> = emptyMap(),
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
 ) {
-    val listingRef: String
-        get() = "bot:$id:sale:$saleSeq"
+    /** The exchange owner id: bots use negative account ids, which no real account has. */
+    val ownerId: Int
+        get() = -id.toInt()
+
+    val hasPendingExchangeWork: Boolean
+        get() = pendingListing != null || pendingCollects.isNotEmpty()
 }

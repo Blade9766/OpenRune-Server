@@ -204,6 +204,17 @@ object Smithing {
             column(COL_SMELT_XP_ALTERNATE, 56)
             column(COL_PREFIX, "gold")
         }
+        // Family Crest: only the seam under Witchaven still yields it, and only during the quest.
+        row("dbrow.perfect_gold") {
+            production {
+                input("obj.perfect_gold_ore", 1)
+                statReq("stat.smithing", 40)
+                xp(22)
+                output("obj.perfect_gold_bar")
+            }
+            column(COL_SMITH_XP, 0)
+            column(COL_PREFIX, "perfect gold")
+        }
         row("dbrow.lovakite") {
             production {
                 input("obj.lovakite_ore", 1)

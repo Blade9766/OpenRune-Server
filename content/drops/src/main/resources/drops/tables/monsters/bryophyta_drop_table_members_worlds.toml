@@ -1,0 +1,181 @@
+id = "Bryophyta Members' worlds drops"
+npcs = ["npc.gb_mossgiant"]
+
+[main]
+total = 128
+name = "Bryophyta Members' worlds drops"
+
+[[main.entries]]
+weight = 5
+obj = "obj.black_sq_shield"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.magic_staff"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.steel_med_helm"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.mithril_sword"
+count = 1
+
+[[main.entries]]
+weight = 2
+obj = "obj.mithril_spear"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.steel_kiteshield"
+count = 1
+
+[[main.entries]]
+weight = 4
+obj = "obj.lawrune"
+count = 3
+
+[[main.entries]]
+weight = 3
+obj = "obj.airrune"
+count = 18
+
+[[main.entries]]
+weight = 3
+obj = "obj.earthrune"
+count = 27
+
+[[main.entries]]
+weight = 3
+obj = "obj.chaosrune"
+count = 7
+
+[[main.entries]]
+weight = 3
+obj = "obj.naturerune"
+count = 6
+
+[[main.entries]]
+weight = 2
+obj = "obj.cosmicrune"
+count = 3
+
+[[main.entries]]
+weight = 2
+obj = "obj.iron_arrow"
+count = 15
+
+[[main.entries]]
+weight = 1
+obj = "obj.steel_arrow"
+count = 30
+
+[[main.entries]]
+weight = 1
+obj = "obj.deathrune"
+count = 3
+
+[[main.entries]]
+weight = 1
+obj = "obj.bloodrune"
+count = 1
+
+[[main.entries]]
+weight = 19
+obj = "obj.coins"
+count = 37
+
+[[main.entries]]
+weight = 8
+obj = "obj.coins"
+count = 2
+
+[[main.entries]]
+weight = 10
+obj = "obj.coins"
+count = 119
+
+[[main.entries]]
+weight = 2
+obj = "obj.coins"
+count = 300
+
+[[main.entries]]
+weight = 6
+obj = "obj.steel_bar"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.coal"
+count = 1
+
+[[main.entries]]
+weight = 1
+obj = "obj.spinach_roll"
+count = 1
+
+[[main.entries]]
+weight = 5
+shared = "herb"
+
+[[main.entries]]
+weight = 4
+shared = "gem"
+
+[[main.entries]]
+weight = 35
+nothing = true
+
+[[tertiary]]
+numerator = 1
+denominator = 4
+obj = "obj.rag_moss_giant_bone"
+count = 1
+quest = "quest_ragandboneman2"
+quest_mode = "during"
+
+[[tertiary]]
+numerator = 1
+denominator = 24
+obj = "obj.arceuus_corpse_giant"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 16
+obj = "obj.mossy_key"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 400
+obj = "obj.dorgesh_construction_bone"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5000
+obj = "obj.champions_challenge_giant"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 5013
+obj = "obj.dorgesh_construction_bone_curved"
+count = 1
+
+[[tertiary]]
+numerator = 1
+denominator = 45
+obj = "obj.trail_clue_beginner"
+count = 1
+clue_scroll_box = true
+
+
+# Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (35 weight)

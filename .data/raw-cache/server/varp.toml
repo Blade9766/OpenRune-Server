@@ -82,6 +82,12 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.sotd_spec_expiration"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
 id = "varp.com_maxhit"
 transmit = "Never"
 
@@ -830,7 +836,25 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.kc_herbiboar"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
 id = "varp.drew_sandstone"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.sos_sceptre"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.radas_blessing_teleports"
 scope = "Perm"
 transmit = "Never"
 
@@ -842,25 +866,450 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.mm_greegree_form"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.digsite_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.ikov_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.touristtrap_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.deathplateau_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.deathplateau_dice"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.shantay_jail"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fremtrials_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fremtrials_progress"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fremtrials_temp"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.chompy_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.chompy_kills"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.famcrest_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.famcrest_temp"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.upass_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.upass_grid"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.merlin_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.murder_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.legends_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
 id = "varp.drop_rate_multiplier"
 scope = "Perm"
 transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.hunter_rumours"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_rumour_assignments"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_rumours_completed"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_state_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_state_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_state_3"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_state_4"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_time_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_time_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_time_3"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.hunter_birdhouse_time_4"
+scope = "Perm"
+transmit = "Never"
+
 [[varp]]
 id = "varp.wilderness_boss_fee_nowarn"
 scope = "Perm"
 transmit = "Never"
 
 [[varp]]
+isServerOnly = true
 id = "varp.barrows_state"
 scope = "Perm"
 transmit = "Never"
 
 [[varp]]
 isServerOnly = true
-id = "varp.barrows_state"
+id = "varp.knightssword_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.holygrail_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.fishingcontest_round"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.rag_boil"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.ahoy_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.ahoy_last_signer"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.regicide_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.regicide_scene_return"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.roving_elves_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning_end_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_pillars_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_pillars_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_pillars_3"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_pillars_4"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_pillars_5"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_thorgel_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_thorgel_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.mourning2_shadow_peace"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.rd_session"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.rd_lock"
+scope = "Temp"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.respawn_point_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.clocktower_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.princeali_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.piratetreasure_state"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.eadgar_ruse_bits"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.tog_last_visit_day"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.tog_xp_at_last_visit"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the family crest Sir Renitee has assigned (0 = none yet).
+[[varp]]
+isServerOnly = true
+id = "varp.poh_family_crest"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the skill hall trophies the player has mounted, and the ones on show.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_skill_trophies"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the throne room lever has put the owner's house into challenge mode.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_challenge_mode"
+scope = "Temp"
+transmit = "Never"
+
+# Player-owned house: the coins in the treasure room chest.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_treasure"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the map clock at which the owner may next add treasure.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_treasure_cooldown"
+scope = "Temp"
+transmit = "Never"
+
+# Player-owned house: where each portal chamber space leads, packed into varbit.poh_portal_1..3.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_portals"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: which costume room store the player has open (packed into varbits).
+[[varp]]
+isServerOnly = true
+id = "varp.poh_costume_view"
+scope = "Temp"
+transmit = "Never"
+
+# Player-owned house: coins the owner has put in the games room prize chest.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_prize_chest"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the ornate combat dummy forms the owner has paid for, and the one on show.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_dummy_variants"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the boss lair jars put in the achievement gallery display, and the lair on show.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_gallery_lair"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the cape hung on the achievement gallery cape hanger.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_gallery_cape"
+scope = "Perm"
+transmit = "Never"
+
+# Player-owned house: the boss shape the superior garden topiary bush is clipped into.
+[[varp]]
+isServerOnly = true
+id = "varp.poh_topiary"
 scope = "Perm"
 transmit = "Never"
 
@@ -872,9 +1321,35 @@ transmit = "Never"
 
 [[varp]]
 isServerOnly = true
+id = "varp.brewing_ferment_start_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_3"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+isServerOnly = true
+id = "varp.brewing_ferment_start_4"
+scope = "Perm"
+transmit = "Never"
+
+
+[[varp]]
+isServerOnly = true
 id = "varp.gauntlet_reward_tier"
 scope = "Perm"
 transmit = "Never"
+
 
 [[varp]]
 isServerOnly = true
@@ -882,11 +1357,13 @@ id = "varp.gauntlet_flags"
 scope = "Perm"
 transmit = "Never"
 
+
 [[varp]]
 isServerOnly = true
 id = "varp.gauntlet_points"
 scope = "Temp"
 transmit = "Never"
+
 
 [[varp]]
 isServerOnly = true
@@ -894,17 +1371,20 @@ id = "varp.hpbar_open_generation"
 scope = "Temp"
 transmit = "Never"
 
+
 [[varp]]
 isServerOnly = true
 id = "varp.aggression_tolerance_start"
 scope = "Temp"
 transmit = "Never"
 
+
 [[varp]]
 isServerOnly = true
 id = "varp.aggression_tolerance_anchor"
 scope = "Temp"
 transmit = "Never"
+
 
 [[varp]]
 isServerOnly = true

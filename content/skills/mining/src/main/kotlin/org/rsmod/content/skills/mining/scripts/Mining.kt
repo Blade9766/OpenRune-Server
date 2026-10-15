@@ -9,7 +9,6 @@ import dtx.core.ArgMap
 import dtx.core.RollResult
 import dtx.core.flatten
 import jakarta.inject.Inject
-import org.rsmod.api.attr.AttributeKey
 import org.rsmod.api.config.objParam
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.droptable.DropRollItem
@@ -29,6 +28,7 @@ import org.rsmod.api.script.onOpContentU
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.api.table.mining.MiningRocksRow
+import org.rsmod.content.quest.area.lumbridge.losttribe.LostTribeQuest
 import org.rsmod.content.quest.manager.QuestRequirements
 import org.rsmod.content.skills.mining.MiningEquipment.miningGloveExtras
 import org.rsmod.content.skills.mining.MiningEquipment.wearingChargedGlory
@@ -58,6 +58,9 @@ constructor(
     private val invisibleLvls: InvisibleLevels,
     private val mapClock: MapClock,
 ) : PluginScript() {
+    private val minedOreCounts = HashMap<CoordGrid, Int>()
+    private val depletionThresholds = HashMap<CoordGrid, Int>()
+
     override fun ScriptContext.startup() {
         onOpContentLoc1("content.rock") { attempt(it.loc, it.type) }
         onOpContentLoc2("content.rock") { prospect(it.type) }
@@ -76,6 +79,10 @@ constructor(
 
     private fun ProtectedAccess.attempt(rock: BoundLocInfo, type: ObjectServerType) {
         val data = rockData(type) ?: return
+        LostTribeQuest.mineRefusal(player, rock.coords)?.let {
+            mes(it)
+            return
+        }
         if (player.miningLvl < data.level) {
             mes("You need a Mining level of ${data.level} to mine this rock.")
             return
@@ -105,6 +112,10 @@ constructor(
 
     private fun ProtectedAccess.mine(rock: BoundLocInfo, type: ObjectServerType) {
         val data = rockData(type) ?: return
+        LostTribeQuest.mineRefusal(player, rock.coords)?.let {
+            mes(it)
+            return
+        }
         val pickaxe = findPickaxe(player)
         if (pickaxe == null) {
             mesPickaxeMissing()
@@ -172,7 +183,7 @@ constructor(
                     return
                 }
                 SkillingAwardResult.Cancelled -> Unit
-                SkillingAwardResult.Success -> {
+                SkillingAwardResult.Success -> if (!product.consumed) {
                     spam(
                         "You manage to mine some ${getInvObj(InvObj(product.item)).name.lowercase()}.",
                     )
@@ -271,44 +282,21 @@ constructor(
         if (data.isInfinite) {
             return false
         }
-        val gloveExtras = player.miningGloveExtras(data)
-        if (data.hasDepleteRange) {
-            val range = data.depleteRange
-            val threshold =
-                player.attr
-                    .getOrPut(DEPLETION_THRESHOLD_ATTR) { mutableMapOf() }
-                    .getOrPut(rock.coords) {
-                        random.of(range.first, range.last) + gloveExtras
-                    }
-            val counts = player.attr.getOrPut(MINED_ORE_COUNT_ATTR) { mutableMapOf() }
-            val newCount = (counts[rock.coords] ?: 0) + 1
-            counts[rock.coords] = newCount
-            return newCount >= threshold
-        }
-        return handleGloveDeplete(rock, gloveExtras)
+        val baseThreshold =
+            if (data.hasDepleteRange) {
+                val range = data.depleteRange
+                depletionThresholds.getOrPut(rock.coords) { random.of(range.first, range.last) }
+            } else {
+                1
+            }
+        val newCount = (minedOreCounts[rock.coords] ?: 0) + 1
+        minedOreCounts[rock.coords] = newCount
+        return newCount >= baseThreshold + player.miningGloveExtras(data)
     }
 
-    private fun ProtectedAccess.handleGloveDeplete(
-        rock: BoundLocInfo,
-        extras: Int,
-    ): Boolean {
-        if (extras <= 0) {
-            return true
-        }
-        val counts = player.attr.getOrPut(DEPLETE_GLOVE_COUNT_ATTR) { mutableMapOf() }
-        val current = counts[rock.coords] ?: 0
-        return if (current != extras) {
-            counts[rock.coords] = current + 1
-            false
-        } else {
-            true
-        }
-    }
-
-    private fun ProtectedAccess.clearDepleteState(rock: BoundLocInfo) {
-        player.attr[MINED_ORE_COUNT_ATTR]?.remove(rock.coords)
-        player.attr[DEPLETION_THRESHOLD_ATTR]?.remove(rock.coords)
-        player.attr[DEPLETE_GLOVE_COUNT_ATTR]?.remove(rock.coords)
+    private fun clearDepleteState(rock: BoundLocInfo) {
+        minedOreCounts.remove(rock.coords)
+        depletionThresholds.remove(rock.coords)
     }
 
     private fun ProtectedAccess.resolveMineItem(data: MiningRocksRow): String? {
@@ -394,10 +382,6 @@ constructor(
         private const val PROSPECT_DELAY = 4
         private const val INFERNAL_SMITHING_REQ = 85
         private const val SONG_OF_THE_ELVES = "quest_songoftheelves"
-
-        private val MINED_ORE_COUNT_ATTR = AttributeKey<MutableMap<CoordGrid, Int>>()
-        private val DEPLETION_THRESHOLD_ATTR = AttributeKey<MutableMap<CoordGrid, Int>>()
-        private val DEPLETE_GLOVE_COUNT_ATTR = AttributeKey<MutableMap<CoordGrid, Int>>()
 
         val ItemServerType.pickaxeLevelReq: Int by objParam(params.levelrequire)
         val ItemServerType.pickaxeAnim: SequenceServerType by objParam(params.skill_anim)

@@ -126,7 +126,6 @@ internal class TheRestlessGhostCutscene(
         }
 
         quest.completeQuest(access)
-        access.midiJingle(CompletionJingle)
     }
 
     private fun ProtectedAccess.openGate(r: SceneRegion) {
@@ -230,8 +229,6 @@ internal class TheRestlessGhostCutscene(
         const val ReleaseLine = "Release! Thank you stranger.."
         const val FirstSay = "Release! Thank you"
         const val SecondSay = "stranger.."
-
-        const val CompletionJingle = "jingle.mastermindless"
 
         const val CaptureFrameRate = 100
 

@@ -20,7 +20,7 @@ constructor(private val random: GameRandom, private val eventBus: EventBus) : Pl
     override fun ScriptContext.startup() {
         onEvent<SkillingActionCompleteEvent> {
             val product = context as? SkillingActionContext.Product ?: return@onEvent
-            if (product.isBonus || product.skill != "stat.mining") {
+            if (product.isBonus || product.consumed || product.skill != "stat.mining") {
                 return@onEvent
             }
             val source = product.source as? SkillingProductSource.Mining ?: return@onEvent

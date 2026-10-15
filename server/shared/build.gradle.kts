@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    findValidApiSubProjects().forEach { api(it) }
-    findPlugins().forEach { api(it) }
+    findValidApiSubProjects().forEach { api(project(it.path)) }
+    findPlugins().forEach { api(project(it.path)) }
     implementation(libs.guice)
     implementation(libs.kotlin.reflect)
     implementation(libs.openrs2.cache)

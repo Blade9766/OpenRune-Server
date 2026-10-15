@@ -4,66 +4,79 @@ import dev.openrune.definition.type.widget.ComponentType
 import dev.openrune.types.ItemServerType
 import jakarta.inject.Inject
 import org.rsmod.api.player.events.interact.ApEvent
+import org.rsmod.api.player.events.interact.ObjTContentEvents
+import org.rsmod.api.player.events.interact.ObjTDefaultEvents
 import org.rsmod.api.player.events.interact.ObjTEvents
 import org.rsmod.api.player.events.interact.OpEvent
 import org.rsmod.events.EventBus
-import org.rsmod.game.entity.Player
-import org.rsmod.game.interact.InteractionObjT
-import org.rsmod.game.movement.RouteRequestCoord
 import org.rsmod.game.obj.Obj
+import org.rsmod.game.type.getObj
 
+/** Resolves the script triggers for an interface component used on a ground obj. */
 public class ObjTInteractions @Inject constructor(private val eventBus: EventBus) {
-    public fun interact(
-        player: Player,
-        obj: Obj,
-        component: ComponentType,
-        comsub: Int,
-        objType: ItemServerType?,
-    ) {
-        val interaction =
-            InteractionObjT(
-                objType = objType,
-                component = component,
-                comsub = comsub,
-                target = obj,
-                hasOpTrigger = hasOpTrigger(obj, component, comsub, objType),
-                hasApTrigger = hasApTrigger(obj, component, comsub, objType),
-            )
-        player.interaction = interaction
-        player.routeRequest = RouteRequestCoord(obj.coords)
-    }
-
     public fun opTrigger(
         obj: Obj,
+        objType: ItemServerType?,
         component: ComponentType,
         comsub: Int,
-        objType: ItemServerType?,
+        type: ItemServerType = getObj(obj),
     ): OpEvent? {
-        val event = ObjTEvents.Op(obj, comsub, objType, component)
-        return event.takeIf { eventBus.contains(it::class.java, it.id) }
+        val typeEvent = ObjTEvents.Op(obj, type, objType, comsub, component)
+        if (eventBus.contains(typeEvent::class.java, typeEvent.id)) {
+            return typeEvent
+        }
+
+        val contentEvent = ObjTContentEvents.Op(obj, type, objType, comsub, component)
+        if (eventBus.contains(contentEvent::class.java, contentEvent.id)) {
+            return contentEvent
+        }
+
+        val defaultEvent = ObjTDefaultEvents.Op(obj, type, objType, comsub, component)
+        if (eventBus.contains(defaultEvent::class.java, defaultEvent.id)) {
+            return defaultEvent
+        }
+
+        return null
     }
 
     public fun hasOpTrigger(
         obj: Obj,
+        objType: ItemServerType?,
         component: ComponentType,
         comsub: Int,
-        objType: ItemServerType?,
-    ): Boolean = opTrigger(obj, component, comsub, objType) != null
+        type: ItemServerType = getObj(obj),
+    ): Boolean = opTrigger(obj, objType, component, comsub, type) != null
 
     public fun apTrigger(
         obj: Obj,
+        objType: ItemServerType?,
         component: ComponentType,
         comsub: Int,
-        objType: ItemServerType?,
+        type: ItemServerType = getObj(obj),
     ): ApEvent? {
-        val event = ObjTEvents.Ap(obj, comsub, objType, component)
-        return event.takeIf { eventBus.contains(it::class.java, it.id) }
+        val typeEvent = ObjTEvents.Ap(obj, type, objType, comsub, component)
+        if (eventBus.contains(typeEvent::class.java, typeEvent.id)) {
+            return typeEvent
+        }
+
+        val contentEvent = ObjTContentEvents.Ap(obj, type, objType, comsub, component)
+        if (eventBus.contains(contentEvent::class.java, contentEvent.id)) {
+            return contentEvent
+        }
+
+        val defaultEvent = ObjTDefaultEvents.Ap(obj, type, objType, comsub, component)
+        if (eventBus.contains(defaultEvent::class.java, defaultEvent.id)) {
+            return defaultEvent
+        }
+
+        return null
     }
 
     public fun hasApTrigger(
         obj: Obj,
+        objType: ItemServerType?,
         component: ComponentType,
         comsub: Int,
-        objType: ItemServerType?,
-    ): Boolean = apTrigger(obj, component, comsub, objType) != null
+        type: ItemServerType = getObj(obj),
+    ): Boolean = apTrigger(obj, objType, component, comsub, type) != null
 }

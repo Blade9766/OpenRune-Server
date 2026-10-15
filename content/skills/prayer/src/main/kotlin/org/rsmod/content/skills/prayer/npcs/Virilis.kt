@@ -136,23 +136,9 @@ class Virilis : PluginScript() {
         }
 
         val exchangeFee = exchangeCount * 10
-        val takeFeeAndNote =
-            invDel(
-                inv = inv,
-                type1 = "obj.coins",
-                count1 = exchangeFee,
-                type2 = objType.internalName,
-                count2 = exchangeCount,
-            )
-        if (takeFeeAndNote.failure) {
-            startDialogue(npc) {
-                chatNpcNoTurn(neutral, "I require 10 coins for exchanging each banknote.")
-            }
-            return
-        }
-
-        val add = invAdd(inv = inv, type = uncertInternal, count = exchangeCount)
-        if (add.failure) {
+        if (!exchangeNotes(objType.internalName, uncertInternal, exchangeCount, exchangeFee)) {
+            val reason = if (inv.count("obj.coins") < exchangeFee) "I require 10 coins for exchanging each banknote." else "Your inventory is too full."
+            startDialogue(npc) { chatNpcNoTurn(neutral, reason) }
             return
         }
         objbox(uncertInternal, "Virilis converts your banknote(s).")

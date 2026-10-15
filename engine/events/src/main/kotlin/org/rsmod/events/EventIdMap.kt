@@ -25,7 +25,7 @@ public sealed class EventIdMap<K, V> : EventMap<K, MutableMap<Long, V>>() {
         for (idMap in events.values) {
             val iterator = idMap.entries.iterator()
             while (iterator.hasNext()) {
-                if (iterator.next().value?.javaClass?.classLoader === loader) {
+                if (iterator.next().value?.registrantClassLoader() === loader) {
                     iterator.remove()
                     removed++
                 }

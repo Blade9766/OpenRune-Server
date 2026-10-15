@@ -22,6 +22,11 @@ Two effects:
   commands) only fire for players on a listed mode. World-level events - startup, map clock,
   npc spawn - always fire.
 
+An unbound or keyed event is gated when it implements `PlayerEvent`; the player-carrying events in
+`api/player` (soft timers and queues, interface open/close/move, held drop/equip, walk triggers,
+hits) and the instance join/leave events do. A new event that is about one player should implement
+it too, or scoped handlers for it fire on every mode.
+
 `content/events/raging-echoes-league` is the smallest working example in the repo.
 
 ## Telling a denied player why

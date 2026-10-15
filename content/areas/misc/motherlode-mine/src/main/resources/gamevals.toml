@@ -1,5 +1,5 @@
 [gamevals.area]
-motherlode_mine = 59
+motherlode_mine = 85
 
 [gamevals.currency]
 golden_nugget = 65534
@@ -8,16 +8,17 @@ golden_nugget = 65534
 motherlode_paydirt = 63510
 
 [gamevals.dbrow]
-shop_currency_golden_nugget = 63500
-motherlode_paydirt_nugget = 63510
-motherlode_paydirt_runite = 63511
-motherlode_paydirt_adamantite = 63512
-motherlode_paydirt_mithril = 63513
-motherlode_paydirt_gold = 63514
-motherlode_paydirt_coal = 63515
+shop_currency_golden_nugget = 63000
+motherlode_paydirt_nugget = 63002
+motherlode_paydirt_runite = 63003
+motherlode_paydirt_adamantite = 63004
+motherlode_paydirt_mithril = 63005
+motherlode_paydirt_gold = 63006
+motherlode_paydirt_coal = 63007
 
 [gamevals.inv]
-motherlode_nugget_shop = 1101
+# Moved off 1101: inv.emirs_arena_stake already holds it and is persisted player data.
+motherlode_nugget_shop = 1102
 
 [gamevals.varp]
 motherlode_unlocks = 65400

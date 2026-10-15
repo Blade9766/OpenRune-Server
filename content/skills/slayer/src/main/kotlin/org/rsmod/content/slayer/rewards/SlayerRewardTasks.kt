@@ -4,21 +4,16 @@ import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
-import org.rsmod.api.table.slayer.SlayerUnlockRow
 import org.rsmod.content.slayer.core.MortimerAssignment
 import org.rsmod.content.slayer.core.SlayerTaskManager
 
 internal object SlayerRewardTasks {
 
-    private val taskManagementBase: Int by lazy {
-        (SlayerUnlockRow.all().maxOfOrNull { it.bit } ?: -1) + 1
-    }
-
     fun handleComsub(access: ProtectedAccess, comsub: Int) {
         when (comsub) {
-            cancelComsub -> confirmCancel(access)
-            blockComsub -> confirmBlock(access)
-            extendAllComsub -> SlayerRewardUnlocks.confirmFullExtensionUnlock(access)
+            CANCEL_COMSUB -> confirmCancel(access)
+            BLOCK_COMSUB -> confirmBlock(access)
+            EXTEND_ALL_COMSUB -> SlayerRewardUnlocks.confirmFullExtensionUnlock(access)
         }
     }
 
@@ -64,7 +59,7 @@ internal object SlayerRewardTasks {
             return
         }
 
-        val varbit = RSCM.getReverseMapping(RSCMType.VARBIT,master.blockVarbits[slot])
+        val varbit = RSCM.getReverseMapping(RSCMType.VARBIT, master.blockVarbits[slot])
         if (!SlayerRewardsPoints.spendPoints(access.player, blockCost)) return
 
         VarPlayerIntMapSetter.set(access.player, varbit, access.vars["varp.slayer_target"])
@@ -83,7 +78,7 @@ internal object SlayerRewardTasks {
 
     private fun confirmUnblock(access: ProtectedAccess, slotIndex: Int) {
         val master = SlayerTaskManager.getFocusedMaster(access.player) ?: return
-        val varbit = RSCM.getReverseMapping(RSCMType.VARBIT,master.blockVarbits[slotIndex])
+        val varbit = RSCM.getReverseMapping(RSCMType.VARBIT, master.blockVarbits[slotIndex])
         if (access.vars[varbit] == 0) {
             access.mes("You don't have a Slayer task blocked in that slot.")
             return
@@ -93,14 +88,9 @@ internal object SlayerRewardTasks {
         SlayerRewardsPoints.update(access.player)
     }
 
-    private val cancelComsub: Int
-        get() = taskManagementBase
-
-    private val blockComsub: Int
-        get() = taskManagementBase + 1
-
-    private val extendAllComsub: Int
-        get() = taskManagementBase + 8
-
+    private const val CONFIRM_COMSUB_BASE = 66
+    private const val CANCEL_COMSUB = CONFIRM_COMSUB_BASE + 1
+    private const val BLOCK_COMSUB = CONFIRM_COMSUB_BASE + 2
+    private const val EXTEND_ALL_COMSUB = CONFIRM_COMSUB_BASE + 9
     private const val CANCEL_TASK_COST = 30
 }

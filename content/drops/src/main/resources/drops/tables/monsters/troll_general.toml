@@ -5,7 +5,7 @@ brimstone_key_roll = true
 [[guaranteed]]
 obj = "obj.troll_key_prison"
 count = 1
-quest = "quest_trollstrongholdquest"
+quest = "quest_trollstronghold"
 quest_mode = "during"
 
 [main]

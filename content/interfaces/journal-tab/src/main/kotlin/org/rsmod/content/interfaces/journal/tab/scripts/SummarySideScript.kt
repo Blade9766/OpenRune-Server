@@ -69,7 +69,14 @@ constructor(private val eventBus: EventBus, private val protectedAccess: Protect
 
     private fun Player.clickCombatAchievements() {
         ifClose(eventBus)
-        val opened = protectedAccess.launch(this) { ifOpenMainModal("interface.ca_overview") }
+        val interf =
+            when (vars["varbit.ca_last_opened_interface"]) {
+                1 -> "interface.ca_tasks"
+                2 -> "interface.ca_rewards"
+                3 -> "interface.ca_bosses"
+                else -> "interface.ca_overview"
+            }
+        val opened = protectedAccess.launch(this) { ifOpenMainModal(interf) }
         if (!opened) {
             mes("Please finish what you're doing first.")
         }

@@ -1,0 +1,12 @@
+# The big frogs of Lumbridge Swamp are the cache's no-drop variant, so they leave nothing but the
+# Rag and Bone Man I specimen.
+id = "Big frog (Lumbridge Swamp) Drops"
+npcs = ["npc.medium_frog_nodrops"]
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.rag_medium_frog_bone"
+count = 1
+quest = "quest_ragandboneman1"
+quest_mode = "during"

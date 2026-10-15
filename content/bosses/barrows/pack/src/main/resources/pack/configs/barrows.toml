@@ -1,0 +1,22 @@
+[[varp]]
+id = "varp.barrows_layout"
+scope = "Perm"
+transmit = "Never"
+
+[[varbit]]
+id = "varbit.barrows_locked_doors"
+varp = "varp.barrows_layout"
+startBit = 0
+endBit = 15
+
+[[varbit]]
+id = "varbit.barrows_puzzle_type"
+varp = "varp.barrows_layout"
+startBit = 16
+endBit = 17
+
+[[varbit]]
+id = "varbit.barrows_puzzle_answer"
+varp = "varp.barrows_layout"
+startBit = 18
+endBit = 19

@@ -1,0 +1,10 @@
+# The troll thistle is a plant: it must never wander off its patch. A server-only entry that
+# names an option replaces the whole op list, so Pick is listed.
+[[npc]]
+isServerOnly = true
+id = "npc.eadgar_troll_thistle"
+inherit = "npc.eadgar_troll_thistle"
+wanderRange = 0
+defaultMode = "None"
+moveRestrict = "NoMove"
+option1 = "Pick"

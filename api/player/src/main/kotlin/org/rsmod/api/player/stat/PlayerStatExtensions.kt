@@ -101,7 +101,7 @@ public fun Player.statAdd(stat: String, constant: Int, percent: Int) {
 
     statMap.setCurrentLevel(stat, cappedLevel.toByte())
 
-    val statType = ServerCacheManager.getStats(stat.asRSCM(RSCMType.STAT))?: error("No stat found for $stat")
+    val statType = ServerCacheManager.getStats(stat.asRSCM(RSCMType.STAT)) ?: error("No stat found for $stat")
 
     updateStat(stat)
 
@@ -247,7 +247,7 @@ public fun Player.statHeal(internal: String, constant: Int, percent: Int) {
     val base = statBase(internal)
     val current = stat(internal)
     val calculated = current + (constant + (base * percent) / 100)
-    val cappedLevel = calculated.coerceIn(current, base)
+    val cappedLevel = calculated.coerceIn(current, maxOf(current, base))
 
     statMap.setCurrentLevel(internal, cappedLevel.toByte())
 

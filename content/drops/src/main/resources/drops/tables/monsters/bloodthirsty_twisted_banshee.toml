@@ -168,5 +168,19 @@ denominator = 1
 obj = "obj.trail_clue_hard_map001"
 count = 1
 
+[[tertiary]]
+numerator = 1
+denominator = 186
+obj = "obj.cata_shard"
+count = 1
+area = "area.catacombs_of_kourend"
+
+[[tertiary]]
+numerator = 1
+denominator = 1
+obj = "obj.cata_totem1"
+count = 1
+area = "area.catacombs_of_kourend"
+dark_totem_piece = true
 
 # Main table pool padding uses a nothing roll (F2P drops removed and/or subtable access missing from wiki parse) (6 weight)

@@ -24,6 +24,7 @@ import org.rsmod.api.player.righthand
 import org.rsmod.api.registry.region.RegionRegistry
 import org.rsmod.game.client.ClientCycle
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.Appearance
 import org.rsmod.game.entity.util.EntityFaceAngle
 import org.rsmod.game.headbar.Headbar
 import org.rsmod.game.hit.Hitmark
@@ -37,8 +38,9 @@ import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
 
 /**
- * Drives a player's info protocol. A `null` [session] makes the cycle headless: the avatar is
- * still updated (so other players see the character) but nothing is sent anywhere.
+ * Keeps a player's info avatar in step with the game each cycle and ships the result to their
+ * client. A null [session] is a server-driven player (see [BotSessions]): other clients still see
+ * the avatar, and the info packets computed for it are released unsent.
  */
 class RspCycle(
     private val session: Session<Player>?,
@@ -84,9 +86,8 @@ class RspCycle(
     }
 
     private fun Player.queueRebuildLogin() {
-        val session = session ?: return
         val rebuild = RebuildLoginV2(x shr 3, z shr 3, worldId, playerInfo)
-        session.queue(rebuild)
+        session?.queue(rebuild)
     }
 
     override fun update(player: Player) {
@@ -108,7 +109,6 @@ class RspCycle(
     }
 
     override fun flush(player: Player) {
-        val session = session
         if (session == null) {
             release()
             return
@@ -486,13 +486,22 @@ class RspCycle(
         )
 
         for (wearpos in Wearpos.visibleWearpos) {
-            val obj = worn[wearpos.slot]
-            if (obj == null) {
+            val override = appearance.wornOverride(wearpos.slot)
+            if (override == Appearance.HIDDEN_WORN_OVERRIDE) {
                 info.setWornObj(wearpos.slot, -1, -1, -1)
                 continue
             }
-            val objType = getInvObj(obj)
-            info.setWornObj(wearpos.slot, obj.id, objType.wearpos2, objType.wearpos3)
+            val objType =
+                if (override != null) {
+                    ServerCacheManager.getItem(override)
+                } else {
+                    worn[wearpos.slot]?.let(::getInvObj)
+                }
+            if (objType == null) {
+                info.setWornObj(wearpos.slot, -1, -1, -1)
+                continue
+            }
+            info.setWornObj(wearpos.slot, objType.id, objType.wearpos2, objType.wearpos3)
         }
     }
 

@@ -2259,6 +2259,7 @@ inherit = "obj.wild_cave_sceptre_charged_recol"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=27785
 "param.additional_spell_autocast1"=3310
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
@@ -2283,6 +2284,7 @@ inherit = "obj.wild_cave_accursed_charged_recol"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=27676
 "param.additional_spell_autocast1"=3310
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
@@ -7206,6 +7208,10 @@ id = "obj.battlestaff"
 inherit = "obj.battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7229,6 +7235,10 @@ id = "obj.fire_battlestaff"
 inherit = "obj.fire_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7252,6 +7262,10 @@ id = "obj.water_battlestaff"
 inherit = "obj.water_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7275,6 +7289,10 @@ id = "obj.air_battlestaff"
 inherit = "obj.air_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7298,6 +7316,10 @@ id = "obj.earth_battlestaff"
 inherit = "obj.earth_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7321,6 +7343,10 @@ id = "obj.mystic_fire_staff"
 inherit = "obj.mystic_fire_staff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7344,6 +7370,10 @@ id = "obj.mystic_water_staff"
 inherit = "obj.mystic_water_staff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7367,6 +7397,10 @@ id = "obj.mystic_air_staff"
 inherit = "obj.mystic_air_staff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7390,6 +7424,10 @@ id = "obj.mystic_earth_staff"
 inherit = "obj.mystic_earth_staff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -7600,6 +7638,7 @@ tradeable = false
 "param.attack_sound_stance4"=2555
 "param.defend_anim"="seq.human_blunt_block"
 "param.attackrate"=5
+"param.additional_spell_autocast1"=3311
 
 
 [[item]]
@@ -7617,6 +7656,7 @@ tradeable = false
 "param.attack_sound_stance4"=2555
 "param.defend_anim"="seq.human_blunt_block"
 "param.attackrate"=5
+"param.additional_spell_autocast1"=3309
 
 
 [[item]]
@@ -7634,6 +7674,7 @@ tradeable = false
 "param.attack_sound_stance4"=2555
 "param.defend_anim"="seq.human_blunt_block"
 "param.attackrate"=5
+"param.additional_spell_autocast1"=3310
 
 
 [[item]]
@@ -7768,6 +7809,7 @@ inherit = "obj.ogre_bow"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.required_ammo"="category.ogre_arrows"
 "param.proj_type"="projanim.arrow"
 "param.equipment_sound"=2244
 "param.attackrate"=8
@@ -7843,6 +7885,10 @@ id = "obj.lava_battlestaff"
 inherit = "obj.lava_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -9162,6 +9208,7 @@ id = "obj.zogre_bow"
 inherit = "obj.zogre_bow"
 weaponCategory="Bow"
 [item.params]
+"param.required_ammo"="category.ogre_arrows"
 "param.proj_type"="projanim.arrow"
 "param.equipment_sound"=2244
 "param.attackrate"=5
@@ -11304,6 +11351,10 @@ id = "obj.mud_battlestaff"
 inherit = "obj.mud_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -11327,6 +11378,10 @@ id = "obj.mystic_mud_staff"
 inherit = "obj.mystic_mud_staff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15250,6 +15305,10 @@ id = "obj.steam_battlestaff"
 inherit = "obj.steam_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15273,6 +15332,10 @@ id = "obj.mystic_steam_battlestaff"
 inherit = "obj.mystic_steam_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15529,6 +15592,7 @@ id = "obj.tots"
 inherit = "obj.tots"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=11907
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15552,6 +15616,7 @@ inherit = "obj.tots_charged"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=11908
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15574,6 +15639,7 @@ id = "obj.tots_uncharged"
 inherit = "obj.tots_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=11907
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15617,6 +15683,10 @@ id = "obj.smoke_battlestaff"
 inherit = "obj.smoke_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -15640,6 +15710,10 @@ id = "obj.mystic_smoke_battlestaff"
 inherit = "obj.mystic_smoke_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -16103,6 +16177,10 @@ inherit = "obj.steam_battlestaff_pretty"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -16127,6 +16205,10 @@ inherit = "obj.mystic_steam_battlestaff_pretty"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -16248,6 +16330,7 @@ inherit = "obj.toxic_tots_charged"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=12900
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -16270,6 +16353,7 @@ id = "obj.toxic_tots_uncharged"
 inherit = "obj.toxic_tots_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=12899
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -17977,6 +18061,10 @@ id = "obj.mist_battlestaff"
 inherit = "obj.mist_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18000,6 +18088,10 @@ id = "obj.mystic_mist_battlestaff"
 inherit = "obj.mystic_mist_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18023,6 +18115,10 @@ id = "obj.dust_battlestaff"
 inherit = "obj.dust_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18046,6 +18142,10 @@ id = "obj.mystic_dust_battlestaff"
 inherit = "obj.mystic_dust_battlestaff"
 weaponCategory="Staff"
 [item.params]
+"param.statreq2_level"=40
+"param.statreq2_skill"=6
+"param.statreq1_level"=40
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18359,6 +18459,10 @@ inherit = "obj.lava_battlestaff_pretty"
 weaponCategory="Staff"
 tradeable = false
 [item.params]
+"param.statreq2_level"=30
+"param.statreq2_skill"=6
+"param.statreq1_level"=30
+"param.statreq1_skill"=0
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18535,6 +18639,7 @@ inherit = "obj.tots_i_charged"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=22290
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18557,6 +18662,7 @@ id = "obj.tots_i_uncharged"
 inherit = "obj.tots_i_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=22288
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18580,6 +18686,7 @@ inherit = "obj.toxic_tots_i_charged"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=22294
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18602,6 +18709,7 @@ id = "obj.toxic_tots_i_uncharged"
 inherit = "obj.toxic_tots_i_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=22292
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18642,6 +18750,7 @@ inherit = "obj.sanguinesti_staff"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=22481
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18663,6 +18772,24 @@ tradeable = false
 [[item]]
 id = "obj.ghrazi_rapier"
 inherit = "obj.ghrazi_rapier"
+weaponCategory="StabSword"
+[item.params]
+"param.equipment_sound"=2248
+"param.attack_anim_stance1"="seq.ghrazi_rapier_attack"
+"param.attack_sound_stance1"=2549
+"param.attack_anim_stance2"="seq.ghrazi_rapier_attack"
+"param.attack_sound_stance2"=2549
+"param.attack_anim_stance3"="seq.human_sword_slash"
+"param.attack_sound_stance3"=2548
+"param.attack_anim_stance4"="seq.ghrazi_rapier_attack"
+"param.attack_sound_stance4"=2549
+"param.bas_readyanim"="seq.human_ds_ready"
+"param.defend_anim"="seq.human_sword_def"
+
+
+[[item]]
+id = "obj.belles_folly"
+inherit = "obj.belles_folly"
 weaponCategory="StabSword"
 [item.params]
 "param.equipment_sound"=2248
@@ -18723,6 +18850,7 @@ inherit = "obj.deadman_starter_staff"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.attack_range"=6
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18855,6 +18983,7 @@ id = "obj.sanguinesti_staff_uncharged"
 inherit = "obj.sanguinesti_staff_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=22323
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -18962,6 +19091,7 @@ id = "obj.wild_cave_bow_uncharged"
 inherit = "obj.wild_cave_bow_uncharged"
 weaponCategory="Bow"
 [item.params]
+"param.charged_variant"=22550
 "param.proj_type"="projanim.arrow"
 "param.statreq1_skill"="stat.ranged"
 "param.equipment_sound"=2244
@@ -18982,6 +19112,8 @@ inherit = "obj.wild_cave_bow_charged"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=22547
+"param.charged_variant"=22550
 "param.proj_type"="projanim.arrow"
 "param.statreq1_skill"="stat.ranged"
 "param.equipment_sound"=2244
@@ -19001,6 +19133,7 @@ id = "obj.wild_cave_sceptre_uncharged"
 inherit = "obj.wild_cave_sceptre_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=22555
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -19024,6 +19157,7 @@ inherit = "obj.wild_cave_sceptre_charged"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=22552
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -20592,6 +20726,10 @@ inherit = "obj.crystal_bow"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
+"param.uncharged_variant"=23985
+"param.charged_variant"=23983
 "param.proj_type"="projanim.arrow"
 "param.equipment_sound"=2244
 "param.attackrate"=5
@@ -20613,6 +20751,9 @@ inherit = "obj.crystal_bow_inactive"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
+"param.charged_variant"=23983
 "param.proj_type"="projanim.arrow"
 "param.equipment_sound"=2244
 "param.attackrate"=5
@@ -20734,6 +20875,8 @@ inherit = "obj.crystal_bow_2500"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=23985
+"param.charged_variant"=23983
 "param.proj_type"="projanim.arrow"
 "param.equipment_sound"=2244
 "param.attack_range"=10
@@ -21824,6 +21967,7 @@ inherit = "obj.sanguinesti_staff_or"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=25733
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -21848,6 +21992,7 @@ inherit = "obj.sanguinesti_staff_uncharged_or"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.charged_variant"=25731
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -21971,6 +22116,8 @@ inherit = "obj.bow_of_faerdhinen"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=25862
+"param.charged_variant"=25865
 "param.proj_type"="projanim.arrow"
 "param.statreq1_skill"="stat.ranged"
 "param.attack_range"=10
@@ -22960,6 +23107,7 @@ id = "obj.wild_cave_webweaver_uncharged"
 inherit = "obj.wild_cave_webweaver_uncharged"
 weaponCategory="Bow"
 [item.params]
+"param.charged_variant"=27655
 "param.proj_type"="projanim.arrow"
 "param.statreq1_skill"="stat.ranged"
 "param.equipment_sound"=2244
@@ -22980,6 +23128,8 @@ inherit = "obj.wild_cave_webweaver_charged"
 weaponCategory="Bow"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=27652
+"param.charged_variant"=27655
 "param.proj_type"="projanim.arrow"
 "param.statreq1_skill"="stat.ranged"
 "param.equipment_sound"=2244
@@ -23042,6 +23192,7 @@ id = "obj.wild_cave_accursed_uncharged"
 inherit = "obj.wild_cave_accursed_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=27665
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -23065,6 +23216,7 @@ inherit = "obj.wild_cave_accursed_charged"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=27662
 "param.bas_walk_l"="seq.human_halberdwalk_l"
 "param.bas_walk_r"="seq.human_halberdwalk_r"
 "param.bas_running"="seq.human_halberdrunning"
@@ -32974,6 +33126,12 @@ id = "obj.crystal_shield"
 inherit = "obj.crystal_shield"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=23993
+"param.charged_variant"=23991
+"param.statreq1_skill"="stat.defence"
+"param.statreq1_level"=70
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
 "param.equipment_sound"=2245
 
 
@@ -32982,6 +33140,11 @@ id = "obj.crystal_shield_inactive"
 inherit = "obj.crystal_shield_inactive"
 tradeable = false
 [item.params]
+"param.charged_variant"=23991
+"param.statreq1_skill"="stat.defence"
+"param.statreq1_level"=70
+"param.statreq2_skill"="stat.agility"
+"param.statreq2_level"=50
 "param.equipment_sound"=2245
 
 
@@ -49512,6 +49675,7 @@ id = "obj.wild_cave_accursed_uncharged_recol"
 inherit = "obj.wild_cave_accursed_uncharged_recol"
 weaponCategory="Staff"
 [item.params]
+"param.charged_variant"=27679
 "param.attackrate"=5
 
 
@@ -49551,6 +49715,8 @@ inherit = "obj.rat_bone_staff"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=28796
+"param.charged_variant"=28796
 "param.attack_range"=8
 
 
@@ -49815,6 +49981,7 @@ inherit = "obj.deadman_blighted_tumekens_shadow"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=28549
 "param.attack_range"=8
 "param.attackrate"=5
 
@@ -49935,6 +50102,7 @@ id = "obj.wild_cave_sceptre_uncharged_recol"
 inherit = "obj.wild_cave_sceptre_uncharged_recol"
 weaponCategory="Staff"
 [item.params]
+"param.charged_variant"=27788
 "param.attackrate"=5
 
 
@@ -51195,6 +51363,21 @@ weaponCategory="Staff"
 tradeable = false
 [item.params]
 "param.attackrate"=5
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.equipment_sound"=2247
+"param.attack_anim_stance1"="seq.human_stafforb_pummel"
+"param.attack_sound_stance1"=2555
+"param.attack_anim_stance2"="seq.human_stafforb_pummel"
+"param.attack_sound_stance2"=2555
+"param.attack_anim_stance4"="seq.human_stafforb_pummel"
+"param.attack_sound_stance4"=2555
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
 
 
 [[item]]
@@ -51771,6 +51954,7 @@ id = "obj.warped_sceptre_uncharged"
 inherit = "obj.warped_sceptre_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=28585
 "param.attack_range"=7
 
 
@@ -51841,6 +52025,7 @@ id = "obj.deadman_blighted_tumekens_shadow_uncharged"
 inherit = "obj.deadman_blighted_tumekens_shadow_uncharged"
 weaponCategory="PoweredStaff"
 [item.params]
+"param.charged_variant"=28547
 "param.attack_range"=8
 "param.attackrate"=5
 
@@ -52023,6 +52208,7 @@ inherit = "obj.warped_sceptre"
 weaponCategory="PoweredStaff"
 tradeable = false
 [item.params]
+"param.uncharged_variant"=28583
 "param.attack_range"=7
 
 
@@ -52651,6 +52837,7 @@ id = "obj.bow_of_faerdhinen_inactive"
 inherit = "obj.bow_of_faerdhinen_inactive"
 weaponCategory="Bow"
 [item.params]
+"param.charged_variant"=25865
 "param.proj_type"="projanim.arrow"
 "param.statreq1_skill"="stat.ranged"
 "param.attack_range"=10
@@ -52882,3 +53069,381 @@ contentGroup = "content.max_cape"
 id = "obj.skillcape_max_mythical"
 inherit = "obj.skillcape_max_mythical"
 contentGroup = "content.max_cape"
+
+
+[[item]]
+id = "obj.deal_wrench"
+inherit = "obj.deal_wrench"
+weaponCategory="Blunt"
+[item.params]
+"param.attack_anim_stance1"="seq.human_blunt_pound"
+"param.attack_sound_stance1"=2567
+"param.attack_anim_stance2"="seq.human_blunt_pound"
+"param.attack_sound_stance2"=2567
+"param.attack_anim_stance4"="seq.human_blunt_pound"
+"param.attack_sound_stance4"=2567
+"param.defend_anim"="seq.human_blunt_block"
+
+
+[[item]]
+id = "obj.deal_wrench_blessed"
+inherit = "obj.deal_wrench_blessed"
+weaponCategory="Blunt"
+[item.params]
+"param.attack_anim_stance1"="seq.human_blunt_pound"
+"param.attack_sound_stance1"=2567
+"param.attack_anim_stance2"="seq.human_blunt_pound"
+"param.attack_sound_stance2"=2567
+"param.attack_anim_stance4"="seq.human_blunt_pound"
+"param.attack_sound_stance4"=2567
+"param.defend_anim"="seq.human_blunt_block"
+
+
+[[item]]
+id = "obj.roguesden_helm"
+inherit = "obj.roguesden_helm"
+[item.params]
+"param.statreq1_skill"=17
+"param.statreq1_level"=50
+"param.statreq2_skill"=16
+"param.statreq2_level"=50
+
+
+[[item]]
+id = "obj.roguesden_body"
+inherit = "obj.roguesden_body"
+[item.params]
+"param.statreq1_skill"=17
+"param.statreq1_level"=50
+"param.statreq2_skill"=16
+"param.statreq2_level"=50
+
+
+[[item]]
+id = "obj.roguesden_legs"
+inherit = "obj.roguesden_legs"
+[item.params]
+"param.statreq1_skill"=17
+"param.statreq1_level"=50
+"param.statreq2_skill"=16
+"param.statreq2_level"=50
+
+
+[[item]]
+id = "obj.roguesden_gloves"
+inherit = "obj.roguesden_gloves"
+[item.params]
+"param.statreq1_skill"=17
+"param.statreq1_level"=50
+"param.statreq2_skill"=16
+"param.statreq2_level"=50
+
+
+[[item]]
+id = "obj.roguesden_boots"
+inherit = "obj.roguesden_boots"
+[item.params]
+"param.statreq1_skill"=17
+"param.statreq1_level"=50
+"param.statreq2_skill"=16
+"param.statreq2_level"=50
+
+
+[[item]]
+id = "obj.hunting_silent_gloves"
+inherit = "obj.hunting_silent_gloves"
+[item.params]
+"param.statreq1_skill"=21
+"param.statreq1_level"=54
+[[item]]
+id = "obj.eye_of_ayak"
+inherit = "obj.eye_of_ayak"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.uncharged_variant"=31115
+"param.attackrate"=3
+"param.attack_range"=6
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_eye_of_ayak_normal"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_eye_of_ayak_normal"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_eye_of_ayak_normal"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.eye_of_ayak_uncharged"
+inherit = "obj.eye_of_ayak_uncharged"
+weaponCategory="PoweredStaff"
+[item.params]
+"param.charged_variant"=31113
+"param.attackrate"=3
+"param.attack_range"=6
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_eye_of_ayak_normal"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_eye_of_ayak_normal"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_eye_of_ayak_normal"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.deadman_apocalypse_staff"
+inherit = "obj.deadman_apocalypse_staff"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=6
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.tots_orn"
+inherit = "obj.tots_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.charged_variant"=33322
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.tots_charged_orn"
+inherit = "obj.tots_charged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.uncharged_variant"=33434
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.tots_uncharged_orn"
+inherit = "obj.tots_uncharged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.charged_variant"=33322
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.toxic_tots_charged_orn"
+inherit = "obj.toxic_tots_charged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.uncharged_variant"=33316
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.toxic_tots_uncharged_orn"
+inherit = "obj.toxic_tots_uncharged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.charged_variant"=33314
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.tots_i_charged_orn"
+inherit = "obj.tots_i_charged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.uncharged_variant"=33328
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.tots_i_uncharged_orn"
+inherit = "obj.tots_i_uncharged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.charged_variant"=33326
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.toxic_tots_i_charged_orn"
+inherit = "obj.toxic_tots_i_charged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.uncharged_variant"=33320
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+
+[[item]]
+id = "obj.toxic_tots_i_uncharged_orn"
+inherit = "obj.toxic_tots_i_uncharged_orn"
+weaponCategory="PoweredStaff"
+tradeable = false
+[item.params]
+"param.attack_range"=7
+"param.charged_variant"=33318
+"param.bas_walk_l"="seq.human_halberdwalk_l"
+"param.bas_walk_r"="seq.human_halberdwalk_r"
+"param.bas_running"="seq.human_halberdrunning"
+"param.attack_anim_stance1"="seq.human_castwave_staff"
+"param.attack_sound_stance1"=178
+"param.attack_anim_stance2"="seq.human_castwave_staff"
+"param.attack_sound_stance2"=178
+"param.attack_anim_stance4"="seq.human_castwave_staff"
+"param.attack_sound_stance4"=178
+"param.bas_readyanim"="seq.human_staffready"
+"param.bas_turnonspot"="seq.human_halberdturnonspot"
+"param.defend_anim"="seq.human_stafforb_block"
+"param.bas_walk_f"="seq.human_halberdwalk_f"
+"param.bas_walk_b"="seq.human_halberdwalk_b"
+
+# The Fremennik Trials: a copy of the longhall keg is always back on the table at once.
+[[item]]
+id = "obj.viking_beerkeg"
+inherit = "obj.viking_beerkeg"
+respawnRate = 1

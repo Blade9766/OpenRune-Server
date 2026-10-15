@@ -1,348 +1,252 @@
 package org.rsmod.content.other.grandexchange
 
-import dev.openrune.ServerCacheManager
-import dev.openrune.rscm.RSCM.asRSCM
-import dev.openrune.rscm.RSCMType
-import dev.openrune.types.ItemServerType
+import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
-import org.rsmod.api.exchange.ExchangeMutation
-import org.rsmod.api.exchange.ExchangeOffer
-import org.rsmod.api.exchange.ExchangeOwner
-import org.rsmod.api.exchange.ExchangePriceGuide
-import org.rsmod.api.exchange.GrandExchange
-import org.rsmod.api.exchange.OfferSide
-import org.rsmod.api.exchange.OfferStatus
-import org.rsmod.api.exchange.OwnerKind
-import org.rsmod.api.exchange.PlaceResult
-import org.rsmod.api.exchange.PriceGuideSettings
-import org.rsmod.api.exchange.PriceSignal
 import org.rsmod.api.game.process.GameLifecycle
-import org.rsmod.api.invtx.add
-import org.rsmod.api.invtx.delete
-import org.rsmod.api.invtx.invAdd
-import org.rsmod.api.invtx.invDel
-import org.rsmod.api.invtx.invTransaction
-import org.rsmod.api.invtx.select
-import org.rsmod.api.player.ironman.IronmanActivity
-import org.rsmod.api.player.ironman.IronmanRestrictions
-import org.rsmod.api.player.output.mes
-import org.rsmod.api.registry.player.PlayerRegistry
-import org.rsmod.api.script.onCommand
+import org.rsmod.api.player.dialogue.Dialogue
+import org.rsmod.api.player.ironman.isSoloIronman
+import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onEvent
-import org.rsmod.api.utils.format.formatAmount
-import org.rsmod.game.MapClock
-import org.rsmod.game.cheat.Cheat
-import org.rsmod.game.entity.Player
-import org.rsmod.game.type.cert
-import org.rsmod.game.type.uncert
-import org.rsmod.game.world.WorldType
+import org.rsmod.api.script.onIfClose
+import org.rsmod.api.script.onIfModalButton
+import org.rsmod.api.script.onIfOpen
+import org.rsmod.api.script.onOpContentLoc3
+import org.rsmod.api.script.onOpLoc1
+import org.rsmod.api.script.onOpLoc2
+import org.rsmod.api.script.onOpLoc3
+import org.rsmod.api.script.onOpNpc1
+import org.rsmod.api.script.onOpNpc3
+import org.rsmod.api.script.onOpNpc4
+import org.rsmod.api.script.onOpNpc5
+import org.rsmod.api.script.onPlayerLogin
+import org.rsmod.api.script.onPlayerLogout
+import org.rsmod.content.interfaces.bank.tryOpenBank
+import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * Player access to the Grand Exchange through `::ge`. Escrow is taken from the inventory in the
- * same tick the offer is placed and given back if the exchange rejects it; collections are
- * credited to the inventory before the exchange deducts them, and the exchange refuses to deduct
- * more than is owed, so a repeated command can never pay out twice.
+ * The Grand Exchange in north-west Varrock.
+ *
+ * Routes every interaction to [GeService]: the exchange booths and clerks open the offers
+ * screen, any bank booth or banker's "Collect" opens the collection box, the pricing experts
+ * quote guide prices, and the offer screens' buttons (slot boxes, the setup panel's quantity and
+ * price buttons, abort, collect, collect-all, repeat offer, history) are mapped from the cache's
+ * clientscripts. Offers persist across restarts in `.data/grand-exchange.json` and match against
+ * every other player's offers the moment they are placed, with "The Trade Parade" playing in the
+ * exchange and its jingle playing when an offer completes.
  */
-class GrandExchangeScript
-@Inject
-constructor(
-    private val exchange: GrandExchange,
-    private val playerRegistry: PlayerRegistry,
-    private val mapClock: MapClock,
-) : PluginScript() {
-    private var nextLoadAttempt = 0
-
+class GrandExchangeScript @Inject constructor(private val service: GeService) : PluginScript() {
     override fun ScriptContext.startup() {
-        exchange.addListener(::notifyOwners)
-        onEvent<GameLifecycle.LateCycle> { tryLoad() }
-        onEvent<GameLifecycle.Shutdown> { exchange.shutdown() }
-        onCommand("ge") {
-            desc = "Grand Exchange: buy, sell, offers, collect, abort, price"
-            invalidArgs = USAGE
-            cheat { handle() }
-        }
-    }
+        // The book must be in memory before the first login, and scripts start before the
+        // network opens; the file is small enough that reading it here costs nothing noticeable.
+        service.load()
+        onEvent<GameLifecycle.EndCycle> { service.tick() }
+        onEvent<GameLifecycle.Shutdown> { service.save() }
+        onPlayerLogin { service.onLogin(player) }
+        onPlayerLogout { service.save() }
 
-    private fun tryLoad() {
-        if (exchange.loaded || mapClock.cycle < nextLoadAttempt) {
-            return
+        // Booths, clerks and bankers.
+        onOpLoc1(GeConfig.LOC_BOOTH_EXCHANGE) { service.open(this) }
+        onOpLoc3(GeConfig.LOC_BOOTH_EXCHANGE) { openCollectionBox() }
+        onOpLoc2(GeConfig.LOC_BOOTH_BANK) { tryOpenBank() }
+        onOpLoc3(GeConfig.LOC_BOOTH_BANK) { openCollectionBox() }
+        onOpContentLoc3("content.bank_booth") { openCollectionBox() }
+        for (clerk in GeConfig.CLERKS) {
+            onOpNpc1(clerk) { talkToClerk(it.npc) }
+            onOpNpc3(clerk) { service.open(this) }
+            onOpNpc4(clerk) { service.openHistory(this) }
+            onOpNpc5(clerk) { mes("Item sets are not available on this world.") }
         }
-        if (!exchange.ensureLoaded()) {
-            nextLoadAttempt = mapClock.cycle + LOAD_RETRY_TICKS
+        for ((npc, goods) in GeConfig.EXPERTS) {
+            onOpNpc1(npc) { talkToExpert(it.npc, goods) }
+            onOpNpc3(npc) { checkPrice(it.npc) }
         }
-    }
 
-    private fun Cheat.handle() {
-        if (args.isEmpty()) {
-            player.mes(USAGE)
-            return
-        }
-        if (!canUseExchange(player)) {
-            return
-        }
-        when (args[0]) {
-            "buy" -> place(OfferSide.Buy)
-            "sell" -> place(OfferSide.Sell)
-            "offers" -> listOffers(player)
-            "collect" -> collectAll(player)
-            "abort" -> abort(args[1].toInt())
-            "price" -> price(args.drop(1))
-            else -> player.mes(USAGE)
-        }
-    }
+        // Screens opening and closing.
+        onIfOpen(GeConfig.OFFERS) { service.onOffersOpened(player) }
+        onIfClose(GeConfig.OFFERS) { service.onOffersClosed(player) }
+        onIfOpen(GeConfig.COLLECT) { service.onCollectionBoxOpened(player) }
+        onIfClose(GeConfig.COLLECT) { service.onCollectionBoxClosed(player) }
 
-    private fun canUseExchange(player: Player): Boolean {
-        if (player.worldType != WorldType.DEFAULT) {
-            player.mes("The Grand Exchange is only available on main game worlds.")
-            return false
-        }
-        if (IronmanRestrictions.block(player, IronmanActivity.GRAND_EXCHANGE)) {
-            return false
-        }
-        if (!exchange.available) {
-            player.mes("The Grand Exchange is temporarily unavailable. Please try again later.")
-            return false
-        }
-        return true
-    }
-
-    private fun Cheat.place(side: OfferSide) {
-        val quantity = args[1].toInt()
-        val price = args[2].toInt()
-        val type = resolveItem(args.drop(3)) ?: return player.mes("No such item.")
-        val base = uncert(type)
-        if (quantity <= 0 || price <= 0) {
-            player.mes("Quantity and price must be positive.")
-            return
-        }
-        val owner = ExchangeOwner.player(player.characterId)
-        if (exchange.book.freeSlot(owner) == null) {
-            player.mes("You have no free Grand Exchange slots.")
-            return
-        }
-        when (side) {
-            OfferSide.Buy -> placeBuy(player, owner, base, quantity, price)
-            OfferSide.Sell -> placeSell(player, owner, base, quantity, price)
-        }
-    }
-
-    private fun placeBuy(
-        player: Player,
-        owner: ExchangeOwner,
-        base: ItemServerType,
-        quantity: Int,
-        price: Int,
-    ) {
-        val total = quantity.toLong() * price
-        if (total > Int.MAX_VALUE) {
-            player.mes("That offer is worth too much.")
-            return
-        }
-        if (player.invDel(player.inv, COINS, total.toInt()).failure) {
-            player.mes("You need ${total.formatAmount} coins in your inventory for that offer.")
-            return
-        }
-        when (val result = exchange.book.place(owner, OfferSide.Buy, base.id, quantity, price)) {
-            is PlaceResult.Placed -> {
-                exchange.commit(result.mutation)
-                player.mes("Offer placed: buy ${quantity.formatAmount} x ${base.name} at ${price.formatAmount} each.")
-            }
-            is PlaceResult.Rejected -> {
-                check(player.invAdd(player.inv, COINS, total.toInt()).success) {
-                    "Could not refund $total coins to $player after a rejected offer."
-                }
-                player.mes(result.message)
-            }
-        }
-    }
-
-    private fun placeSell(
-        player: Player,
-        owner: ExchangeOwner,
-        base: ItemServerType,
-        quantity: Int,
-        price: Int,
-    ) {
-        val noteId = noteIdOf(base)
-        val noted = if (noteId != null) countOf(player, noteId) else 0
-        val unnoted = countOf(player, base.id)
-        if (noted.toLong() + unnoted < quantity) {
-            player.mes("You don't have ${quantity.formatAmount} x ${base.name} to sell.")
-            return
-        }
-        val fromNoted = minOf(noted, quantity)
-        val fromUnnoted = quantity - fromNoted
-        val taken =
-            player.invTransaction(player.inv) {
-                val inv = select(player.inv)
-                if (fromNoted > 0 && noteId != null) {
-                    delete(inv = inv, obj = noteId, count = fromNoted)
-                }
-                if (fromUnnoted > 0) {
-                    delete(inv = inv, obj = base.id, count = fromUnnoted)
+        // Offer slots: view, buy, sell.
+        for (slot in 0 until GeConfig.SLOT_COUNT) {
+            onIfModalButton(GeConfig.indexSlot(slot)) {
+                when (it.comsub) {
+                    GeConfig.INDEX_CHILD_VIEW -> service.viewSlot(this, slot)
+                    GeConfig.INDEX_CHILD_BUY -> service.startBuy(this, slot)
+                    GeConfig.INDEX_CHILD_SELL -> service.startSell(this, slot)
                 }
             }
-        if (taken.failure) {
-            player.mes("You don't have ${quantity.formatAmount} x ${base.name} to sell.")
-            return
         }
-        when (val result = exchange.book.place(owner, OfferSide.Sell, base.id, quantity, price)) {
-            is PlaceResult.Placed -> {
-                exchange.commit(result.mutation)
-                player.mes("Offer placed: sell ${quantity.formatAmount} x ${base.name} at ${price.formatAmount} each.")
-            }
-            is PlaceResult.Rejected -> {
-                val refundId = noteId ?: base.id
-                check(player.invAdd(player.inv, refundId, quantity, strict = true).success) {
-                    "Could not return $quantity x ${base.internalName} to $player after a rejected offer."
-                }
-                player.mes(result.message)
-            }
-        }
-    }
-
-    private fun listOffers(player: Player) {
-        val offers = exchange.book.offers(ExchangeOwner.player(player.characterId))
-        if (offers.isEmpty()) {
-            player.mes("You have no Grand Exchange offers.")
-            return
-        }
-        for (offer in offers) {
-            player.mes(describe(offer))
-        }
-    }
-
-    private fun collectAll(player: Player) {
-        val owner = ExchangeOwner.player(player.characterId)
-        var collectedAny = false
-        for (offer in exchange.book.offers(owner)) {
-            if (!offer.hasCollectable) {
-                continue
-            }
-            val owed = exchange.book.collectable(owner, offer.id) ?: continue
-            if (owed.coins > Int.MAX_VALUE) {
-                player.mes("Slot ${offer.slot + 1}: too many coins to collect at once.")
-                continue
-            }
-            val itemId = if (owed.items > 0) noteIdOrBase(offer.itemId) else -1
-            val credited =
-                player.invTransaction(player.inv) {
-                    val inv = select(player.inv)
-                    if (owed.items > 0) {
-                        add(inv = inv, obj = itemId, count = owed.items)
-                    }
-                    if (owed.coins > 0) {
-                        add(inv = inv, obj = COINS.asRSCM(RSCMType.OBJ), count = owed.coins.toInt())
-                    }
-                }
-            if (credited.failure) {
-                player.mes("Slot ${offer.slot + 1}: you need more inventory space to collect.")
-                continue
-            }
-            val mutation = exchange.book.confirmCollect(owner, owed)
-            checkNotNull(mutation) { "Collection for offer ${offer.id} rejected after crediting $player." }
-            exchange.commit(mutation)
-            collectedAny = true
-        }
-        player.mes(if (collectedAny) "You collect your Grand Exchange items." else "There is nothing to collect.")
-    }
-
-    private fun Cheat.abort(slotNumber: Int) {
-        val owner = ExchangeOwner.player(player.characterId)
-        val offer = exchange.book.offers(owner).firstOrNull { it.slot == slotNumber - 1 }
-        if (offer == null || !offer.isOpen) {
-            player.mes("You have no open offer in slot $slotNumber.")
-            return
-        }
-        val mutation = exchange.book.abort(owner, offer.id) ?: return
-        exchange.commit(mutation)
-        player.mes("Offer aborted. Use ::ge collect to collect what is left.")
-    }
-
-    private fun Cheat.price(name: List<String>) {
-        val type = resolveItem(name) ?: return player.mes("No such item.")
-        val base = uncert(type)
-        val guide =
-            ExchangePriceGuide.volumeWeighted(
-                exchange.book.recentTrades(base.id),
-                System.currentTimeMillis(),
-                PriceGuideSettings(),
-            )
-        val average =
-            when (guide) {
-                is PriceSignal.Reliable -> "${guide.price.formatAmount} gp (${guide.volume.formatAmount} traded)"
-                is PriceSignal.Unavailable -> guide.reason
-            }
-        val ask = exchange.book.bestAsk(base.id)?.formatAmount ?: "none"
-        val bid = exchange.book.bestBid(base.id)?.formatAmount ?: "none"
-        player.mes("${base.name}: average $average, lowest sell offer $ask, highest buy offer $bid.")
-    }
-
-    private fun notifyOwners(mutation: ExchangeMutation) {
-        if (mutation.trades.isEmpty()) {
-            return
-        }
-        val touched = mutation.offers.filter { it.owner.kind == OwnerKind.Player }
-        for (offer in touched) {
-            val player = playerRegistry.findOnlineByCharacterId(offer.owner.id.toInt()) ?: continue
-            val verb = if (offer.side == OfferSide.Buy) "bought" else "sold"
-            val done = if (offer.status == OfferStatus.Completed) " Offer complete." else ""
-            player.mes(
-                "Grand Exchange: you have $verb ${offer.filled.formatAmount}/${offer.quantity.formatAmount} " +
-                    "x ${itemName(offer.itemId)}.$done"
-            )
-        }
-    }
-
-    private fun describe(offer: ExchangeOffer): String {
-        val verb = if (offer.side == OfferSide.Buy) "Buying" else "Selling"
-        val state =
-            when (offer.status) {
-                OfferStatus.Active -> "${offer.filled.formatAmount}/${offer.quantity.formatAmount}"
-                OfferStatus.Completed -> "complete"
-                OfferStatus.Aborted -> "aborted"
-                OfferStatus.Closed -> "closed"
-            }
-        val collect =
-            if (offer.hasCollectable) {
-                " - collect ${offer.collectItems.formatAmount} items, ${offer.collectCoins.formatAmount} gp"
+        onIfModalButton(GeConfig.COMP_BACK) { service.back(player) }
+        onIfModalButton(GeConfig.COMP_HISTORY) { service.openHistory(this) }
+        onIfModalButton(GeConfig.COMP_SIDE_ITEMS) {
+            if (it.op == IfButtonOp.Op10) {
+                service.examineInventory(player, it.comsub)
             } else {
-                ""
+                service.offerFromInventory(this, it.comsub)
             }
-        return "Slot ${offer.slot + 1}: $verb ${offer.quantity.formatAmount} x ${itemName(offer.itemId)} " +
-            "at ${offer.price.formatAmount} ($state)$collect"
-    }
-
-    private fun resolveItem(words: List<String>): ItemServerType? {
-        if (words.isEmpty()) {
-            return null
         }
-        val joined = words.joinToString("_")
-        joined.toIntOrNull()?.let { return ServerCacheManager.getItem(it) }
-        val id = runCatching { "obj.$joined".asRSCM(RSCMType.OBJ) }.getOrNull() ?: return null
-        return ServerCacheManager.getItem(id)
+
+        // Setup panel.
+        onIfModalButton(GeConfig.COMP_SETUP) { setupButton(it.comsub, it.op) }
+        onIfModalButton(GeConfig.COMP_SETUP_CONFIRM) { service.confirm(this) }
+
+        // Status panel.
+        onIfModalButton(GeConfig.COMP_DETAILS) {
+            when (it.comsub) {
+                GeConfig.DETAILS_ABORT -> service.abort(player)
+                GeConfig.DETAILS_MODIFY -> service.modify(this)
+            }
+        }
+        onIfModalButton(GeConfig.COMP_DETAILS_COLLECT) {
+            val box =
+                GeConfig.collectBoxOf(
+                    it.comsub,
+                    GeConfig.DETAILS_COLLECT_ITEMS_CHILD,
+                    GeConfig.DETAILS_COLLECT_COINS_CHILD,
+                ) ?: return@onIfModalButton
+            if (it.op == IfButtonOp.Op10) {
+                service.examineBox(player, slot = null, box = box)
+            } else {
+                service.collectSelected(player, box, collectMode(it.op))
+            }
+        }
+
+        // Collect-all layer.
+        onIfModalButton(GeConfig.COMP_COLLECT_ALL) {
+            when (it.comsub) {
+                GeConfig.COLLECT_ALL_BUTTON -> service.collectAll(player, toBank = it.op == IfButtonOp.Op2)
+                GeConfig.REPEAT_OFFER_BUTTON -> service.repeatOffer(this)
+            }
+        }
+
+        // Collection box (any bank).
+        for (slot in 0 until GeConfig.SLOT_COUNT) {
+            onIfModalButton(GeConfig.collectSlot(slot)) {
+                val box =
+                    GeConfig.collectBoxOf(
+                        it.comsub,
+                        GeConfig.COLLECT_SLOT_ITEMS_CHILD,
+                        GeConfig.COLLECT_SLOT_COINS_CHILD,
+                    ) ?: return@onIfModalButton
+                if (it.op == IfButtonOp.Op10) {
+                    service.examineBox(player, slot, box)
+                } else {
+                    service.collectSlot(player, slot, box, collectMode(it.op))
+                }
+            }
+        }
+        onIfModalButton(GeConfig.COMP_COLLECT_INV) { service.collectAll(player, toBank = false) }
+        onIfModalButton(GeConfig.COMP_COLLECT_BANK) { service.collectAll(player, toBank = true) }
+
+        // History screen.
+        onIfModalButton(GeConfig.COMP_HISTORY_EXCHANGE) { service.open(this) }
+        onIfModalButton(GeConfig.COMP_HISTORY_LIST) {
+            val trade = service.historyTrade(player, it.comsub) ?: return@onIfModalButton
+            if (it.op == IfButtonOp.Op10) {
+                service.examineBox(player, slot = null, box = GeConfig.COLLECT_BOX_ITEMS)
+            } else {
+                service.buyAgain(this, trade)
+            }
+        }
     }
 
-    private fun noteIdOf(base: ItemServerType): Int? =
-        if (base.canCert) cert(base.internalName).id else null
-
-    private fun noteIdOrBase(itemId: Int): Int {
-        val type = ServerCacheManager.getItem(itemId) ?: return itemId
-        return noteIdOf(type) ?: itemId
+    private suspend fun ProtectedAccess.setupButton(comsub: Int, op: IfButtonOp) {
+        when (comsub) {
+            GeConfig.SETUP_CHOOSE_ITEM -> service.chooseItem(this)
+            GeConfig.SETUP_QTY_MINUS_1 -> service.adjustQuantity(player, -1)
+            GeConfig.SETUP_QTY_PLUS_1_MOBILE,
+            GeConfig.SETUP_QTY_PLUS_1 -> service.adjustQuantity(player, 1)
+            GeConfig.SETUP_QTY_PLUS_10 -> service.adjustQuantity(player, 10)
+            GeConfig.SETUP_QTY_PLUS_100 -> service.adjustQuantity(player, 100)
+            GeConfig.SETUP_QTY_PLUS_1K_OR_ALL -> service.setAllOrThousand(player)
+            GeConfig.SETUP_QTY_ENTER -> service.enterQuantity(this)
+            GeConfig.SETUP_PRICE_MINUS_1 -> service.adjustPrice(player, -1)
+            GeConfig.SETUP_PRICE_PLUS_1 -> service.adjustPrice(player, 1)
+            GeConfig.SETUP_PRICE_MINUS_5PCT -> service.adjustPricePercent(player, -5)
+            GeConfig.SETUP_PRICE_GUIDE -> service.guidePrice(player)
+            GeConfig.SETUP_PRICE_ENTER -> service.enterPrice(this)
+            GeConfig.SETUP_PRICE_PLUS_5PCT -> service.adjustPricePercent(player, 5)
+            GeConfig.SETUP_PRICE_MINUS_CUSTOM ->
+                if (op == IfButtonOp.Op2) service.enterCustomPercent(this)
+                else service.adjustPricePercent(player, -service.customPercent(player))
+            GeConfig.SETUP_PRICE_PLUS_CUSTOM ->
+                if (op == IfButtonOp.Op2) service.enterCustomPercent(this)
+                else service.adjustPricePercent(player, service.customPercent(player))
+        }
     }
 
-    private fun countOf(player: Player, itemId: Int): Int =
-        player.inv.objs.sumOf { if (it != null && it.id == itemId) it.count else 0 }
+    private fun collectMode(op: IfButtonOp): GeService.CollectMode =
+        when (op) {
+            IfButtonOp.Op1 -> GeService.CollectMode.Default
+            IfButtonOp.Op2 -> GeService.CollectMode.Note
+            IfButtonOp.Op3 -> GeService.CollectMode.Bank
+            else -> GeService.CollectMode.Default
+        }
 
-    private fun itemName(itemId: Int): String = ServerCacheManager.getItem(itemId)?.name ?: "item $itemId"
+    private fun ProtectedAccess.openCollectionBox() {
+        ifOpenMainModal(GeConfig.COLLECT)
+    }
 
-    private companion object {
-        private const val COINS = "obj.coins"
-        private const val LOAD_RETRY_TICKS = 500
-        private const val USAGE =
-            "Use ::ge buy|sell <qty> <price> <item>, ::ge offers, ::ge collect, " +
-                "::ge abort <slot>, ::ge price <item>"
+    private suspend fun ProtectedAccess.talkToClerk(npc: Npc) {
+        startDialogue(npc, faceFar = true) {
+            chatNpc(happy, "Welcome to the Grand Exchange! Would you like to see your offers?")
+            if (player.isSoloIronman) {
+                chatNpc(neutral, "As an Ironman you can only use the Exchange to buy bonds, mind you.")
+            }
+            val choice =
+                choice3(
+                    "Yes, show me my offers.",
+                    ClerkChoice.Offers,
+                    "Show me my trade history.",
+                    ClerkChoice.History,
+                    "No thanks.",
+                    ClerkChoice.Nothing,
+                )
+            when (choice) {
+                ClerkChoice.Offers -> {
+                    chatPlayer(happy, "Yes, show me my offers.")
+                    service.open(access)
+                }
+                ClerkChoice.History -> {
+                    chatPlayer(neutral, "Show me my trade history.")
+                    service.openHistory(access)
+                }
+                ClerkChoice.Nothing -> {
+                    chatPlayer(neutral, "No thanks.")
+                    chatNpc(happy, "Come back any time!")
+                }
+            }
+        }
+    }
+
+    private enum class ClerkChoice {
+        Offers,
+        History,
+        Nothing,
+    }
+
+    private suspend fun ProtectedAccess.talkToExpert(npc: Npc, goods: String) {
+        startDialogue(npc, faceFar = true) {
+            chatNpc(happy, "Hello there. I keep an eye on the going rate for $goods here at the Grand Exchange.")
+            val check = choice2("Can you check a price for me?", true, "No thanks.", false)
+            if (check) {
+                chatPlayer(quiz, "Can you check a price for me?")
+                priceCheck()
+            } else {
+                chatPlayer(neutral, "No thanks.")
+            }
+        }
+    }
+
+    private suspend fun ProtectedAccess.checkPrice(npc: Npc) {
+        startDialogue(npc, faceFar = true) { priceCheck() }
+    }
+
+    private suspend fun Dialogue.priceCheck() {
+        val item = access.objDialog("Which item would you like a guide price for?", stockMarketRestriction = true)
+        chatNpc(neutral, service.guidePriceText(item))
     }
 }

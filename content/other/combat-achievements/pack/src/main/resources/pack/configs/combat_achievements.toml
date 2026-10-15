@@ -1,0 +1,5 @@
+# The runeday on which Ghommal's hilt teleport counts were last reset.
+[[varp]]
+id = "varp.ca_teleport_day"
+scope = "Perm"
+transmit = "Never"
