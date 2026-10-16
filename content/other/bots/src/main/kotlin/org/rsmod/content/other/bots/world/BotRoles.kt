@@ -444,6 +444,7 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
     private var decisions = 0
     private var lastTarget: Any? = null
     private var engaged = false
+    private var targetCombatStamp = 0
 
     /** Where the bot fights right now. */
     protected open fun fightArea(player: Player): SiteArea = site.resource
@@ -486,7 +487,7 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
         }
         if (player.isActing()) {
             val fighting = (player.interaction as? InteractionNpcOp)?.target
-            if (fighting != null && fighting.isInCombat()) {
+            if (fighting != null && (fighting.isInCombat() || fighting.vars[LAST_COMBAT] != targetCombatStamp)) {
                 engaged = true
                 attempts.remove(fighting)
             }
@@ -515,12 +516,14 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
                 ?: return GatherStatus.NoResource
         lastTarget = npc
+        targetCombatStamp = npc.vars[LAST_COMBAT]
         return if (world.opNpc(player, npc, attackOp(npc))) GatherStatus.Working(0) else GatherStatus.NoResource
     }
 
     private fun reachable(target: Any): Boolean = (attempts[target] ?: 0) < MAX_ATTEMPTS
 
     private companion object {
+        private const val LAST_COMBAT = "varn.lastcombat"
         private const val MAX_ATTEMPTS = 3
         private const val ATTEMPTS_RESET = 500
         private const val EAT_PERCENT = 50

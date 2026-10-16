@@ -10,6 +10,7 @@ import dev.or2.central.account.Rights
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.IdentityHashMap
+import org.rsmod.api.config.constants
 import org.rsmod.api.inv.map.InvMapInit
 import org.rsmod.api.net.rsprot.BotSessions
 import org.rsmod.api.registry.player.PlayerRegistry
@@ -65,6 +66,7 @@ constructor(
         invMapInit.init(player)
         restore(player, record.save)
         BotAppearance.randomize(player, record.id)
+        player.runEnergy = constants.run_max_energy
         player.slotId = slot
         sessions.attach(player)
         val result = playerRegistry.add(player)

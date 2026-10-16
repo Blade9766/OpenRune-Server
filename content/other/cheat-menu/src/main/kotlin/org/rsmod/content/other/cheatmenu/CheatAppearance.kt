@@ -38,6 +38,12 @@ enum class AppearancePart(
     fun stylesFor(bodyType: Int): List<Int> = rangesFor(bodyType).flatten()
 
     /**
+     * The original character-creator styles for [bodyType]. The later ranges also hold special
+     * models (a mine cart in the leg slot), fine to pick by hand but not at random.
+     */
+    fun classicStylesFor(bodyType: Int): List<Int> = rangesFor(bodyType).first().toList()
+
+    /**
      * Whether this slot may be left empty. Facial hair is the only optional part - every id in the
      * jaw slot is an actual beard or moustache model, so "clean shaven" is the absence of a model
      * rather than a blank one.

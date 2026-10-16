@@ -24,7 +24,7 @@ object BotAppearance {
             }
         for (part in AppearancePart.entries) {
             val beardless = part.optional && random.nextInt(BEARDLESS_CHANCE) == 0
-            val style = if (beardless) Appearance.NO_IDENT_KIT else part.stylesFor(bodyType).random(random)
+            val style = if (beardless) Appearance.NO_IDENT_KIT else part.classicStylesFor(bodyType).random(random)
             appearance.setIdentKit(part.slot, style)
         }
         for (colour in AppearanceColour.entries) {

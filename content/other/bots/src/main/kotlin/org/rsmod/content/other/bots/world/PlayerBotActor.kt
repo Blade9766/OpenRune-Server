@@ -12,6 +12,7 @@ import org.rsmod.api.invtx.select
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.hitpoints
+import org.rsmod.api.player.vars.varMoveSpeed
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.other.bots.core.BotActor
 import org.rsmod.content.other.bots.core.BotDestination
@@ -21,6 +22,7 @@ import org.rsmod.content.other.bots.core.SupplyOutcome
 import org.rsmod.content.other.bots.core.TravelStatus
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.Inventory
+import org.rsmod.game.movement.MoveSpeed
 import org.rsmod.game.type.cert
 import org.rsmod.map.CoordGrid
 
@@ -76,6 +78,7 @@ class PlayerBotActor(
     private fun hurtBelow(percent: Int): Boolean = player.hitpoints * 100 < player.baseHitpointsLvl * percent
 
     override fun travel(destination: BotDestination): TravelStatus {
+        pace()
         if (behaviour.escape(player, destination)) {
             return TravelStatus.Moving
         }
@@ -225,6 +228,16 @@ class PlayerBotActor(
         }
         val anchors = allChains().flatten() + site.bank.center()
         return anchors.none { it.level == player.coords.level && it.chebyshevDistance(player.coords) <= OFF_SITE_DISTANCE }
+    }
+
+    /** Runs while there is energy to spare and walks to recover it, like a player would. */
+    private fun pace() {
+        val running = player.varMoveSpeed == MoveSpeed.Run
+        if (!running && player.runEnergy >= RUN_ENERGY_ON) {
+            player.varMoveSpeed = MoveSpeed.Run
+        } else if (running && player.runEnergy <= RUN_ENERGY_OFF) {
+            player.varMoveSpeed = MoveSpeed.Walk
+        }
     }
 
     private fun resetTravel() {
@@ -413,6 +426,8 @@ class PlayerBotActor(
         private const val MAX_REROUTES = 5
         private const val OFF_SITE_DISTANCE = 64
         private const val FLEE_PERCENT = 50
+        private const val RUN_ENERGY_ON = 5000
+        private const val RUN_ENERGY_OFF = 1500
         private const val RESTED_PERCENT = 90
         private const val DOOR_RADIUS = 2
         private const val FAR_DOOR_RADIUS = 16
