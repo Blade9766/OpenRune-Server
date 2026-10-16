@@ -47,6 +47,7 @@ class BotBrain(
     private var reactionCycle = NO_REACTION
     private var now = 0L
     private val decisions = ArrayDeque<BotDecision>()
+    private val sightings = HashMap<Long, Sighting>()
 
     /** The latest state changes and their reasons, newest last. */
     val trace: List<BotDecision>
@@ -473,9 +474,14 @@ class BotBrain(
         urgent = true
     }
 
+    /** What an offer's collect box held when the bot looked, and the exchange save count then. */
+    private class Sighting(val save: Long, val items: Int, val coins: Int)
+
     /**
-     * Credits everything the bot's offers hold to its bank and records it as pending; the exchange
-     * is emptied on a later tick by [settleCollects], once the credited bank has been saved.
+     * Credits what the bot's offers hold to its bank and records it as pending; the exchange is
+     * emptied on a later tick by [settleCollects], once the credited bank has been saved. Only
+     * amounts the exchange has saved are credited - with unsaved exchange changes a box is looked at
+     * first and collected after the next save - so a fill or abort lost in a crash is never paid out.
      */
     private fun collectProceeds() {
         if (!exchange.available || !storeHealthy()) {
@@ -483,12 +489,27 @@ class BotBrain(
         }
         val busySlots = record.pendingCollects.mapTo(HashSet()) { it.slot }
         record.pendingListing?.let { busySlots += it.slot }
-        for (offer in exchange.offers(owner)) {
+        val offers = exchange.offers(owner)
+        sightings.keys.retainAll(offers.filter { it.hasCollectable }.mapTo(HashSet()) { it.createdAt })
+        for (offer in offers) {
             if (!offer.hasCollectable || offer.slot in busySlots) {
                 continue
             }
-            val items = if (offer.collectItems > 0 && actor.creditBank(offer.itemId, offer.collectItems)) offer.collectItems else 0
-            val coins = if (offer.collectCoins > 0) actor.creditBankCoins(offer.collectCoins.toLong()) else 0L
+            var seen = sightings[offer.createdAt]
+            if (seen == null) {
+                seen = Sighting(exchange.saveCount, offer.collectItems, offer.collectCoins)
+                if (exchange.hasUnsavedChanges) {
+                    sightings[offer.createdAt] = seen
+                    continue
+                }
+            } else if (exchange.saveCount <= seen.save) {
+                continue
+            }
+            sightings.remove(offer.createdAt)
+            val itemCount = minOf(seen.items, offer.collectItems)
+            val coinCount = minOf(seen.coins, offer.collectCoins)
+            val items = if (itemCount > 0 && actor.creditBank(offer.itemId, itemCount)) itemCount else 0
+            val coins = if (coinCount > 0) actor.creditBankCoins(coinCount.toLong()) else 0L
             if (items == 0 && coins == 0L) {
                 log.warn(record, "could not collect slot ${offer.slot}: bank has no room")
                 continue

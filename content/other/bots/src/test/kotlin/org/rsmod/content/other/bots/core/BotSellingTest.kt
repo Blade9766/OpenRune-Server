@@ -336,6 +336,32 @@ class BotSellingTest {
     }
 
     @Test
+    fun `a sale the exchange never saved is never paid out`() {
+        val world = BotTestHarness()
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.listed(id) }
+        world.playerBuys(qty = 1000, price = 100)
+
+        var banked = false
+        var ticks = 0
+        while (ticks++ < 2_000 && !(banked && world.state(id) != BotState.Banking)) {
+            world.tick(saveExchange = false)
+            banked = banked || world.state(id) == BotState.Banking
+        }
+        assertTrue(banked, "the bot visited the bank while the fill was unsaved")
+        assertEquals(98_000, world.offers(id).single().collectCoins, "the unsaved fill is in the collect box")
+        assertEquals(0, world.actor(id).coins())
+
+        world.restart()
+        assertTrue(world.offers(id).single().isOpen, "the exchange reloaded without the fill")
+        world.tick(500)
+        assertEquals(0, world.actor(id).coins())
+        assertTrue(world.record(id).pendingCollects.isEmpty())
+        val inExchange = world.offers(id).sumOf { it.remaining + it.collectItems.toLong() }
+        assertEquals(1000 + world.gathered(id), world.actor(id).total(LOGS) + inExchange)
+    }
+
+    @Test
     fun `a refused listing returns every item and pauses instead of retrying in a loop`() {
         val world = BotTestHarness()
         world.exchange.refuseSells = true
