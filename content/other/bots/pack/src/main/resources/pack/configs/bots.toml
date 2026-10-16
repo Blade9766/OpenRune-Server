@@ -1,0 +1,20 @@
+[[inventory]]
+id = "inv.bot_view_inv"
+size = 28
+scope = "Temp"
+stack = "Always"
+protect = false
+
+[[inventory]]
+id = "inv.bot_view_worn"
+size = 14
+scope = "Temp"
+stack = "Always"
+protect = false
+
+[[inventory]]
+id = "inv.bot_view_bank"
+size = 1410
+scope = "Temp"
+stack = "Always"
+protect = false

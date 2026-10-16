@@ -1,0 +1,71 @@
+[clientscript,bot_items_draw]
+def_int $size = 0;
+def_int $slot = 0;
+def_int $last = -1;
+def_int $x = 0;
+def_int $y = 0;
+def_int $height = 0;
+def_obj $obj = null;
+cc_deleteall(bot_items:inv_grid);
+$size = inv_size(bot_view_inv);
+$slot = 0;
+$last = -1;
+while ($slot < $size) {
+    $obj = inv_getobj(bot_view_inv, $slot);
+    if ($obj ! null) {
+        $x = calc($slot % 4 * 42 + 2);
+        $y = calc($slot / 4 * 32 + 2);
+        cc_create(bot_items:inv_grid, ^iftype_graphic, $slot);
+        cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        cc_setobject($obj, inv_getnum(bot_view_inv, $slot));
+        $last = $slot;
+    }
+    $slot = calc($slot + 1);
+}
+cc_deleteall(bot_items:worn_grid);
+$size = inv_size(bot_view_worn);
+$slot = 0;
+$last = -1;
+while ($slot < $size) {
+    $obj = inv_getobj(bot_view_worn, $slot);
+    if ($obj ! null) {
+        $x = calc($slot % 2 * 42 + 2);
+        $y = calc($slot / 2 * 32 + 2);
+        cc_create(bot_items:worn_grid, ^iftype_graphic, $slot);
+        cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        cc_setobject($obj, inv_getnum(bot_view_worn, $slot));
+        $last = $slot;
+    }
+    $slot = calc($slot + 1);
+}
+cc_deleteall(bot_items:bank_grid);
+$size = inv_size(bot_view_bank);
+$slot = 0;
+$last = -1;
+while ($slot < $size) {
+    $obj = inv_getobj(bot_view_bank, $slot);
+    if ($obj ! null) {
+        $x = calc($slot % 4 * 46 + 2);
+        $y = calc($slot / 4 * 40 + 2);
+        cc_create(bot_items:bank_grid, ^iftype_graphic, $slot);
+        cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(36, 32, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        cc_setobject($obj, inv_getnum(bot_view_bank, $slot));
+        $last = $slot;
+    }
+    $slot = calc($slot + 1);
+}
+$height = calc(($last / 4 + 1) * 40 + 4);
+if ($height < if_getheight(bot_items:bank_grid)) {
+    $height = if_getheight(bot_items:bank_grid);
+}
+if_setscrollsize(0, $height, bot_items:bank_grid);
+~scrollbar_vertical(bot_items:bank_scrollbar, bot_items:bank_grid, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

@@ -1,5 +1,16 @@
 [gamevals.interface]
 bot_status = 1102
+bot_settings = 1103
+bot_items = 1104
 
 [gamevals.clientscript]
 bot_status_init = 45800
+bot_settings_init = 45803
+bot_items_init = 45806
+bot_items_draw = 45809
+bot_button = 45812
+
+[gamevals.inv]
+bot_view_inv = 1112
+bot_view_worn = 1113
+bot_view_bank = 1114

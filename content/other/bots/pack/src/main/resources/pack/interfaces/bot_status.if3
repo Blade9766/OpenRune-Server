@@ -122,7 +122,7 @@ x = 10
 y = 60
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row0_name"
@@ -243,7 +243,7 @@ x = 10
 y = 81
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row1_name"
@@ -364,7 +364,7 @@ x = 10
 y = 102
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row2_name"
@@ -485,7 +485,7 @@ x = 10
 y = 123
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row3_name"
@@ -606,7 +606,7 @@ x = 10
 y = 144
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row4_name"
@@ -727,7 +727,7 @@ x = 10
 y = 165
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row5_name"
@@ -848,7 +848,7 @@ x = 10
 y = 186
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row6_name"
@@ -969,7 +969,7 @@ x = 10
 y = 207
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row7_name"
@@ -1090,7 +1090,7 @@ x = 10
 y = 228
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row8_name"
@@ -1211,7 +1211,7 @@ x = 10
 y = 249
 width = 492
 height = 21
-options = ["Toggle", "Manage"]
+options = ["Manage", "Toggle"]
 
 [[component]]
 name = "row9_name"
@@ -1327,80 +1327,113 @@ color = "#FFFFFF"
 
 [[component]]
 name = "prev"
-type = "text"
+type = "layer"
 x = 10
 y = 276
 width = 48
 height = 20
-text = "< Prev"
-font = "regular"
-h_align = "center"
-v_align = "center"
-color = "#FFFF00"
 options = ["Select"]
 
 [[component]]
 name = "next"
-type = "text"
+type = "layer"
 x = 62
 y = 276
 width = 48
 height = 20
-text = "Next >"
-font = "regular"
-h_align = "center"
-v_align = "center"
-color = "#FFFF00"
 options = ["Select"]
 
 [[component]]
 name = "refresh"
-type = "text"
+type = "layer"
 x = 114
 y = 276
-width = 56
+width = 60
 height = 20
-text = "Refresh"
-font = "regular"
-h_align = "center"
-v_align = "center"
-color = "#FFFF00"
 options = ["Select"]
 
 [[component]]
 name = "create"
-type = "text"
-x = 174
+type = "layer"
+x = 178
 y = 276
-width = 56
+width = 60
 height = 20
-text = "Create"
-font = "regular"
-h_align = "center"
-v_align = "center"
-color = "#FFFF00"
 options = ["Select"]
 
 [[component]]
 name = "master"
-type = "text"
-x = 234
+type = "layer"
+x = 242
 y = 276
-width = 90
+width = 96
 height = 20
-text = "Master: OFF"
-font = "regular"
-h_align = "center"
-v_align = "center"
-color = "#FFFF00"
 options = ["Select"]
 
 [[component]]
 name = "summary"
 type = "text"
-x = 328
+x = 342
 y = 276
-width = 174
+width = 160
+height = 20
+text = ""
+font = "regular"
+h_align = "right"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "enable_all"
+type = "layer"
+x = 10
+y = 300
+width = 78
+height = 20
+options = ["Select"]
+
+[[component]]
+name = "disable_all"
+type = "layer"
+x = 92
+y = 300
+width = 78
+height = 20
+options = ["Select"]
+
+[[component]]
+name = "preset_all"
+type = "layer"
+x = 174
+y = 300
+width = 104
+height = 20
+options = ["Select"]
+
+[[component]]
+name = "max_down"
+type = "layer"
+x = 282
+y = 300
+width = 26
+height = 20
+options = ["Select"]
+
+[[component]]
+name = "max_up"
+type = "layer"
+x = 312
+y = 300
+width = 26
+height = 20
+options = ["Select"]
+
+[[component]]
+name = "limit"
+type = "text"
+x = 342
+y = 300
+width = 160
 height = 20
 text = ""
 font = "regular"

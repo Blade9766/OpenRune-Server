@@ -1,0 +1,8 @@
+[clientscript,bot_settings_init](string $title)
+~steelborder(bot_settings:frame, $title, 0);
+cc_deleteall(bot_settings:info_box);
+~thinbox(bot_settings:info_box, 0);
+cc_deleteall(bot_settings:settings_box);
+~thinbox(bot_settings:settings_box, 0);
+cc_deleteall(bot_settings:actions_box);
+~thinbox(bot_settings:actions_box, 0);

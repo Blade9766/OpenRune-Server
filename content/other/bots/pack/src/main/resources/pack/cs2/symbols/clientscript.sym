@@ -1,1 +1,5 @@
 45800	[clientscript,bot_status_init]
+45803	[clientscript,bot_settings_init]
+45806	[clientscript,bot_items_init]
+45809	[clientscript,bot_items_draw]
+45812	[clientscript,bot_button]

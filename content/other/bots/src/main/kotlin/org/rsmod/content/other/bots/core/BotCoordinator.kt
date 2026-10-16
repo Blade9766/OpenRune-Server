@@ -45,6 +45,7 @@ class BotCoordinator(
     private val recovering = HashSet<Long>()
     private var nextId = 1L
     private var lastPeriodicSave = 0
+    private var lastCycle = 0
 
     var settings: BotGlobalSettings = BotGlobalSettings()
         private set
@@ -236,6 +237,14 @@ class BotCoordinator(
         return null
     }
 
+    /** Drops what a live bot was doing and has it decide afresh, as if it had just logged in. */
+    fun restart(id: Long): String? {
+        val bot = live[id] ?: return "the bot is not in the world"
+        bot.actor.stopActivity()
+        bot.brain.start(lastCycle, clock())
+        return null
+    }
+
     fun clearError(id: Long): String? {
         val record = records[id] ?: return "no such bot"
         val brain = live[id]?.brain
@@ -249,6 +258,7 @@ class BotCoordinator(
     }
 
     fun tick(cycle: Int) {
+        lastCycle = cycle
         if (!loaded || shuttingDown) {
             return
         }

@@ -37,17 +37,52 @@ the client, so names are matched case-insensitively.
 
 ## Bot Manager window
 
-`::bot` opens the Bot Manager. Everything the commands below do is also
-available from it:
+`::bot` opens the Bot Manager (administrators only; every button re-checks rights,
+and every change is validated by the server exactly as the commands are).
 
-- **Create** (bottom bar): pick a role, then a site for that role, then a random
-  or typed name. The new bot gets the site's starter kit and starts disabled.
-- **Toggle** (left-click a row): enable or disable that bot.
-- **Manage** (right-click a row): show details, enable/disable, clear an error,
-  apply the starter kit, set a level, give an item, change a setting, teleport to
-  the bot, or remove it.
+**Roster** - one row per bot: name, role and difficulty, state, inventory, banked
+sale items, sale threshold, open offers and coins. A bot that is enabled but not
+yet in the world shows as *Queued* (the world is full or the master toggle is off).
 
-Closing any of the menus or prompts cancels without changing anything.
+- Left-click a row to open that bot's **settings**; right-click > Toggle enables or
+  disables it.
+- Top bar: page through bots, refresh, **Create** (role, site, name; it gets the
+  site's starter kit and starts disabled) and the **Master** toggle.
+- Bottom bar: **Enable all** / **Disable all** (both ask first), **All
+  difficulty...** (set every bot to Easy, Normal or Hard) and **- / +** for how many
+  bots may be in the world at once. "In world 8/10" turns orange when bots are
+  queued behind the limit.
+
+**Bot settings** - what the bot is doing, its last target or error, and:
+
+| Setting | Effect |
+|---|---|
+| Difficulty | Easy (4-10 tick reactions, decides every 2 ticks), Normal (1-4, every tick) or Hard (0-2, every tick). Changing reaction or speed by hand makes it Custom |
+| Reaction | Random pause before each new click |
+| Speed | How often it decides what to do; higher slows everything, walking too |
+| Hourly limit | Most items gathered per hour (steps of 250; none = no limit) |
+| Selling / Sell at | Whether it sells on the Grand Exchange, and the banked amount that triggers a trip |
+| Restock | Buy its supplies on the exchange when the bank runs out |
+
+Click a setting's name for an explanation. Greyed-out settings and buttons do not
+apply to that bot (for example selling at a site with no exchange route) and say
+why when clicked. Every change is saved at once and applies on the bot's next
+decision; nothing waits for a respawn.
+
+Actions: Enable/Disable, **Send home** (teleports a stuck bot to its bank and has it
+start afresh), Clear error, Starter kit (bot must be out of the world), Go to bot,
+**View items**, **More...** (details and trace in chat, set a level, give an item,
+pricing settings), **Copy to role** (copies difficulty, speed, hourly limit and
+restock to every other bot of the same role), **Reset** (defaults, keeping what it
+sells) and **Remove** (bot must be out of the world). Copy, Reset and Remove ask
+for confirmation.
+
+**View items** shows the bot's inventory, worn items and bank, read-only. It is
+live while the bot is in the world and shows its last save otherwise.
+
+Bots have no teams, and there is no accuracy or aggression setting: they do skilling
+work through the same clicks a player makes, so difficulty is how quickly and how
+often they act.
 
 ## Commands
 

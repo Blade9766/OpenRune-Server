@@ -1,0 +1,128 @@
+[[interface]]
+name = "interface.bot_items"
+width = 512
+height = 334
+
+[[component]]
+name = "frame"
+type = "layer"
+width = 512
+height = 334
+no_click_through = true
+
+[[component]]
+name = "inv_label"
+type = "text"
+x = 10
+y = 40
+width = 176
+height = 16
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "inv_box"
+type = "layer"
+x = 10
+y = 58
+width = 176
+height = 234
+
+[[component]]
+name = "inv_grid"
+type = "layer"
+x = 12
+y = 60
+width = 172
+height = 230
+
+[[component]]
+name = "worn_label"
+type = "text"
+x = 194
+y = 40
+width = 92
+height = 16
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "worn_box"
+type = "layer"
+x = 194
+y = 58
+width = 92
+height = 234
+
+[[component]]
+name = "worn_grid"
+type = "layer"
+x = 196
+y = 60
+width = 88
+height = 230
+
+[[component]]
+name = "bank_label"
+type = "text"
+x = 294
+y = 40
+width = 208
+height = 16
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "bank_box"
+type = "layer"
+x = 294
+y = 58
+width = 192
+height = 234
+
+[[component]]
+name = "bank_grid"
+type = "layer"
+x = 296
+y = 60
+width = 188
+height = 230
+
+[[component]]
+name = "bank_scrollbar"
+type = "layer"
+x = 486
+y = 58
+width = 16
+height = 234
+
+[[component]]
+name = "summary"
+type = "text"
+x = 10
+y = 298
+width = 402
+height = 20
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "back"
+type = "layer"
+x = 422
+y = 298
+width = 80
+height = 22
+options = ["Select"]

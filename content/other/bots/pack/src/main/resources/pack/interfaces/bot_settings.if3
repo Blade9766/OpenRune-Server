@@ -1,0 +1,577 @@
+[[interface]]
+name = "interface.bot_settings"
+width = 512
+height = 334
+
+[[component]]
+name = "frame"
+type = "layer"
+width = 512
+height = 334
+no_click_through = true
+
+[[component]]
+name = "info_box"
+type = "layer"
+x = 10
+y = 40
+width = 492
+height = 52
+
+[[component]]
+name = "info_title"
+type = "text"
+x = 16
+y = 43
+width = 480
+height = 16
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+
+[[component]]
+name = "info_state"
+type = "text"
+x = 16
+y = 59
+width = 480
+height = 15
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "info_target"
+type = "text"
+x = 16
+y = 74
+width = 480
+height = 15
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#9F9F9F"
+
+[[component]]
+name = "settings_box"
+type = "layer"
+x = 10
+y = 96
+width = 300
+height = 184
+
+[[component]]
+name = "label0"
+type = "text"
+x = 16
+y = 100
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value0"
+type = "text"
+x = 118
+y = 100
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec0"
+type = "layer"
+x = 220
+y = 100
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc0"
+type = "layer"
+x = 262
+y = 100
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle0"
+type = "layer"
+x = 220
+y = 100
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "label1"
+type = "text"
+x = 16
+y = 125
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value1"
+type = "text"
+x = 118
+y = 125
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec1"
+type = "layer"
+x = 220
+y = 125
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc1"
+type = "layer"
+x = 262
+y = 125
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle1"
+type = "layer"
+x = 220
+y = 125
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "label2"
+type = "text"
+x = 16
+y = 150
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value2"
+type = "text"
+x = 118
+y = 150
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec2"
+type = "layer"
+x = 220
+y = 150
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc2"
+type = "layer"
+x = 262
+y = 150
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle2"
+type = "layer"
+x = 220
+y = 150
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "label3"
+type = "text"
+x = 16
+y = 175
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value3"
+type = "text"
+x = 118
+y = 175
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec3"
+type = "layer"
+x = 220
+y = 175
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc3"
+type = "layer"
+x = 262
+y = 175
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle3"
+type = "layer"
+x = 220
+y = 175
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "label4"
+type = "text"
+x = 16
+y = 200
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value4"
+type = "text"
+x = 118
+y = 200
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec4"
+type = "layer"
+x = 220
+y = 200
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc4"
+type = "layer"
+x = 262
+y = 200
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle4"
+type = "layer"
+x = 220
+y = 200
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "label5"
+type = "text"
+x = 16
+y = 225
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value5"
+type = "text"
+x = 118
+y = 225
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec5"
+type = "layer"
+x = 220
+y = 225
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc5"
+type = "layer"
+x = 262
+y = 225
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle5"
+type = "layer"
+x = 220
+y = 225
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "label6"
+type = "text"
+x = 16
+y = 250
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+options = ["Explain"]
+
+[[component]]
+name = "value6"
+type = "text"
+x = 118
+y = 250
+width = 100
+height = 22
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "dec6"
+type = "layer"
+x = 220
+y = 250
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "inc6"
+type = "layer"
+x = 262
+y = 250
+width = 40
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "toggle6"
+type = "layer"
+x = 220
+y = 250
+width = 82
+height = 22
+options = ["Select"]
+
+[[component]]
+name = "actions_box"
+type = "layer"
+x = 318
+y = 96
+width = 184
+height = 184
+
+[[component]]
+name = "act_power"
+type = "layer"
+x = 322
+y = 100
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_home"
+type = "layer"
+x = 412
+y = 100
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_clear"
+type = "layer"
+x = 322
+y = 129
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_kit"
+type = "layer"
+x = 412
+y = 129
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_teleport"
+type = "layer"
+x = 322
+y = 158
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_items"
+type = "layer"
+x = 412
+y = 158
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_more"
+type = "layer"
+x = 322
+y = 187
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_copy"
+type = "layer"
+x = 412
+y = 187
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_reset"
+type = "layer"
+x = 322
+y = 216
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_remove"
+type = "layer"
+x = 412
+y = 216
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "act_back"
+type = "layer"
+x = 322
+y = 245
+width = 86
+height = 25
+options = ["Select"]
+
+[[component]]
+name = "help"
+type = "text"
+x = 10
+y = 284
+width = 492
+height = 18
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+
+[[component]]
+name = "status"
+type = "text"
+x = 10
+y = 304
+width = 492
+height = 18
+text = ""
+font = "regular"
+h_align = "left"
+v_align = "center"
+color = "#9F9F9F"

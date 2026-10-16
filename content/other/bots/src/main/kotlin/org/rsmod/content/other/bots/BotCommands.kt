@@ -86,7 +86,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             .onFailure { player.mes("Could not create bot: ${it.message}") }
     }
 
-    private fun applyKit(coordinator: BotCoordinator, bot: BotRecord): String? {
+    fun applyKit(coordinator: BotCoordinator, bot: BotRecord): String? {
         val kit = BotSites[bot.config.site]?.kit ?: return "site ${bot.config.site} has no starter kit"
         return coordinator.editSave(bot.id) { BotKit.applyKit(it, kit, manager::itemId) }
     }

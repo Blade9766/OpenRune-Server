@@ -1,0 +1,9 @@
+[clientscript,bot_items_init](string $title)
+~steelborder(bot_items:frame, $title, 0);
+cc_deleteall(bot_items:inv_box);
+~thinbox(bot_items:inv_box, 0);
+cc_deleteall(bot_items:worn_box);
+~thinbox(bot_items:worn_box, 0);
+cc_deleteall(bot_items:bank_box);
+~thinbox(bot_items:bank_box, 0);
+if_setoninvtransmit("bot_items_draw{bot_view_inv, bot_view_worn, bot_view_bank}", bot_items:frame);
