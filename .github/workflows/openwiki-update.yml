@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   update:
+    if: github.repository == 'OpenRune/OpenRune-Server'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
