@@ -65,6 +65,10 @@ class PlayerBotActor(
 
     override fun needsSourceVisit(): Boolean = behaviour.needsSourceVisit(player)
 
+    override fun canWorkWithoutSupplies(): Boolean = behaviour.canWorkWithoutSupplies(player)
+
+    override fun restsWithoutSupplies(): Boolean = behaviour.restsWithoutSupplies()
+
     override fun travel(destination: BotDestination): TravelStatus {
         if (behaviour.escape(player, destination)) {
             return TravelStatus.Moving
@@ -102,7 +106,7 @@ class PlayerBotActor(
         if (player.coords == lastCoords) {
             if (++stillTicks >= STUCK_TICKS) {
                 stillTicks = 0
-                if (world.openNearbyDoor(player)) {
+                if (world.openNearbyDoor(player, DOOR_RADIUS) || world.openNearbyDoor(player, FAR_DOOR_RADIUS)) {
                     reroutes++
                     return TravelStatus.Moving
                 }
@@ -399,5 +403,7 @@ class PlayerBotActor(
         private const val STUCK_TICKS = 8
         private const val MAX_REROUTES = 5
         private const val OFF_SITE_DISTANCE = 64
+        private const val DOOR_RADIUS = 2
+        private const val FAR_DOOR_RADIUS = 16
     }
 }

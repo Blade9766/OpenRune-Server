@@ -223,6 +223,18 @@ class BotLifecycleTest {
     }
 
     @Test
+    fun `a rested fighter with no food in the bank keeps working instead of waiting`() {
+        val world = BotTestHarness(actorFactory = { FakeActor(supplyItem = 1436).apply { rested = true } })
+        val id = world.readyBot()
+        world.coordinator.setMaster(true)
+        world.coordinator.enable(id)
+
+        world.tickUntil { world.record(id).stats.gathered >= 5 }
+        assertTrue(world.state(id) != BotState.WaitingForSupplies)
+        assertTrue(world.log.lines.none { "paused: no supplies" in it })
+    }
+
+    @Test
     fun `runecrafting can mine its own essence`() {
         val world =
             BotTestHarness(actorFactory = { FakeActor(gatheredItem = 556, tools = emptySet(), supplyItem = 1436, stackable = setOf(COINS, 556)) })

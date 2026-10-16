@@ -258,8 +258,17 @@ class BotBrain(
                 true
             }
             SupplyOutcome.Unavailable -> {
-                transition(BotState.WaitingForSupplies, cycle, "Waiting for supplies in the bank")
-                log.warn(record, "paused: no supplies in bank")
+                if (actor.canWorkWithoutSupplies()) {
+                    gatherTarget = workTarget()
+                    return true
+                }
+                if (actor.restsWithoutSupplies()) {
+                    transition(BotState.WaitingForSupplies, cycle, RESTING)
+                    log.info(record, "resting at the bank: no supplies left")
+                } else {
+                    transition(BotState.WaitingForSupplies, cycle, "Waiting for supplies in the bank")
+                    log.warn(record, "paused: no supplies in bank")
+                }
                 false
             }
             SupplyOutcome.NoSpace -> {
@@ -285,9 +294,14 @@ class BotBrain(
             is SupplyOutcome.Withdrawn -> {
                 log.info(record, "supplies restocked")
                 urgent = true
-                travelTo(BotDestination.Resource, cycle)
+                travelTo(workTarget(), cycle)
             }
-            SupplyOutcome.Unavailable -> setActivity("Waiting for supplies in the bank")
+            SupplyOutcome.Unavailable ->
+                if (actor.canWorkWithoutSupplies()) {
+                    travelTo(workTarget(), cycle)
+                } else {
+                    setActivity(if (actor.restsWithoutSupplies()) RESTING else "Waiting for supplies in the bank")
+                }
             SupplyOutcome.NoSpace -> error("no inventory space for supplies", now, false)
         }
     }
@@ -696,6 +710,7 @@ class BotBrain(
         const val NO_RESOURCE_TICKS: Int = 300
         const val BUSY_LIMIT_TICKS: Int = 100
         const val SUPPLY_RECHECK_TICKS: Int = 100
+        private const val RESTING = "Resting until healed"
         const val MAX_STATE_FAILURES: Int = 3
         const val MAX_ERROR_RECOVERIES: Int = 3
         const val ERROR_COOLDOWN_MS: Long = 5 * 60_000L

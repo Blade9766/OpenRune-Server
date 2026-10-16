@@ -18,6 +18,7 @@ class FakeActor(
     val taskSize: Int = 0,
 ) : BotActor {
     var taskLeft = 0
+    var rested = false
     var sourceVisits = 0
 
     val inv = LinkedHashMap<Int, Int>()
@@ -47,6 +48,8 @@ class FakeActor(
     override fun needsSupplies(): Boolean = supplyItem != null && (inv[supplyItem] ?: 0) == 0
 
     override fun needsSourceVisit(): Boolean = taskSize > 0 && taskLeft == 0
+
+    override fun canWorkWithoutSupplies(): Boolean = rested
 
     override fun travel(destination: BotDestination): TravelStatus {
         if (destination in blocked) {
@@ -88,7 +91,7 @@ class FakeActor(
             add(supplyItem!!, 1)
             return GatherStatus.Working(1)
         }
-        if (supplyItem != null) {
+        if (supplyItem != null && !rested) {
             if (needsSupplies()) {
                 return GatherStatus.NeedsSupplies
             }

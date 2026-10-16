@@ -66,6 +66,12 @@ interface BotActor {
     /** True when the bot must visit its site's supply source first (a slayer master for a task). */
     fun needsSourceVisit(): Boolean = false
 
+    /** True when the bot can work on even though its supplies ran out (a rested fighter). */
+    fun canWorkWithoutSupplies(): Boolean = false
+
+    /** True when running out of supplies only means resting until [canWorkWithoutSupplies]. */
+    fun restsWithoutSupplies(): Boolean = false
+
     fun needsSupplies(): Boolean
 
     fun travel(destination: BotDestination): TravelStatus

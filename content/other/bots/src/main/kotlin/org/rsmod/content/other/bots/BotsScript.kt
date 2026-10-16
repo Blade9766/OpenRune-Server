@@ -257,7 +257,7 @@ constructor(
         return listOf(
             "name" to name,
             "role" to record.config.role.key.replaceFirstChar(Char::uppercaseChar),
-            "state" to "$stateColour${record.state.shortLabel}",
+            "state" to "$stateColour${if (record.activity.startsWith("Resting")) "Resting" else record.state.shortLabel}",
             "inv" to "${view.inventoryUsed}/${view.inventoryCapacity}",
             "banked" to view.bankedSaleItems.formatAmount,
             "threshold" to record.config.sale.threshold.formatAmount,

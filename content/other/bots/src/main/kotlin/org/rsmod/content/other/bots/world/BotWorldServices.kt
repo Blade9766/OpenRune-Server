@@ -76,10 +76,10 @@ constructor(
     /** Runs [block] with [player]'s protected access, as a script triggered by a click would. */
     fun launch(player: Player, block: suspend ProtectedAccess.() -> Unit): Boolean = protectedAccess.launch(player, block = block)
 
-    /** Clicks "Open" on the nearest closed door or gate within [DOOR_RADIUS] tiles of [player]. */
-    fun openNearbyDoor(player: Player): Boolean {
+    /** Clicks "Open" on the nearest closed door or gate within [radius] tiles of [player]. */
+    fun openNearbyDoor(player: Player, radius: Int): Boolean {
         val (loc, type) =
-            findLocs(player.coords, DOOR_RADIUS) { openOp(it) != null }
+            findLocs(player.coords, radius) { openOp(it) != null }
                 .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(player.coords) }
                 ?: return false
         val op = openOp(type) ?: return false
@@ -200,6 +200,5 @@ constructor(
 
     private companion object {
         private const val ZONE_SIZE = 8
-        private const val DOOR_RADIUS = 2
     }
 }

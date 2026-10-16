@@ -201,12 +201,16 @@ Fishing, thieving and combat sites also use:
 Roles:
 
 - **fishing**: clicks the nearest target spot; bait/feathers come from `supplies`.
-  `barbarian_village_fly` (fly fishing, Edgeville bank) gives trout and salmon.
+  `barbarian_village_fly` (fly fishing, Edgeville bank) gives trout and salmon but
+  uses feathers, so it pauses when the bank runs out. `draynor_net` (small net,
+  Draynor bank) gives shrimps and anchovies and needs no supplies at all.
 - **thieving**: steals from the nearest stocked stall and waits out emptied ones.
   `varrock_tea_stall` (Varrock East bank) gives cups of tea.
 - **combat**: attacks the nearest target not already in combat, eats `supplies`
   below 50% Hitpoints, heads to the bank to restock when out of food, and picks
-  up the site's `products` between fights. Use cheap gear: a bot that dies keeps
+  up the site's `products` between fights. Food is optional: with none left in
+  the bank the bot rests there ("Resting") until it is back to 90% Hitpoints and
+  then fights on. A drop or monster it fails to reach three times is skipped. Use cheap gear: a bot that dies keeps
   only what the normal death rules allow. `barbarian_village_fighters` (Edgeville
   bank) collects bones.
 

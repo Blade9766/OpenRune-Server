@@ -4,6 +4,7 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ObjectServerType
+import java.util.IdentityHashMap
 import org.rsmod.api.npc.isInCombat
 import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.baseRunecraftingLvl
@@ -47,6 +48,10 @@ interface BotRoleBehaviour {
     fun supplyAmount(free: Int): Int = free
 
     fun isAt(player: Player, destination: BotDestination): Boolean = false
+
+    fun canWorkWithoutSupplies(player: Player): Boolean = false
+
+    fun restsWithoutSupplies(): Boolean = false
 
     /** True when the bot must visit the site's supply source before working (a slayer master). */
     fun needsSourceVisit(player: Player): Boolean = false
@@ -434,6 +439,10 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
     private val foodIds by lazy { resolveIds(site.supplies, RSCMType.OBJ) }
     private val siteLootIds by lazy { resolveIds(site.products, RSCMType.OBJ) }
 
+    /** Clicks per drop or npc that never led anywhere; unreachable ones are skipped. */
+    private val attempts = IdentityHashMap<Any, Int>()
+    private var decisions = 0
+
     /** Where the bot fights right now. */
     protected open fun fightArea(player: Player): SiteArea = site.resource
 
@@ -455,6 +464,12 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
 
     override fun supplyAmount(free: Int): Int = if (site.supplyAmount > 0) minOf(site.supplyAmount, free) else free
 
+    /** Food is a comfort, not a requirement: without it the bot rests until it is nearly healed. */
+    override fun canWorkWithoutSupplies(player: Player): Boolean =
+        player.hitpoints * 100 >= player.baseHitpointsLvl * RESTED_PERCENT
+
+    override fun restsWithoutSupplies(): Boolean = true
+
     override fun isAt(player: Player, destination: BotDestination): Boolean =
         destination == BotDestination.Resource && fightArea(player).contains(player.coords)
 
@@ -468,28 +483,46 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
             return GatherStatus.InventoryFull
         }
         if (player.isActing()) {
-            return GatherStatus.Working(0, progressed = player.interaction is InteractionNpcOp)
+            val fighting = (player.interaction as? InteractionNpcOp)?.target
+            if (fighting != null && fighting.isInCombat()) {
+                attempts.remove(fighting)
+            }
+            return GatherStatus.Working(0, progressed = fighting != null)
+        }
+        if (++decisions % ATTEMPTS_RESET == 0) {
+            attempts.clear()
         }
         val area = fightArea(player)
         val loot = lootIds(player)
         val drop =
             world
-                .findObjs(player, area.center(), area.radius) { it.type in loot }
+                .findObjs(player, area.center(), area.radius) { it.type in loot && reachable(it) }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
         if (drop != null) {
+            attempted(drop)
             world.pickUp(player, drop)
             return GatherStatus.Working(0)
         }
         val npc =
             world
-                .findNpcs(area.center(), area.radius) { isTarget(player, it) && !it.isInCombat() }
+                .findNpcs(area.center(), area.radius) { isTarget(player, it) && !it.isInCombat() && reachable(it) }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
                 ?: return GatherStatus.NoResource
+        attempted(npc)
         return if (world.opNpc(player, npc, attackOp(npc))) GatherStatus.Working(0) else GatherStatus.NoResource
     }
 
+    private fun reachable(target: Any): Boolean = (attempts[target] ?: 0) < MAX_ATTEMPTS
+
+    private fun attempted(target: Any) {
+        attempts[target] = (attempts[target] ?: 0) + 1
+    }
+
     private companion object {
+        private const val MAX_ATTEMPTS = 3
+        private const val ATTEMPTS_RESET = 500
         private const val EAT_PERCENT = 50
+        private const val RESTED_PERCENT = 90
     }
 }
 
