@@ -21,6 +21,8 @@ class GeItemData private constructor(private val entries: Map<Int, Entry>) {
 
     fun entry(item: Int): Entry? = entries[item]
 
+    fun all(): Collection<Entry> = entries.values
+
     /** The guide price the offer setup screen defaults to. Never below one coin. */
     fun guidePrice(item: Int): Int {
         val known = entries[item]?.guidePrice

@@ -1,0 +1,53 @@
+# Master Meister, the Grand Exchange's resident buyer. Copy this file to
+# .data/bots/master-meister.toml to change it without rebuilding (the copy replaces this file).
+# Trading settings (intervals, chances, budgets) are not here: they are in his save,
+# .data/master-meister.json, and are changed with ::meister set or the Bot Manager.
+
+enabled = true
+spawn = { x = 3164, z = 3480 }
+area = { x = 3164, z = 3489, radius = 14 }
+stroll_radius = 5
+idle_interval = 25
+
+booths = [
+    { stand = { x = 3164, z = 3486 }, face = { x = 3164, z = 3487 } },
+    { stand = { x = 3165, z = 3486 }, face = { x = 3165, z = 3487 } },
+    { stand = { x = 3164, z = 3493 }, face = { x = 3164, z = 3492 } },
+    { stand = { x = 3165, z = 3493 }, face = { x = 3165, z = 3492 } },
+]
+booth_anim = "seq.human_pickuptable"
+idle_anims = ["seq.emote_think", "seq.emote_yes", "seq.emote_shrug", "seq.emote_beckon"]
+idle_lines = [
+    "Buying! Fair prices, quick coins!",
+    "Anyone selling? I'm buying!",
+    "Prices, prices, prices...",
+    "The market never sleeps, and neither do I.",
+]
+buy_lines = ["I'll take some of that {item}!", "A fine price for {item}.", "Into the ledger with you, {item}."]
+sell_lines = ["Parting with some {item}.", "Who needs {item}? I have plenty."]
+
+# The largest coin stack the game supports. Lower it for a poorer Meister.
+starting_cash = 2147483647
+
+# Starting count of every tradeable item, by guide price: the first tier whose
+# max_price is at least the item's price applies.
+allocation = [
+    { max_price = 100, count = 2000 },
+    { max_price = 1000, count = 1000 },
+    { max_price = 10000, count = 250 },
+    { max_price = 100000, count = 50 },
+    { max_price = 1000000, count = 10 },
+    { max_price = 10000000, count = 3 },
+    { max_price = 9223372036854775807, count = 1 },
+]
+allocation_overrides = {}
+
+# Items at or above this guide price count as rare/economy-sensitive: by default
+# he may buy them but never sells them (the "Sell rare items" switch).
+sensitive_price = 50000000
+sensitive = ["obj.osrs_bond"]
+
+# Never held or traded (untradeable, noted, placeholder and coin items are always excluded).
+exclude = ["obj.osrs_bond"]
+no_buy = []
+no_sell = []

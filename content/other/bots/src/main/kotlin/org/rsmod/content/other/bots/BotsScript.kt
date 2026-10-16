@@ -36,6 +36,14 @@ import org.rsmod.content.other.bots.core.SettingRow
 import org.rsmod.content.other.bots.core.SiteCapabilities
 import org.rsmod.content.other.bots.core.copyBehaviourTo
 import org.rsmod.content.other.bots.core.withDefaults
+import org.rsmod.content.other.bots.meister.MeisterControl
+import org.rsmod.content.other.bots.meister.MeisterRows
+import org.rsmod.content.other.bots.meister.MeisterSettings
+import org.rsmod.content.other.bots.meister.MeisterStatus
+import org.rsmod.content.other.bots.meister.MeisterTrader
+import org.rsmod.content.other.bots.meister.formatCoins
+import org.rsmod.content.other.bots.meister.world.MasterMeister
+import org.rsmod.content.other.bots.meister.world.MeisterCommands
 import org.rsmod.content.other.bots.world.BotSites
 import org.rsmod.content.other.bots.world.BotWorldServices
 import org.rsmod.game.MapClock
@@ -60,8 +68,10 @@ constructor(
     private val protectedAccess: ProtectedAccessLauncher,
     private val mapClock: MapClock,
     private val world: BotWorldServices,
+    private val meister: MasterMeister,
 ) : PluginScript() {
     private val commands = BotCommands(manager, ::onlineNames)
+    private val meisterCommands = MeisterCommands(meister)
     private val views = WeakHashMap<Player, View>()
     private val rosterPages = WeakHashMap<Player, Int>()
 
@@ -71,6 +81,17 @@ constructor(
         data class Settings(val botId: Long, var help: String = DEFAULT_HELP, var status: String = APPLIES_NOW) : View
 
         data class Items(val botId: Long, var shown: Int? = null) : View
+
+        data class Meister(var page: Int = 0, var help: String = DEFAULT_HELP, var status: String = APPLIES_NOW) : View
+
+        data class MeisterItems(var shown: Int? = null) : View
+    }
+
+    /** A roster line: Master Meister first, then every gathering bot. */
+    private sealed interface RosterRow {
+        data object Meister : RosterRow
+
+        data class Bot(val view: BotStatusView) : RosterRow
     }
 
     /** The buttons a window last drew, so a refresh only redraws what changed (and keeps hovers). */
@@ -100,9 +121,9 @@ constructor(
         }
 
         onIfClose(ROSTER) { closed<View.Roster>(player) }
-        onIfClose(SETTINGS) { closed<View.Settings>(player) }
+        onIfClose(SETTINGS) { closed<View.Settings>(player) || closed<View.Meister>(player) }
         onIfClose(ITEMS) {
-            if (closed<View.Items>(player)) {
+            if (closed<View.Items>(player) || closed<View.MeisterItems>(player)) {
                 for (inv in viewerInvs(player)) {
                     player.stopInvTransmit(inv)
                 }
@@ -133,7 +154,13 @@ constructor(
             onIfModalButton("$SETTINGS_COM:act_$action") { if (isAdmin()) settingsAction(action) }
         }
         onIfModalButton("$ITEMS_COM:back") {
-            if (isAdmin()) (views[player] as? View.Items)?.let { openSettings(it.botId) }
+            if (isAdmin()) {
+                when (val view = views[player]) {
+                    is View.Items -> openSettings(view.botId)
+                    is View.MeisterItems -> openMeister()
+                    else -> {}
+                }
+            }
         }
     }
 
@@ -171,7 +198,7 @@ constructor(
 
     private fun ProtectedAccess.page(delta: Int) {
         val view = views[player] as? View.Roster ?: return
-        val total = manager.coordinator?.all()?.size ?: 0
+        val total = rosterRows().size
         val pages = maxOf(1, (total + ROWS - 1) / ROWS)
         val page = (view.page + delta).coerceIn(0, pages - 1)
         rosterPages[player] = page
@@ -229,7 +256,11 @@ constructor(
 
     private suspend fun ProtectedAccess.rowAction(row: Int, op: IfButtonOp) {
         val coordinator = manager.coordinator ?: return
-        val view = pageOf(currentPage()).getOrNull(row) ?: return
+        val view =
+            when (val entry = pageOf(currentPage()).getOrNull(row) ?: return) {
+                RosterRow.Meister -> return if (op == IfButtonOp.Op1) openMeister() else toggleMeisterTrading()
+                is RosterRow.Bot -> entry.view
+            }
         val id = view.record.id
         if (op == IfButtonOp.Op1) {
             return openSettings(id)
@@ -265,19 +296,19 @@ constructor(
             ifSetText("$ROSTER_COM:summary", "<col=ff0000>Bots are not loaded yet")
             return
         }
-        val views = pageOf(page)
+        val rows = pageOf(page)
         for (row in 0 until ROWS) {
-            val view = views.getOrNull(row)
-            for ((column, value) in cells(view)) {
+            val entry = rows.getOrNull(row)
+            for ((column, value) in cells(entry)) {
                 ifSetText("$ROSTER_COM:row${row}_$column", value)
             }
         }
         val all = coordinator.all()
         val active = all.count { coordinator.isLive(it.id) }
         val max = coordinator.settings.maxActiveBots
-        val pages = maxOf(1, (all.size + ROWS - 1) / ROWS)
+        val pages = maxOf(1, (rosterRows().size + ROWS - 1) / ROWS)
         val master = coordinator.settings.masterEnabled
-        if (all.isEmpty()) {
+        if (rows.isEmpty()) {
             ifSetText("$ROSTER_COM:row0_name", "<col=9f9f9f>No bots yet.")
             ifSetText("$ROSTER_COM:row0_role", "<col=9f9f9f>Press Create to add one.")
         }
@@ -296,13 +327,19 @@ constructor(
         ifSetText("$ROSTER_COM:limit", "${if (full) "<col=ff981f>" else ""}In world $active/$max")
     }
 
-    private fun pageOf(page: Int): List<BotStatusView> =
-        manager.coordinator?.status()?.drop(page * ROWS)?.take(ROWS).orEmpty()
+    private fun rosterRows(): List<RosterRow> =
+        listOfNotNull(RosterRow.Meister.takeIf { meister.trader != null }) +
+            manager.coordinator?.status().orEmpty().map(RosterRow::Bot)
 
-    private fun cells(view: BotStatusView?): List<Pair<String, String>> {
-        if (view == null) {
-            return COLUMNS.map { it to "" }
-        }
+    private fun pageOf(page: Int): List<RosterRow> = rosterRows().drop(page * ROWS).take(ROWS)
+
+    private fun cells(entry: RosterRow?): List<Pair<String, String>> {
+        val view =
+            when (entry) {
+                null -> return COLUMNS.map { it to "" }
+                RosterRow.Meister -> return meisterCells()
+                is RosterRow.Bot -> entry.view
+            }
         val record = view.record
         val stateColour =
             when (record.state) {
@@ -427,6 +464,7 @@ constructor(
         }
 
     private fun ProtectedAccess.explain(index: Int) {
+        (views[player] as? View.Meister)?.let { return meisterExplain(it, index) }
         val view = settingsView(player) ?: return
         val row = currentRows(view)?.getOrNull(index) ?: return
         view.help = "<col=ff981f>${row.label}:</col> ${row.help}" + (row.unavailable?.let { " <col=ff0000>$it" } ?: "")
@@ -440,6 +478,7 @@ constructor(
     }
 
     private fun ProtectedAccess.changeSetting(index: Int, step: Step) {
+        (views[player] as? View.Meister)?.let { return meisterChange(it, index, step) }
         val view = settingsView(player) ?: return
         val coordinator = manager.coordinator ?: return
         val row = currentRows(view)?.getOrNull(index) ?: return
@@ -460,6 +499,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.settingsAction(action: String) {
+        (views[player] as? View.Meister)?.let { return meisterAction(it, action) }
         val view = settingsView(player) ?: return
         val coordinator = manager.coordinator ?: return
         val record = coordinator.find(view.botId.toString()) ?: return openRoster()
@@ -626,6 +666,247 @@ constructor(
         ifSetText("$ITEMS_COM:summary", "Coins ${bankCoins.formatAmount} banked, ${carried.formatAmount} carried. $source")
     }
 
+    /* Master Meister: a fixed roster row, the settings window with his own rows and actions, and his items. */
+
+    private fun meisterCells(): List<Pair<String, String>> {
+        val trader = meister.trader ?: return COLUMNS.map { it to "" }
+        val colour =
+            when (trader.status) {
+                MeisterStatus.Paused -> "<col=ff981f>"
+                MeisterStatus.NotSetUp -> "<col=ff0000>"
+                else -> ""
+            }
+        return listOf(
+            "name" to "<col=ffff00>$ROSTER_NAME",
+            "role" to "GE trader",
+            "state" to "$colour${trader.status.label}",
+            "inv" to "${trader.holdingsView().size} kinds",
+            "banked" to "-",
+            "threshold" to "-",
+            "listings" to trader.offers().count { it.isOpen }.toString(),
+            "coins" to formatCoins(trader.cash),
+        )
+    }
+
+    private fun ProtectedAccess.toggleMeisterTrading() {
+        val trader = meister.trader ?: return
+        val on = !trader.settings.tradingEnabled
+        val error = meisterCommands.change(player.displayName, trader, "trading") { it.copy(tradingEnabled = on) }
+        mes(error?.let { "<col=ff0000>Master Meister: $it" } ?: "Master Meister's trading is now ${if (on) "on" else "off"}.")
+        renderRoster()
+    }
+
+    private fun ProtectedAccess.openMeister(status: String = APPLIES_NOW, page: Int = 0) {
+        meister.trader ?: return openRoster()
+        views[player] = View.Meister(page = page, status = status)
+        drawn.remove(player)
+        ifOpenMainModal(SETTINGS)
+        player.runClientScript(SETTINGS_INIT.asRSCM(RSCMType.CLIENTSCRIPT), "Bot Settings: ${MeisterTrader.NAME}")
+        for (row in 0 until SETTING_ROWS) {
+            for (part in listOf("label", "dec", "inc", "toggle")) {
+                ifSetEvents("$SETTINGS_COM:$part$row", -1..-1, IfEvent.Op1)
+            }
+        }
+        for (action in ACTIONS) {
+            ifSetEvents("$SETTINGS_COM:act_$action", -1..-1, IfEvent.Op1)
+        }
+        renderMeister()
+    }
+
+    private fun ProtectedAccess.renderMeister() {
+        val view = views[player] as? View.Meister ?: return
+        val trader = meister.trader ?: return openRoster()
+        val settings = trader.settings
+        val pages = MeisterRows.pageCount(SETTING_ROWS)
+        val open = trader.offers().count { it.isOpen }
+        val body = meister.player
+        ifSetText("$SETTINGS_COM:info_title", "${MeisterTrader.NAME} - Grand Exchange trader - settings ${view.page + 1}/$pages")
+        val presence = if (body != null) "<col=00ff00>In the world</col>" else "<col=ff981f>Entering the world</col>"
+        ifSetText(
+            "$SETTINGS_COM:info_state",
+            "$presence  ${trader.status.label}: cash ${formatCoins(trader.cash)}, ${trader.holdingsView().size} kinds, offers $open/${settings.maxActiveOffers}",
+        )
+        val last = trader.trace.lastOrNull()?.text ?: "no decisions yet"
+        ifSetText(
+            "$SETTINGS_COM:info_target",
+            if (!meister.storeOk) "<col=ff0000>His ledger cannot be saved; he is not trading." else "Last: $last",
+        )
+        val rows = MeisterRows.page(settings, view.page, SETTING_ROWS)
+        for (index in 0 until SETTING_ROWS) {
+            val row = rows.getOrNull(index)
+            ifSetText("$SETTINGS_COM:label$index", row?.label ?: "")
+            ifSetText("$SETTINGS_COM:value$index", row?.value ?: "")
+            when (val control = row?.control) {
+                null -> {
+                    ifSetHide("$SETTINGS_COM:dec$index", true)
+                    ifSetHide("$SETTINGS_COM:inc$index", true)
+                    ifSetHide("$SETTINGS_COM:toggle$index", true)
+                }
+                is MeisterControl.Stepper -> {
+                    ifSetHide("$SETTINGS_COM:toggle$index", true)
+                    ifSetHide("$SETTINGS_COM:dec$index", false)
+                    ifSetHide("$SETTINGS_COM:inc$index", false)
+                    button(SETTINGS_COM, "dec$index", "-", control.down != null)
+                    button(SETTINGS_COM, "inc$index", "+", control.up != null)
+                }
+                is MeisterControl.Toggle -> {
+                    ifSetHide("$SETTINGS_COM:dec$index", true)
+                    ifSetHide("$SETTINGS_COM:inc$index", true)
+                    ifSetHide("$SETTINGS_COM:toggle$index", false)
+                    button(SETTINGS_COM, "toggle$index", control.label, control.change != null)
+                }
+            }
+        }
+        button(SETTINGS_COM, "act_power", "Trading: ${if (settings.tradingEnabled) "<col=00ff00>ON" else "<col=ff0000>OFF"}")
+        button(SETTINGS_COM, "act_home", if (settings.buyingPaused) "Resume buying" else "Pause buying")
+        button(SETTINGS_COM, "act_clear", if (settings.sellingPaused) "Resume selling" else "Pause selling")
+        button(SETTINGS_COM, "act_kit", "Next page", pages > 1)
+        button(SETTINGS_COM, "act_teleport", "Go to him", body != null)
+        button(SETTINGS_COM, "act_items", "View items")
+        button(SETTINGS_COM, "act_more", "More...")
+        button(SETTINGS_COM, "act_copy", "Cancel offers", open > 0)
+        button(SETTINGS_COM, "act_reset", "Reset")
+        button(SETTINGS_COM, "act_remove", "Send home", body != null)
+        button(SETTINGS_COM, "act_back", "Back")
+        ifSetText("$SETTINGS_COM:help", view.help)
+        ifSetText("$SETTINGS_COM:status", view.status)
+    }
+
+    private fun ProtectedAccess.meisterExplain(view: View.Meister, index: Int) {
+        val trader = meister.trader ?: return
+        val row = MeisterRows.page(trader.settings, view.page, SETTING_ROWS).getOrNull(index) ?: return
+        view.help = "<col=ff981f>${row.label}:</col> ${row.help}"
+        renderMeister()
+    }
+
+    private fun ProtectedAccess.meisterChange(view: View.Meister, index: Int, step: Step) {
+        val trader = meister.trader ?: return
+        val row = MeisterRows.page(trader.settings, view.page, SETTING_ROWS).getOrNull(index) ?: return
+        val change =
+            when (val control = row.control) {
+                is MeisterControl.Stepper -> if (step == Step.Down) control.down else if (step == Step.Up) control.up else null
+                is MeisterControl.Toggle -> if (step == Step.Toggle) control.change else null
+            }
+        view.status =
+            if (change == null) {
+                "<col=ff981f>${row.label} is already at its limit."
+            } else {
+                meisterCommands.change(player.displayName, trader, row.label, change)?.let { "<col=ff0000>Not saved: $it" }
+                    ?: "<col=00ff00>Saved:</col> ${row.label} is now ${MeisterRows.page(trader.settings, view.page, SETTING_ROWS).getOrNull(index)?.value}. $APPLIES_NOW"
+            }
+        renderMeister()
+    }
+
+    private suspend fun ProtectedAccess.meisterAction(view: View.Meister, action: String) {
+        val trader = meister.trader ?: return openRoster()
+        val admin = player.displayName
+        val settings = trader.settings
+        fun toggle(what: String, change: (MeisterSettings) -> MeisterSettings): String =
+            meisterCommands.change(admin, trader, what, change)?.let { "<col=ff0000>$it" } ?: "Saved. $APPLIES_NOW"
+        view.status =
+            when (action) {
+                "power" -> toggle("trading") { it.copy(tradingEnabled = !settings.tradingEnabled) }
+                "home" -> toggle("buying") { it.copy(buyingPaused = !settings.buyingPaused) }
+                "clear" -> toggle("selling") { it.copy(sellingPaused = !settings.sellingPaused) }
+                "kit" -> {
+                    view.page = (view.page + 1) % MeisterRows.pageCount(SETTING_ROWS)
+                    view.help = DEFAULT_HELP
+                    drawn.remove(player)
+                    APPLIES_NOW
+                }
+                "teleport" -> {
+                    val body = meister.player ?: return
+                    ifClose()
+                    telejump(body.coords)
+                    return
+                }
+                "items" -> return openMeisterItems()
+                "more" -> return meisterMore(view.page)
+                "copy" -> {
+                    val open = trader.offers().count { it.isOpen }
+                    if (!confirm("Cancel all $open of his open offers?", "Yes, cancel them")) {
+                        return openMeister(page = view.page)
+                    }
+                    var result = ""
+                    meisterCommands.run(admin, listOf("cancel")) { result = it }
+                    return openMeister(result, view.page)
+                }
+                "reset" -> {
+                    if (!confirm("Reset Master Meister's settings to the defaults?", "Yes, reset them")) {
+                        return openMeister(page = view.page)
+                    }
+                    var result = ""
+                    meisterCommands.run(admin, listOf("reset")) { result = it }
+                    return openMeister(result, view.page)
+                }
+                "remove" -> if (meister.sendHome()) "He is back at his spot by the exchange." else "<col=ff0000>He is not in the world."
+                "back" -> return openRoster()
+                else -> APPLIES_NOW
+            }
+        renderMeister()
+    }
+
+    private suspend fun ProtectedAccess.meisterMore(page: Int) {
+        val admin = player.displayName
+        val actions =
+            listOf<Pair<String, suspend () -> Unit>>(
+                "Show status in chat" to { meisterCommands.run(admin, listOf("status")) { mes(it) } },
+                "Show open offers in chat" to { meisterCommands.run(admin, listOf("offers")) { mes(it) } },
+                "Show decision trace in chat" to { meisterCommands.run(admin, listOf("trace")) { mes(it) } },
+                "Show most valuable holdings in chat" to { meisterCommands.run(admin, listOf("items", "15")) { mes(it) } },
+                "Set a value by name (e.g. dayspend 50m)..." to {
+                    val input = stringDialog("Setting and value:").trim().lowercase().split(" ").filter { it.isNotBlank() }
+                    meisterCommands.run(admin, listOf("set") + input) { mes(it) }
+                },
+                "Back" to {},
+            )
+        actions[pick(MeisterTrader.NAME, actions.map { it.first })].second.invoke()
+        openMeister(page = page)
+    }
+
+    private fun ProtectedAccess.openMeisterItems() {
+        meister.trader ?: return openRoster()
+        views[player] = View.MeisterItems()
+        drawn.remove(player)
+        ifOpenMainModal(ITEMS)
+        player.runClientScript(ITEMS_INIT.asRSCM(RSCMType.CLIENTSCRIPT), "Items: ${MeisterTrader.NAME}")
+        ifSetEvents("$ITEMS_COM:back", -1..-1, IfEvent.Op1)
+        button(ITEMS_COM, "back", "Back")
+        for (inv in viewerInvs(player)) {
+            inv.fillNulls()
+            invTransmit(inv)
+        }
+        renderMeisterItems()
+    }
+
+    @OptIn(UncheckedType::class)
+    private fun ProtectedAccess.renderMeisterItems() {
+        val view = views[player] as? View.MeisterItems ?: return
+        val trader = meister.trader ?: return openRoster()
+        val offers = trader.offers()
+        val holdings = trader.holdingsView()
+        val signature = listOf(holdings, offers).hashCode()
+        val (offerInv, wornInv, bankInv) = viewerInvs(player)
+        if (signature != view.shown) {
+            view.shown = signature
+            offerInv.fillNulls()
+            wornInv.fillNulls()
+            bankInv.fillNulls()
+            for ((slot, offer) in offers.withIndex()) {
+                offerInv[slot] = InvObj(offer.itemId, maxOf(1, if (offer.sell) offer.remaining else offer.total))
+            }
+            val shown = holdings.entries.sortedByDescending { it.value.toLong() * trader.guideOf(it.key) }.take(bankInv.size)
+            for ((slot, entry) in shown.withIndex()) {
+                bankInv[slot] = InvObj(entry.key, entry.value)
+            }
+        }
+        ifSetText("$ITEMS_COM:inv_label", "Exchange offers (${offers.size}/8)")
+        ifSetText("$ITEMS_COM:worn_label", "")
+        val more = if (holdings.size > bankInv.size) ", top ${bankInv.size}" else ""
+        ifSetText("$ITEMS_COM:bank_label", "Holdings: ${holdings.size} kinds$more")
+        ifSetText("$ITEMS_COM:summary", "Cash ${trader.cash.formatAmount} coins. ${trader.status.label}. Live view; updates every few seconds.")
+    }
+
     /** Draws a stone button; an unavailable one is grey and has no menu option at all. */
     private fun ProtectedAccess.button(com: String, name: String, label: String, enabled: Boolean = true) {
         val seen = drawn.getOrPut(player) { HashMap() }
@@ -678,6 +959,8 @@ constructor(
                     is View.Roster -> renderRoster()
                     is View.Settings -> renderSettings()
                     is View.Items -> renderItems()
+                    is View.Meister -> renderMeister()
+                    is View.MeisterItems -> renderMeisterItems()
                 }
             }
         }
@@ -705,6 +988,7 @@ constructor(
         private const val BOT_BANK = "inv.bank"
         private const val COINS = "obj.coins"
         private const val ROWS = 10
+        private const val ROSTER_NAME = "M. Meister"
         private const val SETTING_ROWS = 7
         private const val REFRESH_TICKS = 5
         private const val MENU_INTERFACE = "interface.menu"

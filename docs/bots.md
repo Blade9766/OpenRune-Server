@@ -456,7 +456,11 @@ between a bot and the exchange is done in steps, each saved before the next:
 - **Listing**: the notes leave the bot's inventory (for a supply buy offer, its
   coins leave the bank) and the listing is written to the bot file as pending. Next tick the offer is placed. Once the exchange
   file has been saved with the offer in it, the pending entry is cleared.
-- **Collecting**: proceeds, bought supplies and returned items are credited to the bot's bank
+- **Collecting**: a collect box is only paid out once the exchange file has
+  saved what is in it: with unsaved exchange changes the bot notes the box's
+  contents when it first sees them and credits at most that much after the
+  exchange's next save, so a fill or cancellation lost in a crash is never paid. Proceeds, bought supplies and
+  returned items are then credited to the bot's bank
   and written as pending, with the offer's running collected totals as the
   target. Next tick the exchange is emptied down to that target, and the
   pending entry is cleared once the exchange file has saved that too.
@@ -479,6 +483,121 @@ or coins. While the bot file cannot be written, bots leave the exchange alone
 
 Logs: logger `bots` (gathering totals with each deposit, deposits, listings,
 aborts, sales, errors, spawns) and `bots.admin` (who changed what).
+
+## Master Meister
+
+Master Meister is a single server-run player bot who lives around the Grand Exchange and trades on
+the same book players use. Buying is his main activity; now and then he sells a little of
+what he holds. Code: `content/other/bots/.../meister/` (pure trading logic, unit-tested) and
+`meister/world/` (his player body, ledger file, commands).
+
+**Wealth.** On his first start he is given an explicit starting allocation: 2,147,483,647 coins
+(the largest coin stack, which is also the most any exchange offer can hold) and a stock of
+every tradeable item - every entry of the exchange's item list with a guide price that the
+cache marks tradeable and exchange-tradeable, minus coins, notes, placeholders, dummy and
+transformation items, bonds and anything the config excludes (about 4,000 kinds). How many
+of each depends on the guide price (2,000 of items up to 100 gp down to 1 of items over
+10M). The allocation is written in the same save that marks him initialized, so a restart
+never adds to it. After that, purchases spend his real cash and sales consume his real
+items; nothing is topped up unless the `Refill cash` / `Refill items` switches are on (once
+per 24 hours, logged as an allocation).
+
+**Where his things live.** His cash and items are a ledger in `.data/master-meister.json`
+(written like the bot file: temporary file and atomic move), not a player inventory - a bank
+holds 1,410 slots and he holds thousands of kinds. His offers live in the exchange book under
+owner id -1,000,000,000.
+
+**Trading.** Every 90 seconds (+/- 50%) he decides: buy (55%), sell (10%) or nothing (35%).
+
+- *Buying*: he looks at every open sell offer from other traders. A listing is eligible when
+  its price is at most 5% over the item's reference price; he prefers cheaper listings,
+  items that trade often, and items he holds fewer of than his starting stock, and picks one
+  of the ten best at random. If nothing is listed at a fair price he may leave a standing
+  bid 6% under the reference on a random item instead, which players can sell into. The
+  quantity is random up to the smallest of: his cash, 5M per offer, 20M per item per day,
+  100M per day (counting coins tied up in open bids), the exchange buy limit and 500 items.
+- *Selling*: he prefers items someone is bidding for at no less than 98% of the reference,
+  then items he holds most of. He sells at that bid, or else asks 5% over the reference;
+  never below 98%. At most 10% of his stock of the item and 100 items per offer. Rare items
+  (guide price 50M or more, or listed as `sensitive`) are never sold unless `Sell rare
+  items` is on.
+- *Reference price*: the exchange guide price, or the volume-weighted price of recent trades
+  when that is within 25% of the guide price - the lower of the two when buying, the higher
+  when selling, so trades between other players cannot pump what he pays or dump what he
+  asks. Items with no guide price are never traded.
+- *Safeguards*: at most 4 open offers and one offer per item (buy or sell), so his offers
+  never meet each other (the exchange also refuses to match any server-run trader against
+  itself). After an offer for an item finishes, fails or is cancelled he leaves that item
+  alone for 30 minutes; an item he bought is not sold for 24 hours and the other way round.
+  Buy offers unfilled after 30 minutes and sell offers unsold after 60 minutes are
+  cancelled. Proceeds that would take his cash past the cap stay in the collect box until he
+  has room.
+
+Every trade goes through the exchange's normal matching, tax, buy limits and collection.
+Item and coin moves use the gathering bots' two-step protocol: the ledger change and a
+pending record are saved first, the exchange is changed on a later tick, and the pending
+record is cleared once the exchange has saved too. He only collects what the exchange has
+already saved, so a fill or cancellation the exchange loses in a crash is never paid out.
+
+**In the world.** He is a player bot like the gathering bots: a player character named
+Master Meister with no network session (others see him through the same bot avatar), spawned
+at 3164,3480 and kept within 14 tiles of the exchange's centre. He carries nothing - his wealth
+is the ledger - so leaving the world loses nothing. He walks with the normal pathfinder,
+strolls a few tiles at a time, thinks, nods and calls out now and then, and when he places an
+offer walks to the nearest Exchange booth, faces it and reaches over the counter (he does not
+open the exchange interface; his offers go straight into the book like every bot's). A walk
+that stalls is abandoned; three in a row, or leaving his area, put him back at his spawn tile.
+If the engine removes him he comes back within 100 ticks, at his last position.
+
+**Bot Manager.** He is the first row of the roster ("M. Meister") (`::bot`): left-click opens his settings
+window, right-click > Toggle switches trading on or off. The settings window shows his
+status (Idle, Buying, Selling, Trading Paused), cash, kinds held, open offers and last
+decision, and pages through every setting (Next page). Buttons: Trading on/off, Pause/Resume
+buying, Pause/Resume selling, Go to him, View items (his offers and his 1,410 most valuable
+holdings), More... (status, offers, decision trace and top holdings in chat; set any value
+by name), Cancel offers, Reset (defaults; trading stays as it is) and Send home. Every button
+re-checks administrator rights; every change is validated, saved at once and logged to
+`bots.admin`.
+
+**Commands** (administrators):
+
+```
+::meister [status]                status, budgets and lifetime totals
+::meister offers | trace | items [n]
+::meister keys                    every setting name
+::meister set <key> <value>       e.g. ::meister set dayspend 50m, ::meister set sellchance 5
+::meister trading|buying|selling on|off
+::meister cancel                  cancel every open offer (contents are collected)
+::meister home | reset
+```
+
+| Key | Default | Meaning |
+|---|---|---|
+| `interval` / `jitter` | 90 s / 50% | Time between decisions and its random variation |
+| `buychance` / `sellchance` | 55% / 10% | Share of decisions that buy / sell; the rest do nothing |
+| `maxoffers` | 4 | Open offers at once (1-8) |
+| `premium` | 5% | Most he pays over the reference |
+| `biddiscount` | 6% | Standing bids sit this far under the reference |
+| `markup` / `minsell` | 5% / 98% | Asking price over the reference / lowest sale price |
+| `deviation` | 25% | How far recent trades may differ from the guide price and still count |
+| `offerspend` / `itemspend` / `dayspend` | 5M / 20M / 100M | Spending caps per offer, per item per day, per day |
+| `buyqty` / `sellqty` / `sellshare` | 500 / 100 / 10% | Quantity caps |
+| `cooldown` / `flip` | 30 min / 24 h | Item cooldown / no buy-then-sell window |
+| `buytimeout` / `selltimeout` | 30 / 60 min | When unfilled offers are cancelled |
+| `trading`, `buying`, `selling` | on | Switches |
+| `buysensitive` / `sellsensitive` | on / off | Rare items |
+| `replenishcash` / `replenishitems` | off | Daily refills |
+
+**World config** (`content/other/bots/src/main/resources/master-meister.toml`; copy it to
+`.data/bots/master-meister.toml` to change it without rebuilding, read at startup): `enabled`,
+spawn tile, area, stroll radius, booth tiles and what each faces, animations and chat lines,
+`starting_cash`, the allocation tiers and per-item `allocation_overrides`, `sensitive_price`,
+`sensitive`, `exclude`, `no_buy` and `no_sell`. The allocation settings only matter before
+his first save exists; delete `.data/master-meister.json` (with the server stopped, and after
+cancelling his offers) to start him afresh.
+
+Logs: logger `bots.meister` - every decision with its reason, every offer placed, confirmed,
+filled, cancelled, collected or rolled back, and every allocation.
 
 ## Limitations
 

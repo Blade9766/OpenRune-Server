@@ -38,7 +38,12 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
     override var saveCount: Long = 0
         private set
 
+    override var hasUnsavedChanges: Boolean = false
+        private set
+
     var guide: Int? = 100
+    val guides: MutableMap<Int, Int> = HashMap()
+    var buyLimit: Int = Int.MAX_VALUE
     var refuseSells: Boolean = false
     var refuseBuys: Boolean = false
 
@@ -46,12 +51,14 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
         savedOffers = offers.map { it.copy() }
         savedTrades = trades.toList()
         saveCount++
+        hasUnsavedChanges = false
     }
 
     /** Throws away everything since the last [save], as a crash would. */
     fun restoreFromSave() {
         offers = ArrayList(savedOffers.map { it.copy() })
         trades = ArrayList(savedTrades)
+        hasUnsavedChanges = false
     }
 
     fun raw(owner: Int): List<Offer> = offers.filter { it.owner == owner }
@@ -77,6 +84,7 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
         lastCreatedAt = createdAt
         val offer = Offer(owner, slot, sell, item, price, quantity, createdAt)
         offers += offer
+        hasUnsavedChanges = true
         match(offer)
         return offer
     }
@@ -130,6 +138,7 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
         val remaining = offer.total - offer.completed
         if (offer.sell) offer.collectItems += remaining else offer.collectCoins += remaining * offer.price
         offer.finished = true
+        hasUnsavedChanges = true
         release(offer)
         return true
     }
@@ -151,6 +160,7 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
     }
 
     private fun release(offer: Offer) {
+        hasUnsavedChanges = true
         if (offer.finished && offer.collectItems == 0 && offer.collectCoins == 0) {
             offers.remove(offer)
         }
@@ -161,7 +171,18 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
     override fun lowestAsk(itemId: Int, excludingOwner: Int): Int? =
         offers.filter { it.sell && !it.finished && it.item == itemId && it.owner != excludingOwner }.minOfOrNull { it.price }
 
-    override fun guidePrice(itemId: Int): Int? = guide
+    override fun openAsks(excludingOwner: Int): Map<Int, Int> = best(sell = true, excludingOwner)
+
+    override fun openBids(excludingOwner: Int): Map<Int, Int> = best(sell = false, excludingOwner)
+
+    private fun best(sell: Boolean, excludingOwner: Int): Map<Int, Int> =
+        offers.filter { it.sell == sell && !it.finished && it.owner != excludingOwner && it.completed < it.total }
+            .groupBy { it.item }
+            .mapValues { (_, list) -> if (sell) list.minOf { it.price } else list.maxOf { it.price } }
+
+    override fun remainingBuyLimit(owner: Int, itemId: Int): Int = buyLimit
+
+    override fun guidePrice(itemId: Int): Int? = guides[itemId] ?: guide
 
     override fun taxPerItem(itemId: Int, price: Int): Int = minOf(price.toLong() * 20 / 1000, 5_000_000L).toInt()
 }

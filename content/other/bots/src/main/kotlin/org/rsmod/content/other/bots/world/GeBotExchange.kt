@@ -15,6 +15,9 @@ class GeBotExchange(private val exchange: GeExchange, private val items: GeItemD
     override val saveCount: Long
         get() = exchange.saveCount
 
+    override val hasUnsavedChanges: Boolean
+        get() = exchange.dirty
+
     override fun offers(owner: Int): List<BotOffer> = exchange.slots(owner).mapNotNull { it?.toBotOffer() }
 
     override fun offer(owner: Int, slot: Int): BotOffer? = exchange.offer(owner, slot)?.toBotOffer()
@@ -47,6 +50,23 @@ class GeBotExchange(private val exchange: GeExchange, private val items: GeItemD
         exchange.marketTrades(itemId).map { MarketTrade(it.quantity, it.price, it.time) }
 
     override fun lowestAsk(itemId: Int, excludingOwner: Int): Int? = exchange.lowestAsk(itemId, excludingOwner)
+
+    override fun openAsks(excludingOwner: Int): Map<Int, Int> = bestOpen(GeOfferType.Sell, excludingOwner, ::minOf)
+
+    override fun openBids(excludingOwner: Int): Map<Int, Int> = bestOpen(GeOfferType.Buy, excludingOwner, ::maxOf)
+
+    private fun bestOpen(type: GeOfferType, excludingOwner: Int, better: (Int, Int) -> Int): Map<Int, Int> {
+        val best = HashMap<Int, Int>()
+        for (offer in exchange.allOffers()) {
+            if (offer.type != type || !offer.isActive || offer.remaining <= 0 || offer.owner == excludingOwner) {
+                continue
+            }
+            best.merge(offer.item, offer.price, better)
+        }
+        return best
+    }
+
+    override fun remainingBuyLimit(owner: Int, itemId: Int): Int = exchange.remainingBuyLimit(owner, itemId)
 
     override fun guidePrice(itemId: Int): Int? = items.entry(itemId)?.guidePrice?.takeIf { it > 0 }
 

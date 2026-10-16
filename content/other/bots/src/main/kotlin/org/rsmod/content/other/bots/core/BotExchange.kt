@@ -54,6 +54,10 @@ interface BotExchange {
     val available: Boolean
     val saveCount: Long
 
+    /** True while the book has changes that have not reached disk yet. */
+    val hasUnsavedChanges: Boolean
+        get() = true
+
     fun offers(owner: Int): List<BotOffer>
 
     fun offer(owner: Int, slot: Int): BotOffer? = offers(owner).firstOrNull { it.slot == slot }
@@ -73,6 +77,15 @@ interface BotExchange {
     fun recentTrades(itemId: Int): List<MarketTrade>
 
     fun lowestAsk(itemId: Int, excludingOwner: Int): Int?
+
+    /** The cheapest open sell offer of every item, ignoring [excludingOwner]'s offers. */
+    fun openAsks(excludingOwner: Int): Map<Int, Int> = emptyMap()
+
+    /** The highest open buy offer of every item, ignoring [excludingOwner]'s offers. */
+    fun openBids(excludingOwner: Int): Map<Int, Int> = emptyMap()
+
+    /** How many more of [itemId] [owner] may buy in the current buy-limit window. */
+    fun remainingBuyLimit(owner: Int, itemId: Int): Int = Int.MAX_VALUE
 
     fun guidePrice(itemId: Int): Int?
 

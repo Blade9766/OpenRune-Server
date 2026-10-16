@@ -248,7 +248,21 @@ class GeExchangeTest {
         assertEquals(13, sell.clientStatus())
     }
 
+    @Test
+    fun `a server-run trader's offers never match each other, but a player's do`() {
+        exchange.place(TRADER, "trader", 0, GeOfferType.Sell, COAL, 150, 10)
+        val own = exchange.place(TRADER, "trader", 1, GeOfferType.Buy, COAL, 200, 10)
+        assertEquals(0, own.completed)
+        val player = exchange.place(BUYER, "buyer", 0, GeOfferType.Buy, COAL, 150, 4)
+        assertEquals(4, player.completed, "others still trade with the trader")
+
+        exchange.place(SELLER, "seller", 0, GeOfferType.Sell, FEATHER, 3, 5)
+        val self = exchange.place(SELLER, "seller", 1, GeOfferType.Buy, FEATHER, 3, 5)
+        assertEquals(5, self.completed, "players keep the normal rules")
+    }
+
     private companion object {
+        const val TRADER = -1_000_000_000
         const val BUYER = 1
         const val SELLER = 2
         const val OTHER = 3

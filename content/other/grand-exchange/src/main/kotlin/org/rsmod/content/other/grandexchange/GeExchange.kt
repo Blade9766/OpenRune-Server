@@ -16,7 +16,8 @@ import java.nio.file.StandardCopyOption
  * Matching follows the wiki's description: a new buy offer trades against the cheapest existing
  * sell offers at *their* price, refunding the buyer the difference; a new sell offer trades
  * against the highest existing buy offers at *their* price, so the seller earns more than asked.
- * Older offers win ties. The seller pays the convenience fee on every item sold.
+ * Older offers win ties. The seller pays the convenience fee on every item sold. Server-run traders
+ * (negative owner ids) never trade against their own offers.
  */
 class GeExchange(private val items: GeItemData, private val clock: () -> Long) {
     @Inject constructor(items: GeItemData) : this(items, System::currentTimeMillis)
@@ -160,6 +161,7 @@ class GeExchange(private val items: GeItemData, private val clock: () -> Long) {
         val candidates =
             active
                 .filter { it !== offer && it.type != offer.type && it.isActive && it.remaining > 0 }
+                .filter { offer.owner >= 0 || it.owner != offer.owner }
                 .filter { other ->
                     if (offer.type == GeOfferType.Buy) other.price <= offer.price else other.price >= offer.price
                 }
