@@ -545,7 +545,7 @@ constructor(
         val coordinator = manager.coordinator ?: return
         val others = coordinator.all().filter { it.id != record.id && it.config.role == record.config.role }
         val role = record.config.role.key
-        val question = "Copy ${record.name}'s difficulty, speed, hourly limit and restock to ${others.size} other $role bot(s)?"
+        val question = "Copy settings to ${others.size} other $role bot(s)?"
         if (!confirm(question, "Yes, copy them")) {
             return openSettings(record.id)
         }
@@ -554,7 +554,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.resetSettings(record: BotRecord) {
-        if (!confirm("Reset ${record.name}'s settings to the defaults? What it sells stays.", "Yes, reset")) {
+        if (!confirm("Reset ${record.name}'s settings?", "Yes, reset to the defaults")) {
             return openSettings(record.id)
         }
         val error = manager.coordinator?.updateConfig(record.id) { it.withDefaults() }
@@ -562,7 +562,7 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.removeBot(record: BotRecord) {
-        if (!confirm("Remove ${record.name} for good? Its items are deleted with it.", "Yes, remove it")) {
+        if (!confirm("Remove ${record.name} for good?", "Yes, remove it and its items")) {
             return openSettings(record.id)
         }
         val error = manager.coordinator?.remove(record.id, force = false)
@@ -661,7 +661,7 @@ constructor(
         val carried = held.inv.filter { it.id == coins }.sumOf { it.count.toLong() }
         ifSetText("$ITEMS_COM:inv_label", "Inventory (${held.inv.size}/28)")
         ifSetText("$ITEMS_COM:worn_label", "Worn")
-        ifSetText("$ITEMS_COM:bank_label", "Bank (${held.bank.size} items)")
+        ifSetText("$ITEMS_COM:bank_label", "Bank (${held.bank.size} ${if (held.bank.size == 1) "item" else "items"})")
         val source = if (held.live) "Live view; updates every few seconds." else "<col=ff981f>Saved copy: the bot is out of the world."
         ifSetText("$ITEMS_COM:summary", "Coins ${bankCoins.formatAmount} banked, ${carried.formatAmount} carried. $source")
     }
