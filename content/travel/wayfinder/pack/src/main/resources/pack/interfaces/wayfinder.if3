@@ -1,0 +1,166 @@
+[[interface]]
+name = "interface.wayfinder"
+width = 512
+height = 334
+on_load = ["clientscript.wayfinder_init"]
+
+[[component]]
+name = "frame"
+type = "layer"
+width = 512
+height = 334
+no_click_through = true
+
+[[component]]
+name = "categories_box"
+type = "layer"
+x = 10
+y = 42
+width = 142
+height = 282
+
+[[component]]
+name = "categories"
+type = "layer"
+x = 12
+y = 44
+width = 138
+height = 278
+
+[[component]]
+name = "search"
+type = "layer"
+x = 158
+y = 42
+width = 186
+height = 22
+options = ["Search"]
+
+[[component]]
+name = "list_box"
+type = "layer"
+x = 158
+y = 68
+width = 168
+height = 256
+
+[[component]]
+name = "list"
+type = "layer"
+x = 160
+y = 70
+width = 164
+height = 252
+
+[[component]]
+name = "scrollbar"
+type = "layer"
+x = 328
+y = 68
+width = 16
+height = 256
+
+[[component]]
+name = "details_box"
+type = "layer"
+x = 350
+y = 42
+width = 152
+height = 282
+
+[[component]]
+name = "detail_name"
+type = "text"
+x = 356
+y = 46
+width = 140
+height = 20
+text = ""
+font = "bold"
+h_align = "center"
+v_align = "center"
+color = "#FF981F"
+text_shadow = true
+
+[[component]]
+name = "detail_category"
+type = "text"
+x = 356
+y = 66
+width = 140
+height = 14
+text = ""
+font = "small"
+h_align = "center"
+v_align = "center"
+color = "#9F9F9F"
+text_shadow = true
+
+[[component]]
+name = "detail_danger"
+type = "text"
+x = 356
+y = 82
+width = 140
+height = 28
+text = ""
+font = "small"
+h_align = "center"
+v_align = "center"
+line_height = 12
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "detail_desc"
+type = "text"
+x = 356
+y = 112
+width = 140
+height = 84
+text = ""
+font = "small"
+h_align = "center"
+v_align = "center"
+line_height = 12
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "detail_reqs"
+type = "text"
+x = 356
+y = 198
+width = 140
+height = 58
+text = ""
+font = "small"
+h_align = "center"
+v_align = "center"
+line_height = 12
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "favourite"
+type = "layer"
+x = 357
+y = 262
+width = 138
+height = 22
+options = ["Favourite"]
+
+[[component]]
+name = "teleport"
+type = "layer"
+x = 357
+y = 290
+width = 138
+height = 28
+options = ["Teleport"]
+
+[[component]]
+name = "popup"
+type = "layer"
+width = 512
+height = 334

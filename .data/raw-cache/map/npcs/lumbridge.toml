@@ -1524,3 +1524,7 @@ coords = "0_50_50_11_25"
 
 ## Zeke End
 
+
+[[spawn]]
+npc = "npc.wayfinder_elowen"
+coords = "0_50_50_39_22"

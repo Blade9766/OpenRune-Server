@@ -1,0 +1,134 @@
+[gamevals.npc]
+wayfinder_vaelor = 65526
+wayfinder_elowen = 65527
+
+[gamevals.interface]
+wayfinder = 1108
+
+[gamevals.clientscript]
+wayfinder_init = 45900
+wayfinder_label = 45903
+wayfinder_draw_list = 45909
+
+[gamevals.varp]
+wayfinder_view = 65320
+wayfinder_recent = 65321
+wayfinder_favourites_1 = 65322
+wayfinder_favourites_2 = 65323
+wayfinder_favourites_3 = 65324
+wayfinder_favourites_4 = 65325
+
+[gamevals.varbit]
+wayfinder_category = 65200
+wayfinder_selected = 65201
+
+[gamevals.dbtable]
+wayfinder_destinations = 65420
+
+[gamevals.dbrow]
+wayfinder_lumbridge = 61100
+wayfinder_varrock = 61101
+wayfinder_grand_exchange = 61102
+wayfinder_falador = 61103
+wayfinder_edgeville = 61104
+wayfinder_draynor_village = 61105
+wayfinder_al_kharid = 61106
+wayfinder_port_sarim = 61107
+wayfinder_rimmington = 61108
+wayfinder_barbarian_village = 61109
+wayfinder_burthorpe = 61110
+wayfinder_taverley = 61111
+wayfinder_catherby = 61112
+wayfinder_seers_village = 61113
+wayfinder_east_ardougne = 61114
+wayfinder_yanille = 61115
+wayfinder_canifis = 61116
+wayfinder_port_phasmatys = 61117
+wayfinder_rellekka = 61118
+wayfinder_brimhaven = 61119
+wayfinder_shilo_village = 61120
+wayfinder_pollnivneach = 61121
+wayfinder_great_kourend = 61122
+wayfinder_prifddinas = 61123
+wayfinder_varrock_woods = 61124
+wayfinder_draynor_willows = 61125
+wayfinder_seers_maples = 61126
+wayfinder_woodcutting_guild = 61127
+wayfinder_barbarian_fishing = 61128
+wayfinder_catherby_shore = 61129
+wayfinder_karamja_docks = 61130
+wayfinder_fishing_guild = 61131
+wayfinder_varrock_east_mine = 61132
+wayfinder_varrock_west_mine = 61133
+wayfinder_dwarven_mine = 61134
+wayfinder_mining_guild = 61135
+wayfinder_motherlode_mine = 61136
+wayfinder_varrock_smithy = 61137
+wayfinder_crafting_guild = 61138
+wayfinder_cooks_guild = 61139
+wayfinder_falador_farm = 61140
+wayfinder_catherby_farm = 61141
+wayfinder_ardougne_farm = 61142
+wayfinder_farming_guild = 61143
+wayfinder_gnome_course = 61144
+wayfinder_draynor_rooftop = 61145
+wayfinder_alkharid_rooftop = 61146
+wayfinder_varrock_rooftop = 61147
+wayfinder_canifis_rooftop = 61148
+wayfinder_falador_rooftop = 61149
+wayfinder_seers_rooftop = 61150
+wayfinder_pollnivneach_rooftop = 61151
+wayfinder_rellekka_rooftop = 61152
+wayfinder_ardougne_rooftop = 61153
+wayfinder_piscatoris_hunter = 61154
+wayfinder_feldip_hunter = 61155
+wayfinder_polar_hunter = 61156
+wayfinder_fossil_island = 61157
+wayfinder_air_altar = 61158
+wayfinder_mind_altar = 61159
+wayfinder_water_altar = 61160
+wayfinder_earth_altar = 61161
+wayfinder_fire_altar = 61162
+wayfinder_body_altar = 61163
+wayfinder_nature_altar = 61164
+wayfinder_ardougne_market = 61165
+wayfinder_edgeville_dungeon = 61166
+wayfinder_varrock_sewers = 61167
+wayfinder_taverley_dungeon = 61168
+wayfinder_asgarnian_ice_dungeon = 61169
+wayfinder_lumbridge_swamp_caves = 61170
+wayfinder_stronghold_of_security = 61171
+wayfinder_stronghold_slayer_cave = 61172
+wayfinder_slayer_tower = 61173
+wayfinder_turael = 61174
+wayfinder_spria = 61175
+wayfinder_krystilia = 61176
+wayfinder_konar = 61177
+wayfinder_duradel = 61178
+wayfinder_scurrius = 61179
+wayfinder_barrows = 61180
+wayfinder_gemstone_crab = 61181
+wayfinder_king_black_dragon = 61182
+wayfinder_artio = 61183
+wayfinder_callisto = 61184
+wayfinder_spindel = 61185
+wayfinder_venenatis = 61186
+wayfinder_abyssal_sire = 61187
+wayfinder_castle_wars = 61188
+wayfinder_emirs_arena = 61189
+wayfinder_gauntlet = 61190
+wayfinder_champions_guild = 61191
+wayfinder_ranging_guild = 61192
+wayfinder_wilderness_ditch = 61193
+wayfinder_ferox_enclave = 61194
+wayfinder_chaos_temple = 61195
+wayfinder_bandit_camp = 61196
+wayfinder_graveyard_of_shadows = 61197
+wayfinder_chaos_altar_rc = 61198
+wayfinder_mage_of_zamorak = 61199
+wayfinder_lava_dragon_isle = 61200
+wayfinder_wilderness_course = 61201
+wayfinder_deserted_keep = 61202
+wayfinder_mage_arena = 61203
+wayfinder_rogues_castle = 61204
+wayfinder_warriors_guild = 61205

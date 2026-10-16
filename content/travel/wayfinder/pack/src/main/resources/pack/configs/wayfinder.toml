@@ -1,0 +1,66 @@
+[[npc]]
+id = "npc.wayfinder_vaelor"
+inherit = "npc.arceuus_wizard_visitor"
+name = "Archmage Vaelor"
+examine = "The Edgeville Wayfinder. Stars seem to drift in the folds of his robes."
+option1 = "Talk-to"
+option3 = "Teleport"
+originalColours = [2340, 14724, 6273, 239]
+modifiedColours = [50846, 50846, 9020, 50846]
+wanderRange = 0
+respawnDir = "West"
+
+[[npc]]
+id = "npc.wayfinder_elowen"
+inherit = "npc.makeover_mage_female"
+name = "Arcanist Elowen"
+examine = "The Lumbridge Wayfinder. She smells faintly of rain and old parchment."
+option1 = "Talk-to"
+option3 = "Teleport"
+originalColours = [6273, 14724, 12894, 32635, 9654, 7328]
+modifiedColours = [23058, 23203, 7502, 5388, 7468, 7468]
+timer = 65535
+wanderRange = 0
+respawnDir = "South"
+
+[[varp]]
+id = "varp.wayfinder_view"
+scope = "Temp"
+transmit = "Never"
+
+[[varbit]]
+id = "varbit.wayfinder_category"
+varp = "varp.wayfinder_view"
+startBit = 0
+endBit = 3
+
+[[varbit]]
+id = "varbit.wayfinder_selected"
+varp = "varp.wayfinder_view"
+startBit = 4
+endBit = 11
+
+[[varp]]
+id = "varp.wayfinder_recent"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+id = "varp.wayfinder_favourites_1"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+id = "varp.wayfinder_favourites_2"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+id = "varp.wayfinder_favourites_3"
+scope = "Perm"
+transmit = "Never"
+
+[[varp]]
+id = "varp.wayfinder_favourites_4"
+scope = "Perm"
+transmit = "Never"

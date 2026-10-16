@@ -1,0 +1,11 @@
+[clientscript,wayfinder_init]
+~steelborder(wayfinder:frame, "Wayfinder Teleports", 0);
+cc_deleteall(wayfinder:categories_box);
+~thinbox(wayfinder:categories_box, 0);
+cc_deleteall(wayfinder:list_box);
+~thinbox(wayfinder:list_box, 0);
+cc_deleteall(wayfinder:details_box);
+~thinbox(wayfinder:details_box, 0);
+~wayfinder_button(wayfinder:search, "Search destinations", 0xff981f);
+~wayfinder_button(wayfinder:favourite, "Add to favourites", 0x9f9f9f);
+~wayfinder_button(wayfinder:teleport, "Teleport", 0x9f9f9f);

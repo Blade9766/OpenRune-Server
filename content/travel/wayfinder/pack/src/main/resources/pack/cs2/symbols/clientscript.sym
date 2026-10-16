@@ -1,0 +1,4 @@
+45900	[clientscript,wayfinder_init]
+45903	[clientscript,wayfinder_label]
+45906	[proc,wayfinder_button]
+45909	[clientscript,wayfinder_draw_list]

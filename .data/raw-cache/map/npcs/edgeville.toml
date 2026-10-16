@@ -268,3 +268,7 @@ coords = "0_48_54_29_53"
 [[spawn]]
 npc = "npc.ikov_lucien2"
 coords = "0_48_54_50_34"
+
+[[spawn]]
+npc = "npc.wayfinder_vaelor"
+coords = "0_48_54_16_39"
