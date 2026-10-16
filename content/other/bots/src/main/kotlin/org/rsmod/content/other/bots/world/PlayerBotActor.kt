@@ -6,6 +6,7 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.api.invtx.delete
 import org.rsmod.api.invtx.invAdd
+import org.rsmod.api.invtx.invDel
 import org.rsmod.api.invtx.invMoveAll
 import org.rsmod.api.invtx.invTransaction
 import org.rsmod.api.invtx.invTransfer
@@ -356,6 +357,8 @@ class PlayerBotActor(
         return SupplyOutcome.Unavailable
     }
 
+    override fun supplyToBuy(): Int? = behaviour.supplyIds().firstOrNull()
+
     override fun bankCount(itemId: Int): Long = bank.objs.sumOf { if (it?.id == itemId) it.count.toLong() else 0L }
 
     override fun withdrawNoted(itemId: Int, count: Int): Int {
@@ -413,6 +416,13 @@ class PlayerBotActor(
             return 0
         }
         return if (player.invAdd(bank, coinsId, amount).success) amount.toLong() else 0
+    }
+
+    override fun debitBankCoins(coins: Long): Boolean {
+        if (coins !in 1..bankCount(coinsId)) {
+            return coins == 0L
+        }
+        return player.invDel(bank, coinsId, coins.toInt()).success
     }
 
     override fun coins(): Long =

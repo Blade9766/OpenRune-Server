@@ -40,6 +40,7 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
 
     var guide: Int? = 100
     var refuseSells: Boolean = false
+    var refuseBuys: Boolean = false
 
     fun save() {
         savedOffers = offers.map { it.copy() }
@@ -65,6 +66,9 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
     override fun sell(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean =
         !refuseSells && place(owner, slot, true, itemId, quantity, price) != null
 
+    override fun buy(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean =
+        !refuseBuys && place(owner, slot, false, itemId, quantity, price) != null
+
     fun place(owner: Int, slot: Int, sell: Boolean, item: Int, quantity: Int, price: Int): Offer? {
         if (!available || raw(owner).any { it.slot == slot } || quantity <= 0 || price <= 0) {
             return null
@@ -80,6 +84,10 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
     /** A player buy offer; returns the offer so tests can check what the buyer received. */
     fun playerBuys(owner: Int, item: Int, quantity: Int, price: Int): Offer =
         checkNotNull(place(owner, freeSlot(owner)!!, false, item, quantity, price))
+
+    /** A player sell offer resting on the book for bots to buy from. */
+    fun playerSells(owner: Int, item: Int, quantity: Int, price: Int): Offer =
+        checkNotNull(place(owner, freeSlot(owner)!!, true, item, quantity, price))
 
     private fun match(incoming: Offer) {
         val candidates =

@@ -155,6 +155,8 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
                 config.copy(reactionMinTicks = min, reactionMaxTicks = max)
             }
             "hourlimit" -> config.copy(maxGatheredPerHour = value.toInt())
+            "restock" -> config.copy(restock = config.restock.copy(enabled = value == "on"))
+            "restockqty" -> config.copy(restock = config.restock.copy(quantity = value.toInt()))
             "essence" -> {
                 val source = EssenceSource.entries.firstOrNull { it.name.equals(value, true) }
                 requireNotNull(source) { "essence must be bank or mine" }
@@ -217,7 +219,14 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "Totals: gathered ${r.stats.gathered.formatAmount}, deposited ${r.stats.deposited.formatAmount}, " +
                 "listed ${r.stats.listed.formatAmount}, sold ${r.stats.sold.formatAmount} for ${r.stats.coinsEarned.formatAmount} gp"
         )
-        r.pendingListing?.let { player.mes("Pending listing: ${it.quantity} x ${it.itemId} at ${it.price} in slot ${it.slot}") }
+        player.mes(
+            "Restock: ${if (c.restock.enabled) "on" else "off"}, qty ${c.restock.quantity}, " +
+                "bought ${r.stats.suppliesBought.formatAmount} supplies"
+        )
+        r.pendingListing?.let {
+            val kind = if (it.buy) "buy" else "listing"
+            player.mes("Pending $kind: ${it.quantity} x ${it.itemId} at ${it.price} in slot ${it.slot}")
+        }
         if (r.pendingCollects.isNotEmpty()) {
             player.mes("Pending collections: slots ${r.pendingCollects.joinToString { it.slot.toString() }}")
         }
@@ -313,7 +322,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             listOf(
                 "threshold", "quantity", "selling", "item", "allow", "disallow", "refprice", "adjust",
                 "minprice", "deviation", "cooldown", "timeout", "retries", "step", "window",
-                "mintrades", "minvolume", "interval", "reaction", "hourlimit", "essence",
+                "mintrades", "minvolume", "interval", "reaction", "hourlimit", "essence", "restock", "restockqty",
             )
 
         private const val TRACE_LINES = 8

@@ -24,13 +24,23 @@ data class BotOffer(
     val hasCollectable: Boolean
         get() = collectItems > 0 || collectCoins > 0
 
-    /** Sale proceeds already taken out of the collect box; never decreases. */
+    /** Coins (sale proceeds, or a buy offer's refunds) taken out of the collect box; never decreases. */
     val coinsCollected: Long
-        get() = gold - taxPaid - collectCoins
+        get() =
+            if (sell) {
+                gold - taxPaid - collectCoins
+            } else {
+                price.toLong() * (if (finished) total else completed) - gold - collectCoins
+            }
 
-    /** Unsold items already taken back out of the collect box; never decreases. */
+    /** Items (unsold, or bought) taken out of the collect box; never decreases. */
     val itemsCollected: Int
-        get() = (if (finished && completed < total) total - completed else 0) - collectItems
+        get() =
+            if (sell) {
+                (if (finished && completed < total) total - completed else 0) - collectItems
+            } else {
+                completed - collectItems
+            }
 }
 
 data class MarketTrade(val quantity: Int, val price: Int, val time: Long)
@@ -51,6 +61,8 @@ interface BotExchange {
     fun freeSlot(owner: Int): Int?
 
     fun sell(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean
+
+    fun buy(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean
 
     fun abort(owner: Int, slot: Int): Boolean
 

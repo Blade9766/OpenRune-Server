@@ -22,11 +22,12 @@ data class BotStats(
     val listed: Long = 0,
     val sold: Long = 0,
     val coinsEarned: Long = 0,
+    val suppliesBought: Long = 0,
 )
 
 /**
- * A listing whose items have left the bot's inventory but whose offer is not yet known to be on
- * disk. Written before the offer is placed, cleared once the exchange has saved it.
+ * An offer whose items (or, for a [buy] offer, coins) have left the bot but which is not yet known
+ * to be on disk. Written before the offer is placed, cleared once the exchange has saved it.
  */
 data class PendingListing(
     val slot: Int,
@@ -35,7 +36,11 @@ data class PendingListing(
     val price: Int,
     val placed: Boolean = false,
     val placedAtSave: Long = 0,
-)
+    val buy: Boolean = false,
+) {
+    val cost: Long
+        get() = quantity.toLong() * price
+}
 
 /**
  * A collection already credited to the bot's bank but not yet known to be taken out of the

@@ -22,8 +22,14 @@ class GeBotExchange(private val exchange: GeExchange, private val items: GeItemD
     override fun freeSlot(owner: Int): Int? = exchange.firstEmptySlot(owner)
 
     override fun sell(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean =
+        place(owner, ownerName, slot, GeOfferType.Sell, itemId, quantity, price)
+
+    override fun buy(owner: Int, ownerName: String, slot: Int, itemId: Int, quantity: Int, price: Int): Boolean =
+        place(owner, ownerName, slot, GeOfferType.Buy, itemId, quantity, price)
+
+    private fun place(owner: Int, ownerName: String, slot: Int, type: GeOfferType, itemId: Int, quantity: Int, price: Int): Boolean =
         try {
-            exchange.place(owner, ownerName, slot, GeOfferType.Sell, itemId, price, quantity)
+            exchange.place(owner, ownerName, slot, type, itemId, price, quantity)
             true
         } catch (_: IllegalArgumentException) {
             false

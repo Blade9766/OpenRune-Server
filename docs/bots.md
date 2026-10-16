@@ -96,6 +96,8 @@ random silly one ("Soggy Waffle", "Captn Turnip", ...); names never end in
 | `reaction` | Random pause before each new click, as `min-max` ticks (0-20) | 1-4 |
 | `hourlimit` | Max items gathered per rolling hour (0 = none) | 0 |
 | `essence` | Runecrafting essence source: `bank` or `mine` | bank |
+| `restock` | Buy supplies on the exchange when the bank runs out: `on` / `off` | on |
+| `restockqty` | Supplies bought per restock (1-100000) | 500 |
 
 ## Configuration examples
 
@@ -146,9 +148,8 @@ Earth runecrafter mining its own essence:
 `essence mine` uses Aubury's teleport, which needs Rune Mysteries; a bot set to mine its
 own essence has the quest marked complete each time it spawns, whatever the quest policy.
 
-With `essence bank` instead, stock its bank: `::bot give 3 blankrune_high 5000 bank`.
-It pauses in `WAITING_FOR_SUPPLIES` when the bank runs dry and resumes when
-essence appears.
+With `essence bank` instead, stock its bank: `::bot give 3 blankrune_high 5000 bank`,
+or let it buy essence itself (see [Restocking supplies](#restocking-supplies)).
 
 A bot's stored configuration is the `config` of its entry in `.data/bots.json`, for example:
 
@@ -162,7 +163,8 @@ A bot's stored configuration is the `config` of its entry in `.data/bots.json`, 
                "maxDeviationPercent": 50.0, "windowMinutes": 360, "minTrades": 3,
                "minVolume": 100, "cooldownMinutes": 30, "listingTimeoutMinutes": 60,
                "maxRetries": 3, "retryStepPercent": 2.0 },
-  "essenceSource": "Bank", "actionIntervalTicks": 1, "maxGatheredPerHour": 0
+  "essenceSource": "Bank", "restock": { "enabled": true, "quantity": 500 },
+  "actionIntervalTicks": 1, "maxGatheredPerHour": 0
 }
 ```
 
@@ -276,7 +278,7 @@ at 15%, so they jog between sites and recover while they work.
 ## States
 
 `DISABLED, IDLE, TRAVEL_TO_RESOURCE, GATHERING, TRAVEL_TO_BANK, BANKING,
-PREPARE_SALE, TRAVEL_TO_EXCHANGE, LISTING, WAITING_FOR_SUPPLIES, ERROR`.
+PREPARE_SALE, TRAVEL_TO_EXCHANGE, LISTING, BUYING_SUPPLIES, WAITING_FOR_SUPPLIES, ERROR`.
 
 Every state has a budget (travel 1000 ticks, no gathering progress 200 ticks,
 no resources 300 ticks, stuck mid-action 100 ticks). A blown budget is retried
@@ -308,6 +310,28 @@ next bank visit. Only players buy from bots; there are no artificial buyers.
 Bots trade under their negative account id, so they show up in no player's
 offer screens and the exchange never tries to message them.
 
+## Restocking supplies
+
+When a bot's bank runs out of its site's `supplies` (feathers, bait, food, essence) it
+restocks on the exchange itself instead of waiting for `::bot give`:
+
+1. It buys `restockqty` of the first supply in the site's list at the lowest ask of
+   another seller, if it has the coins. The offer trades at the sellers' prices.
+2. Without enough coins it first withdraws just enough of its sale item to pay for
+   them, even below the sale threshold, and lists it like any sale (same pricing).
+   It waits at the bank (`WAITING_FOR_SUPPLIES`, "Waiting for sales to afford
+   supplies") and buys once the proceeds come in. With some coins but nothing more
+   to sell it buys as many as it can afford.
+3. Back at the bank it collects the supplies and goes back to work. A buy offer
+   still unfilled after `timeout` is aborted and its coins refunded.
+
+It keeps waiting in `WAITING_FOR_SUPPLIES`, rechecking every minute, with the reason
+as its activity, when nobody is selling the supply, the lowest ask is more than
+`deviation`% above the guide price, it has no coins and nothing to sell, selling is
+paused or off, or the exchange is unavailable. A fighter out of food rests while it
+waits. `::bot set <bot> restock off` restores the old behaviour of waiting for an
+administrator.
+
 ## Persistence and safety
 
 Bots live in `.data/bots.json` (one entry per bot with inventory, equipment,
@@ -317,17 +341,17 @@ own book to `.data/grand-exchange.json` at the end of each cycle in which it
 changed. Because the two files are written separately, every item movement
 between a bot and the exchange is done in steps, each saved before the next:
 
-- **Listing**: the notes leave the bot's inventory and the listing is written
-  to the bot file as pending. Next tick the offer is placed. Once the exchange
+- **Listing**: the notes leave the bot's inventory (for a supply buy offer, its
+  coins leave the bank) and the listing is written to the bot file as pending. Next tick the offer is placed. Once the exchange
   file has been saved with the offer in it, the pending entry is cleared.
-- **Collecting**: proceeds and returned items are credited to the bot's bank
+- **Collecting**: proceeds, bought supplies and returned items are credited to the bot's bank
   and written as pending, with the offer's running collected totals as the
   target. Next tick the exchange is emptied down to that target, and the
   pending entry is cleared once the exchange file has saved that too.
 
 On restart the exchange file decides what happened to anything still pending:
 a listing whose offer is not in the book is rolled back into the bot's
-inventory; a collection takes from the exchange only what its target says is
+inventory (a buy offer's coins into its bank); a collection takes from the exchange only what its target says is
 still owed. A crash at any point therefore neither duplicates nor loses items
 or coins. While the bot file cannot be written, bots leave the exchange alone
 (the error is logged once) and resume when writes succeed again.

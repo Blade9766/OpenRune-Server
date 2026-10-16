@@ -10,6 +10,7 @@ enum class BotState(val label: String, val shortLabel: String) {
     PrepareSale("PREPARE_SALE", "Selling"),
     TravelToExchange("TRAVEL_TO_EXCHANGE", "To exchange"),
     Listing("LISTING", "Listing"),
+    BuyingSupplies("BUYING_SUPPLIES", "Buying"),
     WaitingForSupplies("WAITING_FOR_SUPPLIES", "No supplies"),
     Error("ERROR", "Error"),
 }
@@ -58,12 +59,16 @@ data class PricingConfig(
     val retryStepPercent: Double = 2.0,
 )
 
+/** Buying supplies on the exchange, funded by the bot's products, when its bank runs out. */
+data class RestockConfig(val enabled: Boolean = true, val quantity: Int = 500)
+
 data class BotConfig(
     val role: BotRoleType,
     val site: String,
     val sale: SaleConfig = SaleConfig(),
     val pricing: PricingConfig = PricingConfig(),
     val essenceSource: EssenceSource = EssenceSource.Bank,
+    val restock: RestockConfig = RestockConfig(),
     val actionIntervalTicks: Int = 1,
     /** Gathered items allowed per rolling hour; 0 means no limit. */
     val maxGatheredPerHour: Int = 0,
@@ -111,6 +116,9 @@ data class BotConfig(
         if (reactionMinTicks !in REACTION_RANGE || reactionMaxTicks !in reactionMinTicks..REACTION_RANGE.last) {
             add("reaction must be a range within ${REACTION_RANGE.first}-${REACTION_RANGE.last} ticks")
         }
+        if (restock.quantity !in RESTOCK_QUANTITY_RANGE) {
+            add("restock quantity must be between ${RESTOCK_QUANTITY_RANGE.first} and ${RESTOCK_QUANTITY_RANGE.last}")
+        }
         if (maxGatheredPerHour < 0) {
             add("hourly gathering limit cannot be negative")
         }
@@ -119,6 +127,7 @@ data class BotConfig(
     companion object {
         val SALE_THRESHOLD_RANGE: IntRange = 1000..2000
         val REACTION_RANGE: IntRange = 0..20
+        val RESTOCK_QUANTITY_RANGE: IntRange = 1..100_000
     }
 }
 

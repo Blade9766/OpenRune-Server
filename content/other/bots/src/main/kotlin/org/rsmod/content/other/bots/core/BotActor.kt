@@ -100,6 +100,9 @@ interface BotActor {
     /** At bank: tops up role supplies (essence). */
     fun withdrawSupplies(): SupplyOutcome
 
+    /** The supply to buy on the exchange once the bank has run out, or null when there is none. */
+    fun supplyToBuy(): Int? = null
+
     fun bankCount(itemId: Int): Long
 
     /** At bank: withdraws up to [count] of [itemId] as notes; returns how many moved. */
@@ -122,6 +125,9 @@ interface BotActor {
 
     /** At bank: credits up to [coins] to the bank and returns how many fit. */
     fun creditBankCoins(coins: Long): Long
+
+    /** Removes exactly [coins] from the bank, or nothing. */
+    fun debitBankCoins(coins: Long): Boolean
 
     fun coins(): Long
 }

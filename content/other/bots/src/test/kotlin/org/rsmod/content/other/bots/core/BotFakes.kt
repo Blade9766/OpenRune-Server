@@ -161,6 +161,8 @@ class FakeActor(
         return SupplyOutcome.Withdrawn(count)
     }
 
+    override fun supplyToBuy(): Int? = supplyItem
+
     override fun bankCount(itemId: Int): Long = bank[itemId] ?: 0
 
     override fun withdrawNoted(itemId: Int, count: Int): Int {
@@ -211,6 +213,14 @@ class FakeActor(
         val credited = minOf(room, coins)
         bank[COINS] = bankCount(COINS) + credited
         return credited
+    }
+
+    override fun debitBankCoins(coins: Long): Boolean {
+        if (coins !in 0..bankCount(COINS)) {
+            return false
+        }
+        bank[COINS] = bankCount(COINS) - coins
+        return true
     }
 
     override fun coins(): Long = bankCount(COINS) + (inv[COINS] ?: 0)
