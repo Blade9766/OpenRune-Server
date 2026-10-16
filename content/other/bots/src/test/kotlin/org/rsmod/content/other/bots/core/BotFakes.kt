@@ -19,6 +19,7 @@ class FakeActor(
 ) : BotActor {
     var taskLeft = 0
     var rested = false
+    var hitpointsPercent = 100
     var sourceVisits = 0
 
     val inv = LinkedHashMap<Int, Int>()
@@ -51,6 +52,8 @@ class FakeActor(
 
     override fun canWorkWithoutSupplies(): Boolean = rested
 
+    override fun needsRest(): Boolean = hitpointsPercent < 90
+
     override fun travel(destination: BotDestination): TravelStatus {
         if (destination in blocked) {
             return TravelStatus.Blocked("path to ${destination.name} is blocked")
@@ -74,6 +77,9 @@ class FakeActor(
     override fun gather(target: BotDestination): GatherStatus {
         if (missingTool) {
             return GatherStatus.Failed("missing a tool")
+        }
+        if (hitpointsPercent < 50) {
+            return GatherStatus.Hurt
         }
         val full = inventoryUsed >= inventoryCapacity
         if (taskSize > 0 && target == BotDestination.SupplySource) {

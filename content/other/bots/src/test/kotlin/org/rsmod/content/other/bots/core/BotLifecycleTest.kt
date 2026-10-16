@@ -235,6 +235,24 @@ class BotLifecycleTest {
     }
 
     @Test
+    fun `a hurt worker rests at the bank and goes back once healed`() {
+        val world = BotTestHarness()
+        val id = world.readyBot()
+        world.coordinator.setMaster(true)
+        world.coordinator.enable(id)
+        world.tickUntil { world.state(id) == BotState.Gathering }
+
+        world.actor(id).hitpointsPercent = 40
+        world.tickUntil { world.state(id) == BotState.WaitingForSupplies }
+        assertEquals(BotDestination.Bank, world.actor(id).position)
+        world.tick(BotBrain.SUPPLY_RECHECK_TICKS * 2)
+        assertEquals(BotState.WaitingForSupplies, world.state(id))
+
+        world.actor(id).hitpointsPercent = 100
+        world.tickUntil { world.state(id) == BotState.Gathering }
+    }
+
+    @Test
     fun `runecrafting can mine its own essence`() {
         val world =
             BotTestHarness(actorFactory = { FakeActor(gatheredItem = 556, tools = emptySet(), supplyItem = 1436, stackable = setOf(COINS, 556)) })

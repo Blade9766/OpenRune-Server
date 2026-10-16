@@ -161,6 +161,11 @@ class BotBrain(
     }
 
     private fun gather(now: Long, cycle: Int) {
+        actor.requirementProblem()?.let {
+            actor.stopActivity()
+            error(it, now, recoverable = false)
+            return
+        }
         if (gatherLimitReached(now)) {
             actor.stopActivity()
             transition(BotState.Idle, cycle, "Hourly gathering limit reached")
@@ -186,6 +191,10 @@ class BotBrain(
                 }
             GatherStatus.NeedsSupplies ->
                 transition(BotState.TravelToBank, cycle, "Out of supplies")
+            GatherStatus.Hurt -> {
+                actor.stopActivity()
+                transition(BotState.TravelToBank, cycle, "Hurt; going to rest")
+            }
             GatherStatus.Done ->
                 if (gatherTarget == BotDestination.SupplySource && actor.needsSupplies()) {
                     transition(BotState.TravelToBank, cycle, "Fetching supplies")
@@ -232,6 +241,10 @@ class BotBrain(
         urgent = true
 
         if (!restock(now, cycle)) {
+            return
+        }
+        if (actor.needsRest()) {
+            transition(BotState.WaitingForSupplies, cycle, RESTING)
             return
         }
         if (saleDue(now)) {
@@ -287,6 +300,10 @@ class BotBrain(
         }
         if (actor.travel(BotDestination.Bank) != TravelStatus.Arrived) {
             transition(BotState.TravelToBank, cycle, "Returning to bank")
+            return
+        }
+        if (actor.needsRest()) {
+            setActivity(RESTING)
             return
         }
         when (actor.withdrawSupplies()) {

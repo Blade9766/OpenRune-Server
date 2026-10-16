@@ -28,6 +28,9 @@ sealed class GatherStatus {
     /** The work at this destination is finished (a slayer task is assigned or completed). */
     data object Done : GatherStatus()
 
+    /** A bot that does not fight was hurt; it goes to the bank to rest. */
+    data object Hurt : GatherStatus()
+
     data class Failed(val reason: String) : GatherStatus()
 }
 
@@ -71,6 +74,9 @@ interface BotActor {
 
     /** True when running out of supplies only means resting until [canWorkWithoutSupplies]. */
     fun restsWithoutSupplies(): Boolean = false
+
+    /** True while a bot that does not fight is too hurt to go back to work. */
+    fun needsRest(): Boolean = false
 
     fun needsSupplies(): Boolean
 

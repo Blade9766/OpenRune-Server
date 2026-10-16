@@ -120,7 +120,7 @@ resource = { x = 3086, z = 3229, radius = 6 }
 bank = { x = 3092, z = 3243, radius = 3 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.raw_shrimp", "obj.raw_anchovies"]
-kit = { inv = [{ item = "obj.net" }], levels = { fishing = 15 } }
+kit = { inv = [{ item = "obj.net" }], levels = { fishing = 15, hitpoints = 20 } }
 targets = ["content.net_bait_fishing_spot"]
 target_op = 1
 tools = ["obj.net"]

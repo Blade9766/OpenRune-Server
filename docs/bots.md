@@ -229,6 +229,13 @@ Roles:
   route also counts as a way home, so a bot can walk back to the master or bank
   from any hunt area.
 
+Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving) run
+to the bank when something drops them below 50% Hitpoints and rest there until
+they are back to 90%. A bot that dies keeps only what the death rules allow; if
+that loses its tool it stops with an error naming the tool, and Manage > Apply
+starter kit (or `::bot kit`) puts it back. `draynor_net` has aggressive young dark
+wizards next to it, so its kit gives 20 Hitpoints.
+
 A bot that is stuck on its route clicks "Open" on a closed door or gate within
 two tiles before rerouting. A route into a fenced area needs a waypoint on each
 side of the gate, at least three tiles from it (a waypoint counts as reached two

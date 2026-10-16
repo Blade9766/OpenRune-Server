@@ -10,6 +10,8 @@ import org.rsmod.api.invtx.invTransaction
 import org.rsmod.api.invtx.invTransfer
 import org.rsmod.api.invtx.select
 import org.rsmod.api.player.protect.clearPendingAction
+import org.rsmod.api.player.stat.baseHitpointsLvl
+import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.other.bots.core.BotActor
 import org.rsmod.content.other.bots.core.BotDestination
@@ -68,6 +70,10 @@ class PlayerBotActor(
     override fun canWorkWithoutSupplies(): Boolean = behaviour.canWorkWithoutSupplies(player)
 
     override fun restsWithoutSupplies(): Boolean = behaviour.restsWithoutSupplies()
+
+    override fun needsRest(): Boolean = !behaviour.restsWithoutSupplies() && hurtBelow(RESTED_PERCENT)
+
+    private fun hurtBelow(percent: Int): Boolean = player.hitpoints * 100 < player.baseHitpointsLvl * percent
 
     override fun travel(destination: BotDestination): TravelStatus {
         if (behaviour.escape(player, destination)) {
@@ -233,6 +239,9 @@ class PlayerBotActor(
             resetTravel()
             world.telejump(player, site.bank.center())
             return GatherStatus.NeedsSupplies
+        }
+        if (!behaviour.restsWithoutSupplies() && hurtBelow(FLEE_PERCENT)) {
+            return GatherStatus.Hurt
         }
         val current = countByItem(player.inv)
         val arrived = gatherBaseline?.let { produced(it, current, target) } ?: 0
@@ -403,6 +412,8 @@ class PlayerBotActor(
         private const val STUCK_TICKS = 8
         private const val MAX_REROUTES = 5
         private const val OFF_SITE_DISTANCE = 64
+        private const val FLEE_PERCENT = 50
+        private const val RESTED_PERCENT = 90
         private const val DOOR_RADIUS = 2
         private const val FAR_DOOR_RADIUS = 16
     }
