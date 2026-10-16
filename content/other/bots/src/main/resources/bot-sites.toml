@@ -44,6 +44,21 @@ supply_npc = "npc.aubury"
 supply_area = { x = 3253, z = 3401, radius = 5 }
 supply_route = [{ x = 3253, z = 3410 }]
 
+# A mining site with a supply_npc mines the rune essence mine through that npc's teleport;
+# resource is the npc's shop. Feeds the runecrafters that buy pure essence on the exchange.
+[[site]]
+key = "varrock_essence_mine"
+role = "mining"
+description = "Pure essence from the rune essence mine through Aubury, banking at Varrock East"
+resource = { x = 3253, z = 3401, radius = 5 }
+bank = { x = 3253, z = 3420, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.blankrune_high"]
+kit = { inv = [{ item = "obj.mithril_pickaxe" }], levels = { mining = 30 } }
+supply_npc = "npc.aubury"
+resource_route = [{ x = 3253, z = 3410 }]
+exchange_route = [{ x = 3240, z = 3428 }, { x = 3212, z = 3429 }, { x = 3186, z = 3448 }, { x = 3170, z = 3474 }]
+
 [[site]]
 key = "barbarian_village_fly"
 role = "fishing"

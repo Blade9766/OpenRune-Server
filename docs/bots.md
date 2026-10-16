@@ -211,6 +211,9 @@ without rebuilding; sites there replace bundled ones with the same key, and
 exchange area, the products that may be gathered, and waypoint routes that
 start next to the bank (`resource_route`, `exchange_route`, and for
 runecrafting with mined essence `supply_route` + `supply_npc` + `supply_area`).
+A `mining` site with a `supply_npc` mines the rune essence mine instead of rocks: its
+`resource` is the area around that npc (Aubury's shop), and the bot teleports in
+through the npc, mines until full, and leaves through the mine's exit portal.
 The pathfinder walks between waypoints, so keep them within ~40 tiles of each
 other and off closed doors. **The bundled coordinates are a starting point and
 must be walked in-game before use.**
@@ -242,6 +245,7 @@ return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
 | `edgeville_yews` | woodcutting (60) | Edgeville | yew logs | walking |
 | `varrock_east_mine` | mining | Varrock East | copper, tin, iron ore | walking |
 | `barbarian_village_coal` | mining (30) | Edgeville | coal | walking |
+| `varrock_essence_mine` | mining (30) | Varrock East | pure essence | walking |
 | `earth_altar` | runecrafting (9) | Varrock East | earth runes | walking |
 | `air_altar` | runecrafting (1) | Falador East | air runes | walking |
 | `mind_altar` | runecrafting (2) | Edgeville | mind runes | walking |
@@ -264,7 +268,8 @@ return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
 | `edgeville_dungeon_slayer` | slayer (Vannaka) | Edgeville | big bones, limpwurt roots | walking |
 
 Runecrafting sites other than `earth_altar` start with 1,000 pure essence in the
-bank and then buy essence on the exchange. Death, blood, law, chaos, astral and
+bank and then buy essence on the exchange; run a `varrock_essence_mine` bot to
+keep essence listed for them. Death, blood, law, chaos, astral and
 wrath altars have no site: no bank a bot can walk from reaches them on this
 server (boats, the Wilderness, quest areas or dungeons with unimplemented
 entrances). The nature altar is also missing: from Shilo Village the only way in

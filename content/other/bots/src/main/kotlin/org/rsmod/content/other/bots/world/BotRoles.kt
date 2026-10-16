@@ -77,7 +77,8 @@ interface BotRoleBehaviour {
         fun of(site: BotSite, role: BotRoleType, essence: EssenceSource, world: BotWorldServices): BotRoleBehaviour =
             when (role) {
                 BotRoleType.Woodcutting -> WoodcuttingBehaviour(site, world)
-                BotRoleType.Mining -> MiningBehaviour(site, world)
+                BotRoleType.Mining ->
+                    if (site.supplyNpc.isNotBlank()) EssenceMiningBehaviour(site, world) else MiningBehaviour(site, world)
                 BotRoleType.Runecrafting -> RunecraftingBehaviour(site, essence, world)
                 BotRoleType.Fishing -> FishingBehaviour(site, world)
                 BotRoleType.Thieving -> StallThievingBehaviour(site, world)
@@ -200,15 +201,11 @@ class RunecraftingBehaviour(
         altar?.rune?.input?.map { it.id }?.sortedDescending() ?: emptyList()
     }
 
-    private val mineRockIds: Set<Int> by lazy {
-        listOf("obj.blankrune", "obj.blankrune_high")
-            .mapNotNull { runCatching { it.asRSCM(RSCMType.OBJ) }.getOrNull() }
-            .toSet()
-    }
+    private val mine = EssenceMine(site, world)
 
     override fun prepare(player: Player) {
         if (essence == EssenceSource.Mine) {
-            Quest.get(RUNE_MYSTERIES)?.let { it.jumpToStage(player, it.maxSteps) }
+            mine.prepare(player)
         }
     }
 
@@ -239,7 +236,7 @@ class RunecraftingBehaviour(
         when (destination) {
             BotDestination.Resource -> site.resource.contains(player.coords) || insideAltar(player)
             BotDestination.SupplySource ->
-                insideEssenceMine(player) || site.supplyArea?.contains(player.coords) == true
+                mine.inside(player) || site.supplyArea?.contains(player.coords) == true
             else -> false
         }
 
@@ -251,18 +248,11 @@ class RunecraftingBehaviour(
             }
             return true
         }
-        if (insideEssenceMine(player) && destination != BotDestination.SupplySource) {
-            if (player.interaction == null) {
-                val portal = runCatching { MINE_PORTAL.asRSCM(RSCMType.LOC) }.getOrNull() ?: return false
-                clickNearest(player, player.coords, ESCAPE_RADIUS) { it.id == portal }
-            }
-            return true
-        }
-        return false
+        return destination != BotDestination.SupplySource && mine.leave(player)
     }
 
     override fun gather(player: Player, target: BotDestination): GatherStatus =
-        if (target == BotDestination.SupplySource) mineEssence(player) else craft(player)
+        if (target == BotDestination.SupplySource) mine.mine(player) else craft(player)
 
     private fun craft(player: Player): GatherStatus {
         val altar = altar ?: return GatherStatus.Failed("site has no valid altar_loc")
@@ -285,42 +275,12 @@ class RunecraftingBehaviour(
         return if (clicked) GatherStatus.Working(0) else GatherStatus.Failed("ruins not found")
     }
 
-    private fun mineEssence(player: Player): GatherStatus {
-        if (player.interaction != null) {
-            return GatherStatus.Working(0)
-        }
-        if (!insideEssenceMine(player)) {
-            val npcName = site.supplyNpc.ifBlank { return GatherStatus.Failed("site has no supply_npc") }
-            val npcId = runCatching { npcName.asRSCM(RSCMType.NPC) }.getOrNull()
-                ?: return GatherStatus.Failed("unknown npc $npcName")
-            val area = site.supplyArea ?: return GatherStatus.Failed("site has no supply_area")
-            val npc = world.findNpc(area.center(), area.radius + 6, npcId)
-                ?: return GatherStatus.NoResource
-            world.opNpc(player, npc, InteractionOp.Op4)
-            return GatherStatus.Working(0)
-        }
-        if (player.inv.isFull()) {
-            return GatherStatus.InventoryFull
-        }
-        val clicked =
-            clickNearest(player, player.coords, ESSENCE_MINE_RADIUS) { type ->
-                MiningRocks.forLoc(type)?.oreItem?.id in mineRockIds
-            }
-        return if (clicked) GatherStatus.Working(0) else GatherStatus.NoResource
-    }
-
     private fun clickNearest(
         player: Player,
         center: CoordGrid,
         radius: Int,
         filter: (ObjectServerType) -> Boolean,
-    ): Boolean {
-        val (loc, type) =
-            world.findLocs(center, radius, filter).minByOrNull { (loc, _) ->
-                loc.coords.chebyshevDistance(player.coords)
-            } ?: return false
-        return world.opLoc(player, loc, type, InteractionOp.Op1)
-    }
+    ): Boolean = world.clickNearestLoc(player, center, radius, filter)
 
     private fun essenceCount(player: Player): Int =
         player.inv.objs.sumOf { if (it != null && it.id in essenceIds) it.count else 0 }
@@ -330,19 +290,105 @@ class RunecraftingBehaviour(
         return player.coords.level == entrance.level && player.coords.chebyshevDistance(entrance) <= ALTAR_RADIUS
     }
 
-    private fun insideEssenceMine(player: Player): Boolean =
-        player.coords.chebyshevDistance(ESSENCE_MINE) <= ESSENCE_MINE_RADIUS
-
     private fun isPickaxe(itemId: Int): Boolean = nameOf(itemId).endsWith("pickaxe")
 
     private companion object {
         private const val ALTAR_RADIUS = 30
         private const val ESCAPE_RADIUS = 30
-        private const val ESSENCE_MINE_RADIUS = 60
+    }
+}
+
+/**
+ * The rune essence mine, reached through the site's [BotSite.supplyNpc] teleport (Aubury) and left
+ * through its exit portal. Shared by essence miners and mine-fed runecrafters.
+ */
+class EssenceMine(private val site: BotSite, private val world: BotWorldServices) {
+    private val rockProducts: Set<Int> by lazy { resolveIds(listOf("obj.blankrune", "obj.blankrune_high"), RSCMType.OBJ) }
+
+    fun prepare(player: Player) {
+        Quest.get(RUNE_MYSTERIES)?.let { if (!it.isQuestCompleted(player)) it.jumpToStage(player, it.maxSteps) }
+    }
+
+    fun inside(player: Player): Boolean = player.coords.chebyshevDistance(MINE_CENTER) <= MINE_RADIUS
+
+    /** Clicks the exit portal; true while the bot is still inside the mine. */
+    fun leave(player: Player): Boolean {
+        if (!inside(player)) {
+            return false
+        }
+        if (player.interaction == null) {
+            val portal = runCatching { MINE_PORTAL.asRSCM(RSCMType.LOC) }.getOrNull() ?: return false
+            world.clickNearestLoc(player, player.coords, PORTAL_RADIUS) { it.id == portal }
+        }
+        return true
+    }
+
+    /** Teleports in through the supply npc, then mines essence until the inventory is full. */
+    fun mine(player: Player): GatherStatus {
+        if (player.interaction != null) {
+            return GatherStatus.Working(0)
+        }
+        if (!inside(player)) {
+            val npcName = site.supplyNpc.ifBlank { return GatherStatus.Failed("site has no supply_npc") }
+            val npcId = runCatching { npcName.asRSCM(RSCMType.NPC) }.getOrNull()
+                ?: return GatherStatus.Failed("unknown npc $npcName")
+            val area = site.supplyArea ?: site.resource
+            val npc = world.findNpc(area.center(), area.radius + 6, npcId) ?: return GatherStatus.NoResource
+            world.opNpc(player, npc, InteractionOp.Op4)
+            return GatherStatus.Working(0)
+        }
+        if (player.inv.isFull()) {
+            return GatherStatus.InventoryFull
+        }
+        val clicked =
+            world.clickNearestLoc(player, player.coords, MINE_RADIUS) { type ->
+                MiningRocks.forLoc(type)?.oreItem?.id in rockProducts
+            }
+        return if (clicked) GatherStatus.Working(0) else GatherStatus.NoResource
+    }
+
+    private companion object {
+        private const val MINE_RADIUS = 60
+        private const val PORTAL_RADIUS = 30
         private const val MINE_PORTAL = "loc.blankrunestone_exit_portal"
         private const val RUNE_MYSTERIES = "quest_runemysteries"
-        private val ESSENCE_MINE = CoordGrid(2910, 4832)
+        private val MINE_CENTER = CoordGrid(2910, 4832)
     }
+}
+
+/**
+ * Mines essence to sell: the site's [BotSite.resource] surrounds the teleport npc, and working
+ * there means teleporting into the essence mine and mining until the inventory is full.
+ */
+class EssenceMiningBehaviour(private val site: BotSite, world: BotWorldServices) : BotRoleBehaviour {
+    private val mine = EssenceMine(site, world)
+
+    override fun prepare(player: Player) = mine.prepare(player)
+
+    override fun requirementProblem(player: Player): String? =
+        if (Mining.findPickaxe(player) == null) "no usable pickaxe" else null
+
+    override fun keep(itemId: Int): Boolean = nameOf(itemId).endsWith("pickaxe")
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        destination == BotDestination.Resource && (mine.inside(player) || site.resource.contains(player.coords))
+
+    override fun escape(player: Player, destination: BotDestination): Boolean =
+        destination != BotDestination.Resource && mine.leave(player)
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus = mine.mine(player)
+}
+
+private fun BotWorldServices.clickNearestLoc(
+    player: Player,
+    center: CoordGrid,
+    radius: Int,
+    filter: (ObjectServerType) -> Boolean,
+): Boolean {
+    val (loc, type) =
+        findLocs(center, radius, filter).minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(player.coords) }
+            ?: return false
+    return opLoc(player, loc, type, InteractionOp.Op1)
 }
 
 /** A site's [BotSite.targets]: exact `npc.`/`loc.` types, `content.` groups and `name:` names. */
