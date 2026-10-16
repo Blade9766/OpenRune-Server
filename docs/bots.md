@@ -234,7 +234,8 @@ to the bank when something drops them below 50% Hitpoints and rest there until
 they are back to 90%. A bot that dies keeps only what the death rules allow; if
 that loses its tool it stops with an error naming the tool, and Manage > Apply
 starter kit (or `::bot kit`) puts it back. `draynor_net` has aggressive young dark
-wizards next to it, so its kit gives 20 Hitpoints.
+wizards (level 7) next to it, so its kit gives combat level 15: monsters ignore
+players over twice their level.
 
 A bot that is stuck on its route clicks "Open" on a closed door or gate within
 two tiles before rerouting. A route into a fenced area needs a waypoint on each

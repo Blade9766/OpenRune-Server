@@ -442,6 +442,8 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
     /** Clicks per drop or npc that never led anywhere; unreachable ones are skipped. */
     private val attempts = IdentityHashMap<Any, Int>()
     private var decisions = 0
+    private var lastTarget: Any? = null
+    private var engaged = false
 
     /** Where the bot fights right now. */
     protected open fun fightArea(player: Player): SiteArea = site.resource
@@ -485,10 +487,14 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
         if (player.isActing()) {
             val fighting = (player.interaction as? InteractionNpcOp)?.target
             if (fighting != null && fighting.isInCombat()) {
+                engaged = true
                 attempts.remove(fighting)
             }
             return GatherStatus.Working(0, progressed = fighting != null)
         }
+        lastTarget?.let { if (!engaged) attempts[it] = (attempts[it] ?: 0) + 1 }
+        lastTarget = null
+        engaged = false
         if (++decisions % ATTEMPTS_RESET == 0) {
             attempts.clear()
         }
@@ -499,7 +505,7 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
                 .findObjs(player, area.center(), area.radius) { it.type in loot && reachable(it) }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
         if (drop != null) {
-            attempted(drop)
+            lastTarget = drop
             world.pickUp(player, drop)
             return GatherStatus.Working(0)
         }
@@ -508,15 +514,11 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
                 .findNpcs(area.center(), area.radius) { isTarget(player, it) && !it.isInCombat() && reachable(it) }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
                 ?: return GatherStatus.NoResource
-        attempted(npc)
+        lastTarget = npc
         return if (world.opNpc(player, npc, attackOp(npc))) GatherStatus.Working(0) else GatherStatus.NoResource
     }
 
     private fun reachable(target: Any): Boolean = (attempts[target] ?: 0) < MAX_ATTEMPTS
-
-    private fun attempted(target: Any) {
-        attempts[target] = (attempts[target] ?: 0) + 1
-    }
 
     private companion object {
         private const val MAX_ATTEMPTS = 3
