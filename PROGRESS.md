@@ -318,7 +318,7 @@ Found the same way `settings.gradle.kts` finds them: any dir with a `build.gradl
 | `skills/mining` | 11 | 1,054 | 0 | 0 | 2026-10-09 |
 | `skills/prayer` | 29 | 2,601 | 0 | 0 | 2026-10-05 |
 | `skills/runecrafting` | 24 | 2,565 | 0 | 0 | 2026-09-22 |
-| `skills/slayer` | 45 | 5,502 | 0 | 0 | 2026-10-05 |
+| `skills/slayer` | 45 | 5,502 | 0 | 0 | 2026-10-10 |
 | `skills/smithing` | 15 | 2,087 | 0 | 0 | 2026-10-05 |
 | `skills/thieving` | 2 | 406 | 0 | 0 | 2026-10-04 |
 | `skills/utils` | 2 | 316 | 0 | 0 | 2026-10-09 |
