@@ -67,6 +67,9 @@ data class BotConfig(
     val actionIntervalTicks: Int = 1,
     /** Gathered items allowed per rolling hour; 0 means no limit. */
     val maxGatheredPerHour: Int = 0,
+    /** Ticks a bot hesitates, picked at random in this range, before its next click. */
+    val reactionMinTicks: Int = 1,
+    val reactionMaxTicks: Int = 4,
 ) {
     fun validate(): List<String> = buildList {
         if (site.isBlank()) {
@@ -105,6 +108,9 @@ data class BotConfig(
         if (actionIntervalTicks !in 1..100) {
             add("action interval must be between 1 and 100 ticks")
         }
+        if (reactionMinTicks !in REACTION_RANGE || reactionMaxTicks !in reactionMinTicks..REACTION_RANGE.last) {
+            add("reaction must be a range within ${REACTION_RANGE.first}-${REACTION_RANGE.last} ticks")
+        }
         if (maxGatheredPerHour < 0) {
             add("hourly gathering limit cannot be negative")
         }
@@ -112,6 +118,7 @@ data class BotConfig(
 
     companion object {
         val SALE_THRESHOLD_RANGE: IntRange = 1000..2000
+        val REACTION_RANGE: IntRange = 0..20
     }
 }
 

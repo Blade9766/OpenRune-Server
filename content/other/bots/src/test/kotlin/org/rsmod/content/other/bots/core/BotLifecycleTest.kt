@@ -136,7 +136,7 @@ class BotLifecycleTest {
         assertEquals(27, world.coordinator.find("$id")!!.stats.deposited)
 
         world.tickUntil { world.state(id) == BotState.Gathering }
-        world.tick(3)
+        world.tick(3 * (BotTestHarness.woodcuttingConfig().reactionMaxTicks + 1))
         assertTrue(actor.held(LOGS) > 0)
     }
 

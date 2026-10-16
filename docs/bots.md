@@ -66,6 +66,7 @@ Closing any of the menus or prompts cancels without changing anything.
 ::bot give <bot> <item> [n] [inv|worn|bank]   bot must be disabled
 ::bot take <bot> <item> [n] [inv|worn|bank]   bot must be disabled
 ::bot level <bot> <stat> <level>        bot must be disabled
+::bot trace <bot>                       current focus and the last decisions with their reasons
 ::bot sites [reload]                    list sites / re-read the override file
 ::bot here                              print your tile, for writing routes
 ```
@@ -92,6 +93,7 @@ random silly one ("Soggy Waffle", "Captn Turnip", ...); names never end in
 | `retries` / `step` | Re-list attempts and % price step per attempt | 3 / 2.0 |
 | `cooldown` | Minutes selling pauses after giving up or lacking a safe price | 30 |
 | `interval` | Ticks between bot decisions (1-100) | 1 |
+| `reaction` | Random pause before each new click, as `min-max` ticks (0-20) | 1-4 |
 | `hourlimit` | Max items gathered per rolling hour (0 = none) | 0 |
 | `essence` | Runecrafting essence source: `bank` or `mine` | bank |
 
@@ -253,6 +255,24 @@ leg slot).
 Bots spawn with full run energy, switch run on at 50% energy and back to walking
 at 15%, so they jog between sites and recover while they work.
 
+## How bots play
+
+- **Reaction time.** When a click finishes (a tree falls, a fight ends) the bot
+  waits a random `reaction` delay before the next one, like a person noticing.
+  `0-0` gives instant, robotic reactions; larger ranges make a bot slower.
+- **Sharing resources.** A bot sees what other players near it are clicking.
+  It picks the tree, rock or stall with the lowest walking distance plus 10
+  tiles for each player already on it, so bots spread out and leave a rock
+  a real player is mining alone. Equal choices are broken at random.
+- **Fighting.** Fighters never click an npc someone else is fighting or has
+  just clicked. A fighter that is hit fights back against its attacker before
+  looting or walking to a new target, since anyone can see what is hitting them.
+  Bots only know what a player standing there could see: nearby npcs, ground
+  items and the clicks of other players in view.
+- **Debugging.** `::bot trace <bot>` shows what the bot is focused on and why
+  ("Oak at 3170,3416: nobody else on it, best of 6"), plus its last decisions
+  with their reasons.
+
 ## States
 
 `DISABLED, IDLE, TRAVEL_TO_RESOURCE, GATHERING, TRAVEL_TO_BANK, BANKING,
@@ -335,7 +355,10 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
   working on the Lumbridge cow field gate (`draynor_slayer` cows) on 2026-10-15,
   as was the `draynor_slayer` exchange route.
 - A bot more than 64 tiles from its bank and every route point (after a death respawn
-  or any teleport) telejumps back to its bank instead of failing to path.
+  or any teleport) rides a wayfinder mage back towards its site (see `wayfinder.md`): it
+  walks to the nearest Vaelor or Elowen within 64 tiles and asks for the site's `wayfinder`
+  destination key, or the bot-allowed destination nearest its bank. With no mage, no usable
+  destination or three failed requests it telejumps back to its bank as before.
 - Bots are restored with at least 10 Hitpoints.
 - Bots are visible through the session-less player-info avatar
   (`BotSessions`) that castle-wars bots also use.

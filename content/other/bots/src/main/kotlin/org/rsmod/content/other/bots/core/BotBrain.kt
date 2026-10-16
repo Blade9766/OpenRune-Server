@@ -1,5 +1,7 @@
 package org.rsmod.content.other.bots.core
 
+import kotlin.random.Random
+
 /**
  * The per-bot state machine. It only decides; every world interaction goes through [BotActor] and
  * every exchange interaction through [BotExchange]. A state that cannot make progress within its
@@ -20,6 +22,7 @@ class BotBrain(
     private val log: BotLog,
     private val storeHealthy: () -> Boolean,
     private var recovering: Boolean = false,
+    private val random: Random = Random.Default,
 ) {
     var record: BotRecord = initial
         private set
@@ -40,6 +43,13 @@ class BotBrain(
     private var travelTarget = BotDestination.Resource
     private var errorUntil = 0L
     private var listingOutcome: Boolean? = null
+    private var reactionCycle = NO_REACTION
+    private var now = 0L
+    private val decisions = ArrayDeque<BotDecision>()
+
+    /** The latest state changes and their reasons, newest last. */
+    val trace: List<BotDecision>
+        get() = decisions.toList()
 
     val state: BotState
         get() = record.state
@@ -47,7 +57,8 @@ class BotBrain(
     val hasPendingExchangeWork: Boolean
         get() = record.hasPendingExchangeWork
 
-    fun start(cycle: Int) {
+    fun start(cycle: Int, now: Long) {
+        this.now = now
         stateFailures = 0
         if (record.state == BotState.Error) {
             errorUntil = 0
@@ -75,6 +86,7 @@ class BotBrain(
     }
 
     fun tick(now: Long, cycle: Int) {
+        this.now = now
         if (record.state == BotState.Disabled) {
             return
         }
@@ -171,6 +183,9 @@ class BotBrain(
             transition(BotState.Idle, cycle, "Hourly gathering limit reached")
             return
         }
+        if (hesitating(cycle)) {
+            return
+        }
         when (val status = actor.gather(gatherTarget)) {
             is GatherStatus.Working -> {
                 if (status.gained > 0) {
@@ -211,6 +226,26 @@ class BotBrain(
             }
             is GatherStatus.Failed -> error(status.reason, now, recoverable = false)
         }
+    }
+
+    /**
+     * A person takes a moment to notice an action has finished before clicking again; the bot
+     * waits a random [BotConfig.reactionMinTicks]..[BotConfig.reactionMaxTicks] ticks between clicks.
+     */
+    private fun hesitating(cycle: Int): Boolean {
+        if (actor.isActing) {
+            reactionCycle = NO_REACTION
+            return false
+        }
+        if (reactionCycle == NO_REACTION) {
+            val config = record.config
+            reactionCycle = cycle + random.nextInt(config.reactionMinTicks, config.reactionMaxTicks + 1)
+        }
+        if (cycle < reactionCycle) {
+            return true
+        }
+        reactionCycle = NO_REACTION
+        return false
     }
 
     private fun bank(now: Long, cycle: Int) {
@@ -675,6 +710,7 @@ class BotBrain(
                 errorRecoveries = recoveries,
             )
         errorUntil = now + ERROR_COOLDOWN_MS
+        remember("ERROR: $reason")
         log.warn(record, "error: $reason")
         urgent = true
     }
@@ -690,6 +726,9 @@ class BotBrain(
     }
 
     private fun transition(next: BotState, cycle: Int, activity: String) {
+        if (next != record.state || activity != record.activity) {
+            remember("${record.state.label} -> ${next.label}: $activity")
+        }
         if (next != record.state) {
             stateCycle = cycle
             if (next == BotState.Gathering) {
@@ -698,6 +737,13 @@ class BotBrain(
         }
         record = record.copy(state = next, activity = activity)
         dirty = true
+    }
+
+    private fun remember(text: String) {
+        decisions.addLast(BotDecision(now, text))
+        while (decisions.size > TRACE_SIZE) {
+            decisions.removeFirst()
+        }
     }
 
     private fun setActivity(activity: String) {
@@ -732,5 +778,11 @@ class BotBrain(
         const val MAX_ERROR_RECOVERIES: Int = 3
         const val ERROR_COOLDOWN_MS: Long = 5 * 60_000L
         private const val HOUR_MS = 60 * 60_000L
+        private const val NO_REACTION = -1
+        private const val TRACE_SIZE = 12
     }
 }
+
+data class BotDecision(val at: Long, val text: String)
+
+data class BotTrace(val decisions: List<BotDecision>, val focus: String?)

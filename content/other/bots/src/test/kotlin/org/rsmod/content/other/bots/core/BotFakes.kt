@@ -32,6 +32,8 @@ class FakeActor(
     var missingTool = false
     var position: BotDestination? = null
     var stopped = 0
+    var acting = false
+    var gatherCalls = 0
 
     private var travelling: BotDestination? = null
     private var travelProgress = 0
@@ -74,7 +76,11 @@ class FakeActor(
         return TravelStatus.Moving
     }
 
+    override val isActing: Boolean
+        get() = acting
+
     override fun gather(target: BotDestination): GatherStatus {
+        gatherCalls++
         if (missingTool) {
             return GatherStatus.Failed("missing a tool")
         }

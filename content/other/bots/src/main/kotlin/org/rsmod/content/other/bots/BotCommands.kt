@@ -49,6 +49,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "level" -> level(player, coordinator, rest)
             "kit" -> change(player, coordinator, rest[0], "applied the starter kit to") { applyKit(coordinator, it) }
             "sites" -> sites(player, rest.firstOrNull() == "reload")
+            "trace" -> trace(player, coordinator, rest[0])
             "here" -> player.mes("{ x = ${player.coords.x}, z = ${player.coords.z}, level = ${player.coords.level} }")
             else -> player.mes(USAGE)
         }
@@ -149,6 +150,10 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "mintrades" -> config.copy(pricing = pricing.copy(minTrades = value.toInt()))
             "minvolume" -> config.copy(pricing = pricing.copy(minVolume = value.toLong()))
             "interval" -> config.copy(actionIntervalTicks = value.toInt())
+            "reaction" -> {
+                val (min, max) = value.split("-").map(String::toInt).let { it.first() to it.last() }
+                config.copy(reactionMinTicks = min, reactionMaxTicks = max)
+            }
             "hourlimit" -> config.copy(maxGatheredPerHour = value.toInt())
             "essence" -> {
                 val source = EssenceSource.entries.firstOrNull { it.name.equals(value, true) }
@@ -220,6 +225,19 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             player.mes(slayerTask(r))
         }
         r.lastError?.let { player.mes("Last error: $it") }
+    }
+
+    private fun trace(player: Player, coordinator: BotCoordinator, idOrName: String) {
+        val bot = coordinator.find(idOrName) ?: return player.mes("No bot '$idOrName'.")
+        val trace = coordinator.trace(bot.id) ?: return player.mes("${bot.name} is not in the world.")
+        val config = bot.config
+        player.mes("${bot.name}: ${bot.state.label} - ${bot.activity}")
+        player.mes("Reaction ${config.reactionMinTicks}-${config.reactionMaxTicks} ticks, interval ${config.actionIntervalTicks}")
+        player.mes("Last target: ${trace.focus ?: "none yet"}")
+        val now = System.currentTimeMillis()
+        for (decision in trace.decisions.takeLast(TRACE_LINES)) {
+            player.mes("${(now - decision.at) / 1000}s ago: ${decision.text}")
+        }
     }
 
     private fun slayerTask(record: BotRecord): String {
@@ -295,12 +313,13 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             listOf(
                 "threshold", "quantity", "selling", "item", "allow", "disallow", "refprice", "adjust",
                 "minprice", "deviation", "cooldown", "timeout", "retries", "step", "window",
-                "mintrades", "minvolume", "interval", "hourlimit", "essence",
+                "mintrades", "minvolume", "interval", "reaction", "hourlimit", "essence",
             )
 
+        private const val TRACE_LINES = 8
         const val USAGE: String =
             "::bot [status <bot>|list|create <role> <site> [name]|enable|disable|remove <bot> [force]|" +
                 "clear <bot>|kit <bot>|master on|off|max <n>|set <bot> <key> <value>|give|take <bot> <item> [n] [inv|worn|bank]|" +
-                "level <bot> <stat> <lvl>|sites [reload]|here]"
+                "level <bot> <stat> <lvl>|trace <bot>|sites [reload]|here]"
     }
 }

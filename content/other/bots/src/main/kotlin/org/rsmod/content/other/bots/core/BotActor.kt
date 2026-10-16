@@ -65,7 +65,14 @@ interface BotActor {
     /** Missing tool, equipment or level; the bot cannot work at all until fixed. */
     fun requirementProblem(): String?
 
-    /** True when the role consumes something (essence) the inventory has run out of. */
+    /** True while the character is carrying out its last click (chopping, walking to a fight). */
+    val isActing: Boolean
+        get() = false
+
+    /** What the bot is working on right now and why it chose it, for debugging. */
+    val focus: String?
+        get() = null
+
     /** True when the bot must visit its site's supply source first (a slayer master for a task). */
     fun needsSourceVisit(): Boolean = false
 
@@ -78,6 +85,7 @@ interface BotActor {
     /** True while a bot that does not fight is too hurt to go back to work. */
     fun needsRest(): Boolean = false
 
+    /** True when the role consumes something (essence) the inventory has run out of. */
     fun needsSupplies(): Boolean
 
     fun travel(destination: BotDestination): TravelStatus

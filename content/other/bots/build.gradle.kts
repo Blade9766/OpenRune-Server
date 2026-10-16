@@ -15,6 +15,7 @@ dependencies {
     implementation(projects.content.skills.mining)
     implementation(projects.content.skills.slayer)
     implementation(projects.content.skills.woodcutting)
+    implementation(projects.content.travel.wayfinder)
     implementation(libs.fastutil)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.dataformat.toml)

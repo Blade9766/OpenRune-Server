@@ -328,6 +328,9 @@ class BotCoordinator(
         }
     }
 
+    /** A live bot's recent decisions and current focus; null when it is not in the world. */
+    fun trace(id: Long): BotTrace? = live[id]?.let { BotTrace(it.brain.trace, it.actor.focus) }
+
     fun status(): List<BotStatusView> =
         all().map { record ->
             val actor = live[record.id]?.actor
@@ -416,7 +419,7 @@ class BotCoordinator(
                     storeHealthy = { storeHealthy },
                     recovering = recovering.remove(id),
                 )
-            brain.start(cycle)
+            brain.start(cycle, clock())
             live[id] = LiveBot(brain, actor, cycle)
             log.info(record, "spawned")
         }

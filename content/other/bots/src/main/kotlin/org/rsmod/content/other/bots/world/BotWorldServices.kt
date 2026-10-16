@@ -3,6 +3,7 @@ package org.rsmod.content.other.bots.world
 import dev.openrune.ServerCacheManager
 import dev.openrune.types.ObjectServerType
 import jakarta.inject.Inject
+import org.rsmod.api.npc.isInCombat
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
@@ -11,11 +12,13 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.registry.loc.LocRegistry
+import org.rsmod.api.registry.npc.NpcRegistry
 import org.rsmod.api.registry.obj.ObjRegistry
+import org.rsmod.content.travel.wayfinder.WayfinderTravel
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Npc
-import org.rsmod.game.entity.NpcList
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.interact.HeldOp
 import org.rsmod.game.interact.InteractionLocOp
@@ -44,12 +47,14 @@ constructor(
     private val locRegistry: LocRegistry,
     private val locInteractions: LocInteractions,
     private val npcInteractions: NpcInteractions,
-    private val npcList: NpcList,
+    private val npcRegistry: NpcRegistry,
+    private val playerList: PlayerList,
     private val collision: CollisionFlagMap,
     private val objRegistry: ObjRegistry,
     private val objInteractions: ObjInteractions,
     private val heldInteractions: HeldInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
+    val wayfinder: WayfinderTravel,
 ) {
     /** Ground objs [player] can see within [radius] of [center]. */
     fun findObjs(player: Player, center: CoordGrid, radius: Int, filter: (Obj) -> Boolean): List<Obj> =
@@ -175,12 +180,38 @@ constructor(
     }
 
     fun findNpc(center: CoordGrid, radius: Int, npcTypeId: Int): Npc? =
-        npcList
-            .filter { it.type.id == npcTypeId && it.coords.chebyshevDistance(center) <= radius }
-            .minByOrNull { it.coords.chebyshevDistance(center) }
+        findNpcs(center, radius) { it.type.id == npcTypeId }.minByOrNull { it.coords.chebyshevDistance(center) }
 
     fun findNpcs(center: CoordGrid, radius: Int, filter: (Npc) -> Boolean): List<Npc> =
-        npcList.filter { it.coords.level == center.level && it.coords.chebyshevDistance(center) <= radius && filter(it) }
+        zonesAround(center, radius)
+            .flatMap { npcRegistry.findAll(it) }
+            .filter { it.coords.chebyshevDistance(center) <= radius && filter(it) }
+
+    /** Npcs near [player] fighting it right now; anyone being hit can see who is hitting them. */
+    fun attackers(player: Player): List<Npc> =
+        findNpcs(player.coords, ATTACKER_RADIUS) { it.isInCombat() && it.facingTarget(playerList) === player }
+
+    /**
+     * The locs and npcs other players near [center] are visibly working on: whatever their current
+     * click targets, the same thing someone standing there would see.
+     */
+    fun claims(player: Player, center: CoordGrid, radius: Int): BotClaims {
+        val locs = HashMap<CoordGrid, Int>()
+        val npcs = HashSet<Npc>()
+        for (other in playerList) {
+            if (other === player || other.coords.level != center.level ||
+                other.coords.chebyshevDistance(center) > radius + CLAIM_MARGIN
+            ) {
+                continue
+            }
+            when (val interaction = other.interaction) {
+                is InteractionLocOp -> locs.merge(interaction.target.coords, 1, Int::plus)
+                is InteractionNpcOp -> npcs += interaction.target
+                else -> {}
+            }
+        }
+        return BotClaims(locs, npcs)
+    }
 
     private fun zonesAround(center: CoordGrid, radius: Int): Set<ZoneKey> {
         val zones = LinkedHashSet<ZoneKey>()
@@ -200,5 +231,17 @@ constructor(
 
     private companion object {
         private const val ZONE_SIZE = 8
+        private const val ATTACKER_RADIUS = 10
+        private const val CLAIM_MARGIN = 4
+    }
+}
+
+class BotClaims(private val locs: Map<CoordGrid, Int>, private val npcs: Set<Npc>) {
+    fun on(loc: LocInfo): Int = locs[loc.coords] ?: 0
+
+    fun taken(npc: Npc): Boolean = npc in npcs
+
+    companion object {
+        val NONE: BotClaims = BotClaims(emptyMap(), emptySet())
     }
 }

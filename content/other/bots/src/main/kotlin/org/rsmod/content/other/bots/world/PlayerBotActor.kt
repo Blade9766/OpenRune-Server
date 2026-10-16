@@ -1,5 +1,6 @@
 package org.rsmod.content.other.bots.world
 
+import com.github.michaelbull.logging.InlineLogger
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
@@ -47,6 +48,7 @@ class PlayerBotActor(
     private var stillTicks = 0
     private var reroutes = 0
     private var gatherBaseline: Map<Int, Int>? = null
+    private val wayfinder = BotWayfinder(player, site, world) { allChains().flatten() + site.bank.center() }
 
     override val inventoryUsed: Int
         get() = player.inv.occupiedSpace()
@@ -62,6 +64,12 @@ class PlayerBotActor(
             }
             return player.isAccessProtected || player.isDelayed
         }
+
+    override val isActing: Boolean
+        get() = player.interaction != null || player.weakQueueList.isNotEmpty
+
+    override val focus: String?
+        get() = behaviour.focus
 
     override fun requirementProblem(): String? = behaviour.requirementProblem(player)
 
@@ -88,8 +96,10 @@ class PlayerBotActor(
         }
         if (isOffSite()) {
             resetTravel()
-            world.telejump(player, site.bank.center())
-            return TravelStatus.Moving
+            return recoverOffSite()
+        }
+        if (wayfinder.engaged) {
+            wayfinder.reset()
         }
         if (travelDestination != destination || plan.isEmpty()) {
             travelDestination = destination
@@ -221,6 +231,22 @@ class PlayerBotActor(
             .flatMap { chain -> chain.indices.map { chain to it } }
             .minByOrNull { (chain, i) -> chain[i].chebyshevDistance(player.coords) }
 
+    /**
+     * A stray bot rides a wayfinder mage back towards its site; if no mage or destination works
+     * out, it falls back to a telejump to its bank so it never wanders indefinitely.
+     */
+    private fun recoverOffSite(): TravelStatus {
+        when (val step = wayfinder.tick()) {
+            BotWayfinder.Step.Moving,
+            BotWayfinder.Step.Arrived -> return TravelStatus.Moving
+            is BotWayfinder.Step.Failed -> {
+                logger.info { "Bot ${player.displayName}: ${step.reason}; returning to its bank directly." }
+                world.telejump(player, site.bank.center())
+                return TravelStatus.Moving
+            }
+        }
+    }
+
     /** Death respawns and stray teleports leave a bot where no route can reach its site. */
     private fun isOffSite(): Boolean {
         if (behaviour.isAt(player, BotDestination.Resource) || behaviour.isAt(player, BotDestination.SupplySource)) {
@@ -250,7 +276,6 @@ class PlayerBotActor(
     override fun gather(target: BotDestination): GatherStatus {
         if (isOffSite()) {
             resetTravel()
-            world.telejump(player, site.bank.center())
             return GatherStatus.NeedsSupplies
         }
         if (!behaviour.restsWithoutSupplies() && hurtBelow(FLEE_PERCENT)) {
@@ -416,6 +441,8 @@ class PlayerBotActor(
     }
 
     private companion object {
+        private val logger = InlineLogger("bots")
+
         private const val COINS = "obj.coins"
         private const val BANK = "inv.bank"
         private const val DEFAULT_BANK_CAPACITY = 800

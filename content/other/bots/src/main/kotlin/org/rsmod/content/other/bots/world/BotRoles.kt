@@ -5,7 +5,9 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ObjectServerType
 import java.util.IdentityHashMap
+import kotlin.random.Random
 import org.rsmod.api.npc.isInCombat
+import org.rsmod.api.player.isInCombat as isPlayerInCombat
 import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.baseRunecraftingLvl
 import org.rsmod.api.player.stat.hitpoints
@@ -14,6 +16,7 @@ import org.rsmod.api.player.stat.woodcuttingLvl
 import org.rsmod.api.table.runecrafting.RunecraftingAltarsRow
 import org.rsmod.content.other.bots.core.BotDestination
 import org.rsmod.content.other.bots.core.BotRoleType
+import org.rsmod.content.other.bots.core.BotTargeting
 import org.rsmod.content.other.bots.core.EssenceSource
 import org.rsmod.content.other.bots.core.GatherStatus
 import org.rsmod.content.quest.manager.Quest
@@ -31,6 +34,10 @@ import org.rsmod.map.CoordGrid
 
 /** Skill-specific behaviour. New skills plug in here and in [BotRoleBehaviour.of]. */
 interface BotRoleBehaviour {
+    /** What the bot is working on and why, for `::bot trace`. */
+    val focus: String?
+        get() = null
+
     fun requirementProblem(player: Player): String?
 
     /** Sets up character state the role relies on, before the bot logs in. */
@@ -103,6 +110,9 @@ abstract class LocGatheringBehaviour(
 
     abstract fun isTool(itemId: Int): Boolean
 
+    override var focus: String? = null
+        protected set
+
     override fun gather(player: Player, target: BotDestination): GatherStatus {
         if (player.inv.isFull()) {
             return GatherStatus.InventoryFull
@@ -122,9 +132,17 @@ abstract class LocGatheringBehaviour(
             val lowest = candidates.minOf { (_, type) -> levelRequired(type) }
             return GatherStatus.Failed("needs level $lowest to gather here")
         }
-        val (loc, type) = usable.minBy { (loc, _) -> loc.coords.chebyshevDistance(player.coords) }
+        val claims = world.claims(player, site.resource.center(), site.resource.radius)
+        val (loc, type) =
+            BotTargeting.pick(
+                usable,
+                Random,
+                distance = { (loc, _) -> loc.coords.chebyshevDistance(player.coords) },
+                crowd = { (loc, _) -> claims.on(loc) },
+            )!!
         missingTool(player, type)?.let { return GatherStatus.Failed(it) }
         world.opLoc(player, loc, type, InteractionOp.Op1)
+        focus = describe(type.name, loc.coords, claims.on(loc), usable.size)
         return GatherStatus.Working(0)
     }
 
@@ -365,6 +383,9 @@ private fun interactionOp(op: Int): InteractionOp =
  */
 class FishingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
     private val targets by lazy { SiteTargets(site.targets, RSCMType.NPC) }
+
+    override var focus: String? = null
+        private set
     private val toolIds by lazy { resolveIds(site.tools, RSCMType.OBJ) }
     private val supplyIds by lazy { resolveIds(site.supplies, RSCMType.OBJ) }
 
@@ -398,13 +419,20 @@ class FishingBehaviour(private val site: BotSite, private val world: BotWorldSer
                 .findNpcs(site.resource.center(), site.resource.radius) { targets.matches(it.type.id, it.type.contentGroup, it.type.name) }
                 .minByOrNull { it.coords.chebyshevDistance(player.coords) }
                 ?: return GatherStatus.NoResource
-        return if (world.opNpc(player, spot, interactionOp(site.targetOp))) GatherStatus.Working(0) else GatherStatus.NoResource
+        if (!world.opNpc(player, spot, interactionOp(site.targetOp))) {
+            return GatherStatus.NoResource
+        }
+        focus = "${spot.type.name} at ${spot.coords.x},${spot.coords.z}: the nearest spot"
+        return GatherStatus.Working(0)
     }
 }
 
 /** Steals from the nearest stocked stall loc in the resource area; emptied stalls are skipped. */
 class StallThievingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
     private val targets by lazy { SiteTargets(site.targets, RSCMType.LOC) }
+
+    override var focus: String? = null
+        private set
 
     override fun requirementProblem(player: Player): String? = null
 
@@ -420,12 +448,20 @@ class StallThievingBehaviour(private val site: BotSite, private val world: BotWo
         if (player.isActing()) {
             return GatherStatus.Working(0)
         }
+        val stalls = world.findLocs(site.resource.center(), site.resource.radius) { targets.matches(it.id, it.contentGroup, it.name) }
+        val claims = world.claims(player, site.resource.center(), site.resource.radius)
         val (loc, type) =
-            world
-                .findLocs(site.resource.center(), site.resource.radius) { targets.matches(it.id, it.contentGroup, it.name) }
-                .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(player.coords) }
-                ?: return GatherStatus.NoResource
-        return if (world.opLoc(player, loc, type, interactionOp(site.targetOp))) GatherStatus.Working(0) else GatherStatus.NoResource
+            BotTargeting.pick(
+                stalls,
+                Random,
+                distance = { (loc, _) -> loc.coords.chebyshevDistance(player.coords) },
+                crowd = { (loc, _) -> claims.on(loc) },
+            ) ?: return GatherStatus.NoResource
+        if (!world.opLoc(player, loc, type, interactionOp(site.targetOp))) {
+            return GatherStatus.NoResource
+        }
+        focus = describe(type.name, loc.coords, claims.on(loc), stalls.size)
+        return GatherStatus.Working(0)
     }
 }
 
@@ -445,6 +481,9 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
     private var lastTarget: Any? = null
     private var engaged = false
     private var targetCombatStamp = 0
+
+    override var focus: String? = null
+        protected set
 
     /** Where the bot fights right now. */
     protected open fun fightArea(player: Player): SiteArea = site.resource
@@ -491,6 +530,9 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
                 engaged = true
                 attempts.remove(fighting)
             }
+            if (!engaged) {
+                retaliate(player, fighting)?.let { return it }
+            }
             return GatherStatus.Working(0, progressed = fighting != null)
         }
         lastTarget?.let { if (!engaged) attempts[it] = (attempts[it] ?: 0) + 1 }
@@ -499,6 +541,7 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
         if (++decisions % ATTEMPTS_RESET == 0) {
             attempts.clear()
         }
+        retaliate(player, current = null)?.let { return it }
         val area = fightArea(player)
         val loot = lootIds(player)
         val drop =
@@ -508,16 +551,45 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
         if (drop != null) {
             lastTarget = drop
             world.pickUp(player, drop)
+            focus = "picking up ${nameOf(drop.type)} at ${drop.coords.x},${drop.coords.z}"
             return GatherStatus.Working(0)
         }
+        val claims = world.claims(player, area.center(), area.radius)
+        val free =
+            world.findNpcs(area.center(), area.radius) {
+                isTarget(player, it) && !it.isInCombat() && !claims.taken(it) && reachable(it)
+            }
         val npc =
-            world
-                .findNpcs(area.center(), area.radius) { isTarget(player, it) && !it.isInCombat() && reachable(it) }
-                .minByOrNull { it.coords.chebyshevDistance(player.coords) }
+            BotTargeting.pick(free, Random, distance = { it.coords.chebyshevDistance(player.coords) }, crowd = { 0 })
                 ?: return GatherStatus.NoResource
+        return attack(player, npc, "the nearest of ${free.size} free targets")
+    }
+
+    /**
+     * Fights back against whatever is hitting the bot before looting or picking a new target, as a
+     * player would; [current] is the npc it is already walking to, kept if that one is the attacker.
+     */
+    private fun retaliate(player: Player, current: Npc?): GatherStatus? {
+        if (!player.isPlayerInCombat()) {
+            return null
+        }
+        val attackers = world.attackers(player)
+        if (attackers.isEmpty() || (current != null && current in attackers)) {
+            return null
+        }
+        val attacker = attackers.minBy { it.coords.chebyshevDistance(player.coords) }
+        return attack(player, attacker, "it attacked first")
+    }
+
+    private fun attack(player: Player, npc: Npc, why: String): GatherStatus {
         lastTarget = npc
+        engaged = false
         targetCombatStamp = npc.vars[LAST_COMBAT]
-        return if (world.opNpc(player, npc, attackOp(npc))) GatherStatus.Working(0) else GatherStatus.NoResource
+        if (!world.opNpc(player, npc, attackOp(npc))) {
+            return GatherStatus.NoResource
+        }
+        focus = "attacking ${npc.type.name} at ${npc.coords.x},${npc.coords.z}: $why"
+        return GatherStatus.Working(0)
     }
 
     private fun reachable(target: Any): Boolean = (attempts[target] ?: 0) < MAX_ATTEMPTS
@@ -619,3 +691,8 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
 }
 
 private fun nameOf(itemId: Int): String = ServerCacheManager.getItem(itemId)?.internalName.orEmpty()
+
+private fun describe(name: String, at: CoordGrid, others: Int, choices: Int): String {
+    val crowd = if (others == 0) "nobody else on it" else "$others other player(s) on it"
+    return "$name at ${at.x},${at.z}: $crowd, best of $choices"
+}

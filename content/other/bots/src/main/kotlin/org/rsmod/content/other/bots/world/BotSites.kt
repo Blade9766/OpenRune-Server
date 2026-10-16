@@ -81,6 +81,8 @@ data class BotSite(
     /** How many supplies to carry; 0 fills the free inventory. */
     @JsonProperty("supply_amount") val supplyAmount: Int = 0,
     val kit: StarterKit? = null,
+    /** Wayfinder destination key a stray bot asks for; blank picks the bot-allowed one nearest the bank. */
+    val wayfinder: String = "",
     /** Slayer: the tasks this site can work; [supplyNpc] is the slayer master. */
     val hunts: List<SlayerHunt> = emptyList(),
 ) {
