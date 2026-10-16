@@ -246,7 +246,12 @@ and it never tries the gate (see the cows hunt in `draynor_slayer`). A bot headi
 home retraces the route it arrived by, so it leaves through the same gate.
 
 Each bot gets a random body type, clothing and colours, seeded by its id so it
-keeps the same look across restarts.
+keeps the same look across restarts. Styles come only from the original
+character-creator ranges; the later ranges hold special models (a mine cart in the
+leg slot).
+
+Bots spawn with full run energy, switch run on at 50% energy and back to walking
+at 15%, so they jog between sites and recover while they work.
 
 ## States
 
