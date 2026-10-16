@@ -110,7 +110,7 @@ object GuildEntrances {
         GuildEntrance(
             name = "Warriors' Guild",
             locs = listOf("loc.warguild_door_front"),
-            inside = { it.x >= 2877 },
+            inside = { it.x <= 2876 },
             canEnter = {
                 it.baseAttackLvl + it.baseStrengthLvl >= 130 ||
                     it.baseAttackLvl >= 99 ||
