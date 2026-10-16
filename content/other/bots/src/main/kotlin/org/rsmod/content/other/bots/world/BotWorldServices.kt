@@ -109,7 +109,7 @@ constructor(
     }
 
     fun walkTo(player: Player, dest: CoordGrid) {
-        if (player.interaction != null && !player.isDelayed) {
+        if ((player.interaction != null || player.weakQueueList.isNotEmpty) && !player.isDelayed) {
             player.clearPendingAction(eventBus)
         }
         player.routeRequest = RouteRequestCoord(dest)
