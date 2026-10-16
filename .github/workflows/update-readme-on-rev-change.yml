@@ -87,9 +87,3 @@ jobs:
           git add README.md game.example.yml
           git commit -m "Sync revision to ${{ steps.determine_rev.outputs.revision }}"
           git push
-
-      - name: Fail if no changes
-        if: steps.update_readme.outputs.changed == 'false' && github.event_name != 'workflow_dispatch'
-        run: |
-          echo "No changes were needed — README already matches the current revision."
-          exit 1
