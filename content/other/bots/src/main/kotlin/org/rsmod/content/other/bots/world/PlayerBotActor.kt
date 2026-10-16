@@ -49,6 +49,14 @@ class PlayerBotActor(
     private var stillTicks = 0
     private var reroutes = 0
     private var gatherBaseline: Map<Int, Int>? = null
+    private var climbing: PendingClimb? = null
+
+    /** A door that walks the bot through and shuts again leaves it standing still on the far side. */
+    private var openedDoor = false
+    private val climbs: Map<CoordGrid, SiteTile> =
+        (site.resourceRoute + site.exchangeRoute + site.supplyRoute + site.returnRoute + site.hunts.flatMap { it.resourceRoute })
+            .filter { it.climb.isNotBlank() }
+            .associateBy { it.toCoords() }
     private val wayfinder = BotWayfinder(player, site, world) { allChains().flatten() + site.bank.center() }
 
     override val inventoryUsed: Int
@@ -95,6 +103,7 @@ class PlayerBotActor(
             arrive(destination)
             return TravelStatus.Arrived
         }
+        exchangeTeleport(destination)?.let { return it }
         if (isOffSite()) {
             resetTravel()
             return recoverOffSite()
@@ -112,9 +121,16 @@ class PlayerBotActor(
             }
             world.walkTo(player, plan.first())
         }
-        while (plan.isNotEmpty() && player.coords.chebyshevDistance(plan.first()) <= WAYPOINT_REACHED) {
-            plan.removeFirst()
-            plan.firstOrNull()?.let { world.walkTo(player, it) }
+        climbing?.let { return climb(it) }
+        while (plan.isNotEmpty() && player.coords.chebyshevDistance(plan.first()) <= reachDistance(plan.first())) {
+            val reached = plan.removeFirst()
+            val next = plan.firstOrNull() ?: break
+            val climb = climbs[reached]
+            if (climb != null && !walkable(reached, next)) {
+                climbing = PendingClimb(reached, climb)
+                return climb(climbing!!)
+            }
+            world.walkTo(player, next)
         }
         if (plan.isEmpty()) {
             if (!isAt(destination)) {
@@ -123,10 +139,16 @@ class PlayerBotActor(
             arrive(destination)
             return TravelStatus.Arrived
         }
+        if (openedDoor && player.interaction == null) {
+            openedDoor = false
+            world.walkTo(player, plan.first())
+            return TravelStatus.Moving
+        }
         if (player.coords == lastCoords) {
             if (++stillTicks >= STUCK_TICKS) {
                 stillTicks = 0
                 if (world.openNearbyDoor(player, DOOR_RADIUS) || world.openNearbyDoor(player, FAR_DOOR_RADIUS)) {
+                    openedDoor = true
                     reroutes++
                     return TravelStatus.Moving
                 }
@@ -141,6 +163,55 @@ class PlayerBotActor(
             stillTicks = 0
             lastCoords = player.coords
         }
+        return TravelStatus.Moving
+    }
+
+    /**
+     * Route tiles with a `climb` are ladders and trapdoors: a bot standing on one whose next
+     * waypoint lies on another level or map square clicks the loc instead of walking, opening a
+     * closed trapdoor first, until the climb has carried it away.
+     */
+    private fun climb(pending: PendingClimb): TravelStatus {
+        if (player.coords.level != pending.from.level || player.coords.chebyshevDistance(pending.from) > CLIMB_DONE) {
+            climbing = null
+            plan.firstOrNull()?.let { world.walkTo(player, it) }
+            return TravelStatus.Moving
+        }
+        if (player.interaction != null) {
+            return TravelStatus.Moving
+        }
+        if (++pending.clicks > MAX_CLIMB_CLICKS) {
+            climbing = null
+            resetTravel()
+            return TravelStatus.Blocked("could not ${pending.tile.op.lowercase()} the ${pending.tile.climb.lowercase()} at ${pending.from.x},${pending.from.z}")
+        }
+        if (!world.climb(player, pending.from, pending.tile.climb, pending.tile.op)) {
+            world.walkTo(player, pending.from)
+        }
+        return TravelStatus.Moving
+    }
+
+    /** A ladder may sit behind a door or wall, so a climb tile only counts once the bot is beside it. */
+    private fun reachDistance(waypoint: CoordGrid): Int =
+        if (waypoint in climbs) CLIMB_REACHED else WAYPOINT_REACHED
+
+    private fun walkable(from: CoordGrid, to: CoordGrid): Boolean =
+        from.level == to.level && from.chebyshevDistance(to) <= OFF_SITE_DISTANCE
+
+    /** A site too far to walk to the exchange teleports there, and back towards its bank after. */
+    private fun exchangeTeleport(destination: BotDestination): TravelStatus? {
+        val teleport = site.exchangeTeleport ?: return null
+        val exchange = site.exchange.center()
+        val nearExchange =
+            player.coords.level == exchange.level && player.coords.chebyshevDistance(exchange) <= TELEPORT_RANGE
+        val landing =
+            when {
+                destination == BotDestination.Exchange && !nearExchange -> teleport.to
+                destination != BotDestination.Exchange && nearExchange -> teleport.back
+                else -> return null
+            }
+        resetTravel()
+        world.teleport(player, landing.toCoords())
         return TravelStatus.Moving
     }
 
@@ -209,7 +280,11 @@ class PlayerBotActor(
             chainTo(BotDestination.Resource),
             chainTo(BotDestination.Exchange),
             chainTo(BotDestination.SupplySource),
+            returnChain(),
         ) + huntChains()
+
+    private fun returnChain(): List<CoordGrid>? =
+        site.exchangeTeleport?.let { teleport -> site.returnRoute.map { it.toCoords() } + teleport.back.toCoords() }
 
     private fun huntChains(): List<List<CoordGrid>> =
         site.hunts.map { hunt -> hunt.resourceRoute.map { it.toCoords() } + hunt.resource.center() }
@@ -269,6 +344,8 @@ class PlayerBotActor(
 
     private fun resetTravel() {
         travelDestination = null
+        climbing = null
+        openedDoor = false
         plan.clear()
         stillTicks = 0
         reroutes = 0
@@ -462,11 +539,19 @@ class PlayerBotActor(
         private const val STUCK_TICKS = 8
         private const val MAX_REROUTES = 5
         private const val OFF_SITE_DISTANCE = 64
+        private const val TELEPORT_RANGE = 30
         private const val FLEE_PERCENT = 50
         private const val RUN_ENERGY_ON = 5000
         private const val RUN_ENERGY_OFF = 1500
         private const val RESTED_PERCENT = 90
         private const val DOOR_RADIUS = 2
         private const val FAR_DOOR_RADIUS = 16
+        private const val CLIMB_DONE = 20
+        private const val CLIMB_REACHED = 1
+        private const val MAX_CLIMB_CLICKS = 10
     }
+}
+
+private class PendingClimb(val from: CoordGrid, val tile: SiteTile) {
+    var clicks = 0
 }

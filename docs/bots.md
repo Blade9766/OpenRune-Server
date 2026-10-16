@@ -117,8 +117,8 @@ random silly one ("Soggy Waffle", "Captn Turnip", ...); names never end in
 | `threshold` | Banked units that trigger a sale (1000-2000) | 1000 |
 | `quantity` | Units listed per sale (1..threshold) | 1000 |
 | `selling` | `on` / `off` | on |
-| `item` | Item to sell; must be gathered at the bot's site and allowed | first site product |
-| `allow` / `disallow` | Explicit sale allow-list | the sale item |
+| `item` | Main item to sell, checked first; must be gathered at the bot's site and allowed | first site product |
+| `allow` / `disallow` | Explicit sale allow-list; `allow all` adds every product of the site | every site product |
 | `refprice` | Configured reference price (`0` = use the market-price service) | unset |
 | `adjust` | % applied to the base price (-50..50) | -1.0 |
 | `minprice` | Minimum acceptable price, **net of tax** | 1 |
@@ -219,6 +219,57 @@ Sites with an `exchange_route` sell by default: bots created there start with
 selling on. A site with no `exchange_route` does not sell: bots created there
 start with selling off and keep their loot in the bank.
 
+Sites too far to walk to the exchange (Catherby, Ardougne, Al Kharid, Zanaris,
+Shilo Village) set `exchange_teleport`: the bot casts a standard-spellbook teleport
+(the spell's animation, graphic and sound; no runes are used) to `to` beside the
+Grand Exchange, lists its items, and teleports to `back` near its bank, walking
+`return_route` (a bank-relative chain ending at `back`) home. Their
+`exchange_route` is just the landing tile, which also marks the site as one that
+sells.
+
+```toml
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
+return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+```
+
+### Bundled sites
+
+| Site | Role | Bank | Gives | Sells by |
+|---|---|---|---|---|
+| `varrock_west_trees` | woodcutting | Varrock West | logs, oak logs | walking |
+| `draynor_willows` | woodcutting (30) | Draynor | willow logs | walking |
+| `edgeville_yews` | woodcutting (60) | Edgeville | yew logs | walking |
+| `varrock_east_mine` | mining | Varrock East | copper, tin, iron ore | walking |
+| `barbarian_village_coal` | mining (30) | Edgeville | coal | walking |
+| `earth_altar` | runecrafting (9) | Varrock East | earth runes | walking |
+| `air_altar` | runecrafting (1) | Falador East | air runes | walking |
+| `mind_altar` | runecrafting (2) | Edgeville | mind runes | walking |
+| `water_altar` | runecrafting (5) | Draynor | water runes | walking |
+| `body_altar` | runecrafting (20) | Edgeville | body runes | walking |
+| `fire_altar` | runecrafting (14) | Al Kharid | fire runes | teleport |
+| `cosmic_altar` | runecrafting (27) | Zanaris | cosmic runes | teleport |
+| `barbarian_village_fly` | fishing | Edgeville | trout, salmon | walking |
+| `draynor_net` | fishing | Draynor | shrimps, anchovies | walking |
+| `catherby_lobsters` | fishing (40) | Catherby | lobsters | teleport |
+| `catherby_swordfish` | fishing (50) | Catherby | tuna, swordfish | teleport |
+| `catherby_sharks` | fishing (76) | Catherby | sharks | teleport |
+| `varrock_tea_stall` | thieving | Varrock East | cups of tea | walking |
+| `ardougne_silk` | thieving (20) | Ardougne South | silk | teleport |
+| `ardougne_gems` | thieving (75) | Ardougne South | uncut gems | teleport |
+| `barbarian_village_fighters` | combat | Edgeville | bones | walking |
+| `falador_cows` | combat | Falador East | cowhides | walking |
+| `falador_chickens` | combat | Falador East | feathers, raw chicken | walking |
+| `draynor_slayer` | slayer (Spria) | Draynor | bones, cowhides | walking |
+| `edgeville_dungeon_slayer` | slayer (Vannaka) | Edgeville | big bones, limpwurt roots | walking |
+
+Runecrafting sites other than `earth_altar` start with 1,000 pure essence in the
+bank and then buy essence on the exchange. Death, blood, law, chaos, astral and
+wrath altars have no site: no bank a bot can walk from reaches them on this
+server (boats, the Wilderness, quest areas or dungeons with unimplemented
+entrances). The nature altar is also missing: from Shilo Village the only way in
+is the rocks shortcut north of the village, which has no handler yet.
+
 Every site can carry a starter kit, applied when a bot is created there and by
 `::bot kit` / Manage > Apply starter kit. It only tops up: items already there
 are not duplicated and higher levels are not lowered.
@@ -257,7 +308,7 @@ Roles:
   through `supply_area`/`supply_route`). With no task, or a finished one, the bot
   walks to the master and is given a task. The site lists a `hunts` entry per
   task it can work: the task's lowercase name, an area, a route from the bank and
-  what to loot. A task without a hunt is handed back and re-rolled (up to 40
+  what to loot. A task without a hunt is handed back and re-rolled (up to 100
   times in a row). The bot attacks whatever the slayer module counts for its task,
   so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
   Interest for Spria) marked complete when they spawn. `draynor_slayer` uses
@@ -267,6 +318,12 @@ Roles:
   past Edgeville (the River Lum blocks the direct way to Varrock). Each hunt's
   route also counts as a way home, so a bot can walk back to the master or bank
   from any hunt area.
+  `edgeville_dungeon_slayer` takes tasks from Vannaka in Edgeville Dungeon (down the
+  trapdoor south of Edgeville bank, north past the giant spiders and through the
+  gate at 3103,9909) and hunts hill giants, reached through the brass-key house
+  north of Barbarian Village and its ladder; its kit carries the brass key as a
+  tool. Moss giants are only reachable through the pipe shortcut, so that task is
+  re-rolled.
 
 Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving) run
 to the bank when something drops them below 50% Hitpoints and rest there until
@@ -283,6 +340,16 @@ tiles away, so a closer one is ticked off through the fence), and a resource are
 that lies wholly inside the fence; otherwise the pathfinder parks the bot outside
 and it never tries the gate (see the cows hunt in `draynor_slayer`). A bot heading
 home retraces the route it arrived by, so it leaves through the same gate.
+
+Routes can go up and down ladders and trapdoors. A waypoint with `climb` (the loc's
+name) and `op` (its option) is used whenever the next waypoint is on another level
+or more than 64 tiles away: the bot clicks the nearest such loc within three tiles,
+clicking "Open" first on a closed trapdoor. Put a climb on the tile on each side,
+so a bot walking the route in either direction climbs back the way it came:
+
+```toml
+resource_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3100, z = 9852 }]
+```
 
 Each bot gets a random body type, clothing and colours, seeded by its id so it
 keeps the same look across restarts. Styles come only from the original
@@ -324,8 +391,13 @@ to `ERROR` without auto-recovery.
 
 ## Selling and pricing
 
-At the bank, once the sale item's banked count reaches the threshold, the bot
-withdraws `quantity` as notes, walks to the exchange and lists them. Price:
+At the bank, every allowed item whose banked count has reached the threshold
+(1,000 by default) and has no listing open yet is due: the bot withdraws
+`quantity` of each as notes (as many items as it has free exchange slots), walks
+to the exchange and lists them one after another. A bot at a site with several
+products (trout and salmon, tuna and swordfish, gems) therefore sells each of
+them once it has 1,000 banked. Bots created before this change only allow their
+first product; `::bot set <bot> allow all` lets them sell the rest. Price:
 
 1. Volume-weighted average of recent exchange trades, if reliable (enough
    trades and volume in the window, outliers more than 50% from the median
@@ -409,7 +481,8 @@ aborts, sales, errors, spawns) and `bots.admin` (who changed what).
   be compiled or run in the environment it was written in; `core/`, the file
   store, the exchange adapter and the Grand Exchange book were compiled and
   unit-tested. Expect a first in-game shakedown.
-- Every bundled site ran in game on 2026-10-15; walk any new site first. Doors and
+- Every bundled site ran in game on 2026-10-15, and the sites added on 2026-10-16
+  each completed a gather and bank trip in game; walk any new site first. Doors and
   gates are only opened when the bot gets stuck right next to one; this was seen
   working on the Lumbridge cow field gate (`draynor_slayer` cows) on 2026-10-15,
   as was the `draynor_slayer` exchange route.

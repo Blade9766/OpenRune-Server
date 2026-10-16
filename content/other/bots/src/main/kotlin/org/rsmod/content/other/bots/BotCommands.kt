@@ -69,7 +69,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             BotConfig(
                 role = role,
                 site = site.key,
-                sale = SaleConfig(enabled = site.exchangeRoute.isNotEmpty(), item = product, allowedItems = setOf(product)),
+                sale = SaleConfig(enabled = site.exchangeRoute.isNotEmpty(), item = product, allowedItems = site.allProducts),
             )
         coordinator
             .create(config, name, takenNames())
@@ -107,7 +107,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
         val bot = coordinator.find(args[0]) ?: return player.mes("No bot '${args[0]}'.")
         val key = args[1]
         val value = args.drop(2).joinToString("_")
-        val products = BotSites[bot.config.site]?.products?.toSet().orEmpty()
+        val products = BotSites[bot.config.site]?.allProducts.orEmpty()
         val error =
             try {
                 coordinator.updateConfig(bot.id) { applySetting(it, key, value, products) }
@@ -131,7 +131,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "selling" -> config.copy(sale = sale.copy(enabled = value == "on"))
             "item" -> config.copy(sale = sale.copy(item = productOrThrow(value, products)))
             "allow" -> {
-                val allowed = sale.allowedItems + productOrThrow(value, products)
+                val allowed = sale.allowedItems + if (value == "all") products else setOf(productOrThrow(value, products))
                 config.copy(sale = sale.copy(allowedItems = allowed))
             }
             "disallow" -> config.copy(sale = sale.copy(allowedItems = sale.allowedItems - objName(value)))

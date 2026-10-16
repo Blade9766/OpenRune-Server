@@ -12,7 +12,15 @@ import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.map.CoordGrid
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class SiteTile(val x: Int = 0, val z: Int = 0, val level: Int = 0) {
+data class SiteTile(
+    val x: Int = 0,
+    val z: Int = 0,
+    val level: Int = 0,
+    /** A ladder or trapdoor (display name) the bot uses here to reach the next waypoint. */
+    val climb: String = "",
+    /** The [climb] loc's option, such as `Climb-down`. */
+    val op: String = "",
+) {
     fun toCoords(): CoordGrid = CoordGrid(x, z, level)
 }
 
@@ -85,10 +93,22 @@ data class BotSite(
     val wayfinder: String = "",
     /** Slayer: the tasks this site can work; [supplyNpc] is the slayer master. */
     val hunts: List<SlayerHunt> = emptyList(),
+    /** Sites too far to walk to the exchange teleport there and back instead. */
+    @JsonProperty("exchange_teleport") val exchangeTeleport: SiteTeleport? = null,
+    /** From the bank to where [exchangeTeleport] lands on the way back. */
+    @JsonProperty("return_route") val returnRoute: List<SiteTile> = emptyList(),
 ) {
     val roleType: BotRoleType?
         get() = BotRoleType.of(role)
+
+    /** Everything a bot may gather here, slayer hunt loot included. */
+    val allProducts: Set<String>
+        get() = (products + hunts.flatMap { it.products }).toSet()
 }
+
+/** Where a site's exchange teleport lands: [to] by the exchange, [back] near the site's bank. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class SiteTeleport(val to: SiteTile = SiteTile(), val back: SiteTile = SiteTile())
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 private data class BotSiteFile(@JsonProperty("site") val sites: List<BotSite> = emptyList())

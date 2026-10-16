@@ -126,3 +126,252 @@ target_op = 1
 tools = ["obj.net"]
 resource_route = []
 exchange_route = [{ x = 3104, z = 3262 }, { x = 3108, z = 3290 }, { x = 3108, z = 3320 }, { x = 3083, z = 3330 }, { x = 3077, z = 3358 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "draynor_willows"
+role = "woodcutting"
+description = "Willows by the Draynor shore, banking at Draynor"
+resource = { x = 3086, z = 3232, radius = 6 }
+bank = { x = 3092, z = 3243, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.willow_logs"]
+kit = { inv = [{ item = "obj.mithril_axe" }], levels = { woodcutting = 30, attack = 10, strength = 10, defence = 15, hitpoints = 20 } }
+resource_route = []
+exchange_route = [{ x = 3104, z = 3262 }, { x = 3108, z = 3290 }, { x = 3108, z = 3320 }, { x = 3083, z = 3330 }, { x = 3077, z = 3358 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_yews"
+role = "woodcutting"
+description = "Yews south of Edgeville bank, a short walk from the Grand Exchange"
+resource = { x = 3087, z = 3475, radius = 8 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.yew_logs"]
+kit = { inv = [{ item = "obj.rune_axe" }], levels = { woodcutting = 60 } }
+resource_route = [{ x = 3092, z = 3484 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "barbarian_village_coal"
+role = "mining"
+description = "Coal at the Barbarian Village mine, banking at Edgeville"
+resource = { x = 3081, z = 3421, radius = 4 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.coal"]
+kit = { inv = [{ item = "obj.adamant_pickaxe" }], levels = { mining = 31, attack = 35, strength = 35, defence = 35, hitpoints = 35 } }
+resource_route = [{ x = 3094, z = 3470 }, { x = 3092, z = 3445 }, { x = 3084, z = 3426 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "catherby_lobsters"
+role = "fishing"
+description = "Lobsters by cage on the Catherby shore, banking at Catherby"
+resource = { x = 2848, z = 3428, radius = 10 }
+bank = { x = 2809, z = 3440, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.raw_lobster"]
+kit = { inv = [{ item = "obj.lobster_pot" }], levels = { fishing = 40 } }
+targets = ["content.cage_harpoon_fishing_spot"]
+target_op = 1
+tools = ["obj.lobster_pot"]
+resource_route = [{ x = 2825, z = 3436 }, { x = 2840, z = 3432 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
+return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+
+[[site]]
+key = "catherby_swordfish"
+role = "fishing"
+description = "Tuna and swordfish by harpoon on the Catherby shore, banking at Catherby"
+resource = { x = 2848, z = 3428, radius = 10 }
+bank = { x = 2809, z = 3440, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.raw_swordfish", "obj.raw_tuna"]
+kit = { inv = [{ item = "obj.harpoon" }], levels = { fishing = 50 } }
+targets = ["content.cage_harpoon_fishing_spot"]
+target_op = 3
+tools = ["obj.harpoon"]
+resource_route = [{ x = 2825, z = 3436 }, { x = 2840, z = 3432 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
+return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+
+[[site]]
+key = "catherby_sharks"
+role = "fishing"
+description = "Sharks by harpoon on the Catherby shore, banking at Catherby"
+resource = { x = 2852, z = 3426, radius = 10 }
+bank = { x = 2809, z = 3440, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.raw_shark"]
+kit = { inv = [{ item = "obj.harpoon" }], levels = { fishing = 76 } }
+targets = ["content.big_net_harpoon_fishing_spot"]
+target_op = 3
+tools = ["obj.harpoon"]
+resource_route = [{ x = 2825, z = 3436 }, { x = 2840, z = 3432 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
+return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+
+[[site]]
+key = "ardougne_silk"
+role = "thieving"
+description = "Silk from the stalls in Ardougne market, banking at Ardougne south"
+resource = { x = 2659, z = 3308, radius = 8 }
+bank = { x = 2655, z = 3285, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.silk"]
+kit = { levels = { thieving = 20 } }
+targets = ["loc.silkthiefstall"]
+target_op = 2
+resource_route = [{ x = 2660, z = 3296 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2661, z = 3300 } }
+return_route = [{ x = 2660, z = 3296 }]
+
+[[site]]
+key = "ardougne_gems"
+role = "thieving"
+description = "Uncut gems from the gem stall in Ardougne market, banking at Ardougne south"
+resource = { x = 2665, z = 3304, radius = 4 }
+bank = { x = 2655, z = 3285, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.uncut_sapphire", "obj.uncut_emerald", "obj.uncut_ruby", "obj.uncut_diamond"]
+kit = { levels = { thieving = 75 } }
+targets = ["loc.gemthiefstall"]
+target_op = 2
+resource_route = [{ x = 2660, z = 3296 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2661, z = 3300 } }
+return_route = [{ x = 2660, z = 3296 }]
+
+[[site]]
+key = "falador_cows"
+role = "combat"
+description = "Cows in the farm south-east of Falador for cowhides, banking at Falador East"
+resource = { x = 3032, z = 3305, radius = 7 }
+bank = { x = 3013, z = 3356, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.cow_hide"]
+kit = { worn = [{ item = "obj.iron_scimitar" }], levels = { attack = 20, strength = 20, defence = 20, hitpoints = 25 } }
+targets = ["name:Cow"]
+target_op = 2
+resource_route = [{ x = 3030, z = 3345 }, { x = 3031, z = 3317 }, { x = 3031, z = 3309 }]
+exchange_route = [{ x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "falador_chickens"
+role = "combat"
+description = "Chickens in the farm south-east of Falador for feathers, banking at Falador East"
+resource = { x = 3017, z = 3293, radius = 3 }
+bank = { x = 3013, z = 3356, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.feather", "obj.raw_chicken"]
+kit = { worn = [{ item = "obj.iron_scimitar" }], levels = { attack = 10, strength = 10, defence = 10, hitpoints = 15 } }
+targets = ["name:Chicken"]
+target_op = 2
+resource_route = [{ x = 3030, z = 3345 }, { x = 3020, z = 3322 }, { x = 3019, z = 3309 }, { x = 3019, z = 3301 }]
+exchange_route = [{ x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "air_altar"
+role = "runecrafting"
+description = "Air runes at the ruins south of Falador, banking at Falador East"
+resource = { x = 2985, z = 3293, radius = 6 }
+bank = { x = 3013, z = 3356, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.airrune"]
+kit = { worn = [{ item = "obj.tiara_air" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 1 } }
+altar_loc = "loc.air_altar"
+resource_route = [{ x = 3030, z = 3345 }, { x = 3020, z = 3318 }, { x = 2998, z = 3302 }]
+exchange_route = [{ x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "mind_altar"
+role = "runecrafting"
+description = "Mind runes at the ruins west of Ice Mountain, banking at Edgeville"
+resource = { x = 2982, z = 3513, radius = 6 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.mindrune"]
+kit = { worn = [{ item = "obj.tiara_mind" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 2 } }
+altar_loc = "loc.mind_altar"
+resource_route = [{ x = 3094, z = 3470 }, { x = 3088, z = 3445 }, { x = 3074, z = 3436 }, { x = 3060, z = 3438 }, { x = 3045, z = 3440 }, { x = 3030, z = 3442 }, { x = 3018, z = 3446 }, { x = 3005, z = 3452 }, { x = 2996, z = 3461 }, { x = 2987, z = 3476 }, { x = 2984, z = 3490 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "water_altar"
+role = "runecrafting"
+description = "Water runes at the ruins in Lumbridge Swamp, banking at Draynor"
+resource = { x = 3184, z = 3165, radius = 6 }
+bank = { x = 3092, z = 3243, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.waterrune"]
+kit = { worn = [{ item = "obj.tiara_water" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 5, attack = 10, strength = 10, defence = 15, hitpoints = 20 } }
+altar_loc = "loc.water_altar"
+resource_route = [{ x = 3105, z = 3240 }, { x = 3125, z = 3215 }, { x = 3150, z = 3190 }, { x = 3172, z = 3170 }]
+exchange_route = [{ x = 3104, z = 3262 }, { x = 3108, z = 3290 }, { x = 3108, z = 3320 }, { x = 3083, z = 3330 }, { x = 3077, z = 3358 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "fire_altar"
+role = "runecrafting"
+description = "Fire runes at the ruins north of the Emir's Arena, banking at Al Kharid"
+resource = { x = 3312, z = 3253, radius = 6 }
+bank = { x = 3270, z = 3167, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.firerune"]
+kit = { worn = [{ item = "obj.tiara_fire" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 14 } }
+altar_loc = "loc.fire_altar"
+resource_route = [{ x = 3278, z = 3180 }, { x = 3290, z = 3210 }, { x = 3303, z = 3238 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 3278, z = 3172 } }
+return_route = []
+
+[[site]]
+key = "body_altar"
+role = "runecrafting"
+description = "Body runes at the ruins west of Edgeville, banking at Edgeville"
+resource = { x = 3053, z = 3445, radius = 6 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.bodyrune"]
+kit = { worn = [{ item = "obj.tiara_body" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 20 } }
+altar_loc = "loc.body_altar"
+resource_route = [{ x = 3094, z = 3470 }, { x = 3075, z = 3456 }, { x = 3060, z = 3448 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "cosmic_altar"
+role = "runecrafting"
+description = "Cosmic runes at the ruins in Zanaris, banking at Zanaris"
+resource = { x = 2408, z = 4378, radius = 6 }
+bank = { x = 2381, z = 4455, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.cosmicrune"]
+kit = { worn = [{ item = "obj.tiara_cosmic" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 27 } }
+altar_loc = "loc.cosmic_altar"
+resource_route = [{ x = 2386, z = 4449 }, { x = 2390, z = 4440 }, { x = 2398, z = 4435 }, { x = 2405, z = 4410 }, { x = 2399, z = 4396 }, { x = 2404, z = 4388 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2386, z = 4449 } }
+return_route = []
+
+[[site]]
+key = "edgeville_dungeon_slayer"
+role = "slayer"
+description = "Slayer tasks from Vannaka in Edgeville Dungeon; hill giants for big bones"
+resource = { x = 3113, z = 9838, radius = 8 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.big_bones", "obj.limpwurt_root"]
+kit = { inv = [{ item = "obj.edgevilledungeonkey" }], worn = [{ item = "obj.adamant_scimitar" }], bank = [{ item = "obj.trout", count = 100 }], levels = { attack = 50, strength = 50, defence = 45, hitpoints = 50 } }
+tools = ["obj.edgevilledungeonkey"]
+supplies = ["obj.shark", "obj.lobster", "obj.swordfish", "obj.salmon", "obj.trout", "obj.bread"]
+supply_amount = 10
+supply_npc = "npc.slayer_master_3"
+supply_area = { x = 3141, z = 9912, radius = 4 }
+supply_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3097, z = 9888 }, { x = 3099, z = 9909 }, { x = 3107, z = 9908 }, { x = 3125, z = 9905 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+hunts = [
+  { task = "hill giants", resource = { x = 3113, z = 9838, radius = 8 }, products = ["obj.big_bones", "obj.limpwurt_root"], resource_route = [{ x = 3094, z = 3470 }, { x = 3104, z = 3450 }, { x = 3115, z = 3446 }, { x = 3115, z = 3451, climb = "Ladder", op = "Climb-down" }, { x = 3116, z = 9851, climb = "Ladder", op = "Climb-up" }] },
+]

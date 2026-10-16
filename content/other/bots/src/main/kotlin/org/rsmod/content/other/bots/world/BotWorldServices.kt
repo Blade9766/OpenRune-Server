@@ -4,6 +4,7 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.types.ObjectServerType
 import jakarta.inject.Inject
 import org.rsmod.api.npc.isInCombat
+import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
@@ -91,8 +92,27 @@ constructor(
         return opLoc(player, loc, type, op)
     }
 
-    private fun openOp(type: ObjectServerType): InteractionOp? =
-        when ((0 until 5).firstOrNull { type.actions.getOpOrNull(it).equals("Open", ignoreCase = true) }) {
+    /**
+     * Clicks [op] on the loc named [name] nearest [at] (a ladder or trapdoor), or "Open" on it when
+     * it is closed and has no [op] yet.
+     */
+    fun climb(player: Player, at: CoordGrid, name: String, op: String): Boolean {
+        val candidates = findLocs(at, CLIMB_RADIUS) { it.name.equals(name, ignoreCase = true) }
+        for (action in listOf(op, "Open")) {
+            val (loc, type) =
+                candidates
+                    .filter { (_, type) -> namedOp(type, action) != null }
+                    .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(at) }
+                    ?: continue
+            return opLoc(player, loc, type, namedOp(type, action)!!)
+        }
+        return false
+    }
+
+    private fun openOp(type: ObjectServerType): InteractionOp? = namedOp(type, "Open")
+
+    private fun namedOp(type: ObjectServerType, action: String): InteractionOp? =
+        when ((0 until 5).firstOrNull { type.actions.getOpOrNull(it).equals(action, ignoreCase = true) }) {
             0 -> InteractionOp.Op1
             1 -> InteractionOp.Op2
             2 -> InteractionOp.Op3
@@ -112,6 +132,18 @@ constructor(
         player.clearPendingAction(eventBus)
         PathingEntityCommon.telejump(player, collision, dest)
     }
+
+    /** Casts a standard-spellbook teleport to [dest], with the spell's animation, graphic and delay. */
+    fun teleport(player: Player, dest: CoordGrid): Boolean =
+        protectedAccess.launch(player) {
+            clearPendingAction()
+            anim(TELEPORT_ANIM)
+            spotanim(TELEPORT_SPOTANIM, height = TELEPORT_SPOTANIM_HEIGHT)
+            soundSynth(TELEPORT_SOUND)
+            delay(TELEPORT_DELAY)
+            telejump(dest, TeleportType.Exempt)
+            anim(TELEPORT_END_ANIM)
+        }
 
     fun walkTo(player: Player, dest: CoordGrid) {
         if ((player.interaction != null || player.weakQueueList.isNotEmpty) && !player.isDelayed) {
@@ -233,6 +265,13 @@ constructor(
         private const val ZONE_SIZE = 8
         private const val ATTACKER_RADIUS = 10
         private const val CLAIM_MARGIN = 4
+        private const val CLIMB_RADIUS = 3
+        private const val TELEPORT_DELAY = 4
+        private const val TELEPORT_ANIM = "seq.human_castteleport"
+        private const val TELEPORT_END_ANIM = "seq.human_castteleport_reverse"
+        private const val TELEPORT_SPOTANIM = "spotanim.teleport_casting"
+        private const val TELEPORT_SPOTANIM_HEIGHT = 92
+        private const val TELEPORT_SOUND = "synth.teleport_all"
     }
 }
 

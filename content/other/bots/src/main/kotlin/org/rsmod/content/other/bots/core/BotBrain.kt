@@ -130,8 +130,7 @@ class BotBrain(
             setActivity("Hourly gathering limit reached")
             return
         }
-        val saleItem = saleItemId()
-        if (saleItem != null && actor.heldNoted(saleItem) > 0) {
+        if (saleItemIds().any { actor.heldNoted(it) > 0 }) {
             val next = if (saleAllowed(now)) BotState.TravelToExchange else BotState.TravelToBank
             transition(next, cycle, "Carrying items for sale")
             return
@@ -279,15 +278,15 @@ class BotBrain(
         record = record.copy(errorRecoveries = 0)
         urgent = true
 
+        if (dueSaleItems(now).isNotEmpty() && !actor.needsRest()) {
+            transition(BotState.PrepareSale, cycle, "Sale threshold reached")
+            return
+        }
         if (!restock(now, cycle)) {
             return
         }
         if (actor.needsRest()) {
             transition(BotState.WaitingForSupplies, cycle, RESTING)
-            return
-        }
-        if (saleDue(now)) {
-            transition(BotState.PrepareSale, cycle, "Sale threshold reached")
             return
         }
         travelTo(gatherTarget, cycle)
@@ -391,8 +390,7 @@ class BotBrain(
         }
         val wanted = record.config.restock.quantity
         val coins = actor.coins()
-        val saleItem = saleItemId()
-        val selling = saleItem != null && hasOpenSale(saleItem)
+        val selling = saleItemIds().any(::hasOpenSale)
         val affordable =
             when {
                 coins >= price.toLong() * wanted -> wanted
@@ -409,7 +407,7 @@ class BotBrain(
 
     /** Takes enough products, below the usual sale threshold if need be, to raise [shortfall] coins. */
     private fun fundSupplies(shortfall: Long, now: Long, cycle: Int): Boolean {
-        val item = saleItemId() ?: return false
+        val item = saleItemIds().maxByOrNull(actor::bankCount)?.takeIf { actor.bankCount(it) > 0 } ?: return false
         if (!saleAllowed(now) || exchange.offers(owner).size > EXCHANGE_SLOTS - 2) {
             return false
         }
@@ -515,27 +513,34 @@ class BotBrain(
     }
 
     private fun prepareSale(now: Long, cycle: Int) {
-        val item = saleItemId()
-        if (item == null || !saleAllowed(now)) {
+        val due = dueSaleItems(now)
+        if (due.isEmpty()) {
             travelTo(gatherTarget, cycle)
             return
         }
-        when (val decision = priceFor(item, now)) {
-            is PriceDecision.Paused -> {
-                pauseSales(decision.reason, now)
-                travelTo(gatherTarget, cycle)
-                return
+        var withdrawn = 0
+        var unpriced: String? = null
+        for (item in due) {
+            when (val decision = priceFor(item, now)) {
+                is PriceDecision.Paused -> {
+                    log.info(record, "not selling item $item: ${decision.reason}")
+                    unpriced = decision.reason
+                    continue
+                }
+                is PriceDecision.List -> {}
             }
-            is PriceDecision.List -> {}
+            val quantity = minOf(record.config.sale.quantity.toLong(), actor.bankCount(item)).toInt()
+            val taken = if (quantity > 0) actor.withdrawNoted(item, quantity) else 0
+            if (taken > 0) {
+                log.info(record, "withdrew $taken x item $item for sale")
+                withdrawn += taken
+            }
         }
-        val quantity = minOf(record.config.sale.quantity.toLong(), actor.bankCount(item)).toInt()
-        val withdrawn = if (quantity > 0) actor.withdrawNoted(item, quantity) else 0
         if (withdrawn <= 0) {
-            log.warn(record, "could not withdraw items for sale")
+            pauseSales(unpriced ?: "could not withdraw items for sale", now)
             travelTo(gatherTarget, cycle)
             return
         }
-        log.info(record, "withdrew $withdrawn x item $item for sale")
         urgent = true
         transition(BotState.TravelToExchange, cycle, "Taking $withdrawn items to the exchange")
     }
@@ -548,6 +553,10 @@ class BotBrain(
         when (listingOutcome) {
             true -> {
                 listingOutcome = null
+                if (saleItemIds().any { actor.held(it) > 0 }) {
+                    setActivity("Listing the next item")
+                    return
+                }
                 if (actor.needsSupplies() && !actor.canWorkWithoutSupplies() && record.config.restock.enabled) {
                     transition(BotState.TravelToBank, cycle, "Waiting for sales to afford supplies")
                 } else {
@@ -563,9 +572,9 @@ class BotBrain(
             null -> {}
         }
         abortStaleOffers(now)
-        val item = saleItemId()
+        val item = saleItemIds().firstOrNull { actor.held(it) > 0 }
         val held = item?.let(actor::held) ?: 0
-        if (item == null || held == 0) {
+        if (item == null) {
             transition(BotState.TravelToBank, cycle, "Nothing to list")
             return
         }
@@ -779,26 +788,28 @@ class BotBrain(
     private fun hasOpenSale(itemId: Int): Boolean =
         exchange.offers(owner).any { it.isOpen && it.sell && it.itemId == itemId }
 
-    private fun saleItemId(): Int? {
+    /** Every item the bot may sell, its main sale item first. */
+    private fun saleItemIds(): List<Int> {
         val sale = record.config.sale
-        if (!sale.enabled || sale.item.isBlank() || sale.item !in sale.allowedItems) {
-            return null
+        if (!sale.enabled) {
+            return emptyList()
         }
-        return items(sale.item)
+        val ordered = listOf(sale.item).filter { it in sale.allowedItems } + sale.allowedItems.sorted()
+        return ordered.distinct().mapNotNull(items)
     }
 
     private fun saleAllowed(now: Long): Boolean =
-        saleItemId() != null && exchange.available && storeHealthy() && now >= record.salePausedUntil
+        saleItemIds().isNotEmpty() && exchange.available && storeHealthy() && now >= record.salePausedUntil
 
-    private fun saleDue(now: Long): Boolean {
-        val item = saleItemId() ?: return false
+    /** Items banked past the sale threshold with no listing open yet, as many as there are free slots. */
+    private fun dueSaleItems(now: Long): List<Int> {
         if (!saleAllowed(now) || record.pendingListing != null) {
-            return false
+            return emptyList()
         }
-        if (hasOpenSale(item) || exchange.freeSlot(owner) == null) {
-            return false
-        }
-        return actor.bankCount(item) >= record.config.sale.threshold
+        val freeSlots = EXCHANGE_SLOTS - exchange.offers(owner).size
+        return saleItemIds()
+            .filter { !hasOpenSale(it) && actor.bankCount(it) >= record.config.sale.threshold }
+            .take(maxOf(freeSlots, 0))
     }
 
     private fun gatherLimitReached(now: Long): Boolean {

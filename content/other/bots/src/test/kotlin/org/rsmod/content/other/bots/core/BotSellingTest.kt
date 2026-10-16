@@ -94,6 +94,45 @@ class BotSellingTest {
     }
 
     @Test
+    fun `every allowed item past the threshold is listed on the same trip`() {
+        val world = BotTestHarness()
+        val config = BotTestHarness.woodcuttingConfig(allowed = setOf("obj.logs", "obj.iron_ore"))
+        val id = world.createBot(config).id
+        world.coordinator.editSave(id) {
+            it.copy(
+                inv = listOf(SavedObj(0, AXE, 1)),
+                bank = listOf(SavedObj(0, LOGS, 1200), SavedObj(1, ORE, 1100)),
+            )
+        }
+        world.coordinator.enable(id)
+        world.coordinator.setMaster(true)
+        world.tickUntil { world.offers(id).size == 2 && world.record(id).pendingListing == null }
+        val listed = world.offers(id).associate { it.itemId to it.total }
+        assertEquals(mapOf(LOGS to 1000, ORE to 1000), listed)
+        assertEquals(1100L - 1000, world.actor(id).bankCount(ORE))
+        assertEquals(0, world.actor(id).held(ORE))
+    }
+
+    @Test
+    fun `an allowed item below the threshold is kept`() {
+        val world = BotTestHarness()
+        val config = BotTestHarness.woodcuttingConfig(allowed = setOf("obj.logs", "obj.iron_ore"))
+        val id = world.createBot(config).id
+        world.coordinator.editSave(id) {
+            it.copy(
+                inv = listOf(SavedObj(0, AXE, 1)),
+                bank = listOf(SavedObj(0, LOGS, 1200), SavedObj(1, ORE, 999)),
+            )
+        }
+        world.coordinator.enable(id)
+        world.coordinator.setMaster(true)
+        world.tickUntil { world.listed(id) }
+        world.tick(200)
+        assertEquals(listOf(LOGS), world.offers(id).map { it.itemId })
+        assertEquals(999L, world.actor(id).bankCount(ORE))
+    }
+
+    @Test
     fun `a sale to a player is collected to the bank exactly once`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)

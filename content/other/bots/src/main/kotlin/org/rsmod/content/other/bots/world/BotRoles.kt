@@ -561,7 +561,10 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
             }
         val npc =
             BotTargeting.pick(free, Random, distance = { it.coords.chebyshevDistance(player.coords) }, crowd = { 0 })
-                ?: return GatherStatus.NoResource
+        if (npc == null) {
+            attempts.clear()
+            return GatherStatus.NoResource
+        }
         return attack(player, npc, "the nearest of ${free.size} free targets")
     }
 
@@ -686,7 +689,7 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
         private const val TASK_VARP = "varp.slayer_target"
         private const val COUNT_VARP = "varp.slayer_count"
         private const val MASTER_QUEST = "quest_porcineofinterest"
-        private const val MAX_REROLLS = 40
+        private const val MAX_REROLLS = 100
     }
 }
 
