@@ -1,0 +1,9 @@
+[clientscript,wayfinder_portrait](npc $npc)
+def_component $p = wayfinder:portrait;
+cc_deleteall($p);
+cc_create($p, ^iftype_model, 0);
+cc_setposition(2, 4, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(32, 32, ^setsize_abs, ^setsize_abs);
+cc_setmodelangle(0, 0, 40, 1882, 0, 2000);
+cc_setnpchead($npc);
+cc_setmodelanim(chatneu1);

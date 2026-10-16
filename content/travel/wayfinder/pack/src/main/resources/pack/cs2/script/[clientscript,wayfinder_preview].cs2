@@ -1,0 +1,14 @@
+[clientscript,wayfinder_preview](graphic $picture, int $objid)
+def_component $p = wayfinder:preview;
+cc_deleteall($p);
+def_int $id = ~wayfinder_box($p, 0, 0, 0, 162, 76, 2);
+if ($picture ! null) {
+    $id = ~wayfinder_icon($p, $id, 1, 1, 160, 74, $picture);
+} else if ($objid >= 0) {
+    cc_create($p, ^iftype_graphic, $id);
+    cc_setposition(51, 8, ^setpos_abs_left, ^setpos_abs_top);
+    cc_setsize(60, 60, ^setsize_abs, ^setsize_abs);
+    cc_setgraphicshadow(0x333333);
+    cc_setoutline(1);
+    cc_setobject_nonum(oc_byid($objid), 1);
+}

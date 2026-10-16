@@ -1,0 +1,16 @@
+[clientscript,wayfinder_teleport_button](int $enabled)
+def_component $b = wayfinder:teleport;
+cc_deleteall($b);
+def_int $style = 0;
+def_int $colour = 0x9f9f9f;
+if ($enabled = 1) {
+    $style = 3;
+    $colour = 0xffd94a;
+}
+def_int $id = ~wayfinder_box($b, 0, 0, 0, 162, 38, $style);
+cc_create($b, ^iftype_graphic, $id);
+cc_setposition(18, 3, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(32, 32, ^setsize_abs, ^setsize_abs);
+cc_setgraphicshadow(0x333333);
+cc_setobject_nonum(lawrune, 1);
+$id = ~wayfinder_label($b, calc($id + 1), 48, 0, 104, 38, "Teleport", b12_full, $colour, ^settextalign_centre);

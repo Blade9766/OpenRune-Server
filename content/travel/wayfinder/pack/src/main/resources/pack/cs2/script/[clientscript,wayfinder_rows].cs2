@@ -1,0 +1,67 @@
+[clientscript,wayfinder_rows](string $rows, int $selected, int $resetscroll, string $empty)
+def_component $list = wayfinder:list;
+cc_deleteall($list);
+def_int $width = if_getwidth($list);
+def_int $row = 0;
+def_int $y = 0;
+def_int $id = 0;
+def_int $start = 0;
+def_int $end = string_indexof_string($rows, "|", 0);
+def_int $comma = 0;
+def_int $objid = -1;
+def_boolean $parsed = false;
+def_boolean $favourite = false;
+def_int $colour = 0xffffff;
+def_int $style = 0;
+def_string $entry = "";
+def_string $name = "";
+// Rows are "<obj id>,<favourite 0/1>,<label>|". Row r clicks on component 2r and its star on
+// 2r+1; the drawing uses ids from 1000 up so it never shares an id with a click target.
+while ($end >= 0) {
+    $entry = substring($rows, $start, $end);
+    $comma = string_indexof_string($entry, ",", 0);
+    $objid, $parsed = safeparseint(substring($entry, 0, $comma));
+    $favourite = false;
+    if (compare(substring($entry, calc($comma + 1), calc($comma + 2)), "1") = 0) {
+        $favourite = true;
+    }
+    $name = substring($entry, calc($comma + 3), string_length($entry));
+    $y = calc($row * 28);
+    $id = calc(1000 + $row * 16);
+    $style = 0;
+    $colour = 0xffffff;
+    if ($row = $selected) {
+        $style = 1;
+        $colour = 0xffff00;
+    }
+    $id = ~wayfinder_box($list, $id, 0, $y, $width, 26, $style);
+    if ($parsed = true & $objid >= 0) {
+        cc_create($list, ^iftype_graphic, $id);
+        cc_setposition(3, calc($y + 1), ^setpos_abs_left, ^setpos_abs_top);
+        cc_setsize(32, 24, ^setsize_abs, ^setsize_abs);
+        cc_setgraphicshadow(0x333333);
+        cc_setoutline(1);
+        cc_setobject_nonum(oc_byid($objid), 1);
+        $id = calc($id + 1);
+    }
+    $id = ~wayfinder_label($list, $id, 38, $y, calc($width - 62), 26, $name, p12_full, $colour, ^settextalign_left);
+    if ($favourite = true) {
+        $id = ~wayfinder_icon($list, $id, calc($width - 21), calc($y + 5), 16, 16, "worldswitcher_stars,1");
+        ~wayfinder_hotspot($list, calc($row * 2 + 1), calc($width - 23), calc($y + 3), 20, 20, "Unfavourite", $name);
+    } else {
+        $id = ~wayfinder_icon($list, $id, calc($width - 21), calc($y + 5), 16, 16, "worldswitcher_stars,0");
+        ~wayfinder_hotspot($list, calc($row * 2 + 1), calc($width - 23), calc($y + 3), 20, 20, "Favourite", $name);
+    }
+    ~wayfinder_hotspot($list, calc($row * 2), 0, $y, calc($width - 24), 26, "Select", $name);
+    $row = calc($row + 1);
+    $start = calc($end + 1);
+    $end = string_indexof_string($rows, "|", $start);
+}
+if ($row = 0) {
+    $id = ~wayfinder_label($list, 1000, 4, 8, calc($width - 8), 40, $empty, p11_full, 0x9f9f9f, ^settextalign_centre);
+}
+if_setscrollsize(0, calc($row * 28), $list);
+if ($resetscroll = 1) {
+    if_setscrollpos(0, 0, $list);
+}
+~scrollbar_vertical(wayfinder:scrollbar, $list, "scrollbar_dragger_v2,3", "scrollbar_dragger_v2,0", "scrollbar_dragger_v2,1", "scrollbar_dragger_v2,2", "scrollbar_v2,0", "scrollbar_v2,1");

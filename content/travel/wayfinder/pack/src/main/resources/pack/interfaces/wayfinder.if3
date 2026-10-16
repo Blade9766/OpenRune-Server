@@ -12,70 +12,13 @@ height = 334
 no_click_through = true
 
 [[component]]
-name = "categories_box"
-type = "layer"
-x = 10
-y = 42
-width = 142
-height = 282
-
-[[component]]
-name = "categories"
-type = "layer"
-x = 12
-y = 44
-width = 138
-height = 278
-
-[[component]]
-name = "search"
-type = "layer"
-x = 158
-y = 42
-width = 186
-height = 22
-options = ["Search"]
-
-[[component]]
-name = "list_box"
-type = "layer"
-x = 158
-y = 68
-width = 168
-height = 256
-
-[[component]]
-name = "list"
-type = "layer"
-x = 160
-y = 70
-width = 164
-height = 252
-
-[[component]]
-name = "scrollbar"
-type = "layer"
-x = 328
-y = 68
-width = 16
-height = 256
-
-[[component]]
-name = "details_box"
-type = "layer"
-x = 350
-y = 42
-width = 152
-height = 282
-
-[[component]]
-name = "detail_name"
+name = "title"
 type = "text"
-x = 356
-y = 46
-width = 140
-height = 20
-text = ""
+x = 96
+y = 5
+width = 320
+height = 16
+text = "WAYFINDER TELEPORTS"
 font = "bold"
 h_align = "center"
 v_align = "center"
@@ -83,81 +26,307 @@ color = "#FF981F"
 text_shadow = true
 
 [[component]]
-name = "detail_category"
+name = "subtitle"
 type = "text"
-x = 356
-y = 66
-width = 140
-height = 14
-text = ""
+x = 96
+y = 20
+width = 320
+height = 12
+text = "OpenRune"
 font = "small"
 h_align = "center"
+v_align = "center"
+color = "#FFB83F"
+text_shadow = true
+
+[[component]]
+name = "panels"
+type = "layer"
+width = 512
+height = 334
+
+[[component]]
+name = "categories"
+type = "layer"
+x = 12
+y = 64
+width = 114
+height = 222
+
+[[component]]
+name = "search"
+type = "layer"
+x = 138
+y = 44
+width = 184
+height = 20
+
+[[component]]
+name = "searchtext"
+type = "text"
+x = 158
+y = 44
+width = 160
+height = 20
+text = "Search destinations..."
+options = ["Search"]
+font = "small"
+h_align = "left"
 v_align = "center"
 color = "#9F9F9F"
 text_shadow = true
 
 [[component]]
-name = "detail_danger"
+name = "heading"
 type = "text"
-x = 356
-y = 82
-width = 140
-height = 28
+x = 144
+y = 68
+width = 176
+height = 18
 text = ""
-font = "small"
-h_align = "center"
+font = "bold"
+h_align = "left"
 v_align = "center"
-line_height = 12
-color = "#FFFFFF"
+color = "#FF981F"
 text_shadow = true
 
 [[component]]
-name = "detail_desc"
-type = "text"
-x = 356
-y = 112
-width = 140
-height = 84
-text = ""
-font = "small"
-h_align = "center"
-v_align = "center"
-line_height = 12
-color = "#FFFFFF"
-text_shadow = true
-
-[[component]]
-name = "detail_reqs"
-type = "text"
-x = 356
-y = 198
-width = 140
-height = 58
-text = ""
-font = "small"
-h_align = "center"
-v_align = "center"
-line_height = 12
-color = "#FFFFFF"
-text_shadow = true
-
-[[component]]
-name = "favourite"
+name = "list"
 type = "layer"
-x = 357
-y = 262
-width = 138
-height = 22
-options = ["Favourite"]
+x = 138
+y = 90
+width = 166
+height = 196
+
+[[component]]
+name = "scrollbar"
+type = "layer"
+x = 306
+y = 90
+width = 16
+height = 196
+
+[[component]]
+name = "details_name"
+type = "text"
+x = 337
+y = 44
+width = 162
+height = 18
+text = ""
+font = "bold"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+text_shadow = true
+
+[[component]]
+name = "preview"
+type = "layer"
+x = 336
+y = 66
+width = 162
+height = 76
+
+[[component]]
+name = "details_desc"
+type = "text"
+x = 337
+y = 144
+width = 162
+height = 24
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+line_height = 12
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "details_tags"
+type = "text"
+x = 337
+y = 168
+width = 162
+height = 13
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#FF981F"
+text_shadow = true
+
+[[component]]
+name = "label_arrival"
+type = "text"
+x = 337
+y = 188
+width = 74
+height = 13
+text = "Arrival:"
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#9F9F9F"
+text_shadow = true
+
+[[component]]
+name = "value_arrival"
+type = "text"
+x = 411
+y = 188
+width = 88
+height = 13
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "label_reqs"
+type = "text"
+x = 337
+y = 201
+width = 74
+height = 13
+text = "Requirements:"
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#9F9F9F"
+text_shadow = true
+
+[[component]]
+name = "value_reqs"
+type = "text"
+x = 411
+y = 201
+width = 88
+height = 13
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "label_danger"
+type = "text"
+x = 337
+y = 214
+width = 74
+height = 13
+text = "Danger:"
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#9F9F9F"
+text_shadow = true
+
+[[component]]
+name = "value_danger"
+type = "text"
+x = 411
+y = 214
+width = 88
+height = 13
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+text_shadow = true
+
+[[component]]
+name = "label_cost"
+type = "text"
+x = 337
+y = 227
+width = 74
+height = 13
+text = "Cost:"
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#9F9F9F"
+text_shadow = true
+
+[[component]]
+name = "value_cost"
+type = "text"
+x = 411
+y = 227
+width = 88
+height = 13
+text = ""
+font = "small"
+h_align = "left"
+v_align = "center"
+color = "#FFFFFF"
+text_shadow = true
 
 [[component]]
 name = "teleport"
 type = "layer"
-x = 357
-y = 290
-width = 138
-height = 28
+x = 336
+y = 246
+width = 162
+height = 38
 options = ["Teleport"]
+
+[[component]]
+name = "view_all"
+type = "layer"
+x = 10
+y = 296
+width = 112
+height = 26
+options = ["All destinations"]
+
+[[component]]
+name = "view_favourites"
+type = "layer"
+x = 126
+y = 296
+width = 92
+height = 26
+options = ["Favourites"]
+
+[[component]]
+name = "view_recent"
+type = "layer"
+x = 222
+y = 296
+width = 84
+height = 26
+options = ["Recent"]
+
+[[component]]
+name = "footer"
+type = "text"
+x = 316
+y = 296
+width = 152
+height = 26
+text = "Transport provided by the Wayfinder mages"
+font = "small"
+h_align = "center"
+v_align = "center"
+line_height = 12
+color = "#C8B48C"
+text_shadow = true
+
+[[component]]
+name = "portrait"
+type = "layer"
+x = 470
+y = 288
+width = 36
+height = 36
 
 [[component]]
 name = "popup"

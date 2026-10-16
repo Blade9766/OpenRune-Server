@@ -1,0 +1,6 @@
+[proc,wayfinder_icon](component $layer, int $id, int $x, int $y, int $w, int $h, graphic $graphic)(int)
+cc_create($layer, ^iftype_graphic, $id);
+cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize($w, $h, ^setsize_abs, ^setsize_abs);
+cc_setgraphic($graphic);
+return(calc($id + 1));

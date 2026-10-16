@@ -10,27 +10,48 @@ Two mages run a free teleport network:
 Talk-to explains the network and offers the destinations; Teleport opens the window straight
 away. Both mages share the same destinations.
 
+The mages are built from cache model parts, recoloured: Vaelor is the long-bearded wizard body in a
+trimmed wizard hat, robe and skirt turned purple with gold trim, grey hair and beard, holding the
+crystal staff with its crystal recoloured blue. Elowen is a female body with shoulder-length auburn
+hair in the trimmed wizard set turned teal and dark blue with silver trim, holding the Lunar
+staff (a crescent head) with its orb recoloured cyan. No new 3D models were made, so details the
+concept art adds (pauldrons, rune pouches, robe motifs, particles) are not there.
+
 ## Modules
 
 | Path | What |
 |---|---|
 | `content/travel/wayfinder` | Registry, `WayfinderTravel` service, NPC/interface script, favourites/recents |
-| `content/travel/wayfinder/pack` | NPC configs, varps, `interface.wayfinder` (1108), CS2, the destination dbtable |
+| `content/travel/wayfinder/pack` | NPC configs, view varbits, `interface.wayfinder` (1108), CS2, the destination dbtable, sprites |
 | `.data/raw-cache/map/npcs/{edgeville,lumbridge}.toml` | The two spawns |
 
 ## The teleport window
 
-`interface.wayfinder` (512x334, steel border): categories on the left (Favourites, Recent, Towns
-& Cities, Skilling, Dungeons, Slayer, Bosses, Minigames & Activities, Wilderness, and Search results
-after a search), a scrolling destination list, and a details panel with the description, danger
-level, Wilderness level, quest requirement (green when met, red when not), an Add/Remove favourite
-button and the Teleport button. Search opens a chatbox prompt over the window and matches names,
-keys and keywords.
+`interface.wayfinder` (512x334) follows the menu design: "WAYFINDER TELEPORTS" over "OpenRune" in
+the steel frame, and three columns.
 
-The client only ever sends a row index; the server rebuilds the rows from the registry and the
-player's view varbits (`varbit.wayfinder_category`, `varbit.wayfinder_selected`, temp) and maps the
-index back itself. Favourites (`varp.wayfinder_favourites_1..4`, one bit per destination slot) and
-the last four destinations (`varp.wayfinder_recent`) are permanent varps.
+- **Categories**: Towns & Cities, Skilling, Dungeons, Slayer, Bosses, Minigames, Wilderness, each a
+  stone button with an icon (custom castle and skull-and-crossbones sprites, otherwise Jagex map
+  icons). The active one is amber with gold edges; Wilderness is red.
+- **Destinations**: a search bar ("Search destinations..."; click it and type, Backspace deletes,
+  Delete clears, Enter or Escape stops), a heading naming the view, and a scrolling list. Each row
+  has an item icon, the name (Wilderness rows add the level in red) and a star. Clicking the star
+  only toggles the favourite; it is a separate click target from the row.
+- **Details**: name, location preview, description, activity tags, Arrival / Requirements / Danger
+  / Cost, and the gold Teleport button.
+- **Bottom bar**: All destinations (category lists), Favourites, Recent, the footer and the mage's
+  chathead.
+
+Search narrows whichever view is showing by name, key, tags and keywords; if the selected
+destination drops out of view, the first visible one is selected instead. The client only ever
+sends a row index, a star index or the search text; the server rebuilds the rows itself from the
+registry, the view varbits (`varbit.wayfinder_mode`, `_category`, `_selected`, temp) and the search
+text, and maps the index back.
+
+Favourites and the last 20 completed journeys are saved with the account as lists of destination
+keys (persistent attributes `wayfinder_favourites` / `wayfinder_recent`), so they survive logout
+and restarts, and keys of removed or disabled destinations are skipped and dropped. A destination
+enters Recent only after a successful arrival; travelling there again moves it to the top.
 
 ## Travel rules
 
@@ -47,19 +68,29 @@ A request is checked when it is made and again after the 3-tick cast, right befo
 
 Arrival tiles sit outside dungeon entrances, guild doors and boss lairs, so those gates still apply
 on arrival. Any destination in the Wilderness, in the Wilderness category, or with `danger` 2+ asks
-for confirmation in an overlay first; cancelling leaves the player where they are. The cast plays
-the standard teleport animation and graphic, and the mage faces the player and speaks an incantation.
-Logging out mid-cast cancels it before the player moves. Travel is free.
+for confirmation in an overlay naming the place and the risk; cancelling leaves the player where they
+are. The cast plays the standard teleport animation and graphic, and the mage faces the player and
+speaks an incantation. Travel is free (`cost` 0 on every row).
 
 ## Adding a destination
 
-Add a row in `pack/.../WayfinderDestinationsTable.kt` with `destination(...)`, add its
-`dbrow.wayfinder_<key>` to `src/main/resources/gamevals.toml` (next free id after 61205), then run
-`gradlew buildCache` and `:content:travel:wayfinder:test`. `WayfinderCacheTest` fails if the
-arrival tile is blocked or boxed in, if a quest name doesn't exist, or if a Wilderness row
-lacks a warning or is open to bots. Give the row a new `slot` (1-127); never reuse or renumber one,
-since favourites and recents are saved by slot. To retire a destination, set `enabled = false`.
-No dialogue, interface or bot code changes are needed.
+1. Add a `destination(...)` row in `pack/.../WayfinderDestinationsTable.kt` where it should appear
+   in its category: key, name, category, tile, description, arrival label, tags, icon obj, and
+   optionally danger, warning, quest, bot policy and keywords.
+2. Add `dbrow.wayfinder_<key>` to `src/main/resources/gamevals.toml` (next free id after 61205).
+3. Preview: the picture is sprite `9100 + slot`, where slot is the row's position in the table.
+   Save a 160x74 PNG (at most 255 colours) as `pack/sprites/wayfinder_<key>.png` and list it in
+   `pack/sprites/manifest.toml` as `wayfinder_<key> = <9100 + slot>`. Inserting a row shifts the
+   slots after it, so renumber those manifest lines too.
+   `tools/wayfinder-previews/capture.py` regenerates previews (all, or the keys you pass) by
+   driving a logged-in dev client to each tile through the developer-tools MCP. Without a
+   preview the window shows the row's icon model instead.
+4. Run `gradlew buildCache` and `:content:travel:wayfinder:test`. `WayfinderCacheTest` fails if the
+   arrival tile is blocked or boxed in, a quest or icon doesn't exist, a preview is missing or its
+   id doesn't match the manifest, or a Wilderness row lacks a warning or is open to bots.
+
+Keys are what players' favourites and recents point at, so never rename one; set `enabled = false`
+to retire a destination. No dialogue, interface or bot code changes are needed.
 
 ## Bots
 

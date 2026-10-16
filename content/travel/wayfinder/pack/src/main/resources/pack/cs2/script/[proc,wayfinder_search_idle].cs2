@@ -1,0 +1,6 @@
+[proc,wayfinder_search_idle](component $searchtext)
+if_setop(1, "Search", $searchtext);
+if_setonop("wayfinder_search_op($searchtext)", $searchtext);
+if_setonkey(null, $searchtext);
+~chatdefault_restoreinput;
+~wayfinder_search_text($searchtext, false);

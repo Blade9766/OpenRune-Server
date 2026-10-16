@@ -147,7 +147,7 @@ constructor(
         }
         access.anim(TELEPORT_END_ANIM)
         if (traveller == WayfinderTraveller.Player) {
-            WayfinderPlayerState.addRecent(player, destination.slot)
+            WayfinderPlayerState.addRecent(player, destination.key) { registry[it] != null }
         }
         access.mes("${WayfinderMages.name(mage)}'s magic carries you to ${destination.name}.")
         return WayfinderResult.Arrived

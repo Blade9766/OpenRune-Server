@@ -1,0 +1,4 @@
+[clientscript,wayfinder_views](int $mode)
+~wayfinder_view_button(wayfinder:view_all, 0, $mode, "worldmap_icon,0", "All destinations");
+~wayfinder_view_button(wayfinder:view_favourites, 1, $mode, "worldswitcher_stars,1", "Favourites");
+~wayfinder_view_button(wayfinder:view_recent, 2, $mode, "mapfunction,132", "Recent");

@@ -7,20 +7,20 @@ wayfinder = 1108
 
 [gamevals.clientscript]
 wayfinder_init = 45900
-wayfinder_label = 45903
-wayfinder_draw_list = 45909
+wayfinder_categories = 45903
+wayfinder_views = 45906
+wayfinder_rows = 45909
+wayfinder_preview = 45912
+wayfinder_teleport_button = 45915
+wayfinder_portrait = 45918
 
 [gamevals.varp]
 wayfinder_view = 65320
-wayfinder_recent = 65321
-wayfinder_favourites_1 = 65322
-wayfinder_favourites_2 = 65323
-wayfinder_favourites_3 = 65324
-wayfinder_favourites_4 = 65325
 
 [gamevals.varbit]
 wayfinder_category = 65200
 wayfinder_selected = 65201
+wayfinder_mode = 65202
 
 [gamevals.dbtable]
 wayfinder_destinations = 65420

@@ -1,0 +1,13 @@
+[proc,wayfinder_view_button](component $layer, int $view, int $mode, graphic $icon, string $text)
+cc_deleteall($layer);
+def_int $w = if_getwidth($layer);
+def_int $h = if_getheight($layer);
+def_int $style = 0;
+def_int $colour = 0xff981f;
+if ($view = $mode) {
+    $style = 1;
+    $colour = 0xffff00;
+}
+def_int $id = ~wayfinder_box($layer, 0, 0, 0, $w, $h, $style);
+$id = ~wayfinder_icon($layer, $id, 5, calc(($h - 16) / 2), 16, 16, $icon);
+$id = ~wayfinder_label($layer, $id, 24, 0, calc($w - 26), $h, $text, p11_full, $colour, ^settextalign_left);

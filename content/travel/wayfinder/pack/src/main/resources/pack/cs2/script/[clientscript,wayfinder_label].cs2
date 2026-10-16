@@ -1,2 +1,0 @@
-[clientscript,wayfinder_label](component $component, string $label, int $colour)
-~wayfinder_button($component, $label, $colour);

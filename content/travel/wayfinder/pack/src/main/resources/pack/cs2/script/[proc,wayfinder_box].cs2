@@ -1,0 +1,24 @@
+[proc,wayfinder_box](component $layer, int $id, int $x, int $y, int $w, int $h, int $style)(int)
+// Styles: 0 raised stone, 1 selected (amber with gold edges), 2 inset panel, 3 gold button.
+cc_create($layer, ^iftype_rectangle, $id);
+cc_setposition(calc($x + 2), calc($y + 2), ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(calc($w - 4), calc($h - 4), ^setsize_abs, ^setsize_abs);
+cc_setfill(true);
+if ($style = 1) {
+    cc_setcolour(0x5c3d10);
+} else if ($style = 2) {
+    cc_setcolour(0x221d16);
+} else if ($style = 3) {
+    cc_setcolour(0x8a5c12);
+} else {
+    cc_setcolour(0x3a3226);
+}
+def_int $next = calc($id + 1);
+if ($style = 1 | $style = 3) {
+    $next = ~wayfinder_border($layer, $next, $x, $y, $w, $h, "v2_stone_button_out,8", "v2_stone_button_out,9", "v2_stone_button_out,10", "v2_stone_button_out,11", "v2_stone_button_out,12", "v2_stone_button_out,13", "v2_stone_button_out,14", "v2_stone_button_out,15");
+} else if ($style = 2) {
+    $next = ~wayfinder_border($layer, $next, $x, $y, $w, $h, "v2_stone_button_in,0", "v2_stone_button_in,1", "v2_stone_button_in,2", "v2_stone_button_in,3", "v2_stone_button_in,4", "v2_stone_button_in,5", "v2_stone_button_in,6", "v2_stone_button_in,7");
+} else {
+    $next = ~wayfinder_border($layer, $next, $x, $y, $w, $h, "v2_stone_button,0", "v2_stone_button,1", "v2_stone_button,2", "v2_stone_button,3", "v2_stone_button,4", "v2_stone_button,5", "v2_stone_button,6", "v2_stone_button,7");
+}
+return($next);

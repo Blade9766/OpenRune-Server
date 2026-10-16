@@ -1,0 +1,12 @@
+[proc,wayfinder_search_text](component $searchtext, boolean $typing)
+if (string_length(%settings_search_string) = 0 & $typing = false) {
+    if_setcolour(0x9f9f9f, $searchtext);
+    if_settext("Search destinations...", $searchtext);
+    return;
+}
+if_setcolour(0xffffff, $searchtext);
+if ($typing = true) {
+    if_settext(append(%settings_search_string, "*"), $searchtext);
+} else {
+    if_settext(%settings_search_string, $searchtext);
+}

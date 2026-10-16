@@ -5,8 +5,15 @@ name = "Archmage Vaelor"
 examine = "The Edgeville Wayfinder. Stars seem to drift in the folds of his robes."
 option1 = "Talk-to"
 option3 = "Teleport"
-originalColours = [2340, 14724, 6273, 239]
-modifiedColours = [50846, 50846, 9020, 50846]
+models = [214, 250, 11331, 10979, 10984, 10982, 176, 181, 38312]
+chatheadModels = [52, 82, 11403]
+originalColours = [8741, 25238, 38814, 24, 6798, 0, 99, 398, 280, 6449]
+modifiedColours = [50846, 50846, 50846, 7114, 86, 4626, 43968, 7073, 7114, 7097]
+standAnim = 813
+walkAnim = 1205
+rotateBackAnim = 1206
+walkLeftAnim = 1207
+walkRightAnim = 1208
 wanderRange = 0
 respawnDir = "West"
 
@@ -17,8 +24,15 @@ name = "Arcanist Elowen"
 examine = "The Lumbridge Wayfinder. She smells faintly of rain and old parchment."
 option1 = "Talk-to"
 option3 = "Teleport"
-originalColours = [6273, 14724, 12894, 32635, 9654, 7328]
-modifiedColours = [23058, 23203, 7502, 5388, 7468, 7468]
+models = [393, 437, 11354, 11348, 11359, 11357, 353, 358, 39590]
+chatheadModels = [115, 11407]
+originalColours = [38814, 8741, 25238, 24, 6798, 0, 33300, 6573, 410, 33036, 33676]
+modifiedColours = [43808, 35484, 42644, 103, 2842, 4626, 33760, 103, 103, 7073, 103]
+standAnim = 813
+walkAnim = 1205
+rotateBackAnim = 1206
+walkLeftAnim = 1207
+walkRightAnim = 1208
 timer = 65535
 wanderRange = 0
 respawnDir = "South"
@@ -40,27 +54,9 @@ varp = "varp.wayfinder_view"
 startBit = 4
 endBit = 11
 
-[[varp]]
-id = "varp.wayfinder_recent"
-scope = "Perm"
-transmit = "Never"
+[[varbit]]
+id = "varbit.wayfinder_mode"
+varp = "varp.wayfinder_view"
+startBit = 12
+endBit = 13
 
-[[varp]]
-id = "varp.wayfinder_favourites_1"
-scope = "Perm"
-transmit = "Never"
-
-[[varp]]
-id = "varp.wayfinder_favourites_2"
-scope = "Perm"
-transmit = "Never"
-
-[[varp]]
-id = "varp.wayfinder_favourites_3"
-scope = "Perm"
-transmit = "Never"
-
-[[varp]]
-id = "varp.wayfinder_favourites_4"
-scope = "Perm"
-transmit = "Never"

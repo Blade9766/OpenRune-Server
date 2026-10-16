@@ -1,0 +1,48 @@
+[clientscript,wayfinder_categories](int $selected)
+def_component $c = wayfinder:categories;
+cc_deleteall($c);
+def_int $i = 0;
+def_int $id = 100;
+def_int $y = 0;
+def_int $style = 0;
+def_int $colour = 0xff981f;
+def_string $name = "";
+// Button i clicks on component i; its drawing uses ids from 100 up.
+while ($i < 7) {
+    $y = calc($i * 32);
+    $style = 0;
+    $colour = 0xff981f;
+    if ($i = $selected) {
+        $style = 1;
+        $colour = 0xffff00;
+    }
+    $id = ~wayfinder_box($c, $id, 0, $y, 114, 30, $style);
+    if ($i = 0) {
+        $name = "Towns & Cities";
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 16, 16, wayfinder_icon_castle);
+    } else if ($i = 1) {
+        $name = "Skilling";
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 15, 15, "mapfunction,44");
+    } else if ($i = 2) {
+        $name = "Dungeons";
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 15, 15, "mapfunction,77");
+    } else if ($i = 3) {
+        $name = "Slayer";
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 15, 15, "castle_drakan_room_icons,4");
+    } else if ($i = 4) {
+        $name = "Bosses";
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 15, 15, "mapfunction,76");
+    } else if ($i = 5) {
+        $name = "Minigames";
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 16, 16, "worldswitcher_stars,10");
+    } else {
+        $name = "Wilderness";
+        if ($i ! $selected) {
+            $colour = 0xff3030;
+        }
+        $id = ~wayfinder_icon($c, $id, 6, calc($y + 7), 16, 16, wayfinder_icon_wilderness);
+    }
+    $id = ~wayfinder_label($c, $id, 28, $y, 84, 30, $name, p11_full, $colour, ^settextalign_left);
+    ~wayfinder_hotspot($c, $i, 0, $y, 114, 30, "Select", $name);
+    $i = calc($i + 1);
+}

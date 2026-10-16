@@ -9,6 +9,7 @@ import dev.openrune.map.tile.MapTileDecoder
 import dev.openrune.map.util.InlineByteBuf
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
+import java.io.File
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -45,6 +46,29 @@ class WayfinderCacheTest {
         for (destination in all) {
             assertFalse('|' in destination.name, destination.key)
             assertTrue(destination.description.length <= 90, "${destination.key} description is too long")
+        }
+    }
+
+    @Test
+    fun `towns start in the order the menu design shows`() {
+        val towns = registry.inCategory(WayfinderCategory.Towns).take(8).map { it.name }
+        val expected = listOf("Lumbridge", "Varrock", "Falador", "Edgeville", "Draynor Village", "Al Kharid", "Catherby", "Ardougne")
+        assertEquals(expected, towns)
+    }
+
+    @Test
+    fun `every destination has its details, icon and preview`() {
+        val manifest =
+            File(SPRITES, "manifest.toml").readLines()
+                .mapNotNull { MANIFEST_LINE.matchEntire(it.trim()) }
+                .associate { it.groupValues[1] to it.groupValues[2].toInt() }
+        for (destination in registry.all) {
+            assertTrue(destination.arrival.isNotBlank(), "${destination.key} has no arrival")
+            assertTrue(destination.tags.isNotEmpty(), "${destination.key} has no tags")
+            assertTrue(ServerCacheManager.getItem(destination.icon) != null, "${destination.key} icon ${destination.icon}")
+            val sprite = "wayfinder_${destination.key}"
+            assertEquals(manifest[sprite], destination.preview, "$sprite preview id")
+            assertTrue(File(SPRITES, "$sprite.png").isFile, "$sprite.png is missing")
         }
     }
 
@@ -156,6 +180,9 @@ class WayfinderCacheTest {
     }
 
     companion object {
+        private val SPRITES = File("content/travel/wayfinder/pack/src/main/resources/pack/sprites")
+        private val MANIFEST_LINE = Regex("""(\w+)\s*=\s*(\d+)""")
+
         private const val MIN_ROOM = 20
         private const val ROOM_RADIUS = 6
         private const val LOAD_REACH = 24

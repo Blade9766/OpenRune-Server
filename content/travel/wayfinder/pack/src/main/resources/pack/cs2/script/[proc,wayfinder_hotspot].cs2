@@ -1,0 +1,11 @@
+[proc,wayfinder_hotspot](component $layer, int $id, int $x, int $y, int $w, int $h, string $op, string $name)
+cc_create($layer, ^iftype_rectangle, $id);
+cc_setposition($x, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize($w, $h, ^setsize_abs, ^setsize_abs);
+cc_setfill(true);
+cc_setcolour(0xffffff);
+cc_settrans(255);
+cc_setop(1, $op);
+cc_setopbase(append("<col=ff9040>", $name));
+cc_setonmouseover("wayfinder_hover(event_com, event_comsubid, 225)");
+cc_setonmouseleave("wayfinder_hover(event_com, event_comsubid, 255)");

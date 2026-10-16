@@ -1,0 +1,10 @@
+[clientscript,wayfinder_search_op](component $searchtext)
+~chatdefault_stopinput;
+%settings_search_string = "";
+if_setop(1, "", $searchtext);
+if_setonop(null, $searchtext);
+~wayfinder_search_text($searchtext, true);
+if_setonkey("wayfinder_search_key(event_keycode, event_keychar, $searchtext)", $searchtext);
+if (~on_mobile = true) {
+    ~keyboard_show(0, 50);
+}

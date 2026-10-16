@@ -13,11 +13,11 @@ import org.rsmod.api.table.WayfinderDestinationsRow
 class WayfinderRegistry(private val source: () -> List<WayfinderDestination>) {
     @Inject constructor() : this(::fromCache)
 
-    private val loaded: List<WayfinderDestination> by lazy { validated(source()) }
+    private val loaded: List<WayfinderDestination> by lazy { validated(source()).sortedBy { it.slot } }
     private val byKey: Map<String, WayfinderDestination> by lazy { loaded.associateBy { it.key } }
     private val bySlot: Map<Int, WayfinderDestination> by lazy { loaded.associateBy { it.slot } }
 
-    /** Enabled destinations, in table order. */
+    /** Enabled destinations, in display order. */
     val all: List<WayfinderDestination>
         get() = loaded.filter { it.enabled }
 
@@ -72,6 +72,11 @@ class WayfinderRegistry(private val source: () -> List<WayfinderDestination>) {
                     botAllowed = row.botAllowed,
                     keywords = row.keywords?.split(',')?.map { it.trim().lowercase() }?.filter { it.isNotEmpty() }.orEmpty(),
                     enabled = row.enabled,
+                    arrival = row.arrival,
+                    tags = row.tags.split(',').map { it.trim() }.filter { it.isNotEmpty() },
+                    icon = row.icon.id,
+                    preview = row.preview,
+                    cost = row.cost,
                 )
             }
     }

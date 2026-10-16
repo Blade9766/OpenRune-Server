@@ -28,8 +28,9 @@ enum class WayfinderDanger(val id: Int, val label: String, val colour: String) {
 }
 
 /**
- * One stop on the wayfinder network. [slot] is the destination's permanent number: favourites
- * and recent destinations are saved by it, so it must never be reused or renumbered.
+ * One stop on the wayfinder network. [key] is the stable id player favourites and recent journeys
+ * are saved by; [slot] is the row's display position and only names it while a window is open.
+ * [icon] is an obj id for the list row, [preview] a sprite group id for the details picture.
  */
 data class WayfinderDestination(
     val key: String,
@@ -44,6 +45,11 @@ data class WayfinderDestination(
     val botAllowed: Boolean,
     val keywords: List<String>,
     val enabled: Boolean,
+    val arrival: String = "",
+    val tags: List<String> = emptyList(),
+    val icon: Int = -1,
+    val preview: Int? = null,
+    val cost: Int = 0,
 ) {
     /** Dangerous destinations always ask a player to confirm first. */
     val needsConfirmation: Boolean
@@ -56,6 +62,7 @@ data class WayfinderDestination(
         }
         return name.lowercase().contains(needle) ||
             key.contains(needle.replace(' ', '_')) ||
+            tags.any { it.lowercase().contains(needle) } ||
             keywords.any { it.contains(needle) }
     }
 }
