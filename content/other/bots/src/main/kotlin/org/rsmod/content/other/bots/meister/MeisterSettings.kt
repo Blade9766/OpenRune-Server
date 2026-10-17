@@ -3,17 +3,23 @@ package org.rsmod.content.other.bots.meister
 /**
  * Master Meister's trading knobs. Every value is checked by [validate] before it is stored, so an
  * administrator can never put him in a state the trader does not expect. Buying is the main
- * activity: by default about half of his decisions are purchases and one in ten is a sale.
+ * activity: by default about half of his buy checks place an offer and one in ten sell checks does.
+ * [decisionIntervalSeconds] is the buy check interval (its saved name predates separate sell checks).
+ * With [useRules] on he trades only the items on his buy and sell rule lists.
  */
 data class MeisterSettings(
     val tradingEnabled: Boolean = true,
     val buyingPaused: Boolean = false,
     val sellingPaused: Boolean = false,
     val decisionIntervalSeconds: Int = 90,
+    val sellIntervalSeconds: Int = 90,
     val decisionJitterPercent: Int = 50,
     val buyChancePercent: Int = 55,
     val sellChancePercent: Int = 10,
     val maxActiveOffers: Int = 4,
+    val maxBuyOffers: Int = 3,
+    val maxSellOffers: Int = 2,
+    val useRules: Boolean = false,
     val maxBuyPremiumPercent: Int = 5,
     val standingBidDiscountPercent: Int = 6,
     val sellMarkupPercent: Int = 5,
@@ -41,9 +47,6 @@ data class MeisterSettings(
             if (value !in knob.range) {
                 errors += "${knob.key} must be between ${knob.range.first} and ${knob.range.last}"
             }
-        }
-        if (buyChancePercent + sellChancePercent > 100) {
-            errors += "buy and sell chances add up to more than 100%"
         }
         return errors
     }
@@ -77,11 +80,14 @@ object MeisterKnobs {
 
     val ALL: List<MeisterKnob> =
         listOf(
-            MeisterKnob("interval", "Decision every", "Seconds between his trading decisions, before the random variation.", 10L..3600L, 15, { "${it}s" }, { it.decisionIntervalSeconds.toLong() }, { s, v -> s.copy(decisionIntervalSeconds = v.toInt()) }),
-            MeisterKnob("jitter", "Variation", "How much each wait randomly varies around the interval, so he never trades like clockwork.", 0L..90L, 10, PERCENT, { it.decisionJitterPercent.toLong() }, { s, v -> s.copy(decisionJitterPercent = v.toInt()) }),
-            MeisterKnob("buychance", "Buy chance", "Chance that a decision is a purchase.", 0L..100L, 5, PERCENT, { it.buyChancePercent.toLong() }, { s, v -> s.copy(buyChancePercent = v.toInt()) }),
-            MeisterKnob("sellchance", "Sell chance", "Chance that a decision is a sale. Whatever is left over is doing nothing.", 0L..100L, 5, PERCENT, { it.sellChancePercent.toLong() }, { s, v -> s.copy(sellChancePercent = v.toInt()) }),
-            MeisterKnob("maxoffers", "Max offers", "Most exchange offers he keeps open at once (the exchange has 8 slots).", 1L..8L, 1, { it.toString() }, { it.maxActiveOffers.toLong() }, { s, v -> s.copy(maxActiveOffers = v.toInt()) }),
+            MeisterKnob("interval", "Buy check every", "Seconds between buy checks, before the random variation. Timing only decides when he places offers; fills depend on the exchange's matching.", 10L..3600L, 15, { "${it}s" }, { it.decisionIntervalSeconds.toLong() }, { s, v -> s.copy(decisionIntervalSeconds = v.toInt()) }),
+            MeisterKnob("sellinterval", "Sell check every", "Seconds between sell checks, before the random variation.", 10L..3600L, 15, { "${it}s" }, { it.sellIntervalSeconds.toLong() }, { s, v -> s.copy(sellIntervalSeconds = v.toInt()) }),
+            MeisterKnob("jitter", "Variation", "How much each wait randomly varies around its interval, so he never trades like clockwork.", 0L..90L, 10, PERCENT, { it.decisionJitterPercent.toLong() }, { s, v -> s.copy(decisionJitterPercent = v.toInt()) }),
+            MeisterKnob("buychance", "Buy chance", "Chance that a buy check places an offer; otherwise he does nothing that time.", 0L..100L, 5, PERCENT, { it.buyChancePercent.toLong() }, { s, v -> s.copy(buyChancePercent = v.toInt()) }),
+            MeisterKnob("sellchance", "Sell chance", "Chance that a sell check places an offer; otherwise he does nothing that time.", 0L..100L, 5, PERCENT, { it.sellChancePercent.toLong() }, { s, v -> s.copy(sellChancePercent = v.toInt()) }),
+            MeisterKnob("maxoffers", "Max offers", "Most exchange offers he keeps open at once, buys and sells together (the exchange has 8 slots).", 1L..8L, 1, { it.toString() }, { it.maxActiveOffers.toLong() }, { s, v -> s.copy(maxActiveOffers = v.toInt()) }),
+            MeisterKnob("maxbuys", "Max buy offers", "Most buy offers open at once.", 0L..8L, 1, { it.toString() }, { it.maxBuyOffers.toLong() }, { s, v -> s.copy(maxBuyOffers = v.toInt()) }),
+            MeisterKnob("maxsells", "Max sell offers", "Most sell offers open at once.", 0L..8L, 1, { it.toString() }, { it.maxSellOffers.toLong() }, { s, v -> s.copy(maxSellOffers = v.toInt()) }),
             MeisterKnob("premium", "Max over price", "Most he pays above the reference price for an item someone is selling.", 0L..50L, 1, PERCENT, { it.maxBuyPremiumPercent.toLong() }, { s, v -> s.copy(maxBuyPremiumPercent = v.toInt()) }),
             MeisterKnob("biddiscount", "Bid under price", "How far under the reference price he bids when nobody is selling the item yet.", 0L..50L, 1, PERCENT, { it.standingBidDiscountPercent.toLong() }, { s, v -> s.copy(standingBidDiscountPercent = v.toInt()) }),
             MeisterKnob("markup", "Sell markup", "How far above the reference price he asks when nobody is bidding high enough.", 0L..100L, 1, PERCENT, { it.sellMarkupPercent.toLong() }, { s, v -> s.copy(sellMarkupPercent = v.toInt()) }),
@@ -101,6 +107,7 @@ object MeisterKnobs {
 
     val SWITCHES: List<MeisterSwitch> =
         listOf(
+            MeisterSwitch("rules", "Rule lists only", "On: he trades only the enabled items on his buy and sell lists, at their prices; an empty list means no trading that way. Off: he picks from the whole market with the safeguards below.", { it.useRules }, { s, v -> s.copy(useRules = v) }),
             MeisterSwitch("trading", "Trading", "Master switch: with trading off he places no offers but still collects what his open offers bring in.", { it.tradingEnabled }, { s, v -> s.copy(tradingEnabled = v) }),
             MeisterSwitch("buying", "Buying", "Whether he places new buy offers.", { !it.buyingPaused }, { s, v -> s.copy(buyingPaused = !v) }),
             MeisterSwitch("selling", "Selling", "Whether he places new sell offers.", { !it.sellingPaused }, { s, v -> s.copy(sellingPaused = !v) }),

@@ -34,7 +34,14 @@ sealed interface MeisterEvent {
 data class MeisterDecision(val time: Long, val text: String)
 
 /** What a live offer has already been counted as, so each fill is logged and tallied once. */
-data class CountedFill(val completed: Int = 0, val gold: Long = 0, val tax: Long = 0, val closed: Boolean = false)
+data class CountedFill(
+    val completed: Int = 0,
+    val gold: Long = 0,
+    val tax: Long = 0,
+    val closed: Boolean = false,
+    /** Bumped when the exchange loses fills, so refills of the same count get new history ids. */
+    val generation: Int = 0,
+)
 
 /**
  * Master Meister's trading brain: a ledger of cash and items plus the decisions that move them
@@ -50,6 +57,11 @@ data class CountedFill(val completed: Int = 0, val gold: Long = 0, val tax: Long
  * what really happened.
  *
  * He keeps at most one offer per item, buy or sell, so his offers can never meet each other.
+ *
+ * Buy and sell checks run on their own timers. With [MeisterSettings.useRules] off he picks from
+ * the whole market within the global safeguards; with it on he trades only the enabled items on
+ * his [MeisterRules] lists, at their prices and quantities. Every settled fill goes to the
+ * [history] with its weighted-average cost basis.
  */
 class MeisterTrader(
     save: MeisterSave,
@@ -60,6 +72,7 @@ class MeisterTrader(
     private var recovering: Boolean,
     private val random: Random = Random.Default,
     val owner: Int = OWNER_ID,
+    private val history: MeisterHistorySink = InMemoryHistorySink(),
 ) {
     private var initialized = save.initialized
     private var initializedAt = save.initializedAt
@@ -76,7 +89,9 @@ class MeisterTrader(
     private var dayStart = save.dayStart
     private var spentToday = save.spentToday
     private var lastReplenishAt = save.lastReplenishAt
-    private var nextDecisionAt = 0L
+    private val basis = HashMap(save.basis)
+    private var basisSeeded = save.basisSeeded
+    private val replacements = LinkedHashMap<Int, Boolean>()
     private var now = 0L
     private val decisions = ArrayDeque<MeisterDecision>()
     private val sightings = HashMap<Long, Sighting>()
@@ -94,6 +109,17 @@ class MeisterTrader(
     var coords: SavedCoords? = save.coords
 
     var status: MeisterStatus = if (save.initialized) MeisterStatus.Idle else MeisterStatus.NotSetUp
+        private set
+
+    var rules: MeisterRules = save.rules
+        private set
+
+    /** When the next buy check runs (epoch millis). */
+    var nextBuyAt: Long = 0
+        private set
+
+    /** When the next sell check runs (epoch millis). */
+    var nextSellAt: Long = 0
         private set
 
     /** Set when the ledger changed and should be saved soon. */
@@ -119,6 +145,27 @@ class MeisterTrader(
 
     fun guideOf(itemId: Int): Long = catalog[itemId]?.guidePrice?.toLong() ?: 0L
 
+    fun catalogItem(itemId: Int): MeisterItem? = catalog[itemId]
+
+    fun searchCatalog(text: String, limit: Int): List<MeisterItem> {
+        val needle = text.trim().lowercase()
+        if (needle.isEmpty()) return emptyList()
+        return catalog.items
+            .filter { it.name.lowercase().contains(needle) }
+            .sortedWith(compareBy<MeisterItem>({ !it.name.lowercase().startsWith(needle) }, { it.name.length }, { it.name }))
+            .take(limit)
+    }
+
+    fun basisOf(itemId: Int): CostBasis = basis[itemId] ?: CostBasis()
+
+    fun historyFills(): List<MeisterFill> = history.all()
+
+    val historyTrackingSince: Long
+        get() = history.trackingSince
+
+    /** Realized profit over all recorded sales with a known cost basis. */
+    fun realizedProfit(): Long = history.all().sumOf { it.realized ?: 0L }
+
     fun offers(): List<BotOffer> = exchange.offers(owner)
 
     fun drainEvents(): List<MeisterEvent> = pendingEvents.toList().also { pendingEvents.clear() }
@@ -136,6 +183,9 @@ class MeisterTrader(
         holdings.clear()
         holdings.putAll(granted)
         allocation = granted
+        basis.clear()
+        granted.forEach { (id, count) -> basis[id] = CostBasis(unknownQuantity = count.toLong()) }
+        basisSeeded = true
         cash = cashGrant
         this.startingCash = cashGrant
         initialized = true
@@ -151,7 +201,27 @@ class MeisterTrader(
 
     fun start(now: Long) {
         this.now = now
-        scheduleNextDecision(now, first = true)
+        nextBuyAt = now + wait(settings.decisionIntervalSeconds) / 2
+        nextSellAt = now + wait(settings.sellIntervalSeconds) / 2
+        if (initialized && !basisSeeded) {
+            seedBasis()
+        }
+    }
+
+    /** Saves from before the trade history: everything he owns becomes stock of unknown cost. */
+    private fun seedBasis() {
+        val owned = HashMap<Int, Long>()
+        holdings.forEach { (id, count) -> owned.merge(id, count.toLong(), Long::plus) }
+        for (offer in exchange.offers(owner)) {
+            val listed = (if (offer.sell && offer.isOpen) offer.remaining else 0) + offer.collectItems
+            if (listed > 0) owned.merge(offer.itemId, listed.toLong(), Long::plus)
+        }
+        pendingListing?.takeIf { !it.buy }?.let { owned.merge(it.itemId, it.quantity.toLong(), Long::plus) }
+        basis.clear()
+        owned.forEach { (id, count) -> basis[id] = CostBasis(unknownQuantity = count) }
+        basisSeeded = true
+        dirty = true
+        log.info("cost basis started: ${owned.size} item kinds he already owned are stock of unknown cost")
     }
 
     fun tick(now: Long) {
@@ -168,9 +238,14 @@ class MeisterTrader(
         rollDay()
         replenish()
         updateStatus()
-        if (now >= nextDecisionAt) {
-            decide()
-            scheduleNextDecision(now, first = false)
+        processReplacements()
+        if (now >= nextBuyAt) {
+            buyCheck()
+            nextBuyAt = now + wait(settings.decisionIntervalSeconds)
+        }
+        if (now >= nextSellAt) {
+            sellCheck()
+            nextSellAt = now + wait(settings.sellIntervalSeconds)
         }
     }
 
@@ -181,7 +256,10 @@ class MeisterTrader(
             return errors.joinToString("; ")
         }
         if (changed.decisionIntervalSeconds != settings.decisionIntervalSeconds) {
-            nextDecisionAt = minOf(nextDecisionAt, now + changed.decisionIntervalSeconds * 1000L)
+            nextBuyAt = minOf(nextBuyAt, now + changed.decisionIntervalSeconds * 1000L)
+        }
+        if (changed.sellIntervalSeconds != settings.sellIntervalSeconds) {
+            nextSellAt = minOf(nextSellAt, now + changed.sellIntervalSeconds * 1000L)
         }
         settings = changed
         updateStatus()
@@ -190,13 +268,58 @@ class MeisterTrader(
         return null
     }
 
+    /** Replaces his rule lists; offers already on the exchange keep their old terms. */
+    fun updateRules(changed: MeisterRules): String? {
+        val errors = changed.validate { catalog[it] != null }
+        if (errors.isNotEmpty()) {
+            return errors.take(3).joinToString("; ")
+        }
+        rules = changed
+        dirty = true
+        log.info("rules changed: ${changed.buy.size} buy, ${changed.sell.size} sell")
+        return null
+    }
+
+    /**
+     * Cancels the offer in [slot] through the exchange; fills it already had stay his, and the rest
+     * comes back through its collect box. With [replace] he places a fresh offer for the same item
+     * on the current rules as soon as that box is emptied, skipping the item's cooldown.
+     */
+    fun cancelOffer(slot: Int, replace: Boolean, reason: String): String? {
+        val offer = exchange.offer(owner, slot) ?: return "that slot is empty"
+        if (!offer.isOpen) return "that offer has already finished"
+        if (!exchange.abort(owner, slot)) return "the exchange refused to cancel it"
+        stats = stats.copy(offersCancelled = stats.offersCancelled + 1)
+        if (replace) {
+            replacements[offer.itemId] = !offer.sell
+        } else {
+            cooldown(offer.itemId, !offer.sell)
+        }
+        log.info("cancelled ${describe(offer)} ($reason${if (replace) "; will replace it" else ""})")
+        remember(now, "Cancelled ${catalog.name(offer.itemId)}${if (replace) " to replace it" else ""}: $reason")
+        dirty = true
+        return null
+    }
+
+    private fun processReplacements() {
+        if (replacements.isEmpty() || pendingListing != null || !settings.tradingEnabled) return
+        val busy = busyItems(exchange.offers(owner))
+        val (itemId, buy) = replacements.entries.firstOrNull { it.key !in busy }?.toPair() ?: return
+        replacements.remove(itemId)
+        if (buy && !settings.buyingPaused) {
+            if (settings.useRules) buyFromRules(only = itemId) else buy(only = itemId)
+        } else if (!buy && !settings.sellingPaused) {
+            if (settings.useRules) sellFromRules(only = itemId) else sell(only = itemId)
+        }
+    }
+
     /** Cancels every open offer; what they still hold is collected over the next ticks. */
     fun cancelAll(reason: String): Int {
         var cancelled = 0
         for (offer in exchange.offers(owner)) {
             if (offer.isOpen && exchange.abort(owner, offer.slot)) {
                 cancelled++
-                cooldown(offer.itemId)
+                cooldown(offer.itemId, !offer.sell)
                 log.info("cancelled ${describe(offer)} ($reason)")
             }
         }
@@ -229,6 +352,9 @@ class MeisterTrader(
             lastReplenishAt = lastReplenishAt,
             stats = stats,
             coords = coords,
+            rules = rules,
+            basis = HashMap(basis),
+            basisSeeded = basisSeeded,
         )
 
     /** Coins tied up in open buy offers and an unconfirmed buy, which count against the budgets. */
@@ -298,7 +424,7 @@ class MeisterTrader(
             log.warn("sell offer for ${pending.quantity} x ${catalog.name(pending.itemId)} rolled back ($reason); items returned")
         }
         pendingListing = null
-        cooldown(pending.itemId)
+        cooldown(pending.itemId, pending.buy)
         remember(now, "Offer for ${catalog.name(pending.itemId)} rolled back: $reason")
         urgent = true
     }
@@ -350,6 +476,13 @@ class MeisterTrader(
             val gold = offer.gold - counted.gold
             val tax = offer.taxPaid - counted.tax
             val name = catalog.name(offer.itemId)
+            val generation =
+                try {
+                    recordFill(offer, counted, quantity, gold, tax)
+                } catch (e: java.io.IOException) {
+                    log.warn("could not write the trade history (${e.message}); the fill is recorded on a later tick")
+                    continue
+                }
             if (offer.sell) {
                 stats = stats.copy(itemsSold = stats.itemsSold + quantity, coinsEarned = stats.coinsEarned + gold - tax, taxPaid = stats.taxPaid + tax)
             } else {
@@ -364,7 +497,7 @@ class MeisterTrader(
             } else {
                 log.warn("the exchange lost ${-quantity} fill(s) of ${describe(offer)} in a restart; tallies corrected")
             }
-            fills[offer.createdAt] = counted.copy(completed = offer.completed, gold = offer.gold, tax = offer.taxPaid)
+            fills[offer.createdAt] = counted.copy(completed = offer.completed, gold = offer.gold, tax = offer.taxPaid, generation = generation)
             dirty = true
         }
         for (offer in offers) {
@@ -372,7 +505,7 @@ class MeisterTrader(
             if (offer.finished != counted.closed) {
                 fills[offer.createdAt] = counted.copy(closed = offer.finished)
                 if (offer.finished) {
-                    cooldown(offer.itemId)
+                    cooldown(offer.itemId, !offer.sell)
                     log.info("offer finished: ${describe(offer)}")
                 }
             }
@@ -381,6 +514,74 @@ class MeisterTrader(
         if (fills.keys.removeIf { it !in live }) {
             dirty = true
         }
+    }
+
+    /**
+     * Writes one settled fill (or, for a negative [quantity], the reversal of fills the exchange
+     * lost) to the history and moves the item's cost basis. The fill's id is built from the offer,
+     * its completed count and the offer's reversal generation, so recounting the same fill after a
+     * restart is recognised as a duplicate. The basis moves even for a duplicate: the saved basis
+     * predates it. Returns the offer's generation after this fill.
+     */
+    private fun recordFill(offer: BotOffer, counted: CountedFill, quantity: Int, gold: Long, tax: Long): Int {
+        val item = offer.itemId
+        val before = basisOf(item)
+        val base =
+            MeisterFill(
+                time = now,
+                itemId = item,
+                buy = !offer.sell,
+                quantity = quantity,
+                gross = gold,
+                fee = tax,
+                offerId = offer.offerId,
+                slot = offer.slot,
+                offerPrice = offer.price,
+                offerTotal = offer.total,
+                filledAfter = offer.completed,
+            )
+        if (quantity < 0) {
+            val generation = counted.generation + 1
+            history.record(
+                base.copy(
+                    id = "${offer.offerId}:${counted.completed}>${offer.completed}:r$generation",
+                    net = if (offer.sell) gold - tax else -gold,
+                    reversal = true,
+                )
+            )
+            basis[item] =
+                if (offer.sell) {
+                    before.copy(unknownQuantity = before.unknownQuantity - quantity)
+                } else {
+                    CostBasis((before.knownQuantity + quantity).coerceAtLeast(0), (before.knownCost + gold).coerceAtLeast(0), before.unknownQuantity)
+                }
+            return generation
+        }
+        val id = "${offer.offerId}:${offer.completed}:${counted.generation}"
+        val after: CostBasis
+        val fill =
+            if (offer.sell) {
+                val sale = CostBasisBook.sell(before, quantity)
+                after = sale.basis
+                val net = gold - tax
+                val knownNet = net * sale.knownQuantity / quantity
+                base.copy(
+                    id = id,
+                    net = net,
+                    knownQuantity = sale.knownQuantity,
+                    unknownQuantity = sale.unknownQuantity,
+                    costBasis = sale.cost,
+                    realized = sale.cost?.let { knownNet - it },
+                )
+            } else {
+                after = CostBasisBook.buy(before, quantity, gold)
+                base.copy(id = id, net = -gold, knownQuantity = quantity)
+            }
+        if (!history.record(fill)) {
+            log.info("fill $id was already in the history")
+        }
+        basis[item] = after
+        return counted.generation
     }
 
     /** What an offer's collect box held when he looked, and the exchange save count at that moment. */
@@ -444,7 +645,7 @@ class MeisterTrader(
                 continue
             }
             stats = stats.copy(offersCancelled = stats.offersCancelled + 1)
-            cooldown(offer.itemId)
+            cooldown(offer.itemId, !offer.sell)
             log.info("timed out after $minutes min: ${describe(offer)}")
             remember(now, "Cancelled a stale offer for ${catalog.name(offer.itemId)}")
             dirty = true
@@ -453,36 +654,40 @@ class MeisterTrader(
 
     /* Decisions */
 
-    private fun decide() {
-        if (!settings.tradingEnabled) {
-            return
-        }
-        if (pendingListing != null) {
-            note("Waiting for his last offer to be confirmed")
-            return
-        }
-        val roll = random.nextInt(100)
+    private fun buyCheck() {
         when {
-            roll < settings.buyChancePercent ->
-                if (settings.buyingPaused) note("Wanted to buy, but buying is paused") else buy()
-            roll < settings.buyChancePercent + settings.sellChancePercent ->
-                if (settings.sellingPaused) note("Wanted to sell, but selling is paused") else sell()
-            else -> note("Decided to do nothing this time")
+            !settings.tradingEnabled -> return
+            settings.buyingPaused -> return
+            pendingListing != null -> note("Buy check skipped: waiting for his last offer to be confirmed")
+            random.nextInt(100) >= settings.buyChancePercent -> note("Buy check: decided not to buy this time")
+            settings.useRules -> buyFromRules(only = null)
+            else -> buy(only = null)
+        }
+    }
+
+    private fun sellCheck() {
+        when {
+            !settings.tradingEnabled -> return
+            settings.sellingPaused -> return
+            pendingListing != null -> note("Sell check skipped: waiting for his last offer to be confirmed")
+            random.nextInt(100) >= settings.sellChancePercent -> note("Sell check: decided not to sell this time")
+            settings.useRules -> sellFromRules(only = null)
+            else -> sell(only = null)
         }
     }
 
     private class Choice(val item: MeisterItem, val price: Int, val basis: String, val score: Double, val buyerWaiting: Boolean = false)
 
-    private fun buy() {
+    private fun buy(only: Int?) {
         val offers = exchange.offers(owner)
-        val slot = freeSlot(offers) ?: return
+        val slot = freeSlot(offers, buy = true) ?: return
         val busy = busyItems(offers)
-        val asks = exchange.openAsks(owner)
+        val asks = exchange.openAsks(owner).filterKeys { only == null || it == only }
         var unpriced = 0
         var overpriced = 0
         val listed = ArrayList<Choice>()
         for ((id, ask) in asks) {
-            val item = catalog[id]?.takeIf { buyable(it, busy) } ?: continue
+            val item = catalog[id]?.takeIf { buyable(it, busy, ignoreCooldown = only != null) } ?: continue
             val reference = buyReference(item)
             if (reference == null) {
                 unpriced++
@@ -498,29 +703,121 @@ class MeisterTrader(
         }
         val choice =
             weightedPick(listed)
-                ?: standingBid(busy)
+                ?: standingBid(busy, only)
                 ?: return note("Found nothing worth buying ($overpriced overpriced, $unpriced without a price)")
         if (overpriced > 0) {
             log.info("ignored $overpriced overpriced listing(s) this decision")
         }
-        val quantity = buyQuantity(choice.item, choice.price, offers)
-        if (quantity <= 0) {
-            cooldown(choice.item.id)
+        val cap = buyCap(choice.item, choice.price, rule = null)
+        if (cap <= 0) {
+            cooldown(choice.item.id, buy = true)
             return
         }
-        val cost = quantity.toLong() * choice.price
-        check(cost <= cash) { "Buy of $quantity x ${choice.item.name} costs $cost but he has $cash." }
+        val quantity = if (cap <= 1) 1 else random.nextInt(maxOf(1, cap / 4), cap + 1)
+        placeBuy(slot, choice.item, quantity, choice.price, choice.basis)
+    }
+
+    private fun placeBuy(slot: Int, item: MeisterItem, quantity: Int, price: Int, basis: String) {
+        val cost = quantity.toLong() * price
+        check(cost <= cash) { "Buy of $quantity x ${item.name} costs $cost but he has $cash." }
         cash -= cost
-        pendingListing = PendingListing(slot, choice.item.id, quantity, choice.price, buy = true)
+        pendingListing = PendingListing(slot, item.id, quantity, price, buy = true)
         status = MeisterStatus.Buying
         urgent = true
-        log.info("decided to buy $quantity x ${choice.item.name} at ${choice.price} (${choice.basis}); $cost coins reserved, ${formatCoins(cash)} left")
-        remember(now, "Buying $quantity x ${choice.item.name} at ${choice.price} (${choice.basis})")
+        log.info("decided to buy $quantity x ${item.name} at $price ($basis); $cost coins reserved, ${formatCoins(cash)} left")
+        remember(now, "Buying $quantity x ${item.name} at $price ($basis)")
+    }
+
+    private fun buyFromRules(only: Int?) {
+        val offers = exchange.offers(owner)
+        val enabled = rules.buy.filter { it.enabled && (only == null || it.itemId == only) }
+        if (enabled.isEmpty()) {
+            if (only == null) note("Buy check: no enabled buy rules, so nothing to buy")
+            return
+        }
+        val slot = freeSlot(offers, buy = true) ?: return
+        val busy = busyItems(offers)
+        val ready =
+            enabled.filter { rule ->
+                val item = catalog[rule.itemId]
+                item != null && !item.noBuy && rule.itemId !in busy && (only != null || !coolingDown(rule.itemId)) &&
+                    !within(lastSold[rule.itemId], settings.flipCooldownHours * HOUR_MS) && holdingRoom(rule, offers) > 0
+            }
+        if (ready.isEmpty()) {
+            return note("Buy check: none of ${enabled.size} buy rule(s) is ready (cooldown, open offer, holdings limit or recent sale)")
+        }
+        val rule = ready[random.nextInt(ready.size)]
+        val item = catalog[rule.itemId]!!
+        val (price, basis) = rulePrice(rule, item)
+        val cap = minOf(buyCap(item, price, rule).toLong(), holdingRoom(rule, offers), rule.quantity.toLong()).toInt()
+        if (cap <= 0) {
+            cooldown(item.id, buy = true)
+            return
+        }
+        placeBuy(slot, item, cap, price, basis)
+    }
+
+    private fun rulePrice(rule: BuyRule, item: MeisterItem): Pair<Int, String> {
+        if (rule.mode == BuyPriceMode.FixedCeiling) {
+            return rule.maxPrice to "buy rule, ceiling ${rule.maxPrice}"
+        }
+        val ask = exchange.lowestAsk(item.id, owner)
+        if (ask != null && ask <= rule.maxPrice) {
+            return ask to "buy rule, lowest ask $ask under ceiling ${rule.maxPrice}"
+        }
+        val reference = buyReference(item) ?: return rule.maxPrice to "buy rule, ceiling ${rule.maxPrice} (no market price)"
+        val bid = percentOf(reference, 100 - settings.standingBidDiscountPercent).coerceIn(1, rule.maxPrice)
+        return bid to "buy rule, bid $bid under reference $reference, ceiling ${rule.maxPrice}"
+    }
+
+    /** How many more he may own under [rule], counting what his open bids for it would bring in. */
+    private fun holdingRoom(rule: BuyRule, offers: List<BotOffer>): Long {
+        val incoming = offers.filter { it.itemId == rule.itemId }.sumOf { (if (!it.sell && it.isOpen) it.remaining else 0) + it.collectItems }.toLong()
+        return rule.maxHoldings.toLong() - holding(rule.itemId) - incoming
+    }
+
+    private fun sellFromRules(only: Int?) {
+        val offers = exchange.offers(owner)
+        val enabled = rules.sell.filter { it.enabled && (only == null || it.itemId == only) }
+        if (enabled.isEmpty()) {
+            if (only == null) note("Sell check: no enabled sell rules, so nothing to sell")
+            return
+        }
+        val slot = freeSlot(offers, buy = false) ?: return
+        val busy = busyItems(offers)
+        val ready =
+            enabled.filter { rule ->
+                val item = catalog[rule.itemId]
+                item != null && !item.noSell && rule.itemId !in busy && (only != null || !coolingDown(rule.itemId)) &&
+                    !within(lastBought[rule.itemId], settings.flipCooldownHours * HOUR_MS) && holding(rule.itemId) > rule.keepAtLeast
+            }
+        if (ready.isEmpty()) {
+            return note("Sell check: none of ${enabled.size} sell rule(s) is ready (cooldown, open offer, reserve or recent purchase)")
+        }
+        val rule = ready[random.nextInt(ready.size)]
+        val item = catalog[rule.itemId]!!
+        val (price, basis) = rulePrice(rule, item)
+        val spare = holding(item.id) - rule.keepAtLeast
+        placeSell(slot, item, minOf(rule.quantity, spare), price, basis, offers)
+    }
+
+    private fun rulePrice(rule: SellRule, item: MeisterItem): Pair<Int, String> {
+        if (rule.mode == SellPriceMode.FixedFloor) {
+            return rule.minPrice to "sell rule, floor ${rule.minPrice}"
+        }
+        val bid = exchange.openBids(owner)[item.id]
+        if (bid != null && bid >= rule.minPrice) {
+            return bid to "sell rule, bid $bid over floor ${rule.minPrice}"
+        }
+        val reference = sellReference(item) ?: return rule.minPrice to "sell rule, floor ${rule.minPrice} (no market price)"
+        val ask = maxOf(rule.minPrice, percentOfCeil(reference, 100 + settings.sellMarkupPercent))
+        return ask to "sell rule, asking $ask over reference $reference, floor ${rule.minPrice}"
     }
 
     /** With no seller worth buying from, he sometimes leaves a bid under the price for players to fill. */
-    private fun standingBid(busy: Set<Int>): Choice? {
-        val sample = catalog.items.shuffled(random).asSequence().filter { buyable(it, busy) }.take(SAMPLE_SIZE).toList()
+    private fun standingBid(busy: Set<Int>, only: Int?): Choice? {
+        val pool = if (only != null) listOfNotNull(catalog[only]) else catalog.items.shuffled(random)
+        val sample = pool.asSequence().filter { buyable(it, busy, ignoreCooldown = only != null) }.take(SAMPLE_SIZE).toList()
         val choices =
             sample.mapNotNull { item ->
                 val reference = buyReference(item) ?: return@mapNotNull null
@@ -530,10 +827,11 @@ class MeisterTrader(
         return weightedPick(choices)
     }
 
-    private fun buyQuantity(item: MeisterItem, price: Int, offers: List<BotOffer>): Int {
+    /** The most he may buy of [item] at [price] under every budget and limit; notes what binds at 0. */
+    private fun buyCap(item: MeisterItem, price: Int, rule: BuyRule?): Int {
         val p = price.toLong()
         val limits =
-            listOf(
+            listOfNotNull(
                 "cash" to cash / p,
                 "spend per offer" to settings.maxSpendPerOffer / p,
                 "item budget" to (settings.maxSpendPerItemPerDay - (spentByItem[item.id] ?: 0) - committedCoins(item.id)) / p,
@@ -541,30 +839,31 @@ class MeisterTrader(
                 "buy limit" to exchange.remainingBuyLimit(owner, item.id).toLong(),
                 "holding cap" to (Int.MAX_VALUE.toLong() - holding(item.id)),
                 "offer value" to Int.MAX_VALUE / p,
-                "max quantity" to settings.maxBuyQuantity.toLong(),
+                ("max quantity" to settings.maxBuyQuantity.toLong()).takeIf { rule == null },
+                rule?.takeIf { it.dailySpend > 0 }?.let { "rule's daily spend" to (it.dailySpend - (spentByItem[item.id] ?: 0) - committedCoins(item.id)) / p },
             )
         val (binding, cap) = limits.minBy { it.second }
         if (cap <= 0) {
             note("Wanted ${item.name} at $price but the $binding allows none")
             return 0
         }
-        val max = cap.toInt()
-        return if (max <= 1) 1 else random.nextInt(maxOf(1, max / 4), max + 1)
+        return cap.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
-    private fun sell() {
+    private fun sell(only: Int?) {
         val offers = exchange.offers(owner)
-        val slot = freeSlot(offers) ?: return
+        val slot = freeSlot(offers, buy = false) ?: return
         val busy = busyItems(offers)
-        val bids = exchange.openBids(owner)
+        val bids = exchange.openBids(owner).filterKeys { only == null || it == only }
+        val ignoreCooldown = only != null
         val withBuyers =
-            bids.keys.mapNotNull { id -> catalog[id]?.takeIf { holding(id) > 0 && sellable(it, busy) } }
+            bids.keys.mapNotNull { id -> catalog[id]?.takeIf { holding(id) > 0 && sellable(it, busy, ignoreCooldown) } }
                 .mapNotNull { item -> sellChoice(item, bids[item.id])?.takeIf { it.buyerWaiting } }
         val choice =
             weightedPick(withBuyers)
                 ?: weightedPick(
-                    holdings.keys.shuffled(random).asSequence()
-                        .mapNotNull { catalog[it]?.takeIf { item -> sellable(item, busy) } }
+                    (if (only != null) listOf(only).filter { holding(it) > 0 } else holdings.keys.shuffled(random)).asSequence()
+                        .mapNotNull { catalog[it]?.takeIf { item -> sellable(item, busy, ignoreCooldown) } }
                         .take(SAMPLE_SIZE)
                         .mapNotNull { sellChoice(it, bids[it.id]) }
                         .toList()
@@ -573,23 +872,28 @@ class MeisterTrader(
         val item = choice.item
         val held = holding(item.id)
         val share = (held.toLong() * settings.maxSellFractionPercent / 100).coerceAtLeast(1)
-        var quantity = minOf(settings.maxSellQuantity.toLong(), share, held.toLong(), (Int.MAX_VALUE / choice.price).toLong()).toInt()
-        val netEach = (choice.price - exchange.taxPerItem(item.id, choice.price)).toLong().coerceAtLeast(1)
+        placeSell(slot, item, minOf(settings.maxSellQuantity.toLong(), share).toInt(), choice.price, choice.basis, offers)
+    }
+
+    private fun placeSell(slot: Int, item: MeisterItem, wanted: Int, price: Int, basis: String, offers: List<BotOffer>) {
+        val held = holding(item.id)
+        var quantity = minOf(wanted.toLong(), held.toLong(), (Int.MAX_VALUE / price).toLong()).toInt()
+        val netEach = (price - exchange.taxPerItem(item.id, price)).toLong().coerceAtLeast(1)
         val room = MAX_CASH - cash - incomingCoins(offers)
         if (quantity * netEach > room) {
             quantity = (room / netEach).toInt()
         }
         if (quantity <= 0) {
-            cooldown(item.id)
+            cooldown(item.id, buy = false)
             return note("Wanted to sell ${item.name}, but his cash is already at the maximum")
         }
         holdings.compute(item.id) { _, count -> (count ?: 0) - quantity }
         holdings.remove(item.id, 0)
-        pendingListing = PendingListing(slot, item.id, quantity, choice.price)
+        pendingListing = PendingListing(slot, item.id, quantity, price)
         status = MeisterStatus.Selling
         urgent = true
-        log.info("decided to sell $quantity of his $held x ${item.name} at ${choice.price} (${choice.basis})")
-        remember(now, "Selling $quantity x ${item.name} at ${choice.price} (${choice.basis})")
+        log.info("decided to sell $quantity of his $held x ${item.name} at $price ($basis)")
+        remember(now, "Selling $quantity x ${item.name} at $price ($basis)")
     }
 
     private fun sellChoice(item: MeisterItem, bid: Int?): Choice? {
@@ -608,10 +912,16 @@ class MeisterTrader(
             offer.collectCoins.toLong() + if (offer.sell && offer.isOpen) offer.remaining.toLong() * offer.price else 0L
         }
 
-    private fun freeSlot(offers: List<BotOffer>): Int? {
+    private fun freeSlot(offers: List<BotOffer>, buy: Boolean): Int? {
         val open = offers.count { it.isOpen } + if (pendingListing != null) 1 else 0
         if (open >= settings.maxActiveOffers) {
             note("Already has $open open offer(s)")
+            return null
+        }
+        val side = offers.count { it.isOpen && it.sell != buy }
+        val sideCap = if (buy) settings.maxBuyOffers else settings.maxSellOffers
+        if (side >= sideCap) {
+            note("Already has $side open ${if (buy) "buy" else "sell"} offer(s)")
             return null
         }
         val slot = exchange.freeSlot(owner)
@@ -627,12 +937,12 @@ class MeisterTrader(
         return busy
     }
 
-    private fun buyable(item: MeisterItem, busy: Set<Int>): Boolean =
-        !item.noBuy && (settings.buySensitive || !item.sensitive) && item.id !in busy && !coolingDown(item.id) &&
+    private fun buyable(item: MeisterItem, busy: Set<Int>, ignoreCooldown: Boolean = false): Boolean =
+        !item.noBuy && (settings.buySensitive || !item.sensitive) && item.id !in busy && (ignoreCooldown || !coolingDown(item.id)) &&
             !within(lastSold[item.id], settings.flipCooldownHours * HOUR_MS)
 
-    private fun sellable(item: MeisterItem, busy: Set<Int>): Boolean =
-        !item.noSell && (settings.sellSensitive || !item.sensitive) && item.id !in busy && !coolingDown(item.id) &&
+    private fun sellable(item: MeisterItem, busy: Set<Int>, ignoreCooldown: Boolean = false): Boolean =
+        !item.noSell && (settings.sellSensitive || !item.sensitive) && item.id !in busy && (ignoreCooldown || !coolingDown(item.id)) &&
             !within(lastBought[item.id], settings.flipCooldownHours * HOUR_MS)
 
     /** Recent trades only count when they agree with the guide price; buys use the lower of the two. */
@@ -701,12 +1011,17 @@ class MeisterTrader(
         holdings[itemId] = total.toInt()
     }
 
-    private fun cooldown(itemId: Int) {
-        if (settings.itemCooldownMinutes > 0) {
-            cooldowns[itemId] = now + settings.itemCooldownMinutes * 60_000L
+    /** Rests [itemId] after an offer for it ends or fails; a rule's own cooldown wins in rule mode. */
+    private fun cooldown(itemId: Int, buy: Boolean) {
+        val ruleMinutes = if (!settings.useRules) null else if (buy) rules.buyRule(itemId)?.cooldownMinutes else rules.sellRule(itemId)?.cooldownMinutes
+        val minutes = ruleMinutes ?: settings.itemCooldownMinutes
+        if (minutes > 0) {
+            cooldowns[itemId] = maxOf(cooldowns[itemId] ?: 0, now + minutes * 60_000L)
             dirty = true
         }
     }
+
+    fun cooldownUntil(itemId: Int): Long = (cooldowns[itemId] ?: 0).takeIf { it > now } ?: 0
 
     private fun coolingDown(itemId: Int): Boolean = (cooldowns[itemId] ?: 0) > now
 
@@ -742,6 +1057,7 @@ class MeisterTrader(
             for ((id, count) in allocation) {
                 if (holding(id) == 0 && catalog[id] != null) {
                     holdings[id] = count
+                    basis[id] = basisOf(id).let { it.copy(unknownQuantity = it.unknownQuantity + count) }
                     restored++
                 }
             }
@@ -764,14 +1080,13 @@ class MeisterTrader(
             }
     }
 
-    private fun scheduleNextDecision(now: Long, first: Boolean) {
-        val base = settings.decisionIntervalSeconds * 1000L
+    private fun wait(seconds: Int): Long {
+        val base = seconds * 1000L
         val spread = base * settings.decisionJitterPercent / 100
-        val wait = base + if (spread > 0) random.nextLong(-spread, spread + 1) else 0L
-        nextDecisionAt = now + if (first) wait / 2 else wait
-        if (!first && pendingListing == null) {
+        if (pendingListing == null && status != MeisterStatus.NotSetUp) {
             status = if (settings.tradingEnabled) MeisterStatus.Idle else MeisterStatus.Paused
         }
+        return base + if (spread > 0) random.nextLong(-spread, spread + 1) else 0L
     }
 
     private fun note(text: String) {

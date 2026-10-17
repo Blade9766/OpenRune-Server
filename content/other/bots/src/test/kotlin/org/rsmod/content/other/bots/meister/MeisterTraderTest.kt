@@ -357,7 +357,7 @@ class MeisterTraderTest {
     @Test
     fun `invalid settings are refused`() {
         h.start()
-        assertNotNull(h.trader.updateSettings { it.copy(buyChancePercent = 80, sellChancePercent = 30) })
+        assertNotNull(h.trader.updateSettings { it.copy(maxBuyOffers = 9) })
         assertNotNull(h.trader.updateSettings { it.copy(maxActiveOffers = 9) })
         assertNull(h.trader.updateSettings { it.copy(maxActiveOffers = 2) })
         assertEquals(2, h.trader.settings.maxActiveOffers)
@@ -394,11 +394,12 @@ class MeisterHarness {
     var now = 10_000_000_000L
     val exchange = FakeExchange { now }
     val store = InMemoryMeisterStore()
+    val history = InMemoryHistorySink()
     var catalogItems: List<MeisterItem> =
         listOf(MeisterItem(1511, "Logs", 100, 1000), MeisterItem(4151, "Abyssal whip", 100, 10), MeisterItem(440, "Iron ore", 100, 500))
     var startingCash: Long = MeisterTrader.MAX_CASH
     var autoSaveExchange = true
-    private var settings = MeisterSettings(decisionIntervalSeconds = 10, decisionJitterPercent = 0)
+    var settings = MeisterSettings(decisionIntervalSeconds = 10, sellIntervalSeconds = 10, decisionJitterPercent = 0)
     private val random = Random(42)
     lateinit var trader: MeisterTrader
     val catalog: MeisterCatalog
@@ -437,7 +438,7 @@ class MeisterHarness {
     }
 
     private fun build(save: MeisterSave, recovering: Boolean): MeisterTrader =
-        MeisterTrader(save, catalog, exchange, SilentLog, { !store.failing }, recovering, random)
+        MeisterTrader(save, catalog, exchange, SilentLog, { !store.failing }, recovering, random, history = history)
 
     fun tick(count: Int = 1) {
         repeat(count) {

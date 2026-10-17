@@ -86,6 +86,7 @@ constructor(
         if (!config.enabled) {
             return null
         }
+        val now = System.currentTimeMillis()
         val save =
             try {
                 store.load()
@@ -93,8 +94,14 @@ constructor(
                 logger.error(t) { "Could not read $SAVE_PATH; Master Meister waits $RETRY_TICKS ticks and tries again." }
                 return null
             }
+        val history =
+            try {
+                FileHistorySink(Path.of(HISTORY_PATH), now)
+            } catch (t: Throwable) {
+                logger.error(t) { "Could not read $HISTORY_PATH; Master Meister waits $RETRY_TICKS ticks and tries again." }
+                return null
+            }
         val catalog = MeisterCatalogs.build(geItems, config)
-        val now = System.currentTimeMillis()
         val trader =
             MeisterTrader(
                 save = save ?: MeisterSave(),
@@ -103,6 +110,7 @@ constructor(
                 log = TradeLog,
                 storeHealthy = { storeHealthy },
                 recovering = save?.let { it.pendingListing != null || it.pendingCollects.isNotEmpty() } ?: false,
+                history = history,
             )
         trader.initialize(config.startingCash, now)
         trader.start(now)
@@ -155,6 +163,7 @@ constructor(
 
     private companion object {
         private const val SAVE_PATH = ".data/master-meister.json"
+        private const val HISTORY_PATH = ".data/master-meister-history.jsonl"
         private const val RETRY_TICKS = 500
         private const val PERIODIC_SAVE_TICKS = 100
     }

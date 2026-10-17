@@ -20,12 +20,13 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
         var collectItems: Int = 0,
         var collectCoins: Int = 0,
         var finished: Boolean = false,
+        val id: Long = 0,
     ) {
         fun copy(): Offer =
-            Offer(owner, slot, sell, item, price, total, createdAt, completed, gold, tax, collectItems, collectCoins, finished)
+            Offer(owner, slot, sell, item, price, total, createdAt, completed, gold, tax, collectItems, collectCoins, finished, id)
 
         fun view(): BotOffer =
-            BotOffer(slot, item, sell, price, total, completed, collectItems, collectCoins, finished, createdAt, gold, tax)
+            BotOffer(slot, item, sell, price, total, completed, collectItems, collectCoins, finished, createdAt, gold, tax, id)
     }
 
     private var offers = ArrayList<Offer>()
@@ -82,7 +83,7 @@ class FakeExchange(private val clock: () -> Long) : BotExchange {
         }
         val createdAt = maxOf(clock(), lastCreatedAt + 1)
         lastCreatedAt = createdAt
-        val offer = Offer(owner, slot, sell, item, price, quantity, createdAt)
+        val offer = Offer(owner, slot, sell, item, price, quantity, createdAt, id = createdAt)
         offers += offer
         hasUnsavedChanges = true
         match(offer)

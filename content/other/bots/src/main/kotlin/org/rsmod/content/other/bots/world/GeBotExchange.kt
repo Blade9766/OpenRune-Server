@@ -86,5 +86,6 @@ class GeBotExchange(private val exchange: GeExchange, private val items: GeItemD
             createdAt = createdAt,
             gold = gold.toLong(),
             taxPaid = taxPaid.toLong(),
+            offerId = id,
         )
 }

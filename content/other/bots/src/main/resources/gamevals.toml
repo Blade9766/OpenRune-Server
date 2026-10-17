@@ -2,6 +2,7 @@
 bot_status = 1102
 bot_settings = 1103
 bot_items = 1104
+bot_manager = 1115
 
 [gamevals.clientscript]
 bot_status_init = 45800
@@ -9,6 +10,10 @@ bot_settings_init = 45803
 bot_items_init = 45806
 bot_items_draw = 45809
 bot_button = 45812
+bm_init = 45815
+bm_button = 45818
+bm_check = 45821
+bm_dot = 45824
 
 [gamevals.inv]
 bot_view_inv = 1112

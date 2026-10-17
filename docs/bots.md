@@ -37,21 +37,32 @@ the client, so names are matched case-insensitively.
 
 ## Bot Manager window
 
-`::bot` opens the Bot Manager (administrators only; every button re-checks rights,
-and every change is validated by the server exactly as the commands are).
+`::bot` opens the Bot Manager (administrators only; every click re-checks rights, and
+every change is validated by the server exactly as the commands are). A navigation
+column on the left switches between **Overview**, **Bot Roster**, **Master Meister**
+(Buy Rules, Sell Rules, Schedule, Active Offers, Trade History) and **Settings**; the
+Master Meister tabs above his tables are the same sections, so the two always agree.
+The window keeps your section, filters, pages and selections while it refreshes and
+when you reopen it. The layout is generated: edit
+`content/other/bots/pack/tools/gen_bot_manager.py` and run it, never `bot_manager.if3`.
 
-**Roster** - one row per bot: name, role and difficulty, state, inventory, banked
-sale items, sale threshold, open offers and coins. A bot that is enabled but not
-yet in the world shows as *Queued* (the world is full or the master toggle is off).
+**Overview** - bot counts (total, in world, queued, errors), Master Meister's status,
+cash, open offers and realized profit, and quick switches (bots master, trading,
+pause buying, pause selling, his items).
 
-- Left-click a row to open that bot's **settings**; right-click > Toggle enables or
-  disables it.
-- Top bar: page through bots, refresh, **Create** (role, site, name; it gets the
-  site's starter kit and starts disabled) and the **Master** toggle.
-- Bottom bar: **Enable all** / **Disable all** (both ask first), **All
-  difficulty...** (set every bot to Easy, Normal or Hard) and **- / +** for how many
-  bots may be in the world at once. "In world 8/10" turns orange when bots are
-  queued behind the limit.
+**Bot Roster** - one row per bot: name, role, state, difficulty, inventory, open
+offers and coins. A bot that is enabled but not yet in the world shows as *Queued*.
+Search by name and filter by state, role and difficulty; Bulk acts on every bot the
+filters show (enable, disable, difficulty, each asking first). Select a bot for its
+details and actions: **Configure** (its full settings window, below), Enable/Disable,
+Send home, Go to bot, Items, Remove (out of the world only, asks first). **Create**
+adds a bot (role, site, name; it gets the site's starter kit and starts disabled). The
+footer holds the bots master switch and **Max - / +** for how many bots may be in the
+world at once.
+
+**Settings** - the bots master switch, bots in world and every bot's difficulty (these
+three apply at once), and Master Meister's whole-market safeguards (rare items,
+refills, price margins, spending and quantity caps), which wait for Save Changes.
 
 **Bot settings** - what the bot is doing, its last target or error, and:
 
@@ -507,7 +518,10 @@ per 24 hours, logged as an allocation).
 holds 1,410 slots and he holds thousands of kinds. His offers live in the exchange book under
 owner id -1,000,000,000.
 
-**Trading.** Every 90 seconds (+/- 50%) he decides: buy (55%), sell (10%) or nothing (35%).
+**Trading.** Buy checks and sell checks run on their own timers, every 90 seconds (+/- 50%)
+each. A buy check places an offer 55% of the time, a sell check 10% of the time; otherwise
+he does nothing that time. This section describes whole-market mode, the default; see
+**Rule mode** below for trading only listed items.
 
 - *Buying*: he looks at every open sell offer from other traders. A listing is eligible when
   its price is at most 5% over the item's reference price; he prefers cheaper listings,
@@ -549,15 +563,67 @@ open the exchange interface; his offers go straight into the book like every bot
 that stalls is abandoned; three in a row, or leaving his area, put him back at his spawn tile.
 If the engine removes him he comes back within 100 ticks, at his last position.
 
-**Bot Manager.** He is the first row of the roster ("M. Meister") (`::bot`): left-click opens his settings
-window, right-click > Toggle switches trading on or off. The settings window shows his
-status (Idle, Buying, Selling, Trading Paused), cash, kinds held, open offers and last
-decision, and pages through every setting (Next page). Buttons: Trading on/off, Pause/Resume
-buying, Pause/Resume selling, Go to him, View items (his offers and his 1,410 most valuable
-holdings), More... (status, offers, decision trace and top holdings in chat; set any value
-by name), Cancel offers, Reset (defaults; trading stays as it is) and Send home. Every button
-re-checks administrator rights; every change is validated, saved at once and logged to
-`bots.admin`.
+**Bot Manager.** His sections in `::bot` share a header with his portrait, trading
+status (Trading Active, Buying paused, Trading Paused...), mode (rule lists or whole
+market), cash, open offers and realized profit. The footer shows whether buying and
+selling are active, the next buy check, unsaved changes, and **Pause buying**,
+**Discard** and **Save Changes**.
+
+- **Buy Rules / Sell Rules** - his rule lists as searchable tables with item icons:
+  max buy price or min sell price, offer quantity, holdings limit or reserve, cooldown
+  and an Enabled tick. **+ Add item** searches every tradeable item; **Bulk...**
+  enables, disables or removes the rules shown (removing and clearing ask first).
+  Selecting a rule opens its editor below the table: price, quantity, holdings limit
+  (buy) or amount to keep (sell), cooldown, daily spend (buy) and price mode, with the
+  largest offer's cost or proceeds and warnings (over the guide price, a buy ceiling at
+  or over a sell floor that could loop at a loss, rules not in use because rule mode is
+  off). Right-click > History opens that item's trade history.
+- **Schedule** - trading, buying and selling switches (applied at once), rule mode,
+  separate buy and sell check intervals with the time to the next check, variation,
+  buy and sell chances, offer caps (total, buys, sells), item cooldown, no-flip window
+  and offer timeouts.
+- **Active Offers** - every exchange offer: item, side, price, filled / total and status.
+  **Cancel** cancels it through the exchange (fills stay his, the rest comes back);
+  **Cancel and replace** also re-offers the item on the saved rule once the box is
+  collected; **Cancel all** asks first. Pausing only stops new offers.
+- **Trade History** - see below.
+
+Edits to rules and settings are a draft until **Save Changes** (Discard drops them;
+Settings has **Reset defaults**). Saved rules apply to new offers; open offers keep
+their terms. The trading, buying, selling and bot switches marked * apply at once.
+Every change is logged to `bots.admin`.
+
+**Rule mode.** With **Rule lists only** on (Schedule) he trades only the enabled items on
+his lists: a buy check picks a ready buy rule (enabled, not cooling down, no open offer
+for the item, under its holdings limit counting open bids, not sold within the no-flip
+window) and bids its ceiling (**Fixed ceiling**; the exchange fills at sellers' lower
+prices and refunds the difference) or buys at the cheapest listing / bids under the
+market, never over the ceiling (**Market, capped**). A sell check sells at most the
+rule's quantity of what he holds above the reserve, asking the floor (**Fixed floor**)
+or over the market (**Market, floored**). An empty or fully disabled list means no
+trading in that direction. The global spending budgets, buy limits, offer caps, cash
+cap and no-self-trading rules still apply; a rule's daily spend adds its own cap.
+Editing rules never adds cash or items.
+
+**Trade history.** Every settled fill is recorded when he counts it on the exchange:
+time, item, buy or sell, quantity, unit price (the average when one look at the offer
+covers several trades), gross, the exchange's fee, net cash and, for sales, the cost
+basis and realized profit. It is appended to `.data/master-meister-history.jsonl` and
+forced to disk; each fill's id comes from the exchange offer id and its filled count,
+so a fill counted again after a crash is recognised and not written twice. A fill the
+exchange loses in a crash gets a correction record (FIX) instead of an edit. Tracking
+starts when the history file is created; earlier trades are not backfilled.
+
+Cost basis is a weighted average per item. Purchases add units at what he paid; a sale
+takes known-cost and unknown-cost units in proportion to how many of each he holds and
+costs the known part at the current average. His starting allocation (and refills) has
+no known cost: sales of it show **Unknown** and are left out of realized profit, with
+the excluded quantity shown. Buying is never a loss: net cash flow (net sale proceeds
+minus spending) is shown separately from realized profit. The tab shows Spent, Net
+sales, Net cash flow and Realized P/L for every fill matching the filters (item search,
+all/buys/sells, today / 7 days / 30 days / all time) - not just the page - and says so.
+Sort by time, quantity, unit price, net total or realized profit. **Export CSV** writes
+the filtered fills to `.data/exports/master-meister-trades-<time>.csv`.
 
 **Commands** (administrators):
 
@@ -573,9 +639,10 @@ re-checks administrator rights; every change is validated, saved at once and log
 
 | Key | Default | Meaning |
 |---|---|---|
-| `interval` / `jitter` | 90 s / 50% | Time between decisions and its random variation |
-| `buychance` / `sellchance` | 55% / 10% | Share of decisions that buy / sell; the rest do nothing |
-| `maxoffers` | 4 | Open offers at once (1-8) |
+| `interval` / `sellinterval` / `jitter` | 90 s / 90 s / 50% | Time between buy checks, between sell checks, and their random variation |
+| `buychance` / `sellchance` | 55% / 10% | Chance a buy / sell check places an offer |
+| `maxoffers` / `maxbuys` / `maxsells` | 4 / 3 / 2 | Open offers at once: total (1-8), buys, sells |
+| `rules` | off | Trade only the enabled items on the rule lists |
 | `premium` | 5% | Most he pays over the reference |
 | `biddiscount` | 6% | Standing bids sit this far under the reference |
 | `markup` / `minsell` | 5% / 98% | Asking price over the reference / lowest sale price |

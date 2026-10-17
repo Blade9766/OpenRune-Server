@@ -56,6 +56,10 @@ class MeisterCommands(private val meister: MasterMeister) {
         }
     }
 
+    fun audit(admin: String, what: String) {
+        adminLog.info { "$admin $what" }
+    }
+
     /** Applies a settings change from the Bot Manager window; null when it was saved. */
     fun change(admin: String, trader: MeisterTrader, what: String, change: (MeisterSettings) -> MeisterSettings): String? {
         val error = trader.updateSettings(change)

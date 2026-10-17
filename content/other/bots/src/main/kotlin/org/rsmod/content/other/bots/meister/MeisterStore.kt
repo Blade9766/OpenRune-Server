@@ -42,6 +42,11 @@ data class MeisterSave(
     val lastReplenishAt: Long = 0,
     val stats: MeisterStats = MeisterStats(),
     val coords: SavedCoords? = null,
+    val rules: MeisterRules = MeisterRules(),
+    /** Cost basis per item for the trade history; see [CostBasisBook]. */
+    val basis: Map<Int, CostBasis> = emptyMap(),
+    /** False in saves from before cost basis was tracked; his stock is then seeded as unknown cost. */
+    val basisSeeded: Boolean = false,
 )
 
 /** Persists Master Meister. [write] is synchronous: when it returns the data is durable, or it throws. */

@@ -3,3 +3,7 @@
 45806	[clientscript,bot_items_init]
 45809	[clientscript,bot_items_draw]
 45812	[clientscript,bot_button]
+45815	[clientscript,bm_init]
+45818	[clientscript,bm_button]
+45821	[clientscript,bm_check]
+45824	[clientscript,bm_dot]

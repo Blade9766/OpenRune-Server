@@ -14,6 +14,7 @@ data class BotOffer(
     val createdAt: Long,
     val gold: Long,
     val taxPaid: Long,
+    val offerId: Long = 0,
 ) {
     val isOpen: Boolean
         get() = !finished
