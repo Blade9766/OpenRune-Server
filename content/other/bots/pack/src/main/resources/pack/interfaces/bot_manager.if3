@@ -5067,10 +5067,10 @@ name = "ov_m_portrait"
 type = "model"
 parent = "ov"
 x = 4
-y = 66
+y = 80
 width = 40
 height = 40
-model_zoom = 1500
+model_zoom = 1600
 rotation_x = 40
 
 [[component]]

@@ -939,7 +939,7 @@ constructor(
         if (fill == null) {
             paint.text("hd_title", "Select a fill for its details")
             paint.text("hd_note", "Tracking since ${date(trader.historyTrackingSince)}")
-            paint.text("hd_text", "Profit = net proceeds minus weighted-average cost; starting stock is Unknown, not free.")
+            paint.text("hd_text", "Profit = net proceeds minus average cost; starting stock: Unknown.")
             return
         }
         val name = trader.itemName(fill.itemId)
@@ -1394,7 +1394,7 @@ constructor(
         private const val SCHEDULE_OFFSET = 61 - KNOB_TOP
         const val OFFER_ROWS: Int = 8
         const val HISTORY_ROWS: Int = 5
-        private const val HISTORY_NAME_CHARS = 13
+        private const val HISTORY_NAME_CHARS = 11
         const val ROSTER_ROWS: Int = 8
         private const val ITEM_PICKS = 12
         private const val MAX_MENU = 120

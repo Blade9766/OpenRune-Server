@@ -251,7 +251,7 @@ text("ov_title", 4, 0, 200, 18, "ov", value="Overview", font="bold", color=GOLD)
 for i in range(4):
     card(f"ov_card{i}", i * 98, 20, 94, 34, "ov")
 panel("ov_m_box", 0, 58, MAIN_W, 66, "ov")
-comp("ov_m_portrait", "model", 4, 66, 40, 40, "ov", model_zoom=1500, rotation_x=40)
+comp("ov_m_portrait", "model", 4, 80, 40, 40, "ov", model_zoom=1600, rotation_x=40)
 text("ov_m_title", 48, 60, 200, 16, "ov", value="Master Meister", font="bold", color=GOLD)
 for i in range(3):
     text(f"ov_m{i}", 48, 76 + i * 15, 336, 15, "ov", font="small")
