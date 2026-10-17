@@ -79,6 +79,9 @@ object Parts {
         }
         crystalFaces.forEachIndexed { index, face -> face.colour = if (index % 3 == 0) crystalLight else crystal }
         recolours.forEach { (from, to) -> mesh.recolour(from, to) }
+        val tip = crystalVerts.maxBy { (mesh.pos(it) - bottom).dot(dir) }.let { mesh.pos(it) }
+        val centre = anchor + (tip - anchor) * 0.5
+        scatter(mesh, centre, dir, count = 6, radius = 27.0, size = 3.2, colour = crystal, light = crystalLight, label = mesh.vertices.first().label)
         return mesh
     }
 
@@ -100,8 +103,8 @@ object Parts {
             tube(mesh, c - u * 2.0, c + u * 2.0, 3.2, 6, gold, label)
         }
         val centre = top + u * 12.0
-        val ringRadius = 14.0
-        val thickness = 3.4
+        val ringRadius = 15.0
+        val thickness = 4.2
         val segments = 9
         val from = -PI * 0.15
         val to = PI * 1.15
@@ -112,7 +115,7 @@ object Parts {
             val dirOut = (across * cos(a) - u * sin(a))
             val inner = centre + dirOut * (ringRadius - thickness * taper)
             val outer = centre + dirOut * (ringRadius + thickness * taper)
-            for (side in listOf(-2.5, 2.5)) {
+            for (side in listOf(-3.5, 3.5)) {
                 ring += mesh.v(inner + depth * side, label)
                 ring += mesh.v(outer + depth * side, label)
             }
@@ -128,7 +131,8 @@ object Parts {
         val stem = mesh.faces.size
         tube(mesh, shaftTop, centre - u * (ringRadius - 3.0), 1.6, 4, silver, label)
         mesh.doubleSided(stem)
-        orb(mesh, centre, 7.5, orb, orbLight, label)
+        orb(mesh, centre, 8.5, orb, orbLight, label)
+        scatter(mesh, centre, u, count = 8, radius = 21.0, size = 2.2, colour = orb, light = orbLight, label = label)
         return mesh
     }
 
@@ -150,11 +154,15 @@ object Parts {
         val sb = skirt.bounds()
         val beltY = sb[1] + 9.0
         val frontAtBelt = skirt.vertices.filter { kotlin.math.abs(it.y - beltY) < 10 }.minOf { it.z } - 1.0
-        pouch(mesh, Vec(-0.62 * (sb[3] - sb[0]) / 2.0, beltY + 6.0, frontAtBelt + 3.0), palette, body)
+        pouch(mesh, Vec(-0.62 * (sb[3] - sb[0]) / 2.0, beltY + 8.0, frontAtBelt + 3.0), palette, body)
+        val buckle = mesh.faces.size
+        box(mesh, Vec(0.0, sb[1] + 2.0, frontAtBelt - 0.5), 4.5, 3.5, 1.2, BUCKLE, body)
+        box(mesh, Vec(0.0, sb[1] + 2.0, frontAtBelt - 1.2), 2.0, 1.6, 1.0, palette.leather - 4, body)
+        mesh.doubleSided(buckle)
         val motifY = sb[1] + (sb[4] - sb[1]) * 0.62
         val frontAtMotif = skirt.vertices.filter { kotlin.math.abs(it.y - motifY) < 12 && kotlin.math.abs(it.x) < 8 }.minOf { it.z } - 1.0
-        diamond(mesh, Vec(0.0, motifY, frontAtMotif), 8.0, 16.0, palette.motif, body)
-        diamond(mesh, Vec(0.0, motifY, frontAtMotif - 0.8), 4.5, 9.0, palette.robe, body)
+        diamond(mesh, Vec(0.0, motifY, frontAtMotif), 9.5, 19.0, palette.motif, body)
+        diamond(mesh, Vec(0.0, motifY, frontAtMotif - 0.8), 5.5, 11.0, palette.robe, body)
         return mesh
     }
 
@@ -200,9 +208,9 @@ object Parts {
 
     private fun pouch(mesh: Mesh, centre: Vec, palette: Palette, body: Mesh) {
         val start = mesh.faces.size
-        box(mesh, centre, 5.0, 6.5, 3.0, palette.leather, body)
-        box(mesh, centre + Vec(0.0, -4.5, -0.6), 5.4, 2.4, 3.2, palette.leather - 4, body)
-        diamond(mesh, centre + Vec(0.0, 1.5, -3.4), 2.4, 3.2, palette.rune, body)
+        box(mesh, centre, 7.0, 8.5, 4.0, palette.leather, body)
+        box(mesh, centre + Vec(0.0, -6.0, -0.6), 7.5, 3.0, 4.3, palette.leather - 4, body)
+        diamond(mesh, centre + Vec(0.0, 2.0, -4.6), 3.6, 4.8, palette.rune, body)
         mesh.doubleSided(start)
     }
 
@@ -251,6 +259,35 @@ object Parts {
         }
     }
 
+    /** A small floating gem: an octahedron stretched along [u], lit on alternate faces. */
+    private fun shard(mesh: Mesh, c: Vec, u: Vec, size: Double, colour: Int, light: Int, label: Int) {
+        val a = (if (kotlin.math.abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
+        val b = u.cross(a).norm()
+        val start = mesh.faces.size
+        val top = mesh.v(c + u * (size * 1.6), label)
+        val bottom = mesh.v(c - u * (size * 1.6), label)
+        val ring = listOf(a, b, a * -1.0, b * -1.0).map { mesh.v(c + it * size, label) }
+        for (i in 0 until 4) {
+            val n = (i + 1) % 4
+            mesh.face(top, ring[i], ring[n], if (i % 2 == 0) light else colour)
+            mesh.face(bottom, ring[n], ring[i], if (i % 2 == 1) light else colour)
+        }
+        mesh.doubleSided(start)
+    }
+
+    /** Small gems scattered in a loose ring around the [centre] of a staff head, in the staff's own space. */
+    private fun scatter(mesh: Mesh, centre: Vec, u: Vec, count: Int, radius: Double, size: Double, colour: Int, light: Int, label: Int) {
+        val a = (if (kotlin.math.abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
+        val b = u.cross(a).norm()
+        for (i in 0 until count) {
+            val angle = 2 * PI * i / count + 0.4
+            val lift = (i % 3 - 1) * radius * 0.45
+            val r = radius * (0.85 + 0.3 * ((i * 7) % 5) / 4.0)
+            val p = centre + a * (r * cos(angle)) + b * (r * sin(angle)) + u * lift
+            shard(mesh, p, u, size * (0.75 + 0.25 * (i % 2)), colour, light, label)
+        }
+    }
+
     private fun orb(mesh: Mesh, c: Vec, r: Double, colour: Int, light: Int, label: Int) {
         val start = mesh.faces.size
         val top = mesh.v(c + Vec(0.0, -r, 0.0), label)
@@ -284,4 +321,5 @@ object Parts {
     }
 
     private const val CRYSTAL_STAFF_CRYSTAL = 99
+    private const val BUCKLE = 7114
 }

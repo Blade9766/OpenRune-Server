@@ -25,8 +25,9 @@ The custom models are generated from cache parts by `tools/wayfinder-models`
 (`gradlew :tools:wayfinder-models:buildWayfinderModels`, which reads `.data/cache/LIVE`, so run
 `buildCache` first). It writes `pack/models/wayfinder_*.dat` and preview renders in
 `build/wayfinder-models/`. Every added vertex takes the animation label of the nearest body vertex,
-so the pieces move with the shoulders, hips, legs and hand they sit on. Particle effects around the
-staffs are not implemented.
+so the pieces move with the shoulders, hips, legs and hand they sit on. The OSRS client has no
+particle system, so the staffs carry their sparkle as geometry instead: small crystal shards float
+around Vaelor's crystal and cyan motes around Elowen's orb, both moving with the staff.
 
 ## Modules
 
