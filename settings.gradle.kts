@@ -38,6 +38,7 @@ include(
     "tools:osrs-mcp",
     "tools:wiki-dumping",
     "tools:combat-anims",
+    "tools:wayfinder-models",
 )
 
 includeProjects(project(":api"))

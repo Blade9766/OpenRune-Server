@@ -10,12 +10,23 @@ Two mages run a free teleport network:
 Talk-to explains the network and offers the destinations; Teleport opens the window straight
 away. Both mages share the same destinations.
 
-The mages are built from cache model parts, recoloured: Vaelor is the long-bearded wizard body in a
-trimmed wizard hat, robe and skirt turned purple with gold trim, grey hair and beard, holding the
-crystal staff with its crystal recoloured blue. Elowen is a female body with shoulder-length auburn
-hair in the trimmed wizard set turned teal and dark blue with silver trim, holding the Lunar
-staff (a crescent head) with its orb recoloured cyan. No new 3D models were made, so details the
-concept art adds (pauldrons, rune pouches, robe motifs, particles) are not there.
+Each mage wears cache body parts plus four custom models (`[gamevals.models]` 64100-64107):
+
+- **Archmage Vaelor**: long-bearded wizard body in purple robes with gold trim and grey hair; a
+  wizard hat with a bent tip (worn and chathead versions); a crystal staff with a larger, two-tone
+  faceted blue crystal, gold claws and a wooden shaft; and "regalia": layered purple pauldrons with
+  gold edges, a leather rune pouch with a purple rune, and a lavender diamond on the robe front.
+- **Arcanist Elowen**: auburn-haired body in teal and dark-blue robes with silver trim; a bent-tip
+  blue hat with a silver band; a new staff with a wooden shaft, gold fittings, a silver crescent and
+  a faceted cyan orb; and teal regalia with silver edges, a pouch with a cyan rune and a pale-blue
+  diamond.
+
+The custom models are generated from cache parts by `tools/wayfinder-models`
+(`gradlew :tools:wayfinder-models:buildWayfinderModels`, which reads `.data/cache/LIVE`, so run
+`buildCache` first). It writes `pack/models/wayfinder_*.dat` and preview renders in
+`build/wayfinder-models/`. Every added vertex takes the animation label of the nearest body vertex,
+so the pieces move with the shoulders, hips, legs and hand they sit on. Particle effects around the
+staffs are not implemented.
 
 ## Modules
 

@@ -132,3 +132,13 @@ wayfinder_deserted_keep = 61202
 wayfinder_mage_arena = 61203
 wayfinder_rogues_castle = 61204
 wayfinder_warriors_guild = 61205
+
+[gamevals.models]
+wayfinder_vaelor_hat = 64100
+wayfinder_vaelor_hat_head = 64101
+wayfinder_vaelor_staff = 64102
+wayfinder_vaelor_regalia = 64103
+wayfinder_elowen_hat = 64104
+wayfinder_elowen_hat_head = 64105
+wayfinder_elowen_staff = 64106
+wayfinder_elowen_regalia = 64107
