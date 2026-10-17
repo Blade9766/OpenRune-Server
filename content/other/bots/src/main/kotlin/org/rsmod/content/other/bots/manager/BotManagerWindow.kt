@@ -165,7 +165,7 @@ constructor(
         paint.text("mh_status", "$label<br><col=c8b48c>${if (settings.useRules) "Rule lists" else "Whole market"}</col>")
         paint.text("mh_card0_label", "Cash")
         paint.text("mh_card0_value", "${trader.cash.formatAmount} gp")
-        paint.text("mh_card1_label", "Active offers")
+        paint.text("mh_card1_label", "Offers")
         paint.text("mh_card1_value", "${trader.offers().count { it.isOpen }} / ${settings.maxActiveOffers}")
         paint.text("mh_card2_label", "Realized P/L")
         paint.text("mh_card2_value", signed(trader.realizedProfit()) + " gp")
@@ -347,14 +347,14 @@ constructor(
                 listOf(
                     "Max price" to "${rule.maxPrice.formatAmount}",
                     "Offer qty" to rule.quantity.formatAmount,
-                    "Max hold" to if (rule.maxHoldings == Int.MAX_VALUE) "No limit" else rule.maxHoldings.formatAmount,
+                    "Limit" to if (rule.maxHoldings == Int.MAX_VALUE) "No limit" else rule.maxHoldings.formatAmount,
                     "Cooldown" to "${rule.cooldownMinutes} min",
                     "Day spend" to if (rule.dailySpend == 0L) "Global" else rule.dailySpend.formatAmount,
-                    "Price mode" to rule.mode.label,
+                    "Mode" to rule.mode.label,
                 )
             val guide = trader.guideOf(itemId)
             val cost = rule.maxPrice.toLong() * rule.quantity
-            note = "Ceiling per item. Largest offer ${cost.formatAmount} gp. Holding ${trader.holding(itemId).formatAmount}."
+            note = "Ceiling per item - largest offer ${cost.formatAmount} gp - holding ${trader.holding(itemId).formatAmount}"
             if (guide > 0 && rule.maxPrice > guide * (100 + settingsOf(state, trader).maxBuyPremiumPercent) / 100) {
                 warnings += "Over guide ${guide.formatAmount}"
             }
@@ -368,18 +368,18 @@ constructor(
                     "Keep" to rule.keepAtLeast.formatAmount,
                     "Cooldown" to "${rule.cooldownMinutes} min",
                     "" to "",
-                    "Price mode" to rule.mode.label,
+                    "Mode" to rule.mode.label,
                 )
             val spare = (trader.holding(itemId) - rule.keepAtLeast).coerceAtLeast(0)
             val proceeds = rule.minPrice.toLong() * minOf(rule.quantity, spare)
-            note = "Floor per item. Holding ${trader.holding(itemId).formatAmount}, ${spare.formatAmount} to sell; offer at least ${proceeds.formatAmount} gp before fees."
+            note = "Floor per item - ${spare.formatAmount} above the reserve - offer at least ${proceeds.formatAmount} gp before fees"
             if (spare == 0) warnings += "Nothing above the reserve"
         }
         if (itemId in rules.lossLoops()) {
             warnings += "Loss loop: sell floor <= buy ceiling"
         }
         if (settingsOf(state, trader).useRules.not()) {
-            warnings += "Rules apply in rule mode (Schedule)"
+            warnings += "Not in use: rule mode is off (Schedule)"
         }
         labels.forEachIndexed { i, (label, value) ->
             val blank = label.isEmpty()
@@ -390,7 +390,7 @@ constructor(
                 paint.text("ed_f${i}_text", value)
             }
         }
-        paint.text("ed_note", if (warnings.isEmpty()) note else "<col=ff981f>${warnings.joinToString(" - ")}.</col> $note")
+        paint.text("ed_note", if (warnings.isEmpty()) note else "<col=ff981f>${warnings.joinToString(" - ")}</col>")
     }
 
     fun selectRule(access: ProtectedAccess, row: Int, history: Boolean) {
@@ -704,19 +704,29 @@ constructor(
         return if (failed > 0) "$failed bot(s) refused the change" else null
     }
 
+    private fun knobRowsPerPage(section: Section): Int = if (section == Section.Schedule) SCHEDULE_ROWS else KNOB_ROWS
+
     private fun renderKnobs(paint: Painter, state: ManagerState) {
         val schedule = state.section == Section.Schedule
+        val perPage = knobRowsPerPage(state.section)
+        paint.position("kn", 0, if (schedule) SCHEDULE_OFFSET else 0)
+        paint.position("kn_help", 4, KNOB_TOP + perPage * KNOB_PITCH)
+        paint.hide("kn_title", schedule)
+        paint.hide("kn_sub", schedule)
         paint.text("kn_title", if (schedule) "Trading Schedule" else "Settings")
         paint.text(
             "kn_sub",
             if (schedule) "Timing decides when he places offers; fills depend on the exchange's matching." else "Safeguards for whole-market trading, and the gathering bots' global switches.",
         )
         val rows = knobRows(state)
-        val pages = pages(rows.size, KNOB_ROWS)
+        val pages = pages(rows.size, perPage)
         val page = clampPage(state.knobPages[state.section] ?: 0, pages).also { state.knobPages[state.section] = it }
+        val pagerY = KNOB_TOP + perPage * KNOB_PITCH + 1
+        paint.position("kn_prev", 300, pagerY)
+        paint.position("kn_next", 346, pagerY)
         paint.button("kn_prev", "Prev", if (page > 0) ButtonState.Normal else ButtonState.Disabled)
         paint.button("kn_next", "Next", if (page < pages - 1) ButtonState.Normal else ButtonState.Disabled)
-        val shown = rows.drop(page * KNOB_ROWS).take(KNOB_ROWS)
+        val shown = rows.drop(page * perPage).take(perPage)
         for (r in 0 until KNOB_ROWS) {
             val row = shown.getOrNull(r)
             val name = "kn_r$r"
@@ -746,7 +756,7 @@ constructor(
         val state = state(access.player)
         val rows = knobRows(state)
         val page = state.knobPages[state.section] ?: 0
-        val row = rows.getOrNull(page * KNOB_ROWS + index) ?: return
+        val row = rows.getOrNull(page * knobRowsPerPage(state.section) + index) ?: return
         when (action) {
             "label" -> {
                 state.help = "<col=ff981f>${row.label.removeSuffix(" *")}:</col> ${row.help}"
@@ -765,7 +775,7 @@ constructor(
         val state = state(access.player)
         val rows = knobRows(state)
         val page = state.knobPages[state.section] ?: 0
-        val row = rows.getOrNull(page * KNOB_ROWS + index) ?: return
+        val row = rows.getOrNull(page * knobRowsPerPage(state.section) + index) ?: return
         val control = row.control as? Control.Toggle ?: return
         val error = control.action(access)
         state.message = error?.let { "<col=ff0000>Not changed: $it" } ?: "${row.label.removeSuffix(" *")} changed${if (row.label.endsWith("*")) "." else " in the draft; Save Changes to apply."}"
@@ -817,7 +827,7 @@ constructor(
         val usable = selected?.isOpen == true
         paint.button("of_cancel", "Cancel", if (usable) ButtonState.Normal else ButtonState.Disabled)
         paint.button("of_replace", "Cancel and replace", if (usable) ButtonState.Normal else ButtonState.Disabled)
-        paint.text("of_help", "Rule edits apply to new offers. Cancel keeps any fills and returns the rest; replace re-offers on the saved rule.")
+        paint.text("of_help", "Edits apply to new offers. Cancel keeps fills and returns the rest; replace re-offers.")
     }
 
     fun selectOffer(access: ProtectedAccess, row: Int) {
@@ -888,7 +898,7 @@ constructor(
         paint.button("hi_range", state.query.range.label)
         paint.button("hi_sort", "${state.query.sort.label} ${if (state.query.descending) "v" else "^"}")
         paint.button("hi_export", "Export CSV", if (rows.isEmpty()) ButtonState.Disabled else ButtonState.Normal)
-        listOf("Time", "Item", "Type", "Qty", "Unit", "Fees", "Net total", "Realized").forEachIndexed { i, h -> paint.text("hi_h$i", h) }
+        listOf("Time", "Item", "Type", "Qty", "Unit", "Fees", "Net total", "P/L").forEachIndexed { i, h -> paint.text("hi_h$i", h) }
         val shown = rows.drop(page * HISTORY_ROWS).take(HISTORY_ROWS)
         for (r in 0 until HISTORY_ROWS) {
             val row = "hi_r$r"
@@ -898,7 +908,7 @@ constructor(
             paint.hide("${row}_bg", fill.id != state.historySelected)
             paint.icon("${row}_icon", fill.itemId)
             paint.text("${row}_c0", time(fill.time))
-            paint.text("${row}_c1", trader.itemName(fill.itemId))
+            paint.text("${row}_c1", shorten(trader.itemName(fill.itemId), HISTORY_NAME_CHARS))
             paint.text("${row}_c2", when { fill.reversal -> "<col=ff981f>FIX</col>"; fill.buy -> "<col=5fa8ff>BUY</col>"; else -> "<col=00ff00>SELL</col>" })
             paint.text("${row}_c3", fill.quantity.formatAmount)
             paint.text("${row}_c4", fill.unitPrice.formatAmount)
@@ -924,10 +934,12 @@ constructor(
     }
 
     private fun renderFillDetails(paint: Painter, state: ManagerState, trader: MeisterTrader, fill: MeisterFill?) {
+        for (i in 0 until 4) paint.hide("hd_v$i", fill == null)
+        paint.hide("hd_text", fill != null)
         if (fill == null) {
             paint.text("hd_title", "Select a fill for its details")
             paint.text("hd_note", "Tracking since ${date(trader.historyTrackingSince)}")
-            listOf("Profit = net sale proceeds", "minus weighted-average", "cost of what was sold.", "Starting stock: Unknown.").forEachIndexed { i, s -> paint.text("hd_v$i", "<col=c8b48c>$s</col>") }
+            paint.text("hd_text", "Profit = net proceeds minus weighted-average cost; starting stock is Unknown, not free.")
             return
         }
         val name = trader.itemName(fill.itemId)
@@ -1037,7 +1049,7 @@ constructor(
         } else {
             val s = trader.settings
             paint.text("ov_m0", "${tradingState(trader).second} - ${if (s.useRules) "rule lists (${trader.rules.buy.count { it.enabled }} buy, ${trader.rules.sell.count { it.enabled }} sell)" else "whole market"}")
-            paint.text("ov_m1", "Cash ${trader.cash.formatAmount} gp - ${trader.holdingsView().size} item kinds - ${trader.offers().count { it.isOpen }} open offers")
+            paint.text("ov_m1", "Cash ${trader.cash.formatAmount} gp - ${trader.holdingsView().size} item kinds - ${plural(trader.offers().count { it.isOpen }, "open offer")}")
             paint.text("ov_m2", "Realized P/L ${signed(trader.realizedProfit())} gp over ${trader.historyFills().size} recorded fills")
             paint.button("ov_b2", "Trading: ${if (s.tradingEnabled) "<col=00ff00>ON" else "<col=ff0000>OFF"}")
             paint.button("ov_b3", if (s.buyingPaused) "Resume buying" else "Pause buying")
@@ -1276,12 +1288,15 @@ constructor(
                 } else {
                     val s = trader.settings
                     paint.dot("ft_dot0", if (!s.tradingEnabled) RED else if (s.buyingPaused) AMBER else GREEN)
-                    paint.text("ft_t0", "Buying: ${if (!s.tradingEnabled) "off" else if (s.buyingPaused) "paused" else "active"}, next ${countdown(trader.nextBuyAt)}  Selling: ${if (!s.tradingEnabled) "off" else if (s.sellingPaused) "paused" else "active"}")
+                    paint.text("ft_t0", "Buying: ${if (!s.tradingEnabled) "off" else if (s.buyingPaused) "paused" else "active, next ${countdown(trader.nextBuyAt)}"}")
                 }
-                paint.dot("ft_dot1", if (dirty) AMBER else TRANSPARENT)
-                paint.text("ft_t1", message ?: if (dirty) "<col=ff981f>Unsaved changes</col>" else "All changes saved")
+                val selling =
+                    trader?.settings?.let { s -> "Selling: ${if (!s.tradingEnabled) "off" else if (s.sellingPaused) "paused" else "active, next ${countdown(trader.nextSellAt)}"}" }
+                val sellingOn = trader?.settings?.let { it.tradingEnabled && !it.sellingPaused } == true
+                paint.dot("ft_dot1", if (dirty || message != null) AMBER else if (sellingOn) GREEN else RED)
+                paint.text("ft_t1", message ?: if (dirty) "<col=ff981f>Unsaved changes</col>" else selling ?: "")
                 if (section == Section.Settings) {
-                    paint.button("ft_b0", "Reset defaults", if (trader == null) ButtonState.Disabled else ButtonState.Normal)
+                    paint.button("ft_b0", "Reset", if (trader == null) ButtonState.Disabled else ButtonState.Normal)
                 } else {
                     paint.button("ft_b0", if (trader?.settings?.buyingPaused == true) "Resume buying" else "Pause buying", if (trader == null) ButtonState.Disabled else ButtonState.Normal)
                 }
@@ -1354,6 +1369,10 @@ constructor(
             else -> "0"
         }
 
+    private fun shorten(text: String, chars: Int): String = if (text.length <= chars) text else text.take(chars - 1).trimEnd() + "."
+
+    private fun plural(count: Int, noun: String): String = "$count $noun${if (count == 1) "" else "s"}"
+
     private fun countdown(at: Long): String {
         val seconds = ((at - System.currentTimeMillis()) / 1000).coerceAtLeast(0)
         return "%d:%02d".format(seconds / 60, seconds % 60)
@@ -1369,8 +1388,13 @@ constructor(
     companion object {
         const val RULE_ROWS: Int = 4
         const val KNOB_ROWS: Int = 9
+        private const val SCHEDULE_ROWS = 7
+        private const val KNOB_TOP = 34
+        private const val KNOB_PITCH = 21
+        private const val SCHEDULE_OFFSET = 61 - KNOB_TOP
         const val OFFER_ROWS: Int = 8
         const val HISTORY_ROWS: Int = 5
+        private const val HISTORY_NAME_CHARS = 13
         const val ROSTER_ROWS: Int = 8
         private const val ITEM_PICKS = 12
         private const val MAX_MENU = 120

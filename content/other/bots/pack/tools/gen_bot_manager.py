@@ -125,9 +125,9 @@ for i, (label, indent, sprite) in enumerate(NAV):
     layer(item, 3, 4 + i * 25, SIDE_W - 6, 23, "side", options=["Open"])
     rect(f"{item}_bg", 0, 0, SIDE_W - 6, 23, item)
     if sprite >= 0:
-        graphic(f"{item}_icon", 3 + indent * 8, 2, 20, 19, item, sprite=sprite)
+        graphic(f"{item}_icon", 3 + indent * 8, 2, 20, 19, item, sprite=sprite, hide=False)
     else:
-        comp(f"{item}_icon", "model", 1, 0, 24, 23, item, model_zoom=1250, rotation_x=40)
+        comp(f"{item}_icon", "model", 1, 0, 24, 23, item, model_zoom=1250, rotation_x=40)  # chathead portrait
     text(f"{item}_text", 27 + indent * 8, 0, SIDE_W - 33 - indent * 8, 23, item, value=label, font="small", color=GOLD if indent == 0 else MUTED)
 
 panel("main_box", MAIN_X, TOP, MAIN_W, MAIN_H, None)
@@ -137,13 +137,13 @@ layer("foot", MAIN_X, FOOT_Y, MAIN_W, FOOT_H)
 
 # Meister header and tabs, shared by his five sections
 layer("mh", 0, 0, MAIN_W, 60, "main")
-comp("mh_portrait", "model", 2, 2, 36, 36, "mh", model_zoom=796, rotation_x=40)
-text("mh_name", 42, 2, 122, 16, "mh", value="Master Meister", font="bold", color=GOLD)
+comp("mh_portrait", "model", 2, 2, 36, 36, "mh", model_zoom=1150, rotation_x=40)
+text("mh_name", 42, 2, 106, 16, "mh", value="Master Meister", font="bold", color=GOLD)
 layer("mh_dot", 43, 25, 7, 7, "mh")
-text("mh_status", 54, 20, 110, 16, "mh", font="small")
-card("mh_card0", 166, 2, 72, 38, "mh")
-card("mh_card1", 242, 2, 62, 38, "mh")
-card("mh_card2", 308, 2, 80, 38, "mh")
+text("mh_status", 54, 20, 94, 22, "mh", font="small", line_height=11)
+card("mh_card0", 150, 2, 106, 38, "mh")
+card("mh_card1", 260, 2, 58, 38, "mh")
+card("mh_card2", 322, 2, 66, 38, "mh")
 for i in range(5):
     button(f"mh_tab{i}", i * 78, 43, 76, 16, "mh")
 
@@ -157,7 +157,7 @@ text("ru_title", 4, 0, 140, 18, "ru", font="bold", color=GOLD)
 button("ru_search", 146, 1, 96, 16, "ru")
 button("ru_add", 246, 1, 70, 16, "ru")
 button("ru_bulk", 320, 1, 68, 16, "ru")
-RULE_CELLS = [(26, 120, "left"), (148, 66, "right"), (218, 40, "right"), (262, 56, "right"), (322, 38, "right")]
+RULE_CELLS = [(26, 120, "left"), (148, 64, "right"), (214, 32, "right"), (248, 52, "right"), (302, 56, "right")]
 header_cells("ru", "ru", 20, [(26, 120, "left")] + RULE_CELLS[1:] + [(362, 28, "centre")])
 for r in range(4):
     table_row(f"ru_r{r}", "ru", 34 + r * 19, 18, RULE_CELLS, icon_x=3, check_x=368, options=("Select", "History"))
@@ -171,11 +171,12 @@ text("ed_title", 42, 2, 200, 15, "ed", font="bold", color=GOLD)
 layer("ed_check", 246, 3, 15, 15, "ed")
 text("ed_check_text", 264, 2, 70, 16, "ed", value="Enabled", font="small")
 button("ed_remove", 336, 2, 50, 15, "ed")
+EDITOR_COLUMNS = [(42, 50, 60), (157, 50, 60), (272, 34, 80)]
 for i in range(6):
-    col, row = i % 3, i // 3
-    x, y = 42 + col * 115, 20 + row * 18
-    text(f"ed_l{i}", x, y, 50, 16, "ed", font="small", color=MUTED)
-    field(f"ed_f{i}", x + 51, y, 60, 16, "ed")
+    x, label_w, field_w = EDITOR_COLUMNS[i % 3]
+    y = 20 + (i // 3) * 18
+    text(f"ed_l{i}", x, y, label_w, 16, "ed", font="small", color=MUTED)
+    field(f"ed_f{i}", x + label_w + 1, y, field_w, 16, "ed")
 text("ed_note", 6, 56, MAIN_W - 12, 14, "ed", font="small", color=MUTED)
 
 # ---------------------------------------------------------------- knob lists (schedule, settings)
@@ -194,7 +195,7 @@ for r in range(9):
     button(f"{row}_inc", 276, 2, 22, 16, row)
     button(f"{row}_toggle", 250, 2, 70, 16, row)
     text(f"{row}_info", 302, 0, 86, 20, row, font="small", color=MUTED)
-text("kn_help", 4, 225, MAIN_W - 8, 32, "kn", font="small", color=MUTED, line_height=12)
+text("kn_help", 4, 225, 290, 32, "kn", font="small", color=MUTED, line_height=12)
 
 # ---------------------------------------------------------------- active offers
 
@@ -224,23 +225,24 @@ button("hi_sort", 260, 51, 64, 16, "hi")
 button("hi_export", 328, 51, 62, 16, "hi")
 HIST_CELLS = [
     (2, 30, "left"),
-    (40, 70, "left"),
-    (112, 30, "left"),
-    (144, 34, "right"),
-    (180, 46, "right"),
-    (228, 38, "right"),
-    (268, 58, "right"),
-    (328, 60, "right"),
+    (54, 68, "left"),
+    (124, 28, "left"),
+    (154, 30, "right"),
+    (186, 40, "right"),
+    (228, 34, "right"),
+    (264, 60, "right"),
+    (326, 62, "right"),
 ]
-header_cells("hi", "hi", 70, [(2, 30, "left"), (22, 88, "left")] + HIST_CELLS[2:])
+header_cells("hi", "hi", 70, [(2, 30, "left"), (34, 88, "left")] + HIST_CELLS[2:])
 for r in range(5):
-    table_row(f"hi_r{r}", "hi", 84 + r * 17, 16, HIST_CELLS, icon_x=21)
+    table_row(f"hi_r{r}", "hi", 84 + r * 17, 16, HIST_CELLS, icon_x=33)
 panel("hd_box", 0, 170, MAIN_W, CONTENT_H - 170, "hi")
 layer("hd", 0, 170, MAIN_W, CONTENT_H - 170, "hi")
 text("hd_title", 4, 1, 160, 14, "hd", font="small", color=GOLD)
 text("hd_note", 166, 1, 222, 14, "hd", font="small", color=MUTED, h_align="right")
 for i in range(4):
     text(f"hd_v{i}", 4 + i * 96, 14, 94, 14, "hd", font="small")
+text("hd_text", 4, 14, MAIN_W - 8, 14, "hd", font="small", color=MUTED)
 
 # ---------------------------------------------------------------- overview
 
@@ -249,7 +251,7 @@ text("ov_title", 4, 0, 200, 18, "ov", value="Overview", font="bold", color=GOLD)
 for i in range(4):
     card(f"ov_card{i}", i * 98, 20, 94, 34, "ov")
 panel("ov_m_box", 0, 58, MAIN_W, 66, "ov")
-comp("ov_m_portrait", "model", 4, 62, 40, 40, "ov", model_zoom=796, rotation_x=40)
+comp("ov_m_portrait", "model", 4, 66, 40, 40, "ov", model_zoom=1500, rotation_x=40)
 text("ov_m_title", 48, 60, 200, 16, "ov", value="Master Meister", font="bold", color=GOLD)
 for i in range(3):
     text(f"ov_m{i}", 48, 76 + i * 15, 336, 15, "ov", font="small")

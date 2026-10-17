@@ -7,6 +7,7 @@ import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.ui.ifSetHide
 import org.rsmod.api.player.ui.ifSetNpcHead
 import org.rsmod.api.player.ui.ifSetObj
+import org.rsmod.api.player.ui.ifSetPosition
 import org.rsmod.api.player.ui.ifSetText
 import org.rsmod.game.entity.Player
 
@@ -21,6 +22,10 @@ class Painter(private val player: Player) {
 
     fun text(name: String, value: String) {
         if (changed("t:$name", value)) player.ifSetText(com(name), value)
+    }
+
+    fun position(name: String, x: Int, y: Int) {
+        if (changed("p:$name", x to y)) player.ifSetPosition(com(name), x, y)
     }
 
     fun hide(name: String, hidden: Boolean) {
