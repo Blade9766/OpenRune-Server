@@ -37,6 +37,16 @@ object GeConfig {
     /** Ticks to wait before retrying a failed save. */
     const val SAVE_RETRY_TICKS = 50
 
+    /**
+     * Ticks between the book changing and it being written. The delay lets the background save of
+     * a player who just placed an offer land first, so a crash can't keep both their items and
+     * the offer. Collecting saves straight away instead (see [GeService]).
+     */
+    const val SAVE_DELAY_TICKS = 10
+
+    /** Ticks between passes that resume buy offers whose buy limit has reset. */
+    const val REMATCH_INTERVAL_TICKS = 50
+
     const val COINS = "obj.coins"
     const val BOND = "obj.osrs_bond"
 
@@ -49,7 +59,7 @@ object GeConfig {
     const val COMP_HISTORY = PREFIX + "history"
     const val COMP_BACK = PREFIX + "back"
     const val COMP_COLLECT_ALL = PREFIX + "collectall"
-    const val COMP_DETAILS = PREFIX + "details"
+    const val COMP_DETAILS_STATUS = PREFIX + "details_status"
     const val COMP_DETAILS_COLLECT = PREFIX + "details_collect"
     const val COMP_SETUP = PREFIX + "setup"
     const val COMP_SETUP_CONFIRM = PREFIX + "setup_confirm"
@@ -90,7 +100,7 @@ object GeConfig {
     const val SETUP_PRICE_PLUS_CUSTOM = 15
     const val SETUP_CHILD_COUNT = 18
 
-    /** Details panel children created by script 819. */
+    /** Abort and modify icons on `details_status`, created by script 819. */
     const val DETAILS_ABORT = 0
     const val DETAILS_MODIFY = 1
 

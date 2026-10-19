@@ -165,6 +165,49 @@ class GeExchangeTest {
     }
 
     @Test
+    fun `a buy offer stalled on its limit resumes against the waiting sell offer once the window resets`() {
+        val sell = exchange.place(SELLER, "seller", 0, GeOfferType.Sell, RARE, 1000, 20)
+        val buy = exchange.place(BUYER, "buyer", 0, GeOfferType.Buy, RARE, 1000, 20)
+        assertEquals(8, buy.completed)
+
+        now += GeConfig.BUY_LIMIT_WINDOW_MILLIS - 1
+        exchange.rematch()
+        assertEquals(8, buy.completed)
+        assertEquals(8, sell.completed)
+
+        now += 1
+        exchange.rematch()
+        assertEquals(16, buy.completed)
+        assertEquals(16, sell.completed)
+        assertEquals(16, buy.collectItems)
+        assertEquals(0, buy.collectCoins)
+        assertEquals(16 * 1000 - 16 * 20, sell.collectCoins)
+        assertEquals(0, exchange.remainingBuyLimit(BUYER, RARE))
+
+        // Nothing changes until the next window, however often the pass runs.
+        exchange.rematch()
+        assertEquals(16, buy.completed)
+    }
+
+    @Test
+    fun `rematching trades at the sell price and refunds the buyer the difference`() {
+        val sell = exchange.place(SELLER, "seller", 0, GeOfferType.Sell, RARE, 900, 20)
+        val buy = exchange.place(BUYER, "buyer", 0, GeOfferType.Buy, RARE, 1000, 10)
+        assertEquals(8, buy.completed)
+        assertEquals(8 * 100, buy.collectCoins)
+
+        now += GeConfig.BUY_LIMIT_WINDOW_MILLIS
+        exchange.rematch()
+        assertTrue(buy.finished)
+        assertEquals(10, buy.collectItems)
+        assertEquals(10 * 100, buy.collectCoins)
+        assertEquals(10, sell.completed)
+        assertEquals(10 * 900 - 10 * 18, sell.collectCoins)
+        // Every coin the buyer put in is either with the seller (gross) or refunded.
+        assertEquals(10 * 1000, sell.gold + buy.collectCoins)
+    }
+
+    @Test
     fun `history records both sides newest first`() {
         exchange.place(SELLER, "seller", 0, GeOfferType.Sell, COAL, 100, 2)
         exchange.place(BUYER, "buyer", 0, GeOfferType.Buy, COAL, 100, 1)

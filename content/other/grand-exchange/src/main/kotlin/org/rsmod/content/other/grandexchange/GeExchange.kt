@@ -156,6 +156,20 @@ class GeExchange(private val items: GeItemData, private val clock: () -> Long) {
         return taken
     }
 
+    /**
+     * Matches waiting buy offers against the book again, oldest first. A buy offer that stopped
+     * on its buy limit only trades when matched, so without this it would sit next to a cheaper
+     * sell offer until someone placed a new one.
+     */
+    fun rematch(now: Long = clock()) {
+        val waiting = offers.values.filter { it.type == GeOfferType.Buy && it.isActive && it.remaining > 0 }
+        for (buy in waiting) {
+            if (buy.isActive && remainingBuyLimit(buy.owner, buy.item, now) > 0) {
+                match(buy)
+            }
+        }
+    }
+
     private fun match(offer: GeOffer) {
         val active = activeByItem[offer.item] ?: return
         val candidates =

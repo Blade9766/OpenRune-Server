@@ -44,7 +44,10 @@ class GrandExchangeScript @Inject constructor(private val service: GeService) : 
         onEvent<GameLifecycle.EndCycle> { service.tick() }
         onEvent<GameLifecycle.Shutdown> { service.save() }
         onPlayerLogin { service.onLogin(player) }
-        onPlayerLogout { service.save() }
+        onPlayerLogout {
+            service.onHistoryClosed(player)
+            service.save()
+        }
 
         // Booths, clerks and bankers.
         onOpLoc1(GeConfig.LOC_BOOTH_EXCHANGE) { service.open(this) }
@@ -68,6 +71,7 @@ class GrandExchangeScript @Inject constructor(private val service: GeService) : 
         onIfClose(GeConfig.OFFERS) { service.onOffersClosed(player) }
         onIfOpen(GeConfig.COLLECT) { service.onCollectionBoxOpened(player) }
         onIfClose(GeConfig.COLLECT) { service.onCollectionBoxClosed(player) }
+        onIfClose(GeConfig.HISTORY) { service.onHistoryClosed(player) }
 
         // Offer slots: view, buy, sell.
         for (slot in 0 until GeConfig.SLOT_COUNT) {
@@ -94,7 +98,7 @@ class GrandExchangeScript @Inject constructor(private val service: GeService) : 
         onIfModalButton(GeConfig.COMP_SETUP_CONFIRM) { service.confirm(this) }
 
         // Status panel.
-        onIfModalButton(GeConfig.COMP_DETAILS) {
+        onIfModalButton(GeConfig.COMP_DETAILS_STATUS) {
             when (it.comsub) {
                 GeConfig.DETAILS_ABORT -> service.abort(player)
                 GeConfig.DETAILS_MODIFY -> service.modify(this)
@@ -146,7 +150,7 @@ class GrandExchangeScript @Inject constructor(private val service: GeService) : 
         onIfModalButton(GeConfig.COMP_HISTORY_LIST) {
             val trade = service.historyTrade(player, it.comsub) ?: return@onIfModalButton
             if (it.op == IfButtonOp.Op10) {
-                service.examineBox(player, slot = null, box = GeConfig.COLLECT_BOX_ITEMS)
+                service.examineItem(player, trade.item)
             } else {
                 service.buyAgain(this, trade)
             }

@@ -56,8 +56,10 @@ constructor(
     private val playerList: PlayerList,
 ) : GeExchange.Listener {
     private val savePath: Path = Path.of(GeConfig.SAVE_PATH)
-    private var saveCountdown = 0
+    private var saveCountdown = GeConfig.SAVE_DELAY_TICKS
+    private var rematchCountdown = GeConfig.REMATCH_INTERVAL_TICKS
     private var saveDisabled = false
+    private val historyViews = HashMap<Int, List<GeTrade>>()
     private val coinsId: Int by lazy { GeConfig.COINS.asRSCM(RSCMType.OBJ) }
     private val bondId: Int by lazy { GeConfig.BOND.asRSCM(RSCMType.OBJ) }
 
@@ -84,7 +86,12 @@ constructor(
     }
 
     fun tick() {
+        if (--rematchCountdown <= 0) {
+            rematchCountdown = GeConfig.REMATCH_INTERVAL_TICKS
+            exchange.rematch()
+        }
         if (!exchange.dirty) {
+            saveCountdown = GeConfig.SAVE_DELAY_TICKS
             return
         }
         if (--saveCountdown <= 0) {
@@ -98,7 +105,7 @@ constructor(
         }
         try {
             exchange.save(savePath)
-            saveCountdown = 0
+            saveCountdown = GeConfig.SAVE_DELAY_TICKS
         } catch (t: Throwable) {
             saveCountdown = GeConfig.SAVE_RETRY_TICKS
             logger.error(t) { "Could not save the Grand Exchange book to $savePath." }
@@ -203,7 +210,7 @@ constructor(
             )
         }
         player.ifSetEvents(GeConfig.COMP_SETUP, 0 until GeConfig.SETUP_CHILD_COUNT, IfEvent.Op1, IfEvent.Op2)
-        player.ifSetEvents(GeConfig.COMP_DETAILS, GeConfig.DETAILS_ABORT..GeConfig.DETAILS_MODIFY, IfEvent.Op1)
+        player.ifSetEvents(GeConfig.COMP_DETAILS_STATUS, GeConfig.DETAILS_ABORT..GeConfig.DETAILS_MODIFY, IfEvent.Op1)
         player.ifSetEvents(
             GeConfig.COMP_DETAILS_COLLECT,
             GeConfig.DETAILS_COLLECT_ITEMS_CHILD..GeConfig.DETAILS_COLLECT_COINS_CHILD,
@@ -607,9 +614,13 @@ constructor(
         }
         val type = offer.type
         val remaining = offer.remaining
-        exchange.abort(offer)
+        if (!exchange.abort(offer)) {
+            player.mes("That offer has already finished.")
+            return
+        }
         collectBox(player, offer, GeConfig.COLLECT_BOX_ITEMS, CollectMode.Default)
         collectBox(player, offer, GeConfig.COLLECT_BOX_COINS, CollectMode.Default)
+        saveAfterCollect()
         refresh(player, offer.slot)
         if (exchange.offer(player.accountId, offer.slot) != null) {
             player.mes("Collect what the offer holds before modifying it.")
@@ -635,19 +646,32 @@ constructor(
     fun collectSelected(player: Player, box: Int, mode: CollectMode) {
         val offer = selectedOffer(player) ?: return
         collectBox(player, offer, box, mode)
+        saveAfterCollect()
         refresh(player, offer.slot)
+        if (exchange.offer(player.accountId, offer.slot) == null) {
+            back(player)
+        }
     }
 
     fun collectSlot(player: Player, slot: Int, box: Int, mode: CollectMode) {
         val offer = exchange.offer(player.accountId, slot) ?: return
         collectBox(player, offer, box, mode)
+        saveAfterCollect()
         refresh(player, slot)
     }
 
     fun examineBox(player: Player, slot: Int?, box: Int) {
         val offer = (if (slot == null) selectedOffer(player) else exchange.offer(player.accountId, slot)) ?: return
-        val item = if (box == GeConfig.COLLECT_BOX_COINS) coinsId else offer.item
+        examineItem(player, if (box == GeConfig.COLLECT_BOX_COINS) coinsId else offer.item)
+    }
+
+    fun examineItem(player: Player, item: Int) {
         player.mes(ServerCacheManager.getItemOrDefault(item).examine)
+    }
+
+    // Must land before the player's background save, so a crash can lose a collection but never repeat it.
+    private fun saveAfterCollect() {
+        save()
     }
 
     fun collectAll(player: Player, toBank: Boolean) {
@@ -668,7 +692,9 @@ constructor(
         }
         if (!any) {
             player.mes("You have nothing to collect.")
+            return
         }
+        saveAfterCollect()
     }
 
     private fun collectBox(player: Player, offer: GeOffer, box: Int, mode: CollectMode) {
@@ -777,6 +803,7 @@ constructor(
         val player = access.player
         access.ifOpenMainModal(GeConfig.HISTORY)
         val trades = exchange.history(player.accountId)
+        historyViews[player.accountId] = trades
         player.runClientScript(GeConfig.CS2_HISTORY_INIT)
         for ((index, trade) in trades.withIndex()) {
             player.runClientScript(
@@ -785,8 +812,8 @@ constructor(
                 trade.item,
                 trade.type.clientId,
                 trade.quantity,
-                trade.total,
-                trade.tax,
+                trade.total.toLong(),
+                trade.tax.toLong(),
             )
         }
         player.runClientScript(GeConfig.CS2_HISTORY_FINISH)
@@ -795,9 +822,13 @@ constructor(
         }
     }
 
-    /** The trade a history line child belongs to, or null. */
+    /** The trade a history line child belongs to, as the screen listed it when it opened, or null. */
     fun historyTrade(player: Player, comsub: Int): GeTrade? =
-        exchange.history(player.accountId).getOrNull(comsub / GeConfig.HISTORY_LINE_CHILDREN)
+        historyViews[player.accountId]?.getOrNull(comsub / GeConfig.HISTORY_LINE_CHILDREN)
+
+    fun onHistoryClosed(player: Player) {
+        historyViews.remove(player.accountId)
+    }
 
     /** "Buy-offer" on a history line: open the exchange with a buy setup for that item. */
     fun buyAgain(access: ProtectedAccess, trade: GeTrade) {
