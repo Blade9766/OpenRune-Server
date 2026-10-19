@@ -11,12 +11,7 @@ internal object InterfaceEvents {
         comsub: Int,
         event: IfEvent,
     ): Boolean {
-        // A static component's events come from the cache, unless the server has set its own.
-        val verifyStaticEvents = comsub == -1
-        return if (verifyStaticEvents) {
-            component.hasEvent(event) || ui.hasEvent(component, comsub, event)
-        } else {
-            ui.hasEvent(component, comsub, event)
-        }
+        val staticEnabled = comsub == -1 && component.hasEvent(event)
+        return staticEnabled || ui.hasEvent(component, comsub, event)
     }
 }

@@ -163,6 +163,8 @@ import org.rsmod.content.quest.area.karamja.shilovillage.ShiloUndead
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageKillHook
 import org.rsmod.content.quest.area.karamja.shilovillage.ShiloVillageQuest
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesLoginVars
+import org.rsmod.content.generic.locs.bookcases.BookcaseSearchHook
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.TouristCentreBookcases
 import org.rsmod.content.quest.area.lumbridge.RuneMysteriesQuest
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DeathToTheDorgeshuunQuest
 import org.rsmod.content.quest.area.lumbridge.dorgeshuun.DttdScenes
@@ -254,6 +256,7 @@ import org.rsmod.content.quest.area.varrock.familycrest.npcs.Avan
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Caleb
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Dimintheis
 import org.rsmod.content.quest.area.varrock.familycrest.npcs.Johnathon
+import org.rsmod.content.quest.area.varrock.daddyshome.DaddysHomeQuest
 import org.rsmod.content.quest.area.varrock.gertrudescat.GertrudesCatQuest
 import org.rsmod.content.quest.area.varrock.romeojuliet.CryptScene
 import org.rsmod.content.quest.area.varrock.romeojuliet.JulietScene
@@ -561,6 +564,8 @@ public class QuestModule : PluginModule() {
         bindInstance<PiratesTreasureQuest>()
         bindInstance<FaladorParkDig>()
         bindInstance<XMarksTheSpotQuest>()
+        bindInstance<DaddysHomeQuest>()
+        addSetBinding<BookcaseSearchHook>(TouristCentreBookcases::class.java)
         addSetBinding<SpadeDigHook>(XMarksTheSpotQuest::class.java)
         addSetBinding<SpadeDigHook>(SpadeDigging::class.java)
     }

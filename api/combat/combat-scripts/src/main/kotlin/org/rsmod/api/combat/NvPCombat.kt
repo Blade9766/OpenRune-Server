@@ -7,7 +7,12 @@ import dev.openrune.types.ProjAnimType
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
 import org.rsmod.api.combat.commons.npc.NpcAttackHook
+import org.rsmod.api.combat.commons.npc.NpcAttackOverride
+import org.rsmod.api.combat.commons.npc.NpcAttackOverrideHook
 import org.rsmod.api.combat.commons.npc.attackRate
+import org.rsmod.api.combat.commons.npc.guaranteesHit
+import org.rsmod.api.combat.commons.npc.penetration
+import org.rsmod.api.combat.commons.npc.rollDamage
 import org.rsmod.api.combat.commons.player.finishNpcHit
 import org.rsmod.api.combat.formulas.AccuracyFormulae
 import org.rsmod.api.combat.formulas.MaxHitFormulae
@@ -34,6 +39,7 @@ constructor(
     private val worldRepo: WorldRepository,
     private val hitModifier: PlayerHitModifier,
     private val attackHooks: Set<NpcAttackHook>,
+    private val attackOverrideHooks: Set<NpcAttackOverrideHook>,
 ) {
     fun attack(access: StandardNpcAccess, target: Player, attack: CombatAttack.NpcAttack) {
         when (attack) {
@@ -49,11 +55,24 @@ constructor(
         }
         playAttackFx(target)
 
-        val successfulHit = accuracy.rollMeleeAccuracy(npc, target, attack.type, random)
+        val override = resolveOverride(target)
+        val successfulHit =
+            override.guaranteesHit() ||
+                accuracy.rollMeleeAccuracy(npc, target, attack.type, random)
         val damage =
-            if (successfulHit) random.of(0..maxHits.getMeleeMaxHit(npc, target, attack.type)) else 0
+            override.rollDamage(
+                accurate = successfulHit,
+                standardMaxHit = { maxHits.getMeleeMaxHit(npc, target, attack.type) },
+                roll = { random.of(0..it) },
+            )
 
-        finishAttack(target, delay = MELEE_HIT_DELAY, type = HitType.Melee, damage = damage)
+        finishAttack(
+            target,
+            delay = MELEE_HIT_DELAY,
+            type = HitType.Melee,
+            damage = damage,
+            penetration = override.penetration(),
+        )
     }
 
     private fun StandardNpcAccess.attackRanged(target: Player, attack: CombatAttack.NpcRanged) {
@@ -63,8 +82,15 @@ constructor(
         playAttackFx(target)
         val flight = spawnProjectile(target)
 
-        val successfulHit = accuracy.rollRangedAccuracy(npc, target, random)
-        val damage = if (successfulHit) random.of(0..maxHits.getRangedMaxHit(npc, target)) else 0
+        val override = resolveOverride(target)
+        val successfulHit =
+            override.guaranteesHit() || accuracy.rollRangedAccuracy(npc, target, random)
+        val damage =
+            override.rollDamage(
+                accurate = successfulHit,
+                standardMaxHit = { maxHits.getRangedMaxHit(npc, target) },
+                roll = { random.of(0..it) },
+            )
 
         finishAttack(
             target,
@@ -72,6 +98,7 @@ constructor(
             type = HitType.Ranged,
             damage = damage,
             defendClientDelay = flight.clientCycles,
+            penetration = override.penetration(),
         )
     }
 
@@ -89,8 +116,15 @@ constructor(
         // A fixed `maxHit` (e.g. from a scripted attack) takes precedence; otherwise derive it from
         // the npc's magic level and magic strength.
         val maxHit = if (attack.maxHit > 0) attack.maxHit else maxHits.getMagicMaxHit(npc, target)
-        val successfulHit = accuracy.rollMagicAccuracy(npc, target, random)
-        val damage = if (successfulHit) random.of(0..maxHit) else 0
+        val override = resolveOverride(target)
+        val successfulHit =
+            override.guaranteesHit() || accuracy.rollMagicAccuracy(npc, target, random)
+        val damage =
+            override.rollDamage(
+                accurate = successfulHit,
+                standardMaxHit = { maxHit },
+                roll = { random.of(0..it) },
+            )
 
         if (successfulHit) {
             spell?.playImpact(target, flight)
@@ -104,6 +138,7 @@ constructor(
             type = HitType.Magic,
             damage = damage,
             defendClientDelay = flight.clientCycles,
+            penetration = override.penetration(),
         )
     }
 
@@ -209,10 +244,14 @@ constructor(
         type: HitType,
         damage: Int,
         defendClientDelay: Int = 0,
+        penetration: Int = 0,
     ) {
         setAttackVars(target)
-        target.finishNpcHit(npc, delay, type, damage, hitModifier, defendClientDelay)
+        target.finishNpcHit(npc, delay, type, damage, hitModifier, defendClientDelay, penetration)
     }
+
+    private fun StandardNpcAccess.resolveOverride(target: Player): NpcAttackOverride? =
+        attackOverrideHooks.firstNotNullOfOrNull { it.override(npc, target) }
 
     private fun canAttack(target: Player): Boolean {
         return target.isValidTarget()

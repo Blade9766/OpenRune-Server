@@ -374,7 +374,7 @@ constructor(private val ew: ElementalWorkshopQuest, private val objRepo: ObjRepo
         const val SEARCH_SEQ = "seq.human_pickuptable"
 
         const val LEVER_SOUND = "synth.lever"
-        const val VALVE_SOUND = "synth.tap_fill"
+        const val VALVE_SOUND = "synth.fill_container"
         const val WHEEL_SOUND = "synth.biglever"
         const val BELLOWS_SOUND = "synth.furnace"
         const val FURNACE_SOUND = "synth.furnace"

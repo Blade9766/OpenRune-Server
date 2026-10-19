@@ -1,47 +1,43 @@
 package org.rsmod.content.quest.area.baxtorianfalls.waterfall
 
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
+import org.rsmod.api.config.constants
+import org.rsmod.api.invtx.add
+import org.rsmod.api.invtx.delete
+import org.rsmod.api.invtx.invTransaction
+import org.rsmod.api.invtx.select
 import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.output.CamShakeAxis
+import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpLocU
-import org.rsmod.content.quest.area.ardougne.fadeFromBlack
-import org.rsmod.content.quest.area.ardougne.fadeToBlack
+import org.rsmod.api.table.WaterfallPillarRunesRow
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.AMULET
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.BAXTORIAN_KEY
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.FLOOR_RISEN
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.FOUND_CHALICE
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.PILLAR_COUNT
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.RUNES_PER_PILLAR
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_FLOOR_RISEN
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_RUNES_PLACED
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.URN_EMPTY
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.URN_FULL
-import org.rsmod.content.quest.area.varrock.dragonslayer.DoorPassage
-import org.rsmod.content.quest.area.varrock.dragonslayer.WallSide
-import org.rsmod.content.quest.area.varrock.dragonslayer.sideOf
-import org.rsmod.content.quest.area.varrock.dragonslayer.tileAcross
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/**
- * The caves inside Baxtorian Falls.
- *
- * Baxtorian's tomb is mapped twice. The room the player walks into (2561..2570 x 9902..9917) has
- * the six pillars, the statues of Baxtorian and Glarial, and the chalice floating out of reach on
- * level 1. An identical copy 38 tiles east and one tile south has the chalice on the floor.
- * Placing the amulet "raises the floor" by moving the player into the copy, and leaving the copy
- * through its doors puts them back at the matching spot in the real corridor.
- */
 class WaterfallDungeon
 @Inject
 constructor(
     private val waterfall: WaterfallQuest,
     private val objRepo: ObjRepository,
     private val worldRepo: WorldRepository,
-    private val doors: DoorPassage,
+    private val locRepo: LocRepository,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
@@ -49,7 +45,7 @@ constructor(
         onOpLoc1(CRATE) { searchCrate() }
         onOpLoc1(TOMB_DOOR) { openTombDoor(it.loc) }
         for (pillar in PILLAR_FORMS) {
-            for ((rune, _) in PILLAR_RUNES) {
+            for (rune in PILLAR_RUNES.keys) {
                 onOpLocU(pillar, rune) { placeRune(it.loc, rune) }
             }
         }
@@ -61,62 +57,87 @@ constructor(
 
     private suspend fun ProtectedAccess.exitFalls() {
         soundSynth(DOOR_SOUND)
-        mesbox("You leave the waterfall.")
         telejump(WaterfallCoords.LEDGE, TeleportType.Exempt)
+        mesbox("You exit the dungeon.")
     }
 
     private suspend fun ProtectedAccess.searchCrate() {
-        anim(SEARCH_SEQ)
-        delay(1)
         if (BAXTORIAN_KEY in player.inv) {
             mes("You search the crate but find nothing of interest.")
             return
         }
-        invAddOrDrop(objRepo, BAXTORIAN_KEY)
-        objbox(BAXTORIAN_KEY, "Hidden inside the crate you find a key.")
+        if (invAdd(inv, BAXTORIAN_KEY).failure) {
+            objbox(
+                BAXTORIAN_KEY,
+                "You find a key in the crate but you don't have enough room to take it.",
+            )
+            return
+        }
+        objbox(BAXTORIAN_KEY, "You find a key in the crate.")
     }
 
-    /** Both doors on the way to the tomb sit on the north edge of their tile and lock from the south. */
     private suspend fun ProtectedAccess.openTombDoor(door: BoundLocInfo) {
-        if (door.sideOf(player.coords) == WallSide.SOUTH) {
+        if (door.playerIsSouth(player.coords)) {
             if (BAXTORIAN_KEY !in player.inv) {
                 soundSynth(LOCKED_SOUND)
                 mes("The door is locked.")
                 return
             }
-            mes("You unlock the door with the key.")
-            doors.walkThrough(this, door, TOMB_DOOR)
+            arriveDelay()
+            if (door.coords == CHALICE_ROOM_DOOR) {
+                enterChaliceRoom(door)
+                return
+            }
+            mes("You use the key to unlock the door.")
+            passDoor(locRepo, door, TOMB_DOOR_OPEN)
             return
         }
         if (door.coords.inRaisedCopy()) {
             soundSynth(DOOR_SOUND)
             arriveDelay()
-            telejump(door.tileAcross(player.coords).toRealRoom(), TeleportType.Exempt)
+            telejump(door.coords.toRealRoom(), TeleportType.Exempt)
             return
         }
-        doors.walkThrough(this, door, TOMB_DOOR)
+        passDoor(locRepo, door, TOMB_DOOR_OPEN)
+    }
+
+    private suspend fun ProtectedAccess.enterChaliceRoom(door: BoundLocInfo) {
+        if (waterfall.stage(player) < FLOOR_RISEN) {
+            waterfall.advanceTo(this, FOUND_CHALICE)
+            passDoor(locRepo, door, TOMB_DOOR_OPEN)
+            return
+        }
+        fadeOut()
+        delay(1)
+        passDoor(locRepo, door, TOMB_DOOR_OPEN)
+        delay(1)
+        telejump(player.coords.toRaisedCopy(), TeleportType.Exempt)
+        delay(1)
+        fadeIn()
+        delay(FADE_CLOSE_TICKS)
+        closeFadeOverlayNow()
     }
 
     private suspend fun ProtectedAccess.placeRune(pillar: BoundLocInfo, rune: String) {
+        if (pillar.coords.inRaisedCopy()) {
+            mes(constants.dm_default, ChatType.Engine)
+            return
+        }
         val runeIndex = PILLAR_RUNES.getValue(rune)
         val pillarIndex = pillarIndex(pillar.coords) ?: return
         val bit = 1 shl (pillarIndex * RUNES_PER_PILLAR + runeIndex)
-        val placed = waterfall.pillarRunes.get(player)
+        val placed = player.pillarRunes
         if ((placed and bit) != 0) {
-            mes("You have already placed that kind of rune on this pillar.")
+            mes("You've already put that type of rune on this pillar.")
             return
         }
         if (invDel(inv, rune).failure) {
             return
         }
-        anim(PLACE_SEQ)
         soundSynth(PLACE_SOUND)
-        spotanimMap(worldRepo, SMOKE_SPOTANIM, pillar.coords)
-        waterfall.pillarRunes.set(player, placed or bit)
-        objbox(rune, "You set the rune into the pillar and it vanishes in a puff of smoke.")
-        if (waterfall.allRunesPlaced(player)) {
-            waterfall.advanceTo(this, STAGE_RUNES_PLACED)
-        }
+        spotanimMap(worldRepo, SMOKE_SPOTANIM, pillar.coords, height = SMOKE_HEIGHT)
+        player.pillarRunes = placed or bit
+        objbox(rune, "You place the rune on the pillar. It disappears in a puff of smoke.")
     }
 
     private suspend fun ProtectedAccess.placeAmulet() {
@@ -125,75 +146,113 @@ constructor(
             return
         }
         if (!waterfall.allRunesPlaced(player)) {
-            invDel(inv, AMULET)
-            mesbox("You begin to hang the amulet around the statue's neck, but water starts pouring into the chamber...")
-            mesbox("...and the flood sweeps you out of the cave and down the river.")
-            washDownstream(bruised = true)
+            if (invDel(inv, AMULET).failure) {
+                return
+            }
+            mesbox(
+                "You go to place the amulet around the neck of the statue. However, water " +
+                    "floods into the room as you do..."
+            )
+            mesbox("...you are washed out of the cave and down the river.")
+            washDownstream()
             return
         }
-        if (invDel(inv, AMULET).failure) {
+        if (AMULET !in player.inv) {
             return
         }
-        mesbox("You hang the amulet around the statue's neck. A deep rumble sounds beneath your feet as the floor begins to rise.")
+        arriveDelay()
+        mesboxNp(FLOOR_RISES)
+        fadeOut()
+        for (axis in SHAKE_AXES) {
+            camShake(axis, SHAKE_RANDOM, 0, 0)
+        }
         soundSynth(RUMBLE_SOUND)
-        fadeToBlack()
+        delay(CARRIED_TICKS)
+        if (invDel(inv, AMULET).failure) {
+            camReset()
+            closeFadeOverlayNow()
+            return
+        }
         telejump(player.coords.toRaisedCopy(), TeleportType.Exempt)
+        waterfall.advanceTo(this, FLOOR_RISEN)
+        camReset()
         delay(1)
-        fadeFromBlack()
-        waterfall.advanceTo(this, STAGE_FLOOR_RISEN)
+        fadeIn()
+        mesbox(FLOOR_RISES)
+        closeFadeOverlayNow()
     }
 
     private suspend fun ProtectedAccess.takeTreasure() {
         if (waterfall.isComplete(player)) {
-            mes("Nothing is left in the chalice but some old ashes.")
+            mesbox("The chalice only contains some old ashes.")
             return
         }
-        mesbox("You reach for the treasure in the chalice, but water rushes into the chamber...")
-        mesbox("...and the flood sweeps you out of the cave and down the river.")
-        loseGlarialsRelics()
-        washDownstream(bruised = true)
+        mesboxNp(
+            "You go to take the treasure from the chalice. However, water floods into the " +
+                "room as you do..."
+        )
+        fadeOut()
+        delay(CARRIED_TICKS)
+        telejump(WaterfallCoords.WHIRLPOOL, TeleportType.Exempt)
+        setBas(WHIRLPOOL_BAS)
+        try {
+            fadeIn()
+            delay(WHIRLPOOL_TICKS)
+            mesboxNp(WASHED_OUT)
+            fadeOut()
+            delay(CARRIED_TICKS)
+            telejump(WaterfallCoords.DOWNSTREAM, TeleportType.Exempt)
+        } finally {
+            setBas(null)
+        }
+        delay(1)
+        fadeIn()
+        mesbox(WASHED_OUT)
+        closeFadeOverlayNow()
     }
+
+    private fun ProtectedAccess.canCarryTreasure(): Boolean =
+        player
+            .invTransaction(inv, autoCommit = false) {
+                val target = select(inv)
+                delete(target, URN_FULL.asRSCM(RSCMType.OBJ), count = 1)
+                add(target, URN_EMPTY.asRSCM(RSCMType.OBJ), count = 1)
+                for ((item, amount) in waterfall.quest.rewards.items) {
+                    add(target, item.asRSCM(RSCMType.OBJ), count = amount)
+                }
+            }
+            .success
 
     private suspend fun ProtectedAccess.pourAshes() {
         if (waterfall.isComplete(player)) {
-            mes("Nothing is left in the chalice but some old ashes.")
+            mesbox("The chalice only contains some old ashes.")
             return
         }
-        if (waterfall.stage(player) < STAGE_FLOOR_RISEN) {
+        if (waterfall.stage(player) < FLOOR_RISEN) {
             mes("You can't reach the chalice from here.")
             return
         }
-        if (inv.freeSpace() < REWARD_SLOTS) {
-            mesbox("You will need at least $REWARD_SLOTS free inventory spaces to carry the treasure.")
+        if (URN_FULL !in player.inv) {
             return
         }
-        if (invDel(inv, URN_FULL).failure) {
+        if (!canCarryTreasure()) {
+            mesbox("You do not have enough space to do that. You will need five free slots.")
+            return
+        }
+        mesbox("You carefully pour the ashes into the chalice and remove Baxtorian's treasure...")
+        if (!canCarryTreasure() || invDel(inv, URN_FULL).failure) {
             return
         }
         invAddOrDrop(objRepo, URN_EMPTY)
-        anim(POUR_SEQ)
-        soundSynth(POUR_SOUND)
-        mesbox("You gently pour Glarial's ashes into the chalice, and lift out Baxtorian's treasure...")
         waterfall.quest.completeQuest(this)
-    }
-
-    private fun ProtectedAccess.loseGlarialsRelics() {
-        invDel(inv, URN_FULL)
-        invDel(inv, AMULET)
-        if (AMULET in player.worn) {
-            invDel(player.worn, AMULET)
-        }
     }
 
     private companion object {
         const val EXIT_DOOR = "loc.baxtorian_door_waterfall_quest"
         const val CRATE = "loc.baxtorian_crate_waterfall_quest"
         const val TOMB_DOOR = "loc.baxtorian_door_2_waterfall_quest"
+        const val TOMB_DOOR_OPEN = "loc.baxtorian_door_2_open_waterfall_quest"
 
-        /**
-         * The pillar is a multiloc on `varbit.sote`, and the used-item bridge hands the resolved
-         * form to `onOpLocU`, so every form is registered.
-         */
         val PILLAR_FORMS =
             listOf(
                 "loc.stonepillar_small_waterfall_quest",
@@ -204,10 +263,10 @@ constructor(
         const val CHALICE = "loc.baxtorian_chalice_waterfall_quest"
         const val CHALICE_ASH = "loc.baxtorian_chalice_waterfall_quest_ash"
 
-        /** Rune obj to its bit within a pillar's three. */
-        val PILLAR_RUNES = mapOf("obj.airrune" to 0, "obj.waterrune" to 1, "obj.earthrune" to 2)
+        val PILLAR_RUNES: Map<String, Int> by lazy {
+            WaterfallPillarRunesRow.all().associate { it.rune.internalName to it.bit }
+        }
 
-        /** Pillar columns and rows in the real tomb room. */
         const val PILLAR_WEST_X = 2562
         const val PILLAR_EAST_X = 2569
         const val PILLAR_SOUTH_Z = 9910
@@ -217,17 +276,26 @@ constructor(
         const val COPY_OFFSET_Z = -1
         const val COPY_MIN_X = 2590
 
-        const val REWARD_SLOTS = 5
+        val CHALICE_ROOM_DOOR = CoordGrid(2566, 9901, 0)
+        val SHAKE_AXES =
+            listOf(CamShakeAxis.LEFT_RIGHT, CamShakeAxis.UP_DOWN, CamShakeAxis.FORWARDS_BACKWARDS)
+        const val SHAKE_RANDOM = 6
+        const val CARRIED_TICKS = 2
+        const val WHIRLPOOL_TICKS = 9
+        const val FADE_CLOSE_TICKS = 2
+        const val WHIRLPOOL_BAS = "bas.waterfall_whirlpool"
 
-        const val SEARCH_SEQ = "seq.human_pickuptable"
-        const val PLACE_SEQ = "seq.human_pickuptable"
-        const val POUR_SEQ = "seq.human_pickuptable"
+        const val FLOOR_RISES =
+            "You place the amulet around the neck of the statue. You hear a loud rumble from " +
+                "beneath as the floor rises."
+        const val WASHED_OUT = "...you are washed out of the cave and down the river."
+
         const val SMOKE_SPOTANIM = "spotanim.smokepuff"
+        const val SMOKE_HEIGHT = 160
         const val DOOR_SOUND = "synth.door_open"
         const val LOCKED_SOUND = "synth.irondoor_locked"
         const val PLACE_SOUND = "synth.smokepuff"
-        const val RUMBLE_SOUND = "synth.contact_rumble"
-        const val POUR_SOUND = "synth.vial_pour"
+        const val RUMBLE_SOUND = "synth.leviathan_rockfall_rumble"
 
         fun CoordGrid.inRaisedCopy(): Boolean = x >= COPY_MIN_X
 
@@ -243,8 +311,9 @@ constructor(
                     PILLAR_EAST_X -> 1
                     else -> return null
                 }
-            val row = (real.z - PILLAR_SOUTH_Z) / PILLAR_ROW_GAP
-            if (row !in 0 until PILLAR_COUNT / 2 || (real.z - PILLAR_SOUTH_Z) % PILLAR_ROW_GAP != 0) {
+            val offset = real.z - PILLAR_SOUTH_Z
+            val row = offset / PILLAR_ROW_GAP
+            if (row !in 0 until PILLAR_COUNT / 2 || offset % PILLAR_ROW_GAP != 0) {
                 return null
             }
             return column * (PILLAR_COUNT / 2) + row

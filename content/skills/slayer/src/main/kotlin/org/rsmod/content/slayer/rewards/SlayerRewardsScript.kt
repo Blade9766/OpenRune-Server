@@ -2,13 +2,13 @@ package org.rsmod.content.slayer.rewards
 
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onPlayerLogin
+import org.rsmod.content.slayer.core.SlayerTaskManager
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 class SlayerRewardsScript : PluginScript() {
     override fun ScriptContext.startup() {
-        onPlayerLogin {
-        }
+        onPlayerLogin { SlayerTaskManager.moveLegacyStreaks(player) }
 
         onIfModalButton(CONFIRM_COMPONENT) {
             SlayerRewardsHandler.onConfirmButton(this, it.comsub)

@@ -4,7 +4,7 @@ package org.rsmod.content.skills.construction.data
 class Material(val obj: String, val count: Int)
 
 enum class BuildSound(val synth: String) {
-    WOOD("synth.poh_build_wood"),
+    WOOD("synth.poh_build_furniture"),
     STONE("synth.poh_build_stone"),
     METAL("synth.poh_build_metal"),
 }

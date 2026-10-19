@@ -1,79 +1,96 @@
 package org.rsmod.content.quest.area.baxtorianfalls.waterfall.npcs
 
+import dev.openrune.types.hunt.HuntVis
 import jakarta.inject.Inject
+import org.rsmod.api.hunt.NpcSearch
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.GERALD
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_MET_HUDON
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_STARTED
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.COMPLETE
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.GERALD_NPC
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.MET_HUDON
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STARTED
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.heardOfTreasure
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/** Gerald fishes on the bank where the river washes treasure hunters ashore. */
 class Gerald @Inject constructor(private val waterfall: WaterfallQuest) : PluginScript() {
 
     override fun ScriptContext.startup() {
-        onOpNpc1(GERALD) { startDialogue(it.npc) { gerald() } }
+        onOpNpc1(GERALD_NPC) { startDialogue(it.npc) { gerald() } }
     }
 
     private suspend fun Dialogue.gerald() {
         val stage = waterfall.stage(player)
         when {
-            stage == 0 -> {
-                chatPlayer(happy, "Hello there.")
-                chatNpc(happy, "Good day, traveller. Come to fish, or just taking in the view? I've landed some real monsters down here.")
-                chatPlayer(quiz, "Is that so?")
-                chatNpc(laugh, "The last one was THIS big!")
-            }
-            stage == STAGE_STARTED -> {
+            stage == 0 || stage == COMPLETE -> beforeTheQuest()
+            stage == STARTED -> {
                 chatPlayer(happy, "Hello.")
                 chatNpc(happy, "Hello there.")
-                chatPlayer(quiz, "Have you seen a young boy around here?")
-                chatNpc(laugh, "Can't say I have. Plenty of young fish, mind.")
+                chatPlayer(quiz, "Have you seen a small boy?")
+                chatNpc(laugh, "Nope, plenty of small fish though.")
             }
-            waterfall.heardOfTreasure.get(player) -> {
+            player.heardOfTreasure -> {
                 chatNpc(happy, "Hello there.")
-                chatNpc(quiz, "Back again, traveller? Fishing, or treasure hunting?")
-                chatPlayer(quiz, "What makes you say that?")
-                chatNpc(neutral, "Adventurers come through here every week. None of them ever find a thing.")
+                chatNpc(quiz, "Hello traveller. Are you here to fish or to hunt for treasure?")
+                chatPlayer(quiz, "Why do you say that?")
+                chatNpc(neutral, ADVENTURERS_LINE)
             }
-            stage >= STAGE_MET_HUDON -> {
+            else -> {
                 chatPlayer(happy, "Hello.")
-                chatNpc(quiz, "Hello traveller. Here to fish, or to go looking for treasure?")
-                chatPlayer(quiz, "What makes you say that?")
-                chatNpc(neutral, "Adventurers come through here every week. None of them ever find a thing.")
-                chatPlayer(quiz, "What is it they're looking for?")
-                treasureRumour(waterfall)
+                chatNpc(quiz, "Hello traveller. Are you here to fish or to hunt for treasure?")
+                chatPlayer(quiz, "Why do you say that?")
+                chatNpc(neutral, ADVENTURERS_LINE)
+                chatPlayer(quiz, "What treasure are they looking for?")
+                chatNpc(neutral, LEGEND_LINE)
+                learnOfHadley()
             }
         }
     }
+
+    private suspend fun Dialogue.beforeTheQuest() {
+        chatPlayer(happy, "Hello there.")
+        chatNpc(
+            happy,
+            "Good day to you traveller, are you here to fish or just looking around? I've " +
+                "caught some beauties down here.",
+        )
+        chatPlayer(quiz, "Really?")
+        chatNpc(laugh, "The last one was this big!")
+    }
 }
 
-private const val GERALD_NAME = "Gerald"
+private const val ADVENTURERS_LINE =
+    "Adventurers pass through here every week, they never find anything though."
+private const val LEGEND_LINE =
+    "They say there's treasure hidden within the waterfall, left behind by the old elven king. " +
+        "Not that anyone's ever found anything."
+private const val GERALD_SEARCH_RADIUS = 8
 
-private suspend fun Dialogue.treasureRumour(waterfall: WaterfallQuest) {
-    chatNpc(neutral, "Legend has it the old elf king left a treasure hidden inside the waterfall. Not that anybody has ever found it.")
-    chatPlayer(quiz, "Interesting. Where could I find out more?")
-    chatNpc(happy, "Try Hadley, the tourist guide. He's in the building right here.")
-    waterfall.heardOfTreasure.set(player, true)
+private suspend fun Dialogue.learnOfHadley() {
+    chatPlayer(neutral, "Interesting, is there somewhere I can learn more about this?")
+    chatNpc(neutral, "You could ask Hadley the tourist guide. He'll be in this building just here.")
+    player.heardOfTreasure = true
 }
 
-/**
- * Gerald's greeting when the river dumps the player at his feet, once they have met Hudon and
- * before they have heard the legend.
- */
-internal suspend fun ProtectedAccess.geraldGreetsWashedUp(waterfall: WaterfallQuest) {
-    if (waterfall.stage(player) < STAGE_MET_HUDON || waterfall.heardOfTreasure.get(player)) {
+internal suspend fun ProtectedAccess.geraldGreetsWashedUp(
+    waterfall: WaterfallQuest,
+    search: NpcSearch,
+) {
+    if (waterfall.stage(player) != MET_HUDON || player.heardOfTreasure) {
         return
     }
-    startDialogue {
-        chatNpcSpecific(GERALD_NAME, GERALD, shocked, "Good grief! Where did you spring from? You're not another of those treasure hunters, are you?")
+    val gerald =
+        npcFind(player.coords, GERALD_NPC, GERALD_SEARCH_RADIUS, HuntVis.Off, search) ?: return
+    startDialogue(gerald) {
+        chatNpc(
+            shocked,
+            "Blimey! Where did you come from? Not another one of those treasure hunters are " +
+                "you?",
+        )
         chatPlayer(quiz, "Treasure hunters?")
-        chatNpcSpecific(GERALD_NAME, GERALD, neutral, "Legend has it the old elf king left a treasure hidden inside the waterfall. Not that anybody has ever found it.")
-        chatPlayer(quiz, "Interesting. Where could I find out more?")
-        chatNpcSpecific(GERALD_NAME, GERALD, happy, "Try Hadley, the tourist guide. He's in the building right here.")
-        waterfall.heardOfTreasure.set(player, true)
+        chatNpc(neutral, LEGEND_LINE)
+        learnOfHadley()
     }
 }

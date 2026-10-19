@@ -1184,8 +1184,8 @@ class InAidOfTheMyrequeInteractionTest {
         ) {
             val npc = Npc(type, at)
             npcRepo.add(npc, Int.MAX_VALUE)
-            val typeId = seenAs?.asRSCM(RSCMType.NPC) ?: npc.id
-            dispatch(if (op == InteractionOp.Op3) NpcEvents.Op3(npc, typeId) else NpcEvents.Op1(npc, typeId))
+            val seenType = seenAs?.let { checkNotNull(ServerCacheManager.getNpc(it.asRSCM(RSCMType.NPC))) { it } } ?: npc.visType
+            dispatch(if (op == InteractionOp.Op3) NpcEvents.Op3(npc, seenType) else NpcEvents.Op1(npc, seenType))
         }
 
         fun locOp(symbol: String, coords: CoordGrid, op: InteractionOp = InteractionOp.Op1) {

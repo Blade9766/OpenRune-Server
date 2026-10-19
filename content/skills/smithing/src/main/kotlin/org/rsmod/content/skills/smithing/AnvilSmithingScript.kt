@@ -59,7 +59,11 @@ class AnvilSmithingScript @Inject constructor(
             if (!with(doricsAnvils) { mayUse(it.type) }) return@onOpLocCategory1
             val bar = selectedBar()
             if (bar == null) {
-                mesbox("You need a bronze bar and a hammer to smith equipment on this anvil.")
+                if (!hasHammer()) {
+                    mesbox("You need a hammer to work the metal with.")
+                } else {
+                    mesbox("You should select an item from your inventory and use it on the anvil.")
+                }
                 return@onOpLocCategory1
             }
             queueOpenSmithing(bar)

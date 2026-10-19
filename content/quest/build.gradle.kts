@@ -11,6 +11,7 @@ dependencies {
     testImplementation(libs.fastutil)
     testImplementation(libs.mockk)
     testImplementation(projects.content.generic.genericLocs)
+    implementation(projects.content.other.sawmill)
     implementation(projects.api.pluginCommons)
     implementation(projects.api.registry)
     implementation(projects.api.scriptAdvanced)

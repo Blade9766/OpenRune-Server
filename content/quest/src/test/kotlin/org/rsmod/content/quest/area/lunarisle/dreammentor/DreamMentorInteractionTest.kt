@@ -635,7 +635,7 @@ class DreamMentorInteractionTest {
 
         fun talkToCyrisus() {
             val npc = checkNotNull(cave.cyrisusOf(player)) { "no Cyrisus in the cave at stage ${stage()}" }
-            publish(NpcEvents.Op1(npc, typeId = npc.id))
+            publish(NpcEvents.Op1(npc))
         }
 
         fun encourage() {

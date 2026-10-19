@@ -4,11 +4,13 @@ import com.google.inject.multibindings.Multibinder
 import org.rsmod.api.combat.commons.hook.CombatStanceSelectHook
 import org.rsmod.api.combat.commons.hook.PvPAttackRestrictionHook
 import org.rsmod.api.combat.commons.npc.NpcAttackHook
+import org.rsmod.api.combat.commons.npc.NpcAttackOverrideHook
 import org.rsmod.plugin.module.PluginModule
 
 internal class CombatModule : PluginModule() {
     override fun bind() {
         Multibinder.newSetBinder(binder(), NpcAttackHook::class.java)
+        Multibinder.newSetBinder(binder(), NpcAttackOverrideHook::class.java)
 
         bindInstance<NvPCombat>()
         bindInstance<PvNCombat>()

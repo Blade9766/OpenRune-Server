@@ -268,7 +268,6 @@ upass_disarm_trap = 4981
 biglever = 2382
 portcullis_open = 83
 portcullis_close = 82
-balancing_ledge = 2451
 cave_collapse = 2039
 cavein = 2294
 fire_crackling_big = 2064
@@ -277,7 +276,6 @@ mine_rumbling = 3828
 anger_unicorn_death = 877
 demon_death = 403
 fire_lit = 2596
-tap_fill = 2609
 squeeze_in = 2489
 jump_no_land = 2467
 

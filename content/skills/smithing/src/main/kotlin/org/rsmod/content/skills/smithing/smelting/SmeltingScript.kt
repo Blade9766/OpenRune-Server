@@ -165,15 +165,17 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
             return
         }
 
-        performSmelt(
-            task.bar,
-            task.isSuperHeat,
-            task.furnaceLocInternal,
-            task.furnaceCoords,
-            task.regularFurnace,
-        )
+        val made =
+            performSmelt(
+                task.bar,
+                task.isSuperHeat,
+                task.furnaceLocInternal,
+                task.furnaceCoords,
+                task.regularFurnace,
+                remaining = task.amount - task.completed,
+            )
 
-        val completed = task.completed + 1
+        val completed = task.completed + made
         if (completed >= task.amount || !canSmelt(task.bar, task.regularFurnace)) {
             return
         }
@@ -211,11 +213,69 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
         furnaceLocInternal: String,
         furnaceCoords: org.rsmod.map.CoordGrid,
         regularFurnace: Boolean,
-    ) {
+        remaining: Int = 1,
+    ): Int {
         anim("seq.human_furnace")
         soundSynth("synth.furnace")
         delay(2)
 
+        val xp = SmithingSmeltXp.resolve(player, inv, bar, isSuperHeat, xpMods, regularFurnace)
+        val inputs = consumeBarInputs(bar, regularFurnace) ?: return 1
+
+        val isIronBar = bar.output.internalName == "obj.iron_bar"
+        val hasRingOfForging = "obj.ring_of_forging" in player.worn
+        val success = if (isIronBar && !hasRingOfForging && !isSuperHeat) {
+            Random.nextBoolean()
+        } else {
+            true
+        }
+
+        if (!success) {
+            mes("The ore is too impure and you fail to refine it.")
+            return 1
+        }
+
+        // The Varrock platebody smelts the next ore at the same time: a second set of ores.
+        val extraInputs =
+            if (
+                !isSuperHeat &&
+                    remaining > 1 &&
+                    varrockExtraBar(bar, furnaceLocInternal, furnaceCoords) &&
+                    hasItemsForBar(bar, regularFurnace)
+            ) {
+                consumeBarInputs(bar, regularFurnace)
+            } else {
+                null
+            }
+        val bars = if (extraInputs != null) 2 else 1
+        if (invAdd(inv, bar.output.internalName, bars).failure) {
+            refund(inputs)
+            extraInputs?.let { refund(it) }
+            mes("You don't have enough inventory space to do that.")
+            return remaining
+        }
+        repeat(bars) { statAdvance("stat.smithing", xp) }
+        if (extraInputs != null) {
+            spam("The Varrock platebody enabled you to smelt your next ore simultaneously.")
+        }
+        val metal = SmithingUtils.itemName(bar.output, "bar").removeSuffix(" bar").lowercase()
+        spam("You retrieve a bar of $metal.")
+        return bars
+    }
+
+    private class ConsumedInputs(
+        val primary: String,
+        val primaryAmount: Int,
+        val secondary: String?,
+        val secondaryAmount: Int,
+        val secondaryFromBag: Int,
+        val catalystUsed: Boolean,
+    )
+
+    private fun ProtectedAccess.consumeBarInputs(
+        bar: SmithingBarsRow,
+        regularFurnace: Boolean,
+    ): ConsumedInputs? {
         val primaryAmt = bar.inputAmount.first()
         val secondary = bar.input.getOrNull(1)
         val requiresSecondary = secondary != null && (bar.input.getOrNull(1)?.let { bar.inputAmount.getOrNull(1) } ?: 0) > 0
@@ -226,15 +286,14 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
                 0
             }
 
-        val xp = SmithingSmeltXp.resolve(player, inv, bar, isSuperHeat, xpMods, regularFurnace)
         val primary = bar.input.first().internalName
         if (invDel(inv, primary, primaryAmt).failure) {
-            return
+            return null
         }
         val bagCoalBefore = CoalBag.storedAmount(player)
         if (requiresSecondary && invDel(inv, secondary.internalName, effectiveSecondaryAmt).failure) {
             invAdd(inv, primary, primaryAmt)
-            return
+            return null
         }
         val secondaryFromBag = (bagCoalBefore - CoalBag.storedAmount(player)).coerceAtLeast(0)
 
@@ -242,62 +301,45 @@ class SmeltingScript @Inject constructor(private val xpMods: XpModifiers) : Plug
             shouldConsumeSmithingCatalyst(player, inv, bar, regularFurnace) &&
                 invDel(inv, SmithingBonuses.SMITHING_CATALYST, 1).success
 
-        val isIronBar = bar.output.internalName == "obj.iron_bar"
-        val hasRingOfForging = "obj.ring_of_forging" in player.worn
-        val success = if (isIronBar && !hasRingOfForging && !isSuperHeat) {
-            Random.nextBoolean()
-        } else {
-            true
-        }
+        return ConsumedInputs(
+            primary = primary,
+            primaryAmount = primaryAmt,
+            secondary = if (requiresSecondary) secondary.internalName else null,
+            secondaryAmount = effectiveSecondaryAmt,
+            secondaryFromBag = secondaryFromBag,
+            catalystUsed = catalystUsed,
+        )
+    }
 
-        if (success) {
-            val outputCount = outputBarCount(bar, furnaceLocInternal, furnaceCoords)
-            if (invAdd(inv, bar.output.internalName, outputCount).failure) {
-                invAdd(inv, primary, primaryAmt)
-                if (requiresSecondary) {
-                    refundSecondary(secondary.internalName, effectiveSecondaryAmt, secondaryFromBag)
-                }
-                if (catalystUsed) {
-                    invAdd(inv, SmithingBonuses.SMITHING_CATALYST, 1)
-                }
-                mes("You don't have enough inventory space to do that.")
-                return
+    private fun ProtectedAccess.refund(inputs: ConsumedInputs) {
+        invAdd(inv, inputs.primary, inputs.primaryAmount)
+        if (inputs.secondary != null) {
+            if (inputs.secondaryFromBag > 0) {
+                CoalBag.addStored(player, inputs.secondaryFromBag)
             }
-            statAdvance("stat.smithing", xp)
-            val metal = SmithingUtils.itemName(bar.output, "bar").removeSuffix(" bar").lowercase()
-            mes("You retrieve a bar of $metal.")
-            if (outputCount > 1) {
-                val barName = SmithingUtils.itemName(bar.output, "bar")
-                mes("Your Varrock armour helps you smelt an extra $barName.")
+            val fromInv = inputs.secondaryAmount - inputs.secondaryFromBag
+            if (fromInv > 0) {
+                invAdd(inv, inputs.secondary, fromInv, ignoreVirtualStorage = true)
             }
-        } else {
-            mes("The ore is too impure and you fail to refine it.")
+        }
+        if (inputs.catalystUsed) {
+            invAdd(inv, SmithingBonuses.SMITHING_CATALYST, 1)
         }
     }
 
-    private fun ProtectedAccess.refundSecondary(secondary: String, amount: Int, fromBag: Int) {
-        if (fromBag > 0) {
-            CoalBag.addStored(player, fromBag)
-        }
-        val fromInv = amount - fromBag
-        if (fromInv > 0) {
-            invAdd(inv, secondary, fromInv, ignoreVirtualStorage = true)
-        }
-    }
-
-    private fun ProtectedAccess.outputBarCount(
+    private fun ProtectedAccess.varrockExtraBar(
         bar: SmithingBarsRow,
         furnaceLocInternal: String,
         furnaceCoords: org.rsmod.map.CoordGrid,
-    ): Int {
+    ): Boolean {
         if (!isEdgevilleFurnace(furnaceLocInternal, furnaceCoords)) {
-            return 1
+            return false
         }
-        val tier = player.varrockArmourTier() ?: return 1
+        val tier = player.varrockArmourTier() ?: return false
         if (!isBarEligibleForVarrockArmour(bar, tier)) {
-            return 1
+            return false
         }
-        return if (rollVarrockDoubleBar()) 2 else 1
+        return rollVarrockDoubleBar()
     }
 
     private suspend fun ProtectedAccess.canSmelt(bar: SmithingBarsRow, regularFurnace: Boolean = true): Boolean {

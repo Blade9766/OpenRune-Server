@@ -5,6 +5,9 @@ import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.api.attr.AttributeKey
+import org.rsmod.api.invtx.add
+import org.rsmod.api.invtx.invTransaction
+import org.rsmod.api.invtx.select
 import org.rsmod.api.player.midiJingle
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
@@ -13,6 +16,7 @@ import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.player.vars.intVarp
 import org.rsmod.api.table.QuestRow
 import org.rsmod.game.entity.Player
+import org.rsmod.game.inv.InvObj
 import org.rsmod.map.CoordGrid
 
 internal const val QUEST_DIALOGUE_CLOSE_TIMER = "timer.quest_dialogue_close"
@@ -61,6 +65,7 @@ data class Quest(
     private var Player.questsCompleted by intVarBit("varbit.quests_completed_count")
 
     private val attributeRegistry = mutableMapOf<String, QuestAttribute<*>>()
+    private val itemRewards = rewards.items.map { (item, amount) -> InvObj(item, amount) }
 
     /** See [onVarSync]. */
     private var varSync: ((Player) -> Unit)? = null
@@ -205,7 +210,7 @@ data class Quest(
 
     fun isQuestCompleted(player: Player): Boolean = questState(player).isCompleted
 
-    fun advanceQuestStage(access: ProtectedAccess, amount: Int = 1): Int {
+    fun advanceQuestStage(access: ProtectedAccess, amount: Int = 1): Boolean {
         val currentStage = getQuestStage(access.player)
         val attemptedStage = currentStage + amount
 
@@ -221,9 +226,19 @@ data class Quest(
         return setQuestStage(access, attemptedStage.coerceIn(0, maxSteps))
     }
 
-    fun setQuestStage(access: ProtectedAccess, newStage: Int): Int {
+    fun completeQuest(access: ProtectedAccess, additionalRewards: List<InvObj> = emptyList()): Boolean =
+        setQuestStage(access, maxSteps, additionalRewards)
+
+    fun setQuestStage(
+        access: ProtectedAccess,
+        newStage: Int,
+        additionalRewards: List<InvObj> = emptyList(),
+    ): Boolean {
         require(newStage in 0..maxSteps) { "Quest '$key' stage must be within 0..$maxSteps." }
         val wasCompleted = getQuestStage(access.player) >= maxSteps
+        if (!wasCompleted && newStage == maxSteps && !grantItemRewards(access, additionalRewards)) {
+            return false
+        }
         storeQuestStage(access.player, newStage)
 
         // Quest varps store the real stage (0..endstate). Multinpc / journal clients depend on
@@ -234,13 +249,23 @@ data class Quest(
             completedQuest(access)
         }
 
-        return newStage
+        return true
     }
 
-    /** Finishes the quest from whatever stage it is at, running the completion rewards once. */
-    fun completeQuest(access: ProtectedAccess): Int {
-        val remaining = maxSteps - getQuestStage(access.player)
-        return if (remaining > 0) advanceQuestStage(access, remaining) else maxSteps
+    private fun grantItemRewards(access: ProtectedAccess, additionalRewards: List<InvObj>): Boolean {
+        if (itemRewards.isEmpty() && additionalRewards.isEmpty()) return true
+        val transaction = access.player.invTransaction(access.inv, autoCommit = false) {
+            val inventory = select(access.inv)
+            for (reward in additionalRewards) {
+                add(inventory, reward.id, reward.count, vars = reward.vars)
+            }
+            for (reward in itemRewards) {
+                add(inventory, reward.id, reward.count, vars = reward.vars)
+            }
+        }
+        if (transaction.failure) return false
+        transaction.commitAll()
+        return true
     }
 
     /**
@@ -333,7 +358,6 @@ data class Quest(
         }
 
         rewards.items.forEach { (item, amount) ->
-            access.invAdd(access.inv, item, amount)
             val type = ServerCacheManager.getItem(item.asRSCM(RSCMType.OBJ)) ?: error("No item found for $item")
             rewardLines.add(rewards.itemLabels[item] ?: "$amount x ${type.name}")
         }
@@ -355,7 +379,6 @@ data class Quest(
     private fun completedMiniquest(access: ProtectedAccess) {
         access.player.midiJingle(completionJingle)
         rewards.xp.forEach { (skill, amount) -> access.statAdvance(skill, amount) }
-        rewards.items.forEach { (item, amount) -> access.invAdd(access.inv, item, amount) }
         access.player.mes("<col=800000>Congratulations! You have completed the $displayName miniquest.</col>")
         rewards.extraText?.let { access.player.mes(it) }
     }

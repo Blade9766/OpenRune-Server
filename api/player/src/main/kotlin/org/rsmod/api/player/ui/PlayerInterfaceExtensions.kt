@@ -219,16 +219,17 @@ public fun Player.ifCloseModals(eventBus: EventBus) {
 
 public fun Player.ifSetEvents(internal: String, range: IntRange, vararg event: IfEvent) {
     val packed = event.fold(0L) { sum, element -> sum or element.bitmask }
+    // Permissions use the same canonical component as button handlers, not the wire target.
     ui.events.add(internal, range, packed)
 
-    val target = ServerCacheManager.fromComponent(internal.asRSCM(RSCMType.COMPONENT))
+    val target = ui.translate(Component(internal.asRSCM(RSCMType.COMPONENT)))
 
     val packedHigh = (packed shr 32).toInt()
     val packedLow = packed.toInt()
     val prot =
         IfSetEventsV2(
-            interfaceId = target.interfaceId,
-            componentId = target.component,
+            interfaceId = target.parent,
+            componentId = target.child,
             start = range.first,
             end = range.last,
             events1 = packedLow,
@@ -503,7 +504,7 @@ private fun UserInterfaceMap.translate(component: Component): Component =
  */
 
 internal fun Player.ifMesbox(text: String, pauseText: String, lineHeight: Int, eventBus: EventBus) {
-    mes(text, ChatType.Mesbox)
+    mes(chatLogText(text), ChatType.Mesbox)
     openModal("interface.messagebox", "component.chatbox:chatmodal", eventBus)
     ifSetText("component.messagebox:text", text)
     ifSetTextAlign(this, "component.messagebox:text", alignH = 1, alignV = 1, lineHeight)
@@ -519,7 +520,7 @@ internal fun Player.ifObjbox(
     pauseText: String,
     eventBus: EventBus,
 ) {
-    mes(text, ChatType.Mesbox)
+    mes(chatLogText(text), ChatType.Mesbox)
     ifOpenChat("interface.objectbox", constants.modal_fixedwidthandheight, eventBus)
     objboxSetButtons(this, pauseText)
     if (pauseText.isNotBlank()) {
@@ -540,10 +541,12 @@ internal fun Player.ifLevelUpDisplay(
     eventBus: EventBus,
 ) {
     ifOpenChat("interface.levelup_display", constants.modal_fixedwidthandheight, eventBus)
-    client.write(IfSetHide(layer.interfaceId, layer.component, false))
     ifSetText("component.levelup_display:text1", title)
     ifSetText("component.levelup_display:text2", text)
-    ifSetPauseText("component.levelup_display:continue", pauseText)
+    // The cache already makes this a pause button, so the client is sent no if_setevents for it.
+    ui.events.add("component.levelup_display:continue", -1..-1, IfEvent.PauseButton.bitmask)
+    ifSetText("component.levelup_display:continue", pauseText)
+    client.write(IfSetHide(layer.interfaceId, layer.component, false))
 }
 
 internal fun Player.ifDoubleobjbox(
@@ -555,7 +558,7 @@ internal fun Player.ifDoubleobjbox(
     pauseText: String,
     eventBus: EventBus,
 ) {
-    mes(text, ChatType.Mesbox)
+    mes(chatLogText(text), ChatType.Mesbox)
     ifOpenChat("interface.objectbox_double", constants.modal_infinitewidthandheight, eventBus)
     ifSetPauseText("component.objectbox_double:pausebutton", pauseText)
     ifSetObj("component.objectbox_double:model1", obj1, zoom1)
@@ -621,7 +624,7 @@ internal fun Player.ifChatPlayer(
     lineHeight: Int,
     eventBus: EventBus,
 ) {
-    mes("$title|$text", ChatType.Dialogue)
+    mes(chatLogText("$title|$text"), ChatType.Dialogue)
     ifOpenChat("interface.chat_right", constants.modal_infinitewidthandheight, eventBus)
     ifSetPlayerHead("component.chat_right:head")
     ifSetAnim("component.chat_right:head", expression)
@@ -640,7 +643,7 @@ internal fun Player.ifChatNpcActive(
     lineHeight: Int,
     eventBus: EventBus,
 ) {
-    mes("$title|$text", ChatType.Dialogue)
+    mes(chatLogText("$title|$text"), ChatType.Dialogue)
     ifOpenChat("interface.chat_left", constants.modal_infinitewidthandheight, eventBus)
     ifSetNpcHeadActive("component.chat_left:head", npcSlotId)
     ifSetAnim("component.chat_left:head", chatanim)
@@ -659,7 +662,7 @@ internal fun Player.ifChatNpcSpecific(
     lineHeight: Int,
     eventBus: EventBus,
 ) {
-    mes("$title|$text", ChatType.Dialogue)
+    mes(chatLogText("$title|$text"), ChatType.Dialogue)
     ifOpenChat("interface.chat_left", constants.modal_infinitewidthandheight, eventBus)
     ifSetNpcHead("component.chat_left:head", type)
     ifSetAnim("component.chat_left:head", chatanim)
@@ -668,6 +671,9 @@ internal fun Player.ifChatNpcSpecific(
     ifSetTextAlign(this, "component.chat_left:text", alignH = 1, alignV = 1, lineHeight)
     ifSetPauseText("component.chat_left:continue", pauseText)
 }
+
+// Live logs dialogue text unwrapped and cut at 200 chars, tags included.
+private fun chatLogText(text: String): String = text.replace("<br>", " ").take(200)
 
 internal fun Player.ifOpenChat(interf: String, widthAndHeightMode: Int, eventBus: EventBus) {
     chatModalUnclamp = widthAndHeightMode

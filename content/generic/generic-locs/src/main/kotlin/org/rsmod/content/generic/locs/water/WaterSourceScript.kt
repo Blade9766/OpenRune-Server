@@ -34,5 +34,6 @@ class WaterSourceScript : PluginScript() {
             "You fill the ${containerName.lowercase()} from the ${sourceName.lowercase()}.",
             ChatType.Spam,
         )
+        soundSynth("synth.fill_container")
     }
 }

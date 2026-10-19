@@ -30,6 +30,9 @@ fish_swim = 2601
 iron_door_open = 71
 swan_rumble = 1790
 unlock = 2419
+poh_build_furniture = 938
+poh_remove_furniture = 2097
+poh_remove_furniture_alt = 2098
 
 locked = 2402
 pyramid_block = 1395
@@ -61,6 +64,16 @@ grim_piano_g5 = 3705
 grim_piano_a5 = 3693
 grim_piano_b5 = 3695
 
+splash_and_river = 1308
+roof_collapse = 1384
+big_wooden_door_open = 44
+big_wooden_door_close = 43
+watersplash = 2496
+smokepuff = 1930
+chest_open = 52
+chest_close = 51
+irondoor_locked = 72
+
 [gamevals.varp]
 restless_ghost_rising_tile = 63703
 restless_ghost_return_tile = 63704
@@ -76,6 +89,8 @@ gertrudes_cat_state = 63711
 # Dream Mentor: the two foods Cyrisus ate last, forgotten on logout.
 dream_mentor_recent_food = 65458
 dream_mentor_spellbook_swap = 65459
+daddyshome_state = 64064
+waterfall_state = 64310
 
 [gamevals.varbit]
 restless_ghost_progress = 63702
@@ -95,6 +110,17 @@ gertrudes_cat_told_sardines = 63714
 dream_mentor_food_a = 66300
 dream_mentor_food_b = 66301
 dream_mentor_swapped = 66302
+daddyshome_crate_opened = 64064
+waterfall_progress = 64310
+waterfall_heard_of_treasure = 64311
+waterfall_met_golrie = 64312
+waterfall_pillar_runes = 64313
+
+[gamevals.bas]
+waterfall_wading = 1
+waterfall_swimming = 2
+waterfall_drowning = 3
+waterfall_whirlpool = 4
 
 [gamevals.models]
 misthalin_gem_diamond = 32333
@@ -108,6 +134,34 @@ misthalin_gem_emerald = 32334
 restless_ghost_coffin_ghost = 407
 restless_skeleton_attack = 406
 
+[gamevals.dbtable]
+daddys_home_furniture = 65472
+daddys_home_crate = 65473
+glarial_restrictions = 65495
+waterfall_pillar_runes = 65494
+
+[gamevals.dbrow]
+daddys_home_furniture_kitchen_stool = 63420
+daddys_home_furniture_bedroom_stool = 63421
+daddys_home_furniture_chair = 63422
+daddys_home_furniture_kitchen_table = 63423
+daddys_home_furniture_bedroom_table = 63424
+daddys_home_furniture_bed = 63425
+daddys_home_furniture_carpet = 63426
+daddys_home_crate_planks = 63430
+daddys_home_crate_nails = 63431
+daddys_home_crate_steel_bars = 63432
+daddys_home_crate_oak_planks = 63433
+daddys_home_crate_cloth = 63434
+daddys_home_crate_house_tablets = 63435
+daddys_home_crate_falador_tablet = 63436
+glarial_forbidden_names = 63685
+glarial_forbidden_parts = 63684
+glarial_allowed_parts = 63679
+waterfall_rune_air = 63678
+waterfall_rune_water = 63677
+waterfall_rune_earth = 63676
+
 [gamevals.enum]
 dream_mentor_bank_objs = 65440
 dream_mentor_bank_counts = 65441
@@ -116,3 +170,10 @@ dream_mentor_armour_styles = 65443
 dream_mentor_humidify_from = 65444
 dream_mentor_humidify_to = 65445
 dream_mentor_hunter_kit = 65446
+daddys_home_hammers = 65460
+daddys_home_saws = 65461
+daddys_home_nails = 65462
+daddys_home_house_cities = 65463
+
+[gamevals.clientscript]
+poh_furniture_creation_entry_old = 7988

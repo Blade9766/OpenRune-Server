@@ -19,7 +19,7 @@ object Construction {
         return "obj.watering_can_${doses - 1}"
     }
 
-    const val BUILD_WOOD_SOUND = "synth.poh_build_wood"
+    const val BUILD_WOOD_SOUND = "synth.poh_build_furniture"
     const val BUILD_STONE_SOUND = "synth.poh_build_stone"
     const val BUILD_METAL_SOUND = "synth.poh_build_metal"
     const val TELEPORT_SOUND = "synth.poh_teleport"

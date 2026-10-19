@@ -67,6 +67,7 @@ import org.rsmod.content.quest.area.baxtorianfalls.waterfall.BaxtorianFalls
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.GlarialsTomb
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallDungeon
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.metGolrie
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.npcs.Golrie
 import org.rsmod.content.quest.area.tirannwn.mourningsend.ArianwynBriefing
 import org.rsmod.content.quest.area.tirannwn.mourningsend.ElunedErrands
@@ -99,7 +100,6 @@ import org.rsmod.content.quest.area.tirannwn.rovingelves.RovingElvesQuest.Compan
 import org.rsmod.content.quest.area.tirannwn.rovingelves.npcs.Eluned
 import org.rsmod.content.quest.area.tirannwn.rovingelves.npcs.Ilfeen
 import org.rsmod.content.quest.area.tirannwn.rovingelves.npcs.Islwyn
-import org.rsmod.content.quest.area.varrock.dragonslayer.DoorPassage
 import org.rsmod.content.quest.manager.QUEST_STAGE_MAP_ATTR
 import org.rsmod.content.quest.manager.QuestItemDrops
 import org.rsmod.content.quest.manager.QuestRequirementMode
@@ -513,7 +513,7 @@ class RovingElvesInteractionTest {
     @Test fun `a lost pebble and amulet come back once each, without replaying Waterfall Quest`() {
         val f = Fixture()
         f.completeWaterfall()
-        f.waterfall.metGolrie.set(f.player, true)
+        f.player.metGolrie = true
         f.talk(GOLRIE)
         assertEquals(1, f.count(PEBBLE))
         f.talk(GOLRIE)
@@ -546,7 +546,7 @@ class RovingElvesInteractionTest {
         assertEquals(CoordGrid(2512, 3481, 0), f.player.coords, "the policy counts Waterfall Quest done")
         f.player.coords = CoordGrid(2511, 3463, 0)
         f.locOp("loc.waterfall_ledge_door", CoordGrid(2511, 3464, 0))
-        assertEquals(CoordGrid(2575, 9862, 0), f.player.coords)
+        assertEquals(CoordGrid(2575, 9861, 0), f.player.coords)
         assertEquals(0, f.waterfall.stage(f.player), "entering never starts Waterfall Quest")
         f.player.coords = CoordGrid(2589, 9887, 0)
         f.locOp(KEY_CRATE, CoordGrid(2589, 9888, 0))
@@ -652,9 +652,9 @@ class RovingElvesInteractionTest {
             for (script in listOf(
                 roving, regicide, waterfall, consecration,
                 Islwyn(roving, singing), Eluned(roving, ElunedErrands(MourningsEndQuest(), ArianwynBriefing(MourningsEndQuest()))), Ilfeen(roving, singing),
-                GlarialsTomb(waterfall, unused<LocRepository>(), objRepo),
-                BaxtorianFalls(waterfall, unused<NpcSearch>()),
-                WaterfallDungeon(waterfall, objRepo, unused<WorldRepository>(), unused<DoorPassage>()),
+                GlarialsTomb(waterfall, unused<LocRepository>()),
+                BaxtorianFalls(waterfall, unused<NpcSearch>(), unused<LocRepository>(), unused<WorldRepository>()),
+                WaterfallDungeon(waterfall, objRepo, unused<WorldRepository>(), unused<LocRepository>()),
                 Golrie(waterfall, objRepo),
                 IsafdarObstacles(regicide, unused<TyrasGuardEncounter>()),
             )) {
@@ -890,7 +890,7 @@ class RovingElvesInteractionTest {
         const val PEBBLE = WaterfallQuest.PEBBLE
         const val AMULET = WaterfallQuest.AMULET
         const val BAXTORIAN_KEY = WaterfallQuest.BAXTORIAN_KEY
-        const val GOLRIE = WaterfallQuest.GOLRIE
+        const val GOLRIE = WaterfallQuest.GOLRIE_NPC
         const val TOMBSTONE = "loc.glarials_tombstone_waterfall_quest"
         const val CHEST = "loc.glarials_chest_open_waterfall_quest"
         const val KEY_CRATE = "loc.baxtorian_crate_waterfall_quest"

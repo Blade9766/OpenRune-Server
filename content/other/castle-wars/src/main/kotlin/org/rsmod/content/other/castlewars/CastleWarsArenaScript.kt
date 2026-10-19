@@ -188,7 +188,7 @@ constructor(private val game: CastleWarsGame, private val locRepo: LocRepository
 
     private suspend fun ProtectedAccess.fillBucket() {
         anim("seq.human_pickuptable")
-        soundSynth("synth.tap_fill")
+        soundSynth("synth.fill_container")
         delay(1)
         invReplace(inv, "obj.bucket_empty", 1, "obj.bucket_water")
         mes("You fill the bucket from the tap.")

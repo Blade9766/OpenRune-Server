@@ -40,6 +40,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.queueDeath
 import org.rsmod.api.player.stat.PlayerSkillXP
+import org.rsmod.api.player.stat.XpSource
 import org.rsmod.api.player.stat.stat
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.player.stat.statSub
@@ -783,7 +784,7 @@ constructor(
         }
         val xpDelta = xp - statMap.getXP(statInternal)
         statMap.setCurrentLevel(statInternal, targetLevel.toByte())
-        statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0)
+        statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0, source = XpSource.Manual)
     }
 
     // There is, by design, no helper function to decrease stat xp, as xp reduction is not a
@@ -1127,8 +1128,12 @@ constructor(
         if (id != null) {
             return ServerCacheManager.getItem(id)
         }
-        val typeId = resolveTypeId("obj", input) ?: return null
-        return ServerCacheManager.getItem(typeId)
+        resolveTypeId("obj", input)?.let { return ServerCacheManager.getItem(it) }
+        val name = input.replace('_', ' ')
+        return ServerCacheManager.getItems()
+            .values
+            .filter { it.name.equals(name, ignoreCase = true) && !it.isCert && !it.isPlaceholder }
+            .minByOrNull { it.id }
     }
 
     private fun List<String>.asTypeName(): String = joinToString("_")

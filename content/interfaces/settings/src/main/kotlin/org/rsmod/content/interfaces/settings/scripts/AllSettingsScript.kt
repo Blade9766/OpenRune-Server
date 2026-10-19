@@ -20,6 +20,8 @@ import org.rsmod.api.script.onDialogInput
 import org.rsmod.api.script.onIfOpen
 import org.rsmod.api.script.onIfOverlayButton
 import org.rsmod.api.script.onPlayerLogin
+import org.rsmod.api.server.config.ServerConfig
+import org.rsmod.api.table.AccountDefaultVarsRow
 import org.rsmod.api.table.SettingsConfigsRow
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
@@ -42,7 +44,11 @@ val SettingsConfigsRow.varValue: String?
  */
 class AllSettingsScript
 @Inject
-constructor(private val musicPlayer: MusicPlayer, private val eventBus: EventBus) : PluginScript() {
+constructor(
+    private val musicPlayer: MusicPlayer,
+    private val eventBus: EventBus,
+    private val config: ServerConfig,
+) : PluginScript() {
 
     private class ConfirmationSetting(
         val settingId: Int,
@@ -126,6 +132,7 @@ constructor(private val musicPlayer: MusicPlayer, private val eventBus: EventBus
         onIfOverlayButton("component.settings:dropdown_buttons") {
             val setting = Settings.findSetting(player.selectedSetting) ?: return@onIfOverlayButton
             selectDropdownOption(setting, it.comsub / DROPDOWN_CHILDREN_PER_ENTRY)
+            player.selectedSetting = 0
         }
 
         onIfOverlayButton("component.settings:settings_clickzone") {
@@ -297,14 +304,22 @@ constructor(private val musicPlayer: MusicPlayer, private val eventBus: EventBus
         resetDefaultKeybinds()
         resetVolumeSliders()
 
-        VarPlayerIntMapSetter.set(this, "varbit.keybinding_esc_to_close", 1)
-        VarPlayerIntMapSetter.set(this, "varbit.option_collection_new_item", 3)
-        VarPlayerIntMapSetter.set(this, "varp.option_attackpriority", 2)
-        VarPlayerIntMapSetter.set(this, "varp.option_attackpriority_npc", 2)
-        VarPlayerIntMapSetter.set(this, "varbit.bank_hidedepositinv", 1)
-
-        setSettings(wildernessTeleportWarningSettingIds, value = 1)
+        for (row in SettingsConfigsRow.all()) {
+            val default = row.default ?: continue
+            VarPlayerIntMapSetter.set(this, row.varValue ?: continue, default)
+        }
+        for (row in AccountDefaultVarsRow.all()) {
+            VarPlayerIntMapSetter.set(this, row.varValue, row.value)
+        }
+        if (!config.gameplay.levelUpPopups) {
+            VarPlayerIntMapSetter.set(this, "varbit.option_level_up_message_disabled", 1)
+        }
     }
+
+    private val AccountDefaultVarsRow.varValue: String
+        get() =
+            varbit?.let { RSCM.getReverseMapping(RSCMType.VARBIT, it) }
+                ?: RSCM.getReverseMapping(RSCMType.VARP, checkNotNull(varp) { "Row $rowId has no var." })
 
     private fun Player.setVolume(legacy: String, desktop: String, value: Int) {
         VarPlayerIntMapSetter.set(this, legacy, value)

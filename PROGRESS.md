@@ -147,6 +147,7 @@ Found the same way `settings.gradle.kts` finds them: any dir with a `build.gradl
 | `areas/misc/dwarven-mine` | 3 | 599 | 0 | 0 | 2026-09-20 |
 | `areas/misc/kharidian-desert` | 3 | 486 | 0 | 0 | 2026-09-18 |
 | `areas/misc/mining-guild` | 8 | 714 | 0 | 0 | 2026-09-17 |
+| `areas/misc/monastery` | 3 | 370 | 1 | 0 | 2026-10-15 |
 | `areas/misc/motherlode-mine` | 13 | 1,402 | 0 | 0 | 2026-09-17 |
 | `areas/misc/motherlode-mine/pack` | 1 | 6 | 0 | 0 | 2026-09-17 |
 | `areas/misc/multiways` | 2 | 36 | 0 | 0 | 2026-05-03 |
@@ -227,6 +228,8 @@ Found the same way `settings.gradle.kts` finds them: any dir with a `build.gradl
 | `other/poison` | 1 | 183 | 0 | 0 | 2026-09-22 |
 | `other/pouches` | 8 | 1,225 | 2 | 0 | 2026-09-26 |
 | `other/sandstorm` | 2 | 364 | 0 | 0 | 2026-08-18 |
+| `other/sawmill` | 4 | 268 | 1 | 0 | 2026-10-13 |
+| `other/sawmill/pack` | 3 | 111 | 0 | 0 | 2026-10-13 |
 | `other/spawn` | 1 | 333 | 0 | 0 | 2026-09-23 |
 | `other/spawn/pack` | 1 | 6 | 0 | 0 | 2026-09-23 |
 | `other/special-attacks` | 21 | 3,332 | 0 | 0 | 2026-09-22 |

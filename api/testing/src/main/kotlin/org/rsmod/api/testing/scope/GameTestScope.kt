@@ -46,6 +46,7 @@ import org.rsmod.api.net.rsprot.handlers.OpNpcHandler
 import org.rsmod.api.net.rsprot.handlers.ResumePCountDialogHandler
 import org.rsmod.api.npc.apPlayer2
 import org.rsmod.api.npc.hit.NpcDamageContributor
+import org.rsmod.api.npc.hit.NpcHitpointsFloorHook
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.modifier.StandardNpcHitModifier
 import org.rsmod.api.npc.hit.processor.NpcHitProcessor
@@ -59,9 +60,13 @@ import org.rsmod.api.player.hit.processor.DamageOnlyPlayerHitProcessor
 import org.rsmod.api.player.hit.processor.InstantPlayerHitProcessor
 import org.rsmod.api.player.hook.PlayerGroundItemDropHook
 import org.rsmod.api.player.hook.PlayerInvUpdateHook
+import org.rsmod.api.player.hook.PlayerLoginVarsHook
+import org.rsmod.api.player.hook.PlayerObjTakeRedirectHook
 import org.rsmod.api.player.hook.PlayerObjTakeValidateHook
 import org.rsmod.api.player.hook.PlayerPostTickHook
+import org.rsmod.api.player.hook.PlayerRestrictionHook
 import org.rsmod.api.player.hook.PlayerTeleportValidateHook
+import org.rsmod.api.player.music.MusicAreaTrackHook
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
@@ -906,11 +911,16 @@ constructor(
                 .`in`(Scopes.SINGLETON)
 
             Multibinder.newSetBinder(binder(), NpcDamageContributor::class.java)
+            Multibinder.newSetBinder(binder(), NpcHitpointsFloorHook::class.java)
             Multibinder.newSetBinder(binder(), PlayerInvUpdateHook::class.java)
             Multibinder.newSetBinder(binder(), PlayerPostTickHook::class.java)
             Multibinder.newSetBinder(binder(), PlayerGroundItemDropHook::class.java)
             Multibinder.newSetBinder(binder(), PlayerObjTakeValidateHook::class.java)
             Multibinder.newSetBinder(binder(), PlayerTeleportValidateHook::class.java)
+            Multibinder.newSetBinder(binder(), PlayerObjTakeRedirectHook::class.java)
+            Multibinder.newSetBinder(binder(), PlayerRestrictionHook::class.java)
+            Multibinder.newSetBinder(binder(), PlayerLoginVarsHook::class.java)
+            Multibinder.newSetBinder(binder(), MusicAreaTrackHook::class.java)
             bind(NpcHitModifier::class.java).to(StandardNpcHitModifier::class.java)
             bind(PlayerHitModifier::class.java).to(StandardPlayerHitModifier::class.java)
             bind(NpcHitProcessor::class.java).to(StandardNpcHitProcessor::class.java)

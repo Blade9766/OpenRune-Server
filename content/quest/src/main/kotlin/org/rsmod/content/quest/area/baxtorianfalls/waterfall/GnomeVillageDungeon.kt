@@ -2,85 +2,96 @@ package org.rsmod.content.quest.area.baxtorianfalls.waterfall
 
 import jakarta.inject.Inject
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpLoc1
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.GOLRIE
+import org.rsmod.api.script.onOpLocU
 import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.GOLRIE_KEY
-import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.STAGE_READ_BOOK
-import org.rsmod.content.quest.area.varrock.dragonslayer.DoorPassage
-import org.rsmod.content.quest.area.varrock.dragonslayer.WallSide
-import org.rsmod.content.quest.area.varrock.dragonslayer.sideOf
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.GOLRIE_NPC
+import org.rsmod.content.quest.area.baxtorianfalls.waterfall.WaterfallQuest.Companion.READ_BOOK
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-/**
- * The hobgoblin caves beneath the Tree Gnome Village: the odd crate in the east room hides the
- * key to the gate Golrie has locked himself behind in the west room (the gate sits on the north
- * edge of 2515,9575; Golrie's room is north of it).
- */
 class GnomeVillageDungeon
 @Inject
 constructor(
     private val waterfall: WaterfallQuest,
     private val objRepo: ObjRepository,
-    private val doors: DoorPassage,
+    private val locRepo: LocRepository,
 ) : PluginScript() {
 
     override fun ScriptContext.startup() {
         onOpLoc1(CRATE) { searchCrate() }
         onOpLoc1(GATE) { openGate(it.loc) }
+        onOpLocU(GATE, GOLRIE_KEY) { unlockGate(it.loc) }
     }
 
     private suspend fun ProtectedAccess.searchCrate() {
-        anim(SEARCH_SEQ)
-        delay(1)
         val keyHere =
-            (waterfall.stage(player) >= STAGE_READ_BOOK || waterfall.isDoneForLaterQuests(player)) &&
+            (waterfall.stage(player) >= READ_BOOK || waterfall.isDoneForLaterQuests(player)) &&
                 GOLRIE_KEY !in player.inv
         if (!keyHere) {
             mes("You search the crate but find nothing of interest.")
             return
         }
         invAddOrDrop(objRepo, GOLRIE_KEY)
-        objbox(GOLRIE_KEY, "Hidden inside the crate you find a key.")
+        objbox(GOLRIE_KEY, "You find a key in the crate.")
     }
 
     private suspend fun ProtectedAccess.openGate(gate: BoundLocInfo) {
-        if (gate.sideOf(player.coords) == WallSide.NORTH) {
-            mes("You open the gate and step through.")
-            doors.walkThrough(this, gate, GATE, GATE_SOUND)
+        if (!gate.playerIsSouth(player.coords)) {
+            mes("You open the gate and walk through.")
+            passThrough(gate)
             return
         }
         if (GOLRIE_KEY in player.inv) {
-            mes("You unlock the gate with the key.")
-            doors.walkThrough(this, gate, GATE, GATE_SOUND)
+            unlockGate(gate)
             return
         }
-        soundSynth(LOCKED_SOUND)
         when {
-            waterfall.stage(player) < STAGE_READ_BOOK && !waterfall.isDoneForLaterQuests(player) -> {
+            waterfall.stage(player) == 0 && !waterfall.isDoneForLaterQuests(player) -> {
                 startDialogue {
-                    chatNpcSpecific(GOLRIE_NAME, GOLRIE, angry, "What are you doing down here? Leave before you land yourself in trouble.")
+                    chatNpcSpecific(
+                        GOLRIE_NAME,
+                        GOLRIE_NPC,
+                        angry,
+                        "What are you doing down here? Leave before you get yourself into trouble.",
+                    )
                 }
             }
             waterfall.isDoneForLaterQuests(player) -> mesbox("Golrie has locked himself in.")
             else -> {
                 startDialogue {
-                    chatPlayer(worried, "Hello? Are you alright in there?")
-                    chatNpcSpecific(GOLRIE_NAME, GOLRIE, happy, "Oh, I'm perfectly fine. I locked myself in to keep safe, but I've gone and lost the key somewhere.")
-                    chatPlayer(confused, "Right... I'll keep an eye out for it.")
+                    chatPlayer(neutral, "Hello, are you okay?")
+                    chatNpcSpecific(
+                        GOLRIE_NAME,
+                        GOLRIE_NPC,
+                        neutral,
+                        "Oh, don't worry, I'm totally fine. I locked myself in here for " +
+                            "protection, but I've left the key somewhere.",
+                    )
+                    chatPlayer(confused, "Okay... I'll have a look for a key.")
                 }
             }
         }
+    }
+
+    private suspend fun ProtectedAccess.unlockGate(gate: BoundLocInfo) {
+        if (gate.playerIsSouth(player.coords)) {
+            mes("You use the key to unlock the gate.")
+        }
+        passThrough(gate)
+    }
+
+    private suspend fun ProtectedAccess.passThrough(gate: BoundLocInfo) {
+        passDoor(locRepo, gate, GATE_OPEN)
     }
 
     private companion object {
         const val CRATE = "loc.golrie_crate_waterfall_quest"
         const val GATE = "loc.golrie_gate_waterfall_quest"
         const val GOLRIE_NAME = "Golrie"
-        const val SEARCH_SEQ = "seq.human_pickuptable"
-        const val GATE_SOUND = "synth.door_open"
-        const val LOCKED_SOUND = "synth.irondoor_locked"
+        const val GATE_OPEN = "loc.inactiveprisondoor"
     }
 }
