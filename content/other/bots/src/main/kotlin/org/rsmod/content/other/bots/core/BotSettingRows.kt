@@ -7,6 +7,9 @@ sealed interface SettingControl {
     data class Stepper(val down: ConfigChange, val up: ConfigChange) : SettingControl
 
     data class Toggle(val label: String, val change: ConfigChange) : SettingControl
+
+    /** Asks for a number ([prompt]) and applies it with [apply]. */
+    data class Input(val label: String, val prompt: String, val apply: (BotConfig, Int) -> BotConfig) : SettingControl
 }
 
 /**

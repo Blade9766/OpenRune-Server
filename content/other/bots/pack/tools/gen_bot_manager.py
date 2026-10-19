@@ -284,6 +284,34 @@ for i in range(6):
     button(f"rd_a{i}", 218 + (i % 3) * 57, 4 + (i // 3) * 22, 54, 18, "rd")
 text("rd_hint", 218, 50, 170, 24, "rd", font="small", color=MUTED, line_height=12)
 
+# ---------------------------------------------------------------- item picker (give an item, add a rule)
+
+layer("ip", 0, 0, MAIN_W, MAIN_H, "main", hide=True)
+text("ip_title", 4, 0, 150, 18, "ip", font="bold", color=GOLD)
+layer("ip_searchbar", 156, 1, 140, 16, "ip")
+text("ip_searchtext", 156, 1, 140, 16, "ip", value="*", font="small", color=GOLD, h_align="centre", options=["Search"])
+button("ip_prev", 300, 1, 42, 15, "ip")
+button("ip_next", 346, 1, 42, 15, "ip")
+text("ip_sub", 4, 18, MAIN_W - 8, 14, "ip", font="small", color=MUTED)
+PICK_ROWS = 8
+PICK_CELLS = [(26, 230, "left"), (258, 128, "right")]
+for r in range(PICK_ROWS):
+    table_row(f"ip_r{r}", "ip", 34 + r * 19, 18, PICK_CELLS, icon_x=3)
+PICK_SEL_Y = 34 + PICK_ROWS * 19 + 4
+panel("ip_box", 0, PICK_SEL_Y, MAIN_W, MAIN_H - PICK_SEL_Y, "ip")
+layer("ip_sel", 0, PICK_SEL_Y, MAIN_W, MAIN_H - PICK_SEL_Y, "ip")
+graphic("ip_sel_icon", 5, 8, 32, 28, "ip_sel")
+text("ip_sel_name", 42, 4, 262, 15, "ip_sel", font="bold", color=GOLD)
+text("ip_sel_info", 42, 20, 262, 14, "ip_sel", font="small", color=MUTED)
+text("ip_qty_label", 42, 40, 44, 18, "ip_sel", value="Amount", font="small", color=MUTED)
+button("ip_qty_dec", 88, 41, 22, 16, "ip_sel")
+text("ip_qty_value", 112, 40, 56, 18, "ip_sel", font="small", h_align="centre")
+button("ip_qty_inc", 170, 41, 22, 16, "ip_sel")
+button("ip_qty_set", 196, 41, 40, 16, "ip_sel")
+button("ip_target", 240, 41, 64, 16, "ip_sel")
+button("ip_ok", 308, 6, 78, 20, "ip_sel")
+button("ip_back", 308, 30, 78, 20, "ip_sel")
+
 # ---------------------------------------------------------------- footer
 
 layer("ft_dot0", 3, 5, 7, 7, "foot")
@@ -334,6 +362,9 @@ def write_init():
     for name in panels:
         body.append(f"cc_deleteall(bot_manager:{name});")
         body.append(f"~thinbox(bot_manager:{name}, 0);")
+    body.append("~searchbar_create(bot_manager:ip_searchbar, null);")
+    body.append('%settings_search_string = "";')
+    body.append("~bm_search_idle;")
     INIT.write_text("\n".join(body) + "\n", encoding="utf-8")
 
 

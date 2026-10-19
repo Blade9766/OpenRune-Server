@@ -1,0 +1,6 @@
+[clientscript,bm_search_tick](int $deadline)
+if (clientclock < $deadline) {
+    return;
+}
+if_setontimer(null, bot_manager:ip);
+if_runscript*(ifscript_3414196760, bot_manager:ip_searchtext, -1)(0, 0, %settings_search_string);

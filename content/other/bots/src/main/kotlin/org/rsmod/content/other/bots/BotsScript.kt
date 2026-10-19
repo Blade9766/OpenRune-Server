@@ -1,8 +1,6 @@
 package org.rsmod.content.other.bots
 
-import dev.openrune.ServerCacheManager
 import dev.openrune.definition.type.widget.IfEvent
-import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import dev.openrune.types.util.UncheckedType
@@ -25,14 +23,7 @@ import org.rsmod.api.utils.format.formatAmount
 import org.rsmod.content.other.bots.core.BotCoordinator
 import org.rsmod.content.other.bots.core.BotRecord
 import org.rsmod.content.other.bots.core.BotRoleType
-import org.rsmod.content.other.bots.core.BotSettingRows
-import org.rsmod.content.other.bots.core.BotState
 import org.rsmod.content.other.bots.core.SavedObj
-import org.rsmod.content.other.bots.core.SettingControl
-import org.rsmod.content.other.bots.core.SettingRow
-import org.rsmod.content.other.bots.core.SiteCapabilities
-import org.rsmod.content.other.bots.core.copyBehaviourTo
-import org.rsmod.content.other.bots.core.withDefaults
 import org.rsmod.content.other.bots.manager.BotManagerWindow
 import org.rsmod.content.other.bots.manager.BotWindows
 import org.rsmod.content.other.bots.manager.Section
@@ -71,8 +62,6 @@ constructor(
     private val views = WeakHashMap<Player, View>()
 
     private sealed interface View {
-        data class Settings(val botId: Long, var help: String = DEFAULT_HELP, var status: String = APPLIES_NOW) : View
-
         data class Items(val botId: Long, var shown: Int? = null) : View
 
         data class MeisterItems(var shown: Int? = null) : View
@@ -105,7 +94,6 @@ constructor(
             }
         }
 
-        onIfClose(SETTINGS) { closed<View.Settings>(player) }
         onIfClose(ITEMS) {
             if (closed<View.Items>(player) || closed<View.MeisterItems>(player)) {
                 for (inv in viewerInvs(player)) {
@@ -114,19 +102,10 @@ constructor(
             }
         }
 
-        for (row in 0 until SETTING_ROWS) {
-            onIfModalButton("$SETTINGS_COM:label$row") { if (isAdmin()) explain(row) }
-            onIfModalButton("$SETTINGS_COM:dec$row") { if (isAdmin()) changeSetting(row, Step.Down) }
-            onIfModalButton("$SETTINGS_COM:inc$row") { if (isAdmin()) changeSetting(row, Step.Up) }
-            onIfModalButton("$SETTINGS_COM:toggle$row") { if (isAdmin()) changeSetting(row, Step.Toggle) }
-        }
-        for (action in ACTIONS) {
-            onIfModalButton("$SETTINGS_COM:act_$action") { if (isAdmin()) settingsAction(action) }
-        }
         onIfModalButton("$ITEMS_COM:back") {
             if (isAdmin()) {
                 when (val view = views[player]) {
-                    is View.Items -> openSettings(view.botId)
+                    is View.Items -> openManager()
                     is View.MeisterItems -> openManager(Section.Overview)
                     else -> {}
                 }
@@ -141,8 +120,6 @@ constructor(
     }
 
     private inner class Windows : BotWindows {
-        override fun openBotSettings(access: ProtectedAccess, botId: Long) = access.openSettings(botId)
-
         override fun openBotItems(access: ProtectedAccess, botId: Long) = access.openItems(botId)
 
         override fun openMeisterItems(access: ProtectedAccess) = access.openMeisterItems()
@@ -188,245 +165,11 @@ constructor(
         commands.run(player, listOf("create", role.key, site.key) + name) {}
     }
 
-    private enum class Step {
-        Down,
-        Up,
-        Toggle,
-    }
-
-    private fun ProtectedAccess.openSettings(botId: Long, status: String = APPLIES_NOW) {
-        val record = manager.coordinator?.find(botId.toString()) ?: return openManager(Section.Roster)
-        views[player] = View.Settings(botId, status = status)
-        drawn.remove(player)
-        ifOpenMainModal(SETTINGS)
-        player.runClientScript(SETTINGS_INIT.asRSCM(RSCMType.CLIENTSCRIPT), "Bot Settings: ${record.name}")
-        for (row in 0 until SETTING_ROWS) {
-            for (part in listOf("label", "dec", "inc", "toggle")) {
-                ifSetEvents("$SETTINGS_COM:$part$row", -1..-1, IfEvent.Op1)
-            }
-        }
-        for (action in ACTIONS) {
-            ifSetEvents("$SETTINGS_COM:act_$action", -1..-1, IfEvent.Op1)
-        }
-        renderSettings()
-    }
-
-    private fun settingsView(player: Player): View.Settings? = views[player] as? View.Settings
-
-    private fun capabilities(record: BotRecord): SiteCapabilities {
-        val site = BotSites[record.config.site]
-        return SiteCapabilities(
-            canSell = site?.exchangeRoute?.isNotEmpty() == true,
-            usesSupplies = site?.supplies?.isNotEmpty() == true,
-        )
-    }
-
-    private fun ProtectedAccess.renderSettings() {
-        val view = settingsView(player) ?: return
-        val coordinator = manager.coordinator ?: return
-        val record = coordinator.find(view.botId.toString()) ?: return openManager(Section.Roster)
-        val site = BotSites[record.config.site]
-        val live = coordinator.isLive(record.id)
-        val role = record.config.role.key.replaceFirstChar(Char::uppercaseChar)
-        ifSetText("$SETTINGS_COM:info_title", "#${record.id} ${record.name} - $role at ${record.config.site}")
-        ifSetText("$SETTINGS_COM:info_state", "${presence(coordinator, record)}  ${record.state.shortLabel}: ${record.activity}")
-        val target = coordinator.trace(record.id)?.focus
-        ifSetText(
-            "$SETTINGS_COM:info_target",
-            record.lastError?.let { "<col=ff0000>Last error: $it" } ?: "Last target: ${target ?: "none yet"}",
-        )
-
-        val rows = BotSettingRows.of(record.config, capabilities(record))
-        for ((index, row) in rows.withIndex()) {
-            val usable = row.unavailable == null
-            ifSetText("$SETTINGS_COM:label$index", row.label)
-            ifSetText("$SETTINGS_COM:value$index", if (usable) row.value else "<col=9f9f9f>${row.value}")
-            when (val control = row.control) {
-                is SettingControl.Stepper -> {
-                    ifSetHide("$SETTINGS_COM:toggle$index", true)
-                    ifSetHide("$SETTINGS_COM:dec$index", false)
-                    ifSetHide("$SETTINGS_COM:inc$index", false)
-                    button(SETTINGS_COM, "dec$index", "-", usable && control.down != null)
-                    button(SETTINGS_COM, "inc$index", "+", usable && control.up != null)
-                }
-                is SettingControl.Toggle -> {
-                    ifSetHide("$SETTINGS_COM:dec$index", true)
-                    ifSetHide("$SETTINGS_COM:inc$index", true)
-                    ifSetHide("$SETTINGS_COM:toggle$index", false)
-                    button(SETTINGS_COM, "toggle$index", control.label, usable && control.change != null)
-                }
-            }
-        }
-
-        val sameRole = coordinator.all().count { it.id != record.id && it.config.role == record.config.role }
-        button(SETTINGS_COM, "act_power", if (record.enabled) "Disable" else "Enable")
-        button(SETTINGS_COM, "act_home", "Send home", live)
-        button(SETTINGS_COM, "act_clear", "Clear error", record.state == BotState.Error)
-        button(SETTINGS_COM, "act_kit", "Starter kit", !live && site?.kit != null)
-        button(SETTINGS_COM, "act_teleport", "Go to bot", live)
-        button(SETTINGS_COM, "act_items", "View items")
-        button(SETTINGS_COM, "act_more", "More...")
-        button(SETTINGS_COM, "act_copy", "Copy to role", sameRole > 0)
-        button(SETTINGS_COM, "act_reset", "Reset")
-        button(SETTINGS_COM, "act_remove", if (live) "Remove" else "<col=ff0000>Remove", !live)
-        button(SETTINGS_COM, "act_back", "Back")
-        ifSetText("$SETTINGS_COM:help", view.help)
-        ifSetText("$SETTINGS_COM:status", view.status)
-    }
-
-    private fun presence(coordinator: BotCoordinator, record: BotRecord): String =
-        when {
-            coordinator.isLive(record.id) -> "<col=00ff00>In the world</col>"
-            !record.enabled -> "<col=9f9f9f>Out of the world</col>"
-            !coordinator.settings.masterEnabled -> "<col=ff981f>Queued: master toggle is off</col>"
-            else -> "<col=ff981f>Queued for a free slot</col>"
-        }
-
-    private fun ProtectedAccess.explain(index: Int) {
-        val view = settingsView(player) ?: return
-        val row = currentRows(view)?.getOrNull(index) ?: return
-        view.help = "<col=ff981f>${row.label}:</col> ${row.help}" + (row.unavailable?.let { " <col=ff0000>$it" } ?: "")
-        renderSettings()
-    }
-
-    /** Rebuilds the rows from the bot's current config, so a click never applies a stale value. */
-    private fun currentRows(view: View.Settings): List<SettingRow>? {
-        val record = manager.coordinator?.find(view.botId.toString()) ?: return null
-        return BotSettingRows.of(record.config, capabilities(record))
-    }
-
-    private fun ProtectedAccess.changeSetting(index: Int, step: Step) {
-        val view = settingsView(player) ?: return
-        val coordinator = manager.coordinator ?: return
-        val row = currentRows(view)?.getOrNull(index) ?: return
-        val change =
-            when (val control = row.control) {
-                is SettingControl.Stepper -> if (step == Step.Down) control.down else if (step == Step.Up) control.up else null
-                is SettingControl.Toggle -> if (step == Step.Toggle) control.change else null
-            }
-        view.status =
-            when {
-                row.unavailable != null -> "<col=ff0000>${row.label} cannot be changed: ${row.unavailable}"
-                change == null -> "<col=ff981f>${row.label} is already at its limit."
-                else ->
-                    coordinator.updateConfig(view.botId, change)?.let { "<col=ff0000>Not saved: $it" }
-                        ?: "<col=00ff00>Saved:</col> ${row.label} is now ${currentRows(view)?.getOrNull(index)?.value}. $APPLIES_NOW"
-            }
-        renderSettings()
-    }
-
-    private suspend fun ProtectedAccess.settingsAction(action: String) {
-        val view = settingsView(player) ?: return
-        val coordinator = manager.coordinator ?: return
-        val record = coordinator.find(view.botId.toString()) ?: return openManager(Section.Roster)
-        val id = record.id
-        val result: String? =
-            when (action) {
-                "power" ->
-                    if (record.enabled) {
-                        coordinator.disable(id)?.let { "<col=ff0000>$it" } ?: "Disabling: it leaves the world once it finishes its current action."
-                    } else {
-                        coordinator.enable(id)?.let { "<col=ff0000>$it" } ?: ("Enabled.")
-                    }
-                "home" -> sendHome(coordinator, record)
-                "clear" -> coordinator.clearError(id)?.let { "<col=ff0000>$it" } ?: "Error cleared."
-                "kit" -> commands.applyKit(coordinator, record)?.let { "<col=ff0000>Starter kit not applied: $it" } ?: "Starter kit applied."
-                "teleport" -> {
-                    val bot = manager.playerOf(id) ?: return
-                    ifClose()
-                    telejump(bot.coords)
-                    return
-                }
-                "items" -> return openItems(id)
-                "more" -> return moreActions(record)
-                "copy" -> return copyToRole(record)
-                "reset" -> return resetSettings(record)
-                "remove" -> return removeBot(record)
-                "back" -> return openManager(Section.Roster)
-                else -> null
-            }
-        view.status = result ?: APPLIES_NOW
-        drawn.remove(player)
-        renderSettings()
-    }
-
     private fun sendHome(coordinator: BotCoordinator, record: BotRecord): String {
         val bot = manager.playerOf(record.id) ?: return "<col=ff0000>It is not in the world."
         val bank = BotSites[record.config.site]?.bank?.center() ?: return "<col=ff0000>Its site is missing."
         world.telejump(bot, bank)
         return coordinator.restart(record.id)?.let { "<col=ff0000>$it" } ?: "Sent to its bank; it starts its work afresh."
-    }
-
-    private suspend fun ProtectedAccess.copyToRole(record: BotRecord) {
-        val coordinator = manager.coordinator ?: return
-        val others = coordinator.all().filter { it.id != record.id && it.config.role == record.config.role }
-        val role = record.config.role.key
-        val question = "Copy settings to ${others.size} other $role bot(s)?"
-        if (!confirm(question, "Yes, copy them")) {
-            return openSettings(record.id)
-        }
-        val failed = others.count { coordinator.updateConfig(it.id, record.config::copyBehaviourTo) != null }
-        openSettings(record.id, "Copied to ${others.size - failed} $role bot(s)${if (failed > 0) "; <col=ff0000>$failed refused" else ""}. $APPLIES_NOW")
-    }
-
-    private suspend fun ProtectedAccess.resetSettings(record: BotRecord) {
-        if (!confirm("Reset ${record.name}'s settings?", "Yes, reset to the defaults")) {
-            return openSettings(record.id)
-        }
-        val error = manager.coordinator?.updateConfig(record.id) { it.withDefaults() }
-        openSettings(record.id, error?.let { "<col=ff0000>Not reset: $it" } ?: "Settings reset to the defaults. $APPLIES_NOW")
-    }
-
-    private suspend fun ProtectedAccess.removeBot(record: BotRecord) {
-        if (!confirm("Remove ${record.name} for good?", "Yes, remove it and its items")) {
-            return openSettings(record.id)
-        }
-        val error = manager.coordinator?.remove(record.id, force = false)
-        if (error != null) {
-            return openSettings(record.id, "<col=ff0000>Not removed: $error")
-        }
-        mes("Removed ${record.name}.")
-        openManager(Section.Roster)
-    }
-
-    /** The older tools that need typed input: levels, items and the pricing settings. */
-    private suspend fun ProtectedAccess.moreActions(record: BotRecord) {
-        val id = record.id.toString()
-        val actions =
-            listOf<Pair<String, suspend () -> Unit>>(
-                "Show details in chat" to { commands.run(player, listOf("status", id)) {} },
-                "Show decision trace in chat" to { commands.run(player, listOf("trace", id)) {} },
-                "Set a level (bot must be disabled)..." to { setLevel(id) },
-                "Give an item (bot must be disabled)..." to { giveItem(id) },
-                "Change a pricing setting..." to { changePricing(id) },
-                "Back" to {},
-            )
-        actions[pick(record.name, actions.map { it.first })].second.invoke()
-        openSettings(record.id)
-    }
-
-    private suspend fun ProtectedAccess.setLevel(id: String) {
-        val stats =
-            ServerCacheManager.getStats().values
-                .map { RSCM.getReverseMapping(RSCMType.STAT, it.id).removePrefix("stat.") }
-                .filter { it != UNRELEASED_STAT }
-                .sorted()
-        val stat = stats[pick("Which skill?", stats.map { it.replaceFirstChar(Char::uppercaseChar) })]
-        val level = countDialog("New ${stat.replaceFirstChar(Char::uppercaseChar)} level (1-99):")
-        commands.run(player, listOf("level", id, stat, level.toString())) {}
-    }
-
-    private suspend fun ProtectedAccess.giveItem(id: String) {
-        val item = stringDialog("Item to give (for example iron_scimitar):").trim().lowercase().replace(' ', '_')
-        val count = countDialog("How many?")
-        val target = listOf("inv", "worn", "bank")[pick("Put it where?", listOf("Inventory", "Worn", "Bank"))]
-        commands.run(player, listOf("give", id, item, count.toString(), target)) {}
-    }
-
-    private suspend fun ProtectedAccess.changePricing(id: String) {
-        val key = BotCommands.SETTING_KEYS[pick("Which setting?", BotCommands.SETTING_KEYS)]
-        val value = stringDialog("New value for $key:").trim().lowercase()
-        commands.run(player, listOf("set", id, key) + value.split(" ")) {}
     }
 
     private fun viewerInvs(player: Player): List<Inventory> =
@@ -566,7 +309,6 @@ constructor(
             }
             protectedAccess.launchLenient(viewer) {
                 when (view) {
-                    is View.Settings -> renderSettings()
                     is View.Items -> renderItems()
                     is View.MeisterItems -> renderMeisterItems()
                 }
@@ -581,11 +323,8 @@ constructor(
     }
 
     private companion object {
-        private const val SETTINGS = "interface.bot_settings"
-        private const val SETTINGS_COM = "component.bot_settings"
         private const val ITEMS = "interface.bot_items"
         private const val ITEMS_COM = "component.bot_items"
-        private const val SETTINGS_INIT = "clientscript.bot_settings_init"
         private const val ITEMS_INIT = "clientscript.bot_items_init"
         private const val BUTTON_SCRIPT = "clientscript.bot_button"
         private const val VIEW_INV = "inv.bot_view_inv"
@@ -593,14 +332,8 @@ constructor(
         private const val VIEW_BANK = "inv.bot_view_bank"
         private const val BOT_BANK = "inv.bank"
         private const val COINS = "obj.coins"
-        private const val SETTING_ROWS = 7
         private const val REFRESH_TICKS = 5
         private const val MENU_INTERFACE = "interface.menu"
-        private const val UNRELEASED_STAT = "unreleased"
-        private const val APPLIES_NOW = "Changes apply at once and are saved automatically."
-        private const val DEFAULT_HELP = "Click a setting's name to see what it does."
-        private val ACTIONS =
-            listOf("power", "home", "clear", "kit", "teleport", "items", "more", "copy", "reset", "remove", "back")
         private val COLUMNS = listOf("name", "role", "state", "inv", "banked", "threshold", "listings", "coins")
     }
 }

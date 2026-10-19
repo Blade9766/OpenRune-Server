@@ -36,3 +36,8 @@ cc_deleteall(bot_manager:ov_m_box);
 ~thinbox(bot_manager:ov_m_box, 0);
 cc_deleteall(bot_manager:rd_box);
 ~thinbox(bot_manager:rd_box, 0);
+cc_deleteall(bot_manager:ip_box);
+~thinbox(bot_manager:ip_box, 0);
+~searchbar_create(bot_manager:ip_searchbar, null);
+%settings_search_string = "";
+~bm_search_idle;

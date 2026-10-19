@@ -7,3 +7,8 @@
 45818	[clientscript,bm_button]
 45821	[clientscript,bm_check]
 45824	[clientscript,bm_dot]
+45827	[clientscript,bm_search_op]
+45830	[clientscript,bm_search_key]
+45833	[clientscript,bm_search_tick]
+45836	[clientscript,bm_search_stop]
+45839	[proc,bm_search_idle]

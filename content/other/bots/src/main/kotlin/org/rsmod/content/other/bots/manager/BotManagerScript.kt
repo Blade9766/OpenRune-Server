@@ -6,10 +6,12 @@ import org.rsmod.annotations.InternalApi
 import org.rsmod.api.game.process.GameLifecycle
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
+import org.rsmod.api.player.ui.IfScriptArgs
 import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
+import org.rsmod.api.script.onIfScriptTrigger
 import org.rsmod.game.MapClock
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -28,7 +30,7 @@ constructor(
         onEvent<GameLifecycle.LateCycle> { refreshViewers() }
 
         on("nav", 9) { i -> Section.ofNav(i)?.let { window.navigate(this, it) } }
-        on("mh_tab", 5) { i -> window.navigate(this, Section.TABS[i]) }
+        on("mh_tab", 5) { i -> window.tab(this, i) }
 
         on("ru_search") { window.searchRules(this) }
         on("ru_add") { window.addRule(this) }
@@ -78,7 +80,21 @@ constructor(
         on("rd_a", 6) { i -> window.botAction(this, i) }
 
         on("ft_b", 3) { i -> window.footerAction(this, i) }
+
+        onIfScriptTrigger<SearchArgs>(Painter.com("ip_searchtext")) { if (window.isAdmin(this)) window.pickerSearch(this, it.text) }
+        on("ip_r", BotManagerWindow.PICK_ROWS) { i -> window.pickerRow(this, i) }
+        on("ip_prev") { window.pickerPage(this, -1) }
+        on("ip_next") { window.pickerPage(this, 1) }
+        on("ip_qty_dec") { window.pickerAmount(this, "dec") }
+        on("ip_qty_inc") { window.pickerAmount(this, "inc") }
+        on("ip_qty_set") { window.pickerAmount(this, "set") }
+        on("ip_target") { window.pickerTarget(this) }
+        on("ip_ok") { window.pickerOk(this) }
+        on("ip_back") { window.pickerBack(this) }
     }
+
+    /** What the picker's search box sends as the administrator types. */
+    internal data class SearchArgs(val comsub: Int, val op: Int, val text: String) : IfScriptArgs
 
     private fun ScriptContext.on(name: String, action: suspend ProtectedAccess.() -> Unit) {
         onIfModalButton(Painter.com(name)) { if (window.isAdmin(this)) action() }

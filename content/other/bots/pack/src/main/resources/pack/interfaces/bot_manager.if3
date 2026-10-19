@@ -6563,6 +6563,744 @@ text_shadow = true
 v_align = "center"
 
 [[component]]
+name = "ip"
+type = "layer"
+parent = "main"
+x = 0
+y = 0
+width = 390
+height = 259
+hide = true
+
+[[component]]
+name = "ip_title"
+type = "text"
+parent = "ip"
+x = 4
+y = 0
+width = 150
+height = 18
+color = "#FF981F"
+font = "bold"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_searchbar"
+type = "layer"
+parent = "ip"
+x = 156
+y = 1
+width = 140
+height = 16
+
+[[component]]
+name = "ip_searchtext"
+type = "text"
+parent = "ip"
+x = 156
+y = 1
+width = 140
+height = 16
+color = "#FF981F"
+font = "small"
+h_align = "centre"
+options = ["Search"]
+text = "*"
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_prev"
+type = "layer"
+parent = "ip"
+x = 300
+y = 1
+width = 42
+height = 15
+
+[[component]]
+name = "ip_next"
+type = "layer"
+parent = "ip"
+x = 346
+y = 1
+width = 42
+height = 15
+
+[[component]]
+name = "ip_sub"
+type = "text"
+parent = "ip"
+x = 4
+y = 18
+width = 382
+height = 14
+color = "#C8B48C"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r0"
+type = "layer"
+parent = "ip"
+x = 0
+y = 34
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r0_bg"
+type = "rectangle"
+parent = "ip_r0"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r0_icon"
+type = "graphic"
+parent = "ip_r0"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r0_c0"
+type = "text"
+parent = "ip_r0"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r0_c1"
+type = "text"
+parent = "ip_r0"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r1"
+type = "layer"
+parent = "ip"
+x = 0
+y = 53
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r1_bg"
+type = "rectangle"
+parent = "ip_r1"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r1_icon"
+type = "graphic"
+parent = "ip_r1"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r1_c0"
+type = "text"
+parent = "ip_r1"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r1_c1"
+type = "text"
+parent = "ip_r1"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r2"
+type = "layer"
+parent = "ip"
+x = 0
+y = 72
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r2_bg"
+type = "rectangle"
+parent = "ip_r2"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r2_icon"
+type = "graphic"
+parent = "ip_r2"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r2_c0"
+type = "text"
+parent = "ip_r2"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r2_c1"
+type = "text"
+parent = "ip_r2"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r3"
+type = "layer"
+parent = "ip"
+x = 0
+y = 91
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r3_bg"
+type = "rectangle"
+parent = "ip_r3"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r3_icon"
+type = "graphic"
+parent = "ip_r3"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r3_c0"
+type = "text"
+parent = "ip_r3"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r3_c1"
+type = "text"
+parent = "ip_r3"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r4"
+type = "layer"
+parent = "ip"
+x = 0
+y = 110
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r4_bg"
+type = "rectangle"
+parent = "ip_r4"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r4_icon"
+type = "graphic"
+parent = "ip_r4"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r4_c0"
+type = "text"
+parent = "ip_r4"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r4_c1"
+type = "text"
+parent = "ip_r4"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r5"
+type = "layer"
+parent = "ip"
+x = 0
+y = 129
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r5_bg"
+type = "rectangle"
+parent = "ip_r5"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r5_icon"
+type = "graphic"
+parent = "ip_r5"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r5_c0"
+type = "text"
+parent = "ip_r5"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r5_c1"
+type = "text"
+parent = "ip_r5"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r6"
+type = "layer"
+parent = "ip"
+x = 0
+y = 148
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r6_bg"
+type = "rectangle"
+parent = "ip_r6"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r6_icon"
+type = "graphic"
+parent = "ip_r6"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r6_c0"
+type = "text"
+parent = "ip_r6"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r6_c1"
+type = "text"
+parent = "ip_r6"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r7"
+type = "layer"
+parent = "ip"
+x = 0
+y = 167
+width = 390
+height = 18
+options = ["Select"]
+
+[[component]]
+name = "ip_r7_bg"
+type = "rectangle"
+parent = "ip_r7"
+x = 0
+y = 0
+width = 390
+height = 18
+color = "#5A4520"
+filled = true
+hide = true
+opacity = 0
+
+[[component]]
+name = "ip_r7_icon"
+type = "graphic"
+parent = "ip_r7"
+x = 3
+y = 0
+width = 20
+height = 18
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_r7_c0"
+type = "text"
+parent = "ip_r7"
+x = 26
+y = 0
+width = 230
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_r7_c1"
+type = "text"
+parent = "ip_r7"
+x = 258
+y = 0
+width = 128
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "right"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_box"
+type = "layer"
+parent = "ip"
+x = 0
+y = 190
+width = 390
+height = 69
+
+[[component]]
+name = "ip_sel"
+type = "layer"
+parent = "ip"
+x = 0
+y = 190
+width = 390
+height = 69
+
+[[component]]
+name = "ip_sel_icon"
+type = "graphic"
+parent = "ip_sel"
+x = 5
+y = 8
+width = 32
+height = 28
+hide = true
+sprite_id = 431
+
+[[component]]
+name = "ip_sel_name"
+type = "text"
+parent = "ip_sel"
+x = 42
+y = 4
+width = 262
+height = 15
+color = "#FF981F"
+font = "bold"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_sel_info"
+type = "text"
+parent = "ip_sel"
+x = 42
+y = 20
+width = 262
+height = 14
+color = "#C8B48C"
+font = "small"
+h_align = "left"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_qty_label"
+type = "text"
+parent = "ip_sel"
+x = 42
+y = 40
+width = 44
+height = 18
+color = "#C8B48C"
+font = "small"
+h_align = "left"
+text = "Amount"
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_qty_dec"
+type = "layer"
+parent = "ip_sel"
+x = 88
+y = 41
+width = 22
+height = 16
+
+[[component]]
+name = "ip_qty_value"
+type = "text"
+parent = "ip_sel"
+x = 112
+y = 40
+width = 56
+height = 18
+color = "#FFFFFF"
+font = "small"
+h_align = "centre"
+text = ""
+text_shadow = true
+v_align = "center"
+
+[[component]]
+name = "ip_qty_inc"
+type = "layer"
+parent = "ip_sel"
+x = 170
+y = 41
+width = 22
+height = 16
+
+[[component]]
+name = "ip_qty_set"
+type = "layer"
+parent = "ip_sel"
+x = 196
+y = 41
+width = 40
+height = 16
+
+[[component]]
+name = "ip_target"
+type = "layer"
+parent = "ip_sel"
+x = 240
+y = 41
+width = 64
+height = 16
+
+[[component]]
+name = "ip_ok"
+type = "layer"
+parent = "ip_sel"
+x = 308
+y = 6
+width = 78
+height = 20
+
+[[component]]
+name = "ip_back"
+type = "layer"
+parent = "ip_sel"
+x = 308
+y = 30
+width = 78
+height = 20
+
+[[component]]
 name = "ft_dot0"
 type = "layer"
 parent = "foot"

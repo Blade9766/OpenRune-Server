@@ -54,7 +54,7 @@ pause buying, pause selling, his items).
 offers and coins. A bot that is enabled but not yet in the world shows as *Queued*.
 Search by name and filter by state, role and difficulty; Bulk acts on every bot the
 filters show (enable, disable, difficulty, each asking first). Select a bot for its
-details and actions: **Configure** (its full settings window, below), Enable/Disable,
+details and actions: **Configure** (the bot's page, below), Enable/Disable,
 Send home, Go to bot, Items, Remove (out of the world only, asks first). **Create**
 adds a bot (role, site, name; it gets the site's starter kit and starts disabled). The
 footer holds the bots master switch and **Max - / +** for how many bots may be in the
@@ -64,7 +64,12 @@ world at once.
 three apply at once), and Master Meister's whole-market safeguards (rare items,
 refills, price margins, spending and quantity caps), which wait for Save Changes.
 
-**Bot settings** - what the bot is doing, its last target or error, and:
+**Bot page** - Configure opens the selected bot's page inside the Bot Manager. Its
+header shows its state, inventory, open offers and coins; **Roster** (the last tab) or
+**Back to roster** in the footer returns. The footer also has Enable/Disable and Send
+home (teleports a stuck bot to its bank and has it start afresh). Four tabs:
+
+- **Behaviour**:
 
 | Setting | Effect |
 |---|---|
@@ -75,18 +80,26 @@ refills, price margins, spending and quantity caps), which wait for Save Changes
 | Selling / Sell at | Whether it sells on the Grand Exchange, and the banked amount that triggers a trip |
 | Restock | Buy its supplies on the exchange when the bank runs out |
 
+- **Selling**: which product it sells, batch size, reference price (market or a fixed
+  price), price adjustment, minimum price, max deviation, listing timeout, re-list
+  retries and price cut, the pause after giving up, the trade data window, minimum
+  trades and volume, and the restock batch.
+- **Tools** (the first three need the bot out of the world): set a skill level,
+  **Give an item** (the item picker, below), apply the starter kit, clear an error,
+  copy its behaviour settings to every other bot of its role, reset its settings
+  (keeps what it sells) and view its items. Copy and Reset ask first.
+- **Activity**: its latest decisions with when and why, and its last target.
+
 Click a setting's name for an explanation. Greyed-out settings and buttons do not
 apply to that bot (for example selling at a site with no exchange route) and say
 why when clicked. Every change is saved at once and applies on the bot's next
 decision; nothing waits for a respawn.
 
-Actions: Enable/Disable, **Send home** (teleports a stuck bot to its bank and has it
-start afresh), Clear error, Starter kit (bot must be out of the world), Go to bot,
-**View items**, **More...** (details and trace in chat, set a level, give an item,
-pricing settings), **Copy to role** (copies difficulty, speed, hourly limit and
-restock to every other bot of the same role), **Reset** (defaults, keeping what it
-sells) and **Remove** (bot must be out of the world). Copy, Reset and Remove ask
-for confirmation.
+**Item picker** - Give an item and Master Meister's **+ Add item** open it inside the
+window. Click the search box and type: matches with icons appear as you type, eight
+to a page. Click one to choose it; for Give, set the amount with - / + or Set... and
+where it goes (Inventory, Worn or Bank), then **Give**. **Back** leaves without
+changes.
 
 **View items** shows the bot's inventory, worn items and bank, read-only. It is
 live while the bot is in the world and shows its last save otherwise.
@@ -571,7 +584,8 @@ selling are active, the next buy check, unsaved changes, and **Pause buying**,
 
 - **Buy Rules / Sell Rules** - his rule lists as searchable tables with item icons:
   max buy price or min sell price, offer quantity, holdings limit or reserve, cooldown
-  and an Enabled tick. **+ Add item** searches every tradeable item; **Bulk...**
+  and an Enabled tick. **+ Add item** searches every tradeable item in the item
+  picker; **Bulk...**
   enables, disables or removes the rules shown (removing and clearing ask first).
   Selecting a rule opens its editor below the table: price, quantity, holdings limit
   (buy) or amount to keep (sell), cooldown, daily spend (buy) and price mode, with the
