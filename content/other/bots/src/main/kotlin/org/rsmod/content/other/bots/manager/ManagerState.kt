@@ -1,5 +1,6 @@
 package org.rsmod.content.other.bots.manager
 
+import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.content.other.bots.meister.HistoryQuery
 import org.rsmod.content.other.bots.meister.MeisterRules
 import org.rsmod.content.other.bots.meister.MeisterSettings
@@ -40,16 +41,23 @@ sealed interface PickerMode {
     data class Give(val botId: Long) : PickerMode
 
     data class AddRule(val buy: Boolean) : PickerMode
+
+    data object Create : PickerMode
 }
 
-/** The Bot Manager's item picker: a live search with item icons, and the chosen item below it. */
+/**
+ * The Bot Manager's picker: a list with icons and the chosen entry below it. Items are found with
+ * a live search; creating a bot steps through a role, then one of its sites, then a name.
+ */
 data class Picker(
     val mode: PickerMode,
     val query: String = "",
     val page: Int = 0,
-    val selected: Int? = null,
+    val selected: String? = null,
     val amount: Int = 1,
     val target: KitTarget = KitTarget.Bank,
+    val role: BotRoleType? = null,
+    val name: String? = null,
 )
 
 enum class RosterStateFilter(val label: String) {

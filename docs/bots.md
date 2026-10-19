@@ -56,7 +56,10 @@ Search by name and filter by state, role and difficulty; Bulk acts on every bot 
 filters show (enable, disable, difficulty, each asking first). Select a bot for its
 details and actions: **Configure** (the bot's page, below), Enable/Disable,
 Send home, Go to bot, Items, Remove (out of the world only, asks first). **Create**
-adds a bot (role, site, name; it gets the site's starter kit and starts disabled). The
+opens the create page in the window: choose a role (each shows its sites and bots),
+then a site (with the levels its starter kit sets and the bots already there), then
+a name (a random one, **Reroll**, or **Name...** to type one) and **Create**. The bot
+gets the site's starter kit, starts disabled and is selected in the roster. The
 footer holds the bots master switch and **Max - / +** for how many bots may be in the
 world at once.
 

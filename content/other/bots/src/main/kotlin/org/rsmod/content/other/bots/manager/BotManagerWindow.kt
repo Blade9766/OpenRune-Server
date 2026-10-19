@@ -1,5 +1,6 @@
 package org.rsmod.content.other.bots.manager
 
+import com.github.michaelbull.logging.InlineLogger
 import dev.openrune.ServerCacheManager
 import dev.openrune.definition.type.widget.IfEvent
 import dev.openrune.rscm.RSCM
@@ -19,13 +20,17 @@ import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.utils.format.formatAmount
 import org.rsmod.content.other.bots.BotManager
+import org.rsmod.content.other.bots.core.BotConfig
 import org.rsmod.content.other.bots.core.BotCoordinator
+import org.rsmod.content.other.bots.core.BotNames
 import org.rsmod.content.other.bots.core.BotPace
 import org.rsmod.content.other.bots.core.BotRecord
+import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.content.other.bots.core.BotSellingRows
 import org.rsmod.content.other.bots.core.BotSettingRows
 import org.rsmod.content.other.bots.core.BotState
 import org.rsmod.content.other.bots.core.BotStatusView
+import org.rsmod.content.other.bots.core.SaleConfig
 import org.rsmod.content.other.bots.core.SaleProduct
 import org.rsmod.content.other.bots.core.SettingControl
 import org.rsmod.content.other.bots.core.SettingRow
@@ -64,7 +69,8 @@ interface BotWindows {
 
     fun openMeisterItems(access: ProtectedAccess)
 
-    suspend fun createBot(access: ProtectedAccess)
+    /** Names a new bot may not take: everyone online. */
+    fun takenNames(): Set<String>
 
     fun sendHome(botId: Long): String
 }
@@ -391,9 +397,10 @@ constructor(
         player.runClientScript(SEARCH_STOP.asRSCM(RSCMType.CLIENTSCRIPT))
     }
 
-    private class PickEntry(val id: Int, val name: String, val info: String)
+    private class PickEntry(val key: String, val icon: Int?, val name: String, val info: String)
 
     private fun pickerResults(picker: Picker): List<PickEntry> {
+        if (picker.mode == PickerMode.Create) return createEntries(picker)
         val query = picker.query.trim().lowercase()
         if (query.isEmpty()) return emptyList()
         return when (val mode = picker.mode) {
@@ -401,33 +408,68 @@ constructor(
                 ALL_ITEMS.filter { it.second.lowercase().contains(query) }
                     .sortedWith(compareBy({ !it.second.lowercase().startsWith(query) }, { it.second.length }, { it.second }))
                     .take(PICK_LIMIT)
-                    .map { (id, name) -> PickEntry(id, name, "") }
+                    .map { (id, name) -> PickEntry(id.toString(), id, name, "") }
             is PickerMode.AddRule -> {
                 val trader = meister.trader ?: return emptyList()
                 val rules = trader.rules
                 trader.searchCatalog(query, PICK_LIMIT).map { item ->
                     val exists = if (mode.buy) rules.buyRule(item.id) != null else rules.sellRule(item.id) != null
-                    PickEntry(item.id, item.name, if (exists) "<col=ff981f>has a rule" else "guide ${item.guidePrice.formatAmount} gp")
+                    PickEntry(item.id.toString(), item.id, item.name, if (exists) "<col=ff981f>has a rule" else "guide ${item.guidePrice.formatAmount} gp")
                 }
             }
+            PickerMode.Create -> emptyList()
         }
     }
 
+    /** Roles first; once one is chosen, its sites. Icons come from each site's kit and products. */
+    private fun createEntries(picker: Picker): List<PickEntry> {
+        val sites = BotSites.all().values
+        val bots = bots.coordinator?.all().orEmpty()
+        val role = picker.role
+        if (role == null) {
+            return BotRoleType.entries.mapNotNull { r ->
+                val roleSites = sites.filter { it.roleType == r }
+                if (roleSites.isEmpty()) return@mapNotNull null
+                val icon = roleSites.firstNotNullOfOrNull { kitIcon(it) } ?: roleSites.firstNotNullOfOrNull { productIcon(it) }
+                PickEntry(r.key, icon, r.key.replaceFirstChar(Char::uppercaseChar), "${plural(roleSites.size, "site")} - ${plural(bots.count { it.config.role == r }, "bot")}")
+            }
+        }
+        return sites.filter { it.roleType == role }.sortedBy { it.key }.map { site ->
+            val levels = site.kit?.levels.orEmpty().entries.take(2).joinToString { (stat, level) -> "${stat.replaceFirstChar(Char::uppercaseChar)} $level" }
+            val here = bots.count { it.config.site == site.key }
+            PickEntry(site.key, productIcon(site), siteName(site.key), listOf(levels, if (here > 0) plural(here, "bot") else "").filter { it.isNotEmpty() }.joinToString(" - "))
+        }
+    }
+
+    private fun kitIcon(site: BotSite): Int? = site.kit?.let { kit -> (kit.inv + kit.worn).firstOrNull()?.item?.let(bots::itemId) }
+
+    private fun productIcon(site: BotSite): Int? = site.products.firstOrNull()?.let(bots::itemId)
+
+    private fun siteName(key: String): String = key.replace('_', ' ').replaceFirstChar(Char::uppercaseChar)
+
     private fun renderPicker(paint: Painter, state: ManagerState, picker: Picker) {
         val give = picker.mode as? PickerMode.Give
+        val create = picker.mode == PickerMode.Create
         val bot = give?.let { bots.coordinator?.find(it.botId.toString()) }
         val title =
             when (val mode = picker.mode) {
                 is PickerMode.Give -> "Give an item"
                 is PickerMode.AddRule -> if (mode.buy) "Add a buy rule" else "Add a sell rule"
+                PickerMode.Create -> picker.role?.let { "New ${it.key} bot" } ?: "Create a bot"
             }
         paint.text("ip_title", shorten(title, PICK_TITLE_CHARS))
+        paint.hide("ip_searchbar", create)
+        paint.hide("ip_searchtext", create)
         val results = pickerResults(picker)
         val pages = pages(results.size, PICK_ROWS)
         val page = clampPage(picker.page, pages)
+        val site = picker.selected?.takeIf { create }?.let { BotSites[it] }
         paint.text(
             "ip_sub",
             when {
+                create && picker.role == null -> "Step 1 of 3: choose the work the new bot will do."
+                create && site == null -> "Step 2 of 3: choose where it works. Levels are what its starter kit sets."
+                create -> shorten(site?.description.orEmpty(), PICK_SUB_CHARS)
                 picker.query.isBlank() -> "${bot?.let { "For ${it.name}: " } ?: ""}click the search box and type an item name."
                 results.isEmpty() -> "<col=ff0000>No ${if (give != null) "item" else "tradeable item"} matches '${picker.query}'."
                 else -> "${plural(results.size, "match")}${if (results.size >= PICK_LIMIT) " (first $PICK_LIMIT)" else ""} for '${picker.query}' - page ${page + 1}/$pages. Click one to choose it."
@@ -441,12 +483,14 @@ constructor(
             val entry = shown.getOrNull(r)
             paint.hide(row, entry == null)
             if (entry == null) continue
-            paint.hide("${row}_bg", entry.id != picker.selected)
-            paint.icon("${row}_icon", entry.id)
-            paint.text("${row}_c0", if (entry.id == picker.selected) "<col=ffff00>${entry.name}" else entry.name)
+            val chosen = entry.key == picker.selected
+            paint.hide("${row}_bg", !chosen)
+            paint.icon("${row}_icon", entry.icon)
+            paint.text("${row}_c0", if (chosen) "<col=ffff00>${entry.name}" else entry.name)
             paint.text("${row}_c1", entry.info)
         }
-        val selected = picker.selected?.let { id -> ServerCacheManager.getItem(id) }
+        if (create) return renderCreatePanel(paint, state, picker, site)
+        val selected = picker.selected?.toIntOrNull()?.let { id -> ServerCacheManager.getItem(id) }
         paint.icon("ip_sel_icon", selected?.id, if (give != null) picker.amount.coerceAtLeast(1) else 1)
         paint.text("ip_sel_name", selected?.name ?: "No item chosen")
         val amountShown = give != null && selected != null
@@ -472,6 +516,33 @@ constructor(
         for (i in 0 until 3) paint.hide("ft_b$i", true)
     }
 
+    private fun renderCreatePanel(paint: Painter, state: ManagerState, picker: Picker, site: BotSite?) {
+        for (name in listOf("ip_qty_label", "ip_qty_value", "ip_qty_dec", "ip_qty_inc")) paint.hide(name, true)
+        paint.icon("ip_sel_icon", site?.let { kitIcon(it) ?: productIcon(it) })
+        if (site == null) {
+            paint.text("ip_sel_name", "No site chosen")
+            paint.text("ip_sel_info", if (picker.role == null) "Choose a role above." else "Choose a site above.")
+            paint.hide("ip_qty_set", true)
+            paint.hide("ip_target", true)
+        } else {
+            paint.text("ip_sel_name", picker.name ?: "")
+            val kit = if (site.kit != null) "Gets its starter kit" else "<col=ff981f>No starter kit</col>"
+            paint.text("ip_sel_info", "$kit; starts disabled.")
+            paint.button("ip_qty_set", "Name...")
+            paint.button("ip_target", "Reroll")
+        }
+        paint.button("ip_ok", "Create", if (site == null) ButtonState.Disabled else ButtonState.Selected)
+        paint.button("ip_back", "Back")
+        paint.dot("ft_dot0", AMBER)
+        paint.text("ft_t0", "Creating a bot")
+        paint.dot("ft_dot1", if (state.message != null) AMBER else TRANSPARENT)
+        paint.text("ft_t1", state.message ?: "Back steps back; nothing is made until Create.")
+        for (i in 0 until 3) paint.hide("ft_b$i", true)
+    }
+
+    private fun newName(): String =
+        BotNames.generate(windows?.takenNames().orEmpty() + bots.coordinator?.all().orEmpty().map { it.name })
+
     private fun where(target: KitTarget): String =
         when (target) {
             KitTarget.Inv -> "inventory"
@@ -490,7 +561,13 @@ constructor(
         val state = state(access.player)
         val picker = state.picker ?: return
         val entry = pickerResults(picker).drop(picker.page * PICK_ROWS).getOrNull(row) ?: return
-        state.picker = picker.copy(selected = entry.id)
+        state.picker =
+            when {
+                picker.mode == PickerMode.Create && picker.role == null -> picker.copy(role = BotRoleType.of(entry.key), page = 0, selected = null)
+                picker.mode == PickerMode.Create -> picker.copy(selected = entry.key, name = picker.name ?: newName())
+                else -> picker.copy(selected = entry.key)
+            }
+        state.message = null
         render(access)
     }
 
@@ -504,6 +581,20 @@ constructor(
     suspend fun pickerAmount(access: ProtectedAccess, action: String) {
         val state = state(access.player)
         val picker = state.picker ?: return
+        if (picker.mode == PickerMode.Create) {
+            if (action != "set") return
+            val typed = access.stringDialog("Name for the new bot (up to 12 letters or digits):").trim()
+            if (typed.isNotEmpty()) {
+                val name = typed.split(" ").filter { it.isNotBlank() }.joinToString(" ") { it.replaceFirstChar(Char::uppercaseChar) }
+                if (BotNames.isAcceptable(name)) {
+                    state.picker = picker.copy(name = name)
+                    state.message = null
+                } else {
+                    state.message = "<col=ff0000>Names are 1-12 letters or digits."
+                }
+            }
+            return open(access)
+        }
         val amount =
             when (action) {
                 "dec" -> AMOUNT_STEPS.lastOrNull { it < picker.amount } ?: 1
@@ -517,16 +608,30 @@ constructor(
     fun pickerTarget(access: ProtectedAccess) {
         val state = state(access.player)
         val picker = state.picker ?: return
+        if (picker.mode == PickerMode.Create) {
+            state.picker = picker.copy(name = newName())
+            return render(access)
+        }
         state.picker = picker.copy(target = KitTarget.entries[(picker.target.ordinal + 1) % KitTarget.entries.size])
         render(access)
     }
 
-    fun pickerBack(access: ProtectedAccess) = closePicker(access)
+    fun pickerBack(access: ProtectedAccess) {
+        val state = state(access.player)
+        val picker = state.picker ?: return
+        if (picker.mode == PickerMode.Create && picker.role != null) {
+            state.picker = picker.copy(role = null, selected = null, page = 0)
+            state.message = null
+            return render(access)
+        }
+        closePicker(access)
+    }
 
     fun pickerOk(access: ProtectedAccess) {
         val state = state(access.player)
         val picker = state.picker ?: return
-        val itemId = picker.selected ?: return message(access, "Choose an item first.")
+        if (picker.mode == PickerMode.Create) return createFromPicker(access, state, picker)
+        val itemId = picker.selected?.toIntOrNull() ?: return message(access, "Choose an item first.")
         when (val mode = picker.mode) {
             is PickerMode.Give -> {
                 val coordinator = bots.coordinator ?: return
@@ -543,7 +648,30 @@ constructor(
                 val result = addRuleFor(access, state, trader, mode.buy, item)
                 closePicker(access, result)
             }
+            PickerMode.Create -> {}
         }
+    }
+
+    /** Makes the bot as `::bot create` does: config from its site, then the site's starter kit. */
+    private fun createFromPicker(access: ProtectedAccess, state: ManagerState, picker: Picker) {
+        val coordinator = bots.coordinator ?: return
+        val role = picker.role ?: return
+        val site = picker.selected?.let { BotSites[it] } ?: return message(access, "Choose a site first.")
+        val product = site.products.firstOrNull() ?: return message(access, "<col=ff0000>That site lists no products.")
+        val config =
+            BotConfig(
+                role = role,
+                site = site.key,
+                sale = SaleConfig(enabled = site.exchangeRoute.isNotEmpty(), item = product, allowedItems = site.allProducts),
+            )
+        val created = coordinator.create(config, picker.name, windows?.takenNames().orEmpty())
+        val record = created.getOrElse { return message(access, "<col=ff0000>Not created: ${it.message}") }
+        val kit = site.kit?.let { kit -> coordinator.editSave(record.id) { BotKit.applyKit(it, kit, bots::itemId) } }
+        CREATE_LOG.info { "${access.player.username} created ${role.key} bot #${record.id} '${record.name}' at ${site.key}" }
+        state.rosterSelected = record.id
+        state.section = Section.Roster
+        val note = if (site.kit != null && kit != null) " (kit did not fit)" else ""
+        closePicker(access, "Created ${record.name}$note.")
     }
 
     private fun activityRows(coordinator: BotCoordinator, record: BotRecord): List<KnobRow> {
@@ -1661,10 +1789,7 @@ constructor(
         open(access)
     }
 
-    suspend fun createBot(access: ProtectedAccess) {
-        windows?.createBot(access)
-        open(access)
-    }
+    fun createBot(access: ProtectedAccess) = openPicker(access, PickerMode.Create)
 
     /* Footer */
 
@@ -1856,6 +1981,8 @@ constructor(
         const val PICK_ROWS: Int = 8
         private const val PICK_LIMIT = 200
         private const val PICK_TITLE_CHARS = 30
+        private const val PICK_SUB_CHARS = 80
+        private val CREATE_LOG = InlineLogger("bots.admin")
         private const val PICK_QUERY_CHARS = 50
         private const val SEARCH_STOP = "clientscript.bm_search_stop"
         private val AMOUNT_STEPS = listOf(1, 5, 10, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 50_000, 100_000, 1_000_000)

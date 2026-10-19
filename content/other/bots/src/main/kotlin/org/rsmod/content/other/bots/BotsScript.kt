@@ -22,7 +22,6 @@ import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.utils.format.formatAmount
 import org.rsmod.content.other.bots.core.BotCoordinator
 import org.rsmod.content.other.bots.core.BotRecord
-import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.content.other.bots.core.SavedObj
 import org.rsmod.content.other.bots.manager.BotManagerWindow
 import org.rsmod.content.other.bots.manager.BotWindows
@@ -124,7 +123,7 @@ constructor(
 
         override fun openMeisterItems(access: ProtectedAccess) = access.openMeisterItems()
 
-        override suspend fun createBot(access: ProtectedAccess) = access.createBot()
+        override fun takenNames(): Set<String> = onlineNames()
 
         override fun sendHome(botId: Long): String {
             val coordinator = manager.coordinator ?: return "<col=ff0000>Bots are not loaded."
@@ -148,21 +147,6 @@ constructor(
         }
         ifClose()
         return false
-    }
-
-    /** Role, then a site for it, then a name; the site's starter kit comes with it. */
-    private suspend fun ProtectedAccess.createBot() {
-        val sites = BotSites.all().values
-        val roles = BotRoleType.entries.filter { role -> sites.any { it.roleType == role } }
-        val role = roles[pick("Role for the new bot", roles.map { it.key.replaceFirstChar(Char::uppercaseChar) })]
-        val roleSites = sites.filter { it.roleType == role }
-        val site = roleSites[pick("Where should it work?", roleSites.map { "${it.key}: ${it.description}" })]
-        val name =
-            when (pick("Name", listOf("Random silly name", "Type a name"))) {
-                0 -> emptyList()
-                else -> stringDialog("Bot name:").trim().split(" ").filter { it.isNotBlank() }
-            }
-        commands.run(player, listOf("create", role.key, site.key) + name) {}
     }
 
     private fun sendHome(coordinator: BotCoordinator, record: BotRecord): String {
