@@ -66,6 +66,7 @@ object MeshRenderer {
             val nx = uy * vz - uz * vy
             val ny = uz * vx - ux * vz
             val nz = ux * vy - uy * vx
+            if (nz * Parts.winding > 0) continue
             val len = Mesh.length(nx, ny, nz).coerceAtLeast(1e-6)
             val light = 0.55 + 0.45 * abs((nx * -0.3 + ny * -0.6 + nz * -0.75) / len)
             val rgb = shade(hslToRgb(face.colour), light)

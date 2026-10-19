@@ -1,8 +1,10 @@
 package org.rsmod.tools.wayfindermodels
 
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sign
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -28,18 +30,53 @@ private data class Vec(val x: Double, val y: Double, val z: Double) {
     }
 }
 
+private val TOWARD_VIEWER = Vec(0.0, 0.0, -1.0)
+
 private fun Mesh.v(p: Vec, label: Int) = vertex(p.x.roundToInt(), p.y.roundToInt(), p.z.roundToInt(), label)
+
+private fun Mesh.v(p: Vec, body: Mesh) = v(p, body.labelAt(p))
+
+private fun Mesh.labelAt(p: Vec) = nearestLabel(p.x.roundToInt(), p.y.roundToInt(), p.z.roundToInt())
 
 private fun Mesh.pos(i: Int) = vertices[i].let { Vec(it.x.toDouble(), it.y.toDouble(), it.z.toDouble()) }
 
-/** Adds both windings of every face so thin plates show from either side. */
-private fun Mesh.doubleSided(from: Int): Mesh {
-    val added = faces.subList(from, faces.size).map { it.copy(a = it.a, b = it.c, c = it.b) }
-    faces += added
-    return this
+private fun Mesh.normal(f: Face): Vec {
+    val a = pos(f.a)
+    return (pos(f.b) - a).cross(pos(f.c) - a)
 }
 
+private fun Mesh.centroid(f: Face) = (pos(f.a) + pos(f.b) + pos(f.c)) * (1.0 / 3)
+
+/**
+ * Winds every face added since [from] so its front points away from [inside] (given the face's
+ * centroid). The client culls back faces and has no depth buffer, so each face must be single
+ * and wound like the cache's own models ([Parts.winding]), or it disappears or flickers.
+ */
+private fun Mesh.orient(from: Int, inside: (Vec) -> Vec) {
+    for (i in from until faces.size) {
+        val f = faces[i]
+        val c = centroid(f)
+        if (normal(f).dot(c - inside(c)) * Parts.winding < 0) {
+            faces[i] = f.copy(b = f.c, c = f.b)
+        }
+    }
+}
+
+private fun Mesh.orientAway(from: Int, centre: Vec) = orient(from) { centre }
+
+private fun Mesh.orientToward(from: Int, outward: Vec) = orient(from) { it - outward }
+
 object Parts {
+    /** +1 or -1: the sign of (normal . outward) on the outside faces of cache models. */
+    var winding = 1.0
+
+    /** Measures [winding] from a closed cache model such as a robe skirt. */
+    fun measureWinding(reference: Mesh) {
+        val centre = reference.vertices.indices.map { reference.pos(it) }.reduce { a, b -> a + b } * (1.0 / reference.vertices.size)
+        val sum = reference.faces.sumOf { f -> sign(reference.normal(f).dot(reference.centroid(f) - centre)) }
+        winding = if (sum >= 0) 1.0 else -1.0
+    }
+
     /**
      * Bends a wizard hat's tip backwards and down, giving the crooked point of the concept art.
      * [tipFraction] is how much of the hat's height, from the top, is bent.
@@ -111,7 +148,7 @@ object Parts {
         val ring = ArrayList<Int>()
         for (s in 0..segments) {
             val a = from + (to - from) * s / segments
-            val taper = 1.0 - 0.55 * kotlin.math.abs(s - segments / 2.0) / (segments / 2.0)
+            val taper = 1.0 - 0.55 * abs(s - segments / 2.0) / (segments / 2.0)
             val dirOut = (across * cos(a) - u * sin(a))
             val inner = centre + dirOut * (ringRadius - thickness * taper)
             val outer = centre + dirOut * (ringRadius + thickness * taper)
@@ -123,46 +160,47 @@ object Parts {
         for (s in 0 until segments) {
             val a = s * 4
             val b = a + 4
+            val start = mesh.faces.size
             mesh.quad(ring[a], ring[a + 1], ring[b + 1], ring[b], silver)
             mesh.quad(ring[a + 2], ring[b + 2], ring[b + 3], ring[a + 3], silver)
             mesh.quad(ring[a + 1], ring[a + 3], ring[b + 3], ring[b + 1], silver)
             mesh.quad(ring[a], ring[b], ring[b + 2], ring[a + 2], silver)
+            val segmentCentre = (a until a + 8).map { mesh.pos(ring[it]) }.reduce { x, y -> x + y } * (1.0 / 8)
+            mesh.orientAway(start, segmentCentre)
         }
-        val stem = mesh.faces.size
         tube(mesh, shaftTop, centre - u * (ringRadius - 3.0), 1.6, 4, silver, label)
-        mesh.doubleSided(stem)
         orb(mesh, centre, 8.5, orb, orbLight, label)
         scatter(mesh, centre, u, count = 8, radius = 21.0, size = 2.2, colour = orb, light = orbLight, label = label)
         return mesh
     }
 
     /**
-     * Layered angular pauldrons, a rune pouch at the hip and a diamond motif on the robe front.
-     * Each vertex takes the animation label of the nearest vertex of [body] (torso, arms and
-     * skirt), so the pieces move with the shoulders, hips and legs they sit on.
+     * Layered angular pauldrons, a rune pouch at the hip, a belt buckle and a diamond motif on the
+     * robe front (or chest). Each vertex takes the animation label of the nearest vertex of [body]
+     * (torso, arms and skirt), so the pieces move with the shoulders, hips and legs they sit on.
      */
-    fun regalia(torso: Mesh, skirt: Mesh, body: Mesh, palette: Palette): Mesh {
+    fun regalia(arms: Mesh, torso: Mesh, skirt: Mesh, body: Mesh, palette: Palette, chestMotif: Boolean = false): Mesh {
         val mesh = Mesh()
-        val tb = torso.bounds()
-        val shoulderY = tb[1] + 8.0
-        val upper = torso.vertices.filter { it.y < tb[1] + 14 }
-        val shoulderX = upper.maxOf { kotlin.math.abs(it.x) } - 8.0
-        val zMid = (tb[2] + tb[5]) / 2.0
+        val ab = arms.bounds()
+        val shoulderY = ab[1] + 8.0
+        val upper = arms.vertices.filter { it.y < ab[1] + 14 }
+        val shoulderX = upper.maxOf { abs(it.x) } - 8.0
+        val zMid = (ab[2] + ab[5]) / 2.0
         for (side in listOf(-1.0, 1.0)) {
             pauldron(mesh, Vec(side * shoulderX, shoulderY, zMid), side, palette.robe, palette.trim, body)
         }
         val sb = skirt.bounds()
+        val surface = Surface(skirt)
         val beltY = sb[1] + 9.0
-        val frontAtBelt = skirt.vertices.filter { kotlin.math.abs(it.y - beltY) < 10 }.minOf { it.z } - 1.0
-        pouch(mesh, Vec(-0.62 * (sb[3] - sb[0]) / 2.0, beltY + 8.0, frontAtBelt + 3.0), palette, body)
-        val buckle = mesh.faces.size
-        box(mesh, Vec(0.0, sb[1] + 2.0, frontAtBelt - 0.5), 4.5, 3.5, 1.2, BUCKLE, body)
-        box(mesh, Vec(0.0, sb[1] + 2.0, frontAtBelt - 1.2), 2.0, 1.6, 1.0, palette.leather - 4, body)
-        mesh.doubleSided(buckle)
-        val motifY = sb[1] + (sb[4] - sb[1]) * 0.62
-        val frontAtMotif = skirt.vertices.filter { kotlin.math.abs(it.y - motifY) < 12 && kotlin.math.abs(it.x) < 8 }.minOf { it.z } - 1.0
-        diamond(mesh, Vec(0.0, motifY, frontAtMotif), 9.5, 19.0, palette.motif, body)
-        diamond(mesh, Vec(0.0, motifY, frontAtMotif - 0.8), 5.5, 11.0, palette.robe, body)
+        pouch(mesh, -0.6 * (sb[3] - sb[0]) / 2.0, beltY + 7.0, surface, palette, body)
+        buckle(mesh, sb[1] + 3.0, surface, palette, body)
+        if (chestMotif) {
+            val tb = torso.bounds()
+            val height = tb[4] - tb[1]
+            motif(mesh, tb[4] - height * 0.38, height * 0.17 / MOTIF_HALF_HEIGHT, Surface(torso), palette)
+        } else {
+            motif(mesh, sb[1] + (sb[4] - sb[1]) * 0.6, 1.0, surface, palette)
+        }
         return mesh
     }
 
@@ -197,28 +235,105 @@ object Parts {
             for (c in 0..cols) {
                 val phi = Math.toRadians(-70.0 + 140.0 * c / cols)
                 val p = centre + Vec(side * rx * cos(theta) * cos(phi), -ry * sin(theta) * cos(phi), rz * sin(phi))
-                grid[r][c] = mesh.v(p, body.nearestLabel(p.x.roundToInt(), p.y.roundToInt(), p.z.roundToInt()))
+                grid[r][c] = mesh.v(p, body)
             }
         }
         for (r in 0 until rows) for (c in 0 until cols) {
             mesh.quad(grid[r][c], grid[r][c + 1], grid[r + 1][c + 1], grid[r + 1][c], if (r == rows - 1) trim else colour)
         }
-        mesh.doubleSided(start)
+        mesh.orientAway(start, centre)
     }
 
-    private fun pouch(mesh: Mesh, centre: Vec, palette: Palette, body: Mesh) {
+    /**
+     * The front of a body part: how far forward (lowest z) its triangles reach around any
+     * (x, y). Panels such as the robe's front split are large triangles whose corners sit far above
+     * and below a detail, so the surface is ray-cast through the faces, not read off the vertices.
+     */
+    private class Surface(private val model: Mesh) {
+        fun frontZ(x: Double, y: Double): Double {
+            var front = Double.MAX_VALUE
+            for (dx in SAMPLES) for (dy in SAMPLES) {
+                for (f in model.faces) {
+                    front = minOf(front, zAt(f, x + dx, y + dy) ?: continue)
+                }
+            }
+            return if (front < Double.MAX_VALUE) front else model.vertices.minOf { it.z }.toDouble()
+        }
+
+        /** The animation label of the front-most face at (x, y), so a decal bends with it. */
+        fun labelAt(x: Double, y: Double): Int {
+            val face = model.faces.filter { zAt(it, x, y) != null }.minByOrNull { zAt(it, x, y)!! }
+                ?: return model.nearestLabel(x.roundToInt(), y.roundToInt(), 0)
+            val p = Vec(x, y, zAt(face, x, y)!!)
+            return model.vertices[listOf(face.a, face.b, face.c).minBy { (model.pos(it) - p).dot(model.pos(it) - p) }].label
+        }
+
+        private fun zAt(f: Face, x: Double, y: Double): Double? {
+            val a = model.pos(f.a)
+            val b = model.pos(f.b)
+            val c = model.pos(f.c)
+            val det = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y)
+            if (abs(det) < 1e-9) return null
+            val wa = ((b.y - c.y) * (x - c.x) + (c.x - b.x) * (y - c.y)) / det
+            val wb = ((c.y - a.y) * (x - c.x) + (a.x - c.x) * (y - c.y)) / det
+            val wc = 1 - wa - wb
+            if (wa < 0 || wb < 0 || wc < 0) return null
+            return wa * a.z + wb * b.z + wc * c.z
+        }
+
+        /** One above the part's highest render priority (or level with 9+, which interleave by depth). */
+        val detailPriority = model.faces.maxOf { it.priority }.let { if (it >= 9) it else it + 1 }
+    }
+
+    /** A small leather pouch resting on the robe at the hip, with a flap and a rune on its face. */
+    private fun pouch(mesh: Mesh, x: Double, y: Double, surface: Surface, palette: Palette, body: Mesh) {
+        val hx = 4.5
+        val hy = 5.0
+        val hz = 2.0
+        val back = surface.frontZ(x, y) - 0.5
+        val label = body.labelAt(Vec(x, y, back))
+        box(mesh, Vec(x, y, back - hz), hx, hy, hz, palette.leather, label)
+        box(mesh, Vec(x, y - hy + 1.5, back - hz - 0.3), hx + 0.4, 1.6, hz + 0.3, palette.leather - 4, label)
+        flatDiamond(mesh, Vec(x, y + 1.2, back - 2 * hz - DECAL_GAP), 2.0, 2.6, palette.rune, surface.detailPriority, label)
+    }
+
+    private fun buckle(mesh: Mesh, y: Double, surface: Surface, palette: Palette, body: Mesh) {
+        val back = surface.frontZ(0.0, y) - 0.5
+        val label = body.labelAt(Vec(0.0, y, back))
+        box(mesh, Vec(0.0, y, back - 0.9), 4.0, 2.8, 0.9, BUCKLE, label)
+        flatDiamond(mesh, Vec(0.0, y, back - 1.8 - DECAL_GAP), 1.6, 1.6, palette.leather - 4, surface.detailPriority, label)
+    }
+
+    /**
+     * An outlined diamond on the robe front: a band between two diamonds with a small gem in the
+     * middle, laid over the robe like a decal: each vertex sits a fixed gap in front of the robe
+     * triangle under it and takes that triangle's animation label, so it moves with the panel.
+     */
+    private fun motif(mesh: Mesh, y: Double, scale: Double, surface: Surface, palette: Palette) {
+        fun lift(q: Vec): Int {
+            val p = q * scale
+            return mesh.v(Vec(p.x, y + p.y, surface.frontZ(p.x, y + p.y) - MOTIF_GAP), surface.labelAt(p.x, y + p.y))
+        }
+        val outer = diamondPoints(7.5, MOTIF_HALF_HEIGHT).map(::lift)
+        val inner = diamondPoints(4.5, 8.5).map(::lift)
         val start = mesh.faces.size
-        box(mesh, centre, 7.0, 8.5, 4.0, palette.leather, body)
-        box(mesh, centre + Vec(0.0, -6.0, -0.6), 7.5, 3.0, 4.3, palette.leather - 4, body)
-        diamond(mesh, centre + Vec(0.0, 2.0, -4.6), 3.6, 4.8, palette.rune, body)
-        mesh.doubleSided(start)
+        for (k in 0 until 4) {
+            val n = (k + 1) % 4
+            mesh.quad(outer[k], outer[n], inner[n], inner[k], palette.motif, surface.detailPriority)
+        }
+        val gem = diamondPoints(1.8, 3.2).map(::lift)
+        mesh.quad(gem[0], gem[1], gem[2], gem[3], palette.motif, surface.detailPriority)
+        mesh.orientToward(start, TOWARD_VIEWER)
     }
 
-    private fun box(mesh: Mesh, c: Vec, hx: Double, hy: Double, hz: Double, colour: Int, body: Mesh) {
+    private fun diamondPoints(hw: Double, hh: Double) =
+        listOf(Vec(0.0, -hh, 0.0), Vec(hw, 0.0, 0.0), Vec(0.0, hh, 0.0), Vec(-hw, 0.0, 0.0))
+
+    private fun box(mesh: Mesh, c: Vec, hx: Double, hy: Double, hz: Double, colour: Int, label: Int) {
+        val start = mesh.faces.size
         val ids = ArrayList<Int>()
         for (dx in listOf(-hx, hx)) for (dy in listOf(-hy, hy)) for (dz in listOf(-hz, hz)) {
-            val p = c + Vec(dx, dy, dz)
-            ids += mesh.v(p, body.nearestLabel(p.x.roundToInt(), p.y.roundToInt(), p.z.roundToInt()))
+            ids += mesh.v(c + Vec(dx, dy, dz), label)
         }
         // ids: index = xi*4 + yi*2 + zi
         mesh.quad(ids[0], ids[2], ids[6], ids[4], colour)
@@ -227,21 +342,23 @@ object Parts {
         mesh.quad(ids[2], ids[3], ids[7], ids[6], colour)
         mesh.quad(ids[0], ids[1], ids[3], ids[2], colour)
         mesh.quad(ids[4], ids[6], ids[7], ids[5], colour)
+        mesh.orientAway(start, c)
     }
 
-    private fun diamond(mesh: Mesh, c: Vec, hw: Double, hh: Double, colour: Int, body: Mesh) {
+    /** A flat diamond facing the viewer, e.g. a rune mark on a pouch. */
+    private fun flatDiamond(mesh: Mesh, c: Vec, hw: Double, hh: Double, colour: Int, priority: Int, label: Int) {
         val start = mesh.faces.size
-        val pts = listOf(Vec(0.0, -hh, 0.0), Vec(hw, 0.0, 0.0), Vec(0.0, hh, 0.0), Vec(-hw, 0.0, 0.0)).map { c + it }
-        val ids = pts.map { p -> mesh.v(p, body.nearestLabel(p.x.roundToInt(), p.y.roundToInt(), p.z.roundToInt())) }
-        mesh.quad(ids[0], ids[1], ids[2], ids[3], colour, priority = 10)
-        mesh.doubleSided(start)
+        val ids = diamondPoints(hw, hh).map { mesh.v(c + it, label) }
+        mesh.quad(ids[0], ids[1], ids[2], ids[3], colour, priority)
+        mesh.orientToward(start, TOWARD_VIEWER)
     }
 
     private fun tube(mesh: Mesh, from: Vec, to: Vec, radius: Double, sides: Int, colour: Int, label: Int) {
         val u = (to - from).norm()
-        val a = (if (kotlin.math.abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
+        val a = (if (abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
         val b = u.cross(a).norm()
         val start = mesh.vertices.size
+        val faceStart = mesh.faces.size
         for (end in listOf(from, to)) for (s in 0 until sides) {
             val ang = 2 * PI * s / sides
             mesh.v(end + a * (radius * cos(ang)) + b * (radius * sin(ang)), label)
@@ -257,11 +374,12 @@ object Parts {
             mesh.face(c0, start + n, start + s, colour)
             mesh.face(c1, start + sides + s, start + sides + n, colour)
         }
+        mesh.orientAway(faceStart, (from + to) * 0.5)
     }
 
     /** A small floating gem: an octahedron stretched along [u], lit on alternate faces. */
     private fun shard(mesh: Mesh, c: Vec, u: Vec, size: Double, colour: Int, light: Int, label: Int) {
-        val a = (if (kotlin.math.abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
+        val a = (if (abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
         val b = u.cross(a).norm()
         val start = mesh.faces.size
         val top = mesh.v(c + u * (size * 1.6), label)
@@ -272,12 +390,12 @@ object Parts {
             mesh.face(top, ring[i], ring[n], if (i % 2 == 0) light else colour)
             mesh.face(bottom, ring[n], ring[i], if (i % 2 == 1) light else colour)
         }
-        mesh.doubleSided(start)
+        mesh.orientAway(start, c)
     }
 
     /** Small gems scattered in a loose ring around the [centre] of a staff head, in the staff's own space. */
     private fun scatter(mesh: Mesh, centre: Vec, u: Vec, count: Int, radius: Double, size: Double, colour: Int, light: Int, label: Int) {
-        val a = (if (kotlin.math.abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
+        val a = (if (abs(u.x) < 0.9) Vec(1.0, 0.0, 0.0) else Vec(0.0, 1.0, 0.0)).let { (it - u * u.dot(it)).norm() }
         val b = u.cross(a).norm()
         for (i in 0 until count) {
             val angle = 2 * PI * i / count + 0.4
@@ -301,7 +419,7 @@ object Parts {
             mesh.face(ring1[n], ring2[n], ring2[i], if (i % 2 == 1) light else colour)
             mesh.face(bottom, ring2[i], ring2[n], colour)
         }
-        mesh.doubleSided(start)
+        mesh.orientAway(start, c)
     }
 
     /** The two vertices furthest apart, ordered bottom (higher y) then top. */
@@ -322,4 +440,10 @@ object Parts {
 
     private const val CRYSTAL_STAFF_CRYSTAL = 99
     private const val BUCKLE = 7114
+
+    /** Clearance between a flat detail and the surface behind it; GPU renderers depth-test, so less z-fights. */
+    private const val DECAL_GAP = 1.5
+    private const val MOTIF_GAP = 3.0
+    private const val MOTIF_HALF_HEIGHT = 14.0
+    private val SAMPLES = listOf(-3.0, 0.0, 3.0)
 }

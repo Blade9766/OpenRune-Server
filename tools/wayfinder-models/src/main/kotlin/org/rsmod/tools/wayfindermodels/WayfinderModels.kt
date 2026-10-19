@@ -45,8 +45,8 @@ private val VAELOR =
         hair = listOf(214, 250),
         hat = 11331,
         hatHead = 11403,
-        torso = 10979,
-        arms = 10984,
+        torso = 10984,
+        arms = 10979,
         skirt = 10982,
         hands = 176,
         feet = 181,
@@ -61,8 +61,8 @@ private val ELOWEN =
         hair = listOf(393, 437),
         hat = 11354,
         hatHead = 11407,
-        torso = 11348,
-        arms = 11359,
+        torso = 11359,
+        arms = 11348,
         skirt = 11357,
         hands = 353,
         feet = 358,
@@ -101,6 +101,7 @@ fun main(args: Array<String>) {
 }
 
 private fun build(models: CacheModels, mage: Mage) {
+    Parts.measureWinding(models.mesh(mage.skirt))
     val hatColours = mapOf(38814 to mage.recolours.getValue(38814), 24 to mage.recolours.getValue(24))
     val hat = Parts.bentHat(models.mesh(mage.hat), hatColours)
     val hatHead = Parts.bentHat(models.mesh(mage.hatHead), hatColours)
@@ -114,7 +115,7 @@ private fun build(models: CacheModels, mage: Mage) {
     val arms = models.mesh(mage.arms)
     val skirt = models.mesh(mage.skirt)
     val body = Mesh().append(torso).append(arms).append(skirt)
-    val regalia = Parts.regalia(torso, skirt, body, mage.palette)
+    val regalia = Parts.regalia(arms, torso, skirt, body, mage.palette, chestMotif = mage === VAELOR)
 
     val base = models.model(mage.hat)
     write(models, "wayfinder_${mage.name}_hat", hat, base)
@@ -129,6 +130,7 @@ private fun build(models: CacheModels, mage: Mage) {
     mage.recolours.forEach { (from, to) -> figure.recolour(from, to) }
     figure.append(hat).append(staff).append(regalia)
     MeshRenderer.render(figure, File(PREVIEWS, "${mage.name}.png"))
+    MeshRenderer.render(figure, File(PREVIEWS, "${mage.name}_closeup.png"), scale = 2.2)
     val head = Mesh()
     mage.hair.forEach { head.append(models.mesh(it)) }
     mage.recolours.forEach { (from, to) -> head.recolour(from, to) }
