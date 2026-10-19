@@ -114,3 +114,16 @@ checkNotCombatSelf = 1
 checkVar1 = { varp = 65472, operator = "Equals", required = 0 }
 findKeepHunting = true
 findNewMode = "OpPlayer2"
+
+# Shilo Village: the zombie undead ones at the gatehouse and in Ah Za Rhoon, aggressive like
+# `stalk.constant_melee` only while `varp.zombiequeen` (116) is short of the quest's endstate (15).
+[[hunt]]
+id = "stalk.shilo_undead"
+type = "Player"
+checkVis = "LineOfSight"
+checkNotTooStrong = "OutsideWilderness"
+checkNotCombat = 65522
+checkNotCombatSelf = 1
+checkVar1 = { varp = 116, operator = "LessThan", required = 15 }
+findKeepHunting = true
+findNewMode = "OpPlayer2"
