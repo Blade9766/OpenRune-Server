@@ -1,8 +1,12 @@
 package org.rsmod.content.other.bots.world
 
 import dev.openrune.ServerCacheManager
+import dev.openrune.rscm.RSCM.asRSCM
+import dev.openrune.rscm.RSCMType
 import dev.openrune.types.ObjectServerType
+import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
+import org.rsmod.annotations.InternalApi
 import org.rsmod.api.npc.isInCombat
 import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.interact.HeldInteractions
@@ -12,6 +16,8 @@ import org.rsmod.api.player.interact.ObjInteractions
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
+import org.rsmod.api.player.ui.IfModalButton
+import org.rsmod.api.player.ui.ifCloseInputDialog
 import org.rsmod.api.registry.loc.LocRegistry
 import org.rsmod.api.registry.npc.NpcRegistry
 import org.rsmod.api.registry.obj.ObjRegistry
@@ -127,6 +133,19 @@ constructor(
             clearPendingAction()
             heldInteractions.interact(this, player.inv, slot, HeldOp.Op1)
         }
+
+    /** Presses op 1 of [component] on [player]'s open modal, as an `If3Button` packet would. */
+    @OptIn(InternalApi::class)
+    fun clickModalButton(player: Player, component: String): Boolean {
+        val type =
+            runCatching { ServerCacheManager.fromComponent(component.asRSCM(RSCMType.COMPONENT)) }.getOrNull()
+                ?: return false
+        player.ifCloseInputDialog()
+        protectedAccess.launchLenient(player) {
+            eventBus.publish(this, IfModalButton(type, comsub = -1, obj = null, op = IfButtonOp.Op1))
+        }
+        return true
+    }
 
     fun telejump(player: Player, dest: CoordGrid) {
         player.clearPendingAction(eventBus)

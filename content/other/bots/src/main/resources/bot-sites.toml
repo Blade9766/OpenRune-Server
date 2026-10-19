@@ -388,5 +388,157 @@ supply_area = { x = 3141, z = 9912, radius = 4 }
 supply_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3097, z = 9888 }, { x = 3099, z = 9909 }, { x = 3107, z = 9908 }, { x = 3125, z = 9905 }]
 exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
 hunts = [
-  { task = "hill giants", resource = { x = 3113, z = 9838, radius = 8 }, products = ["obj.big_bones", "obj.limpwurt_root"], resource_route = [{ x = 3094, z = 3470 }, { x = 3104, z = 3450 }, { x = 3115, z = 3446 }, { x = 3115, z = 3451, climb = "Ladder", op = "Climb-down" }, { x = 3116, z = 9851, climb = "Ladder", op = "Climb-up" }] },
+  { task = "hill giants", resource = { x = 3113, z = 9838, radius = 8 }, products = ["obj.big_bones", "obj.limpwurt_root", "obj.arceuus_corpse_giant"], resource_route = [{ x = 3094, z = 3470 }, { x = 3104, z = 3450 }, { x = 3115, z = 3446 }, { x = 3115, z = 3451, climb = "Ladder", op = "Climb-down" }, { x = 3116, z = 9851, climb = "Ladder", op = "Climb-up" }] },
 ]
+
+# Smithing sites smith their product at the anvils south of Varrock West bank; the bar it is
+# made from is the supply (bought on the exchange once the bank runs out).
+
+[[site]]
+key = "varrock_bronze_arrowtips"
+role = "smithing"
+description = "Bronze arrowtips at the anvils by Varrock West bank"
+resource = { x = 3188, z = 3425, radius = 4 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.bronze_arrowheads"]
+kit = { inv = [{ item = "obj.hammer" }], bank = [{ item = "obj.bronze_bar", count = 270 }], levels = { smithing = 5 } }
+tools = ["obj.hammer"]
+supplies = ["obj.bronze_bar"]
+resource_route = [{ x = 3184, z = 3430 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+[[site]]
+key = "varrock_iron_arrowtips"
+role = "smithing"
+description = "Iron arrowtips at the anvils by Varrock West bank"
+resource = { x = 3188, z = 3425, radius = 4 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.iron_arrowheads"]
+kit = { inv = [{ item = "obj.hammer" }], bank = [{ item = "obj.iron_bar", count = 270 }], levels = { smithing = 20 } }
+tools = ["obj.hammer"]
+supplies = ["obj.iron_bar"]
+resource_route = [{ x = 3184, z = 3430 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+[[site]]
+key = "varrock_steel_arrowtips"
+role = "smithing"
+description = "Steel arrowtips at the anvils by Varrock West bank"
+resource = { x = 3188, z = 3425, radius = 4 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.steel_arrowheads"]
+kit = { inv = [{ item = "obj.hammer" }], bank = [{ item = "obj.steel_bar", count = 270 }], levels = { smithing = 35 } }
+tools = ["obj.hammer"]
+supplies = ["obj.steel_bar"]
+resource_route = [{ x = 3184, z = 3430 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+[[site]]
+key = "varrock_mithril_arrowtips"
+role = "smithing"
+description = "Mithril arrowtips at the anvils by Varrock West bank"
+resource = { x = 3188, z = 3425, radius = 4 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.mithril_arrowheads"]
+kit = { inv = [{ item = "obj.hammer" }], bank = [{ item = "obj.mithril_bar", count = 270 }], levels = { smithing = 55 } }
+tools = ["obj.hammer"]
+supplies = ["obj.mithril_bar"]
+resource_route = [{ x = 3184, z = 3430 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+[[site]]
+key = "varrock_adamant_arrowtips"
+role = "smithing"
+description = "Adamant arrowtips at the anvils by Varrock West bank"
+resource = { x = 3188, z = 3425, radius = 4 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.adamant_arrowheads"]
+kit = { inv = [{ item = "obj.hammer" }], bank = [{ item = "obj.adamantite_bar", count = 270 }], levels = { smithing = 75 } }
+tools = ["obj.hammer"]
+supplies = ["obj.adamantite_bar"]
+resource_route = [{ x = 3184, z = 3430 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+[[site]]
+key = "varrock_rune_arrowtips"
+role = "smithing"
+description = "Rune arrowtips at the anvils by Varrock West bank"
+resource = { x = 3188, z = 3425, radius = 4 }
+bank = { x = 3185, z = 3438, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.rune_arrowheads"]
+kit = { inv = [{ item = "obj.hammer" }], bank = [{ item = "obj.runite_bar", count = 270 }], levels = { smithing = 90 } }
+tools = ["obj.hammer"]
+supplies = ["obj.runite_bar"]
+resource_route = [{ x = 3184, z = 3430 }]
+exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
+
+# Wilderness routes cross the ditch north of Edgeville: a climb tile on each side of the same
+# obstacle makes the bot click Cross instead of walking (the Taverley pipe works the same way).
+[[site]]
+key = "chaos_altar"
+role = "runecrafting"
+description = "Chaos runes at the ruins in the level 9 Wilderness, banking at Edgeville"
+resource = { x = 3060, z = 3588, radius = 6 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.chaosrune"]
+kit = { worn = [{ item = "obj.tiara_chaos" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 35, attack = 30, strength = 30, defence = 30, hitpoints = 30 } }
+altar_loc = "loc.chaos_altar"
+resource_route = [{ x = 3092, z = 3505 }, { x = 3087, z = 3519, climb = "Wilderness Ditch", op = "Cross" }, { x = 3087, z = 3523, climb = "Wilderness Ditch", op = "Cross" }, { x = 3078, z = 3545 }, { x = 3068, z = 3568 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "taverley_blue_dragons"
+role = "combat"
+description = "Blue dragons in Taverley Dungeon through the pipe shortcut, banking at Falador West"
+resource = { x = 2905, z = 9792, radius = 10 }
+bank = { x = 2946, z = 3369, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.dragon_bones", "obj.arceuus_corpse_dragon"]
+kit = { worn = [{ item = "obj.rune_scimitar" }, { item = "obj.rune_full_helm" }, { item = "obj.rune_platebody" }, { item = "obj.rune_platelegs" }, { item = "obj.antidragonbreathshield" }], bank = [{ item = "obj.shark", count = 200 }], levels = { attack = 75, strength = 75, defence = 75, hitpoints = 75, agility = 70 } }
+targets = ["name:Blue dragon"]
+target_op = 2
+supplies = ["obj.shark", "obj.monkfish", "obj.lobster", "obj.swordfish", "obj.trout"]
+supply_amount = 10
+resource_route = [{ x = 2955, z = 3380 }, { x = 2965, z = 3387 }, { x = 2966, z = 3400 }, { x = 2952, z = 3420 }, { x = 2943, z = 3440 }, { x = 2939, z = 3450 }, { x = 2931, z = 3450 }, { x = 2910, z = 3430 }, { x = 2895, z = 3410 }, { x = 2885, z = 3396, climb = "Ladder", op = "Climb-down" }, { x = 2884, z = 9798, climb = "Ladder", op = "Climb-up" }, { x = 2886, z = 9799, climb = "Obstacle pipe", op = "Squeeze-through" }, { x = 2892, z = 9799, climb = "Obstacle pipe", op = "Squeeze-through" }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2964, z = 3380 } }
+return_route = [{ x = 2955, z = 3378 }]
+
+[[site]]
+key = "wilderness_green_dragons"
+role = "combat"
+description = "Green dragons in the level 13 Wilderness west of the Dark Warriors' Fortress, banking at Edgeville"
+resource = { x = 2978, z = 3615, radius = 8 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.dragon_bones", "obj.arceuus_corpse_dragon"]
+kit = { worn = [{ item = "obj.rune_scimitar" }, { item = "obj.rune_full_helm" }, { item = "obj.rune_platebody" }, { item = "obj.rune_platelegs" }, { item = "obj.antidragonbreathshield" }], bank = [{ item = "obj.shark", count = 200 }], levels = { attack = 70, strength = 70, defence = 70, hitpoints = 70 } }
+targets = ["name:Green dragon"]
+target_op = 2
+supplies = ["obj.shark", "obj.monkfish", "obj.lobster", "obj.swordfish", "obj.trout"]
+supply_amount = 10
+resource_route = [{ x = 3092, z = 3505 }, { x = 3087, z = 3519, climb = "Wilderness Ditch", op = "Cross" }, { x = 3087, z = 3523, climb = "Wilderness Ditch", op = "Cross" }, { x = 3068, z = 3545 }, { x = 3045, z = 3568 }, { x = 3020, z = 3590 }, { x = 2998, z = 3604 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_dungeon_druids"
+role = "combat"
+description = "Chaos druids in Edgeville Dungeon for ensouled heads, banking at Edgeville"
+resource = { x = 3111, z = 9931, radius = 7 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.arceuus_corpse_chaosdruid", "obj.bones"]
+kit = { worn = [{ item = "obj.adamant_scimitar" }], bank = [{ item = "obj.trout", count = 100 }], levels = { attack = 40, strength = 40, defence = 40, hitpoints = 40 } }
+targets = ["name:Chaos druid"]
+target_op = 2
+supplies = ["obj.shark", "obj.lobster", "obj.swordfish", "obj.salmon", "obj.trout", "obj.bread"]
+supply_amount = 6
+resource_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3097, z = 9888 }, { x = 3099, z = 9909 }, { x = 3108, z = 9910 }, { x = 3120, z = 9913 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]

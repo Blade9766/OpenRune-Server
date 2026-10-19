@@ -22,7 +22,8 @@ enum class BotRoleType(val key: String) {
     Fishing("fishing"),
     Thieving("thieving"),
     Combat("combat"),
-    Slayer("slayer");
+    Slayer("slayer"),
+    Smithing("smithing");
 
     companion object {
         fun of(key: String): BotRoleType? = entries.firstOrNull { it.key.equals(key, true) }

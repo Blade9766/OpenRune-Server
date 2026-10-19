@@ -68,7 +68,9 @@ class PlayerBotActor(
     override val isBusy: Boolean
         get() {
             if (player.ui.modals.isNotEmpty() && !player.isDelayed) {
-                player.clearPendingAction(world.eventBus)
+                if (!behaviour.answerModal(player)) {
+                    player.clearPendingAction(world.eventBus)
+                }
                 return true
             }
             return player.isAccessProtected || player.isDelayed
@@ -126,7 +128,7 @@ class PlayerBotActor(
             val reached = plan.removeFirst()
             val next = plan.firstOrNull() ?: break
             val climb = climbs[reached]
-            if (climb != null && !walkable(reached, next)) {
+            if (climb != null && (!walkable(reached, next) || crossesTo(climb, next))) {
                 climbing = PendingClimb(reached, climb)
                 return climb(climbing!!)
             }
@@ -167,12 +169,15 @@ class PlayerBotActor(
     }
 
     /**
-     * Route tiles with a `climb` are ladders and trapdoors: a bot standing on one whose next
-     * waypoint lies on another level or map square clicks the loc instead of walking, opening a
-     * closed trapdoor first, until the climb has carried it away.
+     * Route tiles with a `climb` are ladders, trapdoors and obstacles: a bot standing on one whose
+     * next waypoint lies on another level or map square, or is the far side of the same obstacle,
+     * clicks the loc instead of walking, opening a closed trapdoor first, until the climb has
+     * carried it away.
      */
     private fun climb(pending: PendingClimb): TravelStatus {
-        if (player.coords.level != pending.from.level || player.coords.chebyshevDistance(pending.from) > CLIMB_DONE) {
+        if (player.coords.level != pending.from.level || player.coords.chebyshevDistance(pending.from) > CLIMB_DONE ||
+            crossed(pending)
+        ) {
             climbing = null
             plan.firstOrNull()?.let { world.walkTo(player, it) }
             return TravelStatus.Moving
@@ -194,6 +199,16 @@ class PlayerBotActor(
     /** A ladder may sit behind a door or wall, so a climb tile only counts once the bot is beside it. */
     private fun reachDistance(waypoint: CoordGrid): Int =
         if (waypoint in climbs) CLIMB_REACHED else WAYPOINT_REACHED
+
+    /** A ditch or pipe: the next waypoint is the obstacle's other side, a climb tile of the same loc. */
+    private fun crossesTo(climb: SiteTile, next: CoordGrid): Boolean =
+        climbs[next]?.climb.equals(climb.climb, ignoreCase = true)
+
+    private fun crossed(pending: PendingClimb): Boolean {
+        val next = plan.firstOrNull() ?: return false
+        return crossesTo(pending.tile, next) &&
+            player.coords.chebyshevDistance(next) < player.coords.chebyshevDistance(pending.from)
+    }
 
     private fun walkable(from: CoordGrid, to: CoordGrid): Boolean =
         from.level == to.level && from.chebyshevDistance(to) <= OFF_SITE_DISTANCE

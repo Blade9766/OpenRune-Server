@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.content.quest)
     implementation(projects.content.skills.mining)
     implementation(projects.content.skills.slayer)
+    implementation(projects.content.skills.smithing)
     implementation(projects.content.skills.woodcutting)
     implementation(projects.content.travel.wayfinder)
     implementation(libs.fastutil)

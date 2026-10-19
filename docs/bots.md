@@ -293,14 +293,36 @@ return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
 | `falador_chickens` | combat | Falador East | feathers, raw chicken | walking |
 | `draynor_slayer` | slayer (Spria) | Draynor | bones, cowhides | walking |
 | `edgeville_dungeon_slayer` | slayer (Vannaka) | Edgeville | big bones, limpwurt roots | walking |
+| `chaos_altar` | runecrafting (35) | Edgeville | chaos runes | walking |
+| `taverley_blue_dragons` | combat (75, Agility 70) | Falador West | dragon bones, ensouled dragon heads | teleport |
+| `wilderness_green_dragons` | combat (70) | Edgeville | dragon bones, ensouled dragon heads | walking |
+| `edgeville_dungeon_druids` | combat (40) | Edgeville | ensouled chaos druid heads, bones | walking |
+| `varrock_bronze_arrowtips` | smithing (5) | Varrock West | bronze arrowtips | walking |
+| `varrock_iron_arrowtips` | smithing (20) | Varrock West | iron arrowtips | walking |
+| `varrock_steel_arrowtips` | smithing (35) | Varrock West | steel arrowtips | walking |
+| `varrock_mithril_arrowtips` | smithing (55) | Varrock West | mithril arrowtips | walking |
+| `varrock_adamant_arrowtips` | smithing (75) | Varrock West | adamant arrowtips | walking |
+| `varrock_rune_arrowtips` | smithing (90) | Varrock West | rune arrowtips | walking |
 
 Runecrafting sites other than `earth_altar` start with 1,000 pure essence in the
 bank and then buy essence on the exchange; run a `varrock_essence_mine` bot to
-keep essence listed for them. Death, blood, law, chaos, astral and
-wrath altars have no site: no bank a bot can walk from reaches them on this
-server (boats, the Wilderness, quest areas or dungeons with unimplemented
-entrances). The nature altar is also missing: from Shilo Village the only way in
-is the rocks shortcut north of the village, which has no handler yet.
+keep essence listed for them. `chaos_altar` walks from Edgeville over the
+Wilderness ditch to the ruins in the level 9 Wilderness, where other players can
+attack it. These altars have no site:
+
+- **Nature**: Shilo Village bank is the only one in reach, and its gatehouse has
+  permanent aggressive Undead ones (level 68-73, spawned in `karamja.toml`) that
+  kill a runecrafter on the way out; in OSRS they are gone once the quest is done.
+- **Law**: Entrana has no bank, and the Port Sarim monks' boat is a dialogue,
+  which bots cannot answer.
+- **Death**: the only way in is the Temple of Light puzzle under the Mourner
+  tunnels.
+- **Wrath**: the ruins are in the Myths' Guild basement; Dragon Slayer II and the
+  guild are not implemented.
+- **Soul**: the Arceuus soul altar takes dark essence fragments from dense
+  essence blocks, which are not implemented, and has no ruins or tiara for
+  `RunecraftingBehaviour`.
+- **Blood** and **astral**: the same story (Arceuus dark essence, Lunar Isle).
 
 Every site can carry a starter kit, applied when a bot is created there and by
 `::bot kit` / Manage > Apply starter kit. It only tops up: items already there
@@ -330,7 +352,8 @@ Roles:
   `varrock_tea_stall` (Varrock East bank) gives cups of tea.
 - **combat**: attacks the nearest target not already in combat, eats `supplies`
   below 50% Hitpoints, heads to the bank to restock when out of food, and picks
-  up the site's `products` between fights. Food is optional: with none left in
+  up the site's `products` between fights, before fighting back against
+  aggressive monsters (otherwise a constant stream of attackers would stop it ever looting). Food is optional: with none left in
   the bank the bot rests there ("Resting") until it is back to 90% Hitpoints and
   then fights on. A drop or monster it fails to reach three times is skipped. Use cheap gear: a bot that dies keeps
   only what the normal death rules allow. `barbarian_village_fighters` (Edgeville
@@ -354,10 +377,39 @@ Roles:
   trapdoor south of Edgeville bank, north past the giant spiders and through the
   gate at 3103,9909) and hunts hill giants, reached through the brass-key house
   north of Barbarian Village and its ladder; its kit carries the brass key as a
-  tool. Moss giants are only reachable through the pipe shortcut, so that task is
+  tool. The hill giants hunt also loots ensouled giant heads. Moss giants are only reachable through the pipe shortcut, so that task is
   re-rolled.
 
-Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving) run
+- **smithing**: smiths the site's product at the nearest anvil (`category.anvil`) in
+  its resource area. It clicks the anvil with a full inventory of the product's bar
+  and presses the product's button on the smithing interface, so the anvil script
+  makes as many as the bars allow with the usual levels, timing and xp. The bar
+  (taken from the cache recipe, listed in `supplies` for the Bot Manager) is
+  withdrawn at the bank and bought on the exchange once the bank runs out; the
+  hammer in `tools` is never banked. The `varrock_*_arrowtips` sites use the
+  anvils south of Varrock West bank; their kits give a hammer, 270 bars and the
+  Smithing level for the tier.
+
+Bones and ensouled heads come from these combat sites:
+
+- `taverley_blue_dragons` leaves Falador through the north-west city gate, takes
+  the Taverley gate and the ladder south of Taverley, and squeezes through the
+  Agility 70 pipe to the blue dragons (dragon bones, ensouled dragon heads).
+  Its kit is rune armour, an anti-dragon shield and sharks.
+- `wilderness_green_dragons` crosses the ditch north of Edgeville to the green
+  dragons in the level 13 Wilderness, with the same kit.
+- `edgeville_dungeon_druids` fights the chaos druids north of Vannaka for
+  ensouled chaos druid heads.
+
+Superior dragon bones and dagannoth bones have no site. Superior bones only drop
+from Vorkath (only his sleeping form is spawned; Dragon Slayer II is not
+implemented) and frost dragons (Grimstone dungeon has no entrance). Dagannoth
+bones only drop from the Dagannoth Kings, behind Waterbirth Island's unimplemented
+dungeon entrance and doors; ordinary dagannoths drop plain bones and their
+ensouled heads sit in the Catacombs of Kourend (no entrance) or the Lighthouse
+(Horror from the Deep).
+
+Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving, smithing) run
 to the bank when something drops them below 50% Hitpoints and rest there until
 they are back to 90%. A bot that dies keeps only what the death rules allow; if
 that loses its tool it stops with an error naming the tool, and Manage > Apply
@@ -381,6 +433,15 @@ so a bot walking the route in either direction climbs back the way it came:
 
 ```toml
 resource_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3100, z = 9852 }]
+```
+
+Obstacles you cross on the same level (the Wilderness ditch, an agility pipe) work
+the same way: two consecutive waypoints with the same `climb` name, one on each
+side, make the bot click it instead of walking, and it carries on once it is
+closer to the far tile than the near one:
+
+```toml
+{ x = 3087, z = 3519, climb = "Wilderness Ditch", op = "Cross" }, { x = 3087, z = 3523, climb = "Wilderness Ditch", op = "Cross" }
 ```
 
 Each bot gets a random body type, clothing and colours, seeded by its id so it

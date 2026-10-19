@@ -12,6 +12,7 @@ import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.baseRunecraftingLvl
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.miningLvl
+import org.rsmod.api.player.stat.smithingLvl
 import org.rsmod.api.player.stat.woodcuttingLvl
 import org.rsmod.api.table.runecrafting.RunecraftingAltarsRow
 import org.rsmod.content.other.bots.core.BotDestination
@@ -22,6 +23,8 @@ import org.rsmod.content.other.bots.core.GatherStatus
 import org.rsmod.content.quest.manager.Quest
 import org.rsmod.content.skills.mining.configs.MiningRocks
 import org.rsmod.content.skills.mining.scripts.Mining
+import org.rsmod.content.skills.smithing.util.SmithingData
+import org.rsmod.content.skills.smithing.util.SmithingProductMeta
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLevelReq
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLogs
@@ -29,6 +32,7 @@ import org.rsmod.content.slayer.core.SlayerTaskManager
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.InteractionNpcOp
+import org.rsmod.game.interact.InteractionObjOp
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.map.CoordGrid
 
@@ -73,6 +77,9 @@ interface BotRoleBehaviour {
 
     fun gather(player: Player, target: BotDestination): GatherStatus
 
+    /** Answers a modal the role's work opens (a make interface); false lets the bot close it. */
+    fun answerModal(player: Player): Boolean = false
+
     companion object {
         fun of(site: BotSite, role: BotRoleType, essence: EssenceSource, world: BotWorldServices): BotRoleBehaviour =
             when (role) {
@@ -84,6 +91,7 @@ interface BotRoleBehaviour {
                 BotRoleType.Thieving -> StallThievingBehaviour(site, world)
                 BotRoleType.Combat -> CombatBehaviour(site, world)
                 BotRoleType.Slayer -> SlayerBehaviour(site, world)
+                BotRoleType.Smithing -> SmithingBehaviour(site, world)
             }
     }
 }
@@ -571,6 +579,9 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
             return GatherStatus.InventoryFull
         }
         if (player.isActing()) {
+            if (player.interaction is InteractionObjOp) {
+                return GatherStatus.Working(0)
+            }
             val fighting = (player.interaction as? InteractionNpcOp)?.target
             if (fighting != null && (fighting.isInCombat() || fighting.vars[LAST_COMBAT] != targetCombatStamp)) {
                 engaged = true
@@ -587,7 +598,6 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
         if (++decisions % ATTEMPTS_RESET == 0) {
             attempts.clear()
         }
-        retaliate(player, current = null)?.let { return it }
         val area = fightArea(player)
         val loot = lootIds(player)
         val drop =
@@ -600,6 +610,7 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
             focus = "picking up ${nameOf(drop.type)} at ${drop.coords.x},${drop.coords.z}"
             return GatherStatus.Working(0)
         }
+        retaliate(player, current = null)?.let { return it }
         val claims = world.claims(player, area.center(), area.radius)
         val free =
             world.findNpcs(area.center(), area.radius) {
@@ -615,8 +626,9 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
     }
 
     /**
-     * Fights back against whatever is hitting the bot before looting or picking a new target, as a
-     * player would; [current] is the npc it is already walking to, kept if that one is the attacker.
+     * Fights back against whatever is hitting the bot before picking a new target, as a player
+     * would; [current] is the npc it is already walking to, kept if that one is the attacker. Drops
+     * are grabbed first, or aggressive monsters would keep the bot from ever looting.
      */
     private fun retaliate(player: Player, current: Npc?): GatherStatus? {
         if (!player.isPlayerInCombat()) {
@@ -736,6 +748,87 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
         private const val COUNT_VARP = "varp.slayer_count"
         private const val MASTER_QUEST = "quest_porcineofinterest"
         private const val MAX_REROLLS = 100
+    }
+}
+
+/**
+ * Smiths the site's first product at the nearest anvil in the resource area: it clicks the anvil
+ * with the product's bars in its inventory and presses the product's button on the smithing
+ * interface, which already offers every bar carried, then withdraws more bars once they run out.
+ */
+class SmithingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+    private val product: SmithingProductMeta? by lazy {
+        val wanted = site.products.firstOrNull()
+        SmithingData.productMeta.firstOrNull { it.product.internalName == wanted }
+    }
+    private val button: String? by lazy {
+        val product = product ?: return@lazy null
+        SmithingData.smithingButtonComponents.firstOrNull { SmithingData.typeForChild(it, product.bar) == product.name }
+    }
+    private val barId: Int? by lazy { product?.bar?.output?.id }
+    private val toolIds by lazy { resolveIds(site.tools.ifEmpty { listOf(HAMMER) }, RSCMType.OBJ) }
+    private val anvilCategory by lazy { runCatching { SmithingData.ANVIL_CATEGORY.asRSCM(RSCMType.CATEGORY) }.getOrNull() }
+
+    override var focus: String? = null
+        private set
+
+    override fun requirementProblem(player: Player): String? {
+        val product = product ?: return "site product is not smithable"
+        if (button == null) {
+            return "no smithing button makes ${product.name}"
+        }
+        if (!player.carriesAny(toolIds)) {
+            return "needs a hammer"
+        }
+        val level = maxOf(product.level, product.bar.statReq.first().t1)
+        return if (player.smithingLvl < level) "needs Smithing level $level" else null
+    }
+
+    override fun keep(itemId: Int): Boolean = itemId in toolIds || itemId == barId
+
+    override fun needsSupplies(player: Player): Boolean = barsHeld(player) < (product?.barCount ?: 1)
+
+    override fun supplyIds(): List<Int> = listOfNotNull(barId)
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        destination == BotDestination.Resource && site.resource.contains(player.coords)
+
+    override fun answerModal(player: Player): Boolean {
+        val button = button ?: return false
+        if (!player.ui.containsModal(SmithingData.SMITHING_INTERFACE) || player.isModalButtonProtected) {
+            return false
+        }
+        return world.clickModalButton(player, button)
+    }
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus {
+        if (needsSupplies(player)) {
+            return GatherStatus.NeedsSupplies
+        }
+        if (player.isActing() || player.queueList.isNotEmpty) {
+            return GatherStatus.Working(0)
+        }
+        val category = anvilCategory ?: return GatherStatus.Failed("unknown anvil category")
+        val anvils = world.findLocs(site.resource.center(), site.resource.radius) { it.category == category }
+        val claims = world.claims(player, site.resource.center(), site.resource.radius)
+        val (loc, type) =
+            BotTargeting.pick(
+                anvils,
+                Random,
+                distance = { (loc, _) -> loc.coords.chebyshevDistance(player.coords) },
+                crowd = { (loc, _) -> claims.on(loc) },
+            ) ?: return GatherStatus.NoResource
+        if (!world.opLoc(player, loc, type, InteractionOp.Op1)) {
+            return GatherStatus.NoResource
+        }
+        focus = "${product?.name}: ${describe(type.name, loc.coords, claims.on(loc), anvils.size)}"
+        return GatherStatus.Working(0)
+    }
+
+    private fun barsHeld(player: Player): Int = player.inv.objs.sumOf { if (it != null && it.id == barId) it.count else 0 }
+
+    private companion object {
+        private const val HAMMER = "obj.hammer"
     }
 }
 
