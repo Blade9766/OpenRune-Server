@@ -75,7 +75,7 @@ object BotKit {
         if (level !in 1..99 || runCatching { stat.asRSCM(RSCMType.STAT) }.isFailure) {
             return null
         }
-        return save.copy(xp = save.xp + (stat to PlayerSkillXPTable.getFineXPFromLevel(level)))
+        return save.copy(xp = save.xp + (stat to PlayerSkillXPTable.getFineXPFromLevel(level)), levels = save.levels - stat)
     }
 
     /**

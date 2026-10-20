@@ -1,6 +1,8 @@
 package org.rsmod.content.other.bots.core
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -84,8 +86,9 @@ class BotRestockTest {
     }
 
     @Test
-    fun `nobody selling supplies leaves products and coins untouched`() {
+    fun `nobody selling supplies with no guide price leaves products and coins untouched`() {
         val world = fisher()
+        world.exchange.guide = null
         val id = world.startBot(bankedLogs = 300, coins = 1000)
 
         world.tickUntil { world.state(id) == BotState.WaitingForSupplies }
@@ -95,6 +98,103 @@ class BotRestockTest {
         assertTrue(world.offers(id).isEmpty())
         assertEquals(300L, world.actor(id).total(LOGS))
         assertEquals(1000L, world.actor(id).coins())
+    }
+
+    @Test
+    fun `with nobody selling a buy offer rests at the guide price until a seller fills it`() {
+        val world = fisher()
+        world.exchange.guides[FEATHER] = FEATHER_PRICE
+        val id = world.startBot(bankedLogs = 0, coins = 1000)
+
+        world.tickUntil { world.offers(id).any { !it.sell } && world.record(id).pendingListing == null }
+        val bid = world.offers(id).single()
+        assertEquals(FEATHER_PRICE, bid.price)
+        assertEquals(WANTED, bid.total)
+        world.tick(BotBrain.SUPPLY_RECHECK_TICKS * 2)
+        assertEquals(1, world.offers(id).size, "one resting offer, not a new one every check")
+        assertEquals(1000L, world.coinsOwned(id))
+
+        world.featherSeller()
+        world.tickUntil { world.record(id).stats.gathered > 0 }
+        assertEquals(WANTED, world.feathersSold())
+        assertEquals(WANTED.toLong(), world.feathersOwned(id))
+        assertEquals(1000L - WANTED * FEATHER_PRICE, world.coinsOwned(id))
+    }
+
+    @Test
+    fun `a resting buy offer is funded by selling banked products below the threshold`() {
+        val world = fisher()
+        world.exchange.guides[FEATHER] = FEATHER_PRICE
+        val id = world.startBot(bankedLogs = 300, coins = 0)
+        world.playerBuys(qty = 300, price = 100)
+
+        world.tickUntil(limit = 10_000) { world.offers(id).any { !it.sell } && world.record(id).pendingListing == null }
+        assertEquals(FEATHER_PRICE, world.offers(id).single { !it.sell }.price)
+        world.featherSeller()
+        world.tickUntil(limit = 10_000) { world.record(id).stats.gathered > 0 }
+        val logsSold = world.exchange.raw(99).sumOf { it.completed }
+        val net = 100 - world.exchange.taxPerItem(LOGS, 100)
+        assertTrue(logsSold < 300, "sold only what the supplies cost")
+        assertEquals(300L - logsSold + world.record(id).stats.gathered, world.logsOwned(id))
+        assertEquals(WANTED.toLong(), world.feathersOwned(id))
+        assertEquals(logsSold.toLong() * net - WANTED * FEATHER_PRICE, world.coinsOwned(id))
+    }
+
+    @Test
+    fun `a supply nobody sells is skipped for the next one someone does`() {
+        val world = BotTestHarness(
+            actorFactory = { FakeActor(supplyItem = FEATHER, stackable = setOf(COINS, FEATHER), buyable = listOf(SHARK, FEATHER)) }
+        )
+        world.featherSeller()
+        val id = world.startBot(bankedLogs = 0, coins = 1000)
+
+        world.tickUntil { world.record(id).stats.gathered > 0 }
+        assertEquals(WANTED, world.feathersSold())
+        assertTrue(world.exchange.raw(-id.toInt()).none { it.item == SHARK })
+    }
+
+    @Test
+    fun `a bot that can get no supplies for an hour is parked and frees its slot`() {
+        val world = fisher()
+        world.exchange.guide = null
+        val id = world.startBot(bankedLogs = 0, coins = 1000)
+        val other = world.createBot(BotTestHarness.woodcuttingConfig()).id
+        world.coordinator.editSave(other) { it.copy(inv = listOf(SavedObj(0, AXE, 1))) }
+        world.coordinator.enable(other)
+        world.coordinator.setMaxActive(1)
+
+        world.tickUntil { world.state(id) == BotState.WaitingForSupplies }
+        assertFalse(world.coordinator.isLive(other))
+        world.tickUntil(limit = BotBrain.SUPPLY_PARK_TICKS * 2) { !world.coordinator.isLive(id) }
+        assertFalse(world.record(id).enabled)
+        assertTrue("Parked" in world.record(id).activity, world.record(id).activity)
+        assertTrue(world.log.lines.any { "parked" in it })
+        world.tickUntil { world.coordinator.isLive(other) }
+        val savedCoins = world.store.bots.getValue(id).save.bank.filter { it.id == COINS }.sumOf { it.count.toLong() }
+        assertEquals(1000L, savedCoins)
+        assertTrue(world.offers(id).isEmpty())
+    }
+
+    @Test
+    fun `a refund that does not fit parks the bot in error and keeps the pending record`() {
+        val world = fisher()
+        world.featherSeller()
+        world.exchange.refuseBuys = true
+        val id = world.startBot(bankedLogs = 0, coins = 1000)
+        world.tickUntil { world.record(id).pendingListing?.buy == true }
+        val cost = world.record(id).pendingListing!!.cost
+        world.actor(id).bank[COINS] = Int.MAX_VALUE - 5L
+
+        world.tick(3)
+        assertEquals(BotState.Error, world.state(id))
+        assertEquals(cost, world.record(id).pendingListing?.cost, "nothing refunded, nothing lost")
+        assertEquals(Int.MAX_VALUE - 5L, world.actor(id).coins(), "no partial refund")
+        assertTrue(world.coordinator.isLive(id), "other bots keep running")
+
+        world.actor(id).bank[COINS] = 0
+        world.tick()
+        assertNull(world.record(id).pendingListing)
+        assertEquals(cost, world.actor(id).coins())
     }
 
     @Test
@@ -194,6 +294,7 @@ class BotRestockTest {
     private companion object {
         const val FEATHER = 314
         const val FEATHER_PRICE = 5
+        const val SHARK = 385
         const val WANTED = 100
         const val SELLER = 98
         const val CRASH_WINDOW = 40

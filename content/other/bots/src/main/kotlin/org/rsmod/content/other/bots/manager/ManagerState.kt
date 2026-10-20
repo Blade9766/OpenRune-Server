@@ -34,7 +34,13 @@ enum class Section(val nav: Int, val meister: Boolean, val bot: Boolean = false)
 }
 
 /** Unsaved edits to Master Meister's rules and settings; Save applies them, Discard drops them. */
-data class Draft(val rules: MeisterRules, val settings: MeisterSettings)
+/** An administrator's unsaved edits, and the live rules and settings they started from. */
+data class Draft(
+    val rules: MeisterRules,
+    val settings: MeisterSettings,
+    val baseRules: MeisterRules = rules,
+    val baseSettings: MeisterSettings = settings,
+)
 
 /** What the item picker chooses an item for. */
 sealed interface PickerMode {
@@ -89,6 +95,12 @@ class ManagerState {
 
     var offerSlot: Int? = null
 
+    /** The selected offer's creation time, so a cancel never hits a newer offer in the same slot. */
+    var offerCreatedAt: Long? = null
+
+    /** Offer slots in the order the rows were last drawn. */
+    var offerRows: List<Int> = emptyList()
+
     var query: HistoryQuery = HistoryQuery()
     var historyPage: Int = 0
     var historySelected: String? = null
@@ -99,6 +111,9 @@ class ManagerState {
     var rosterPace: String? = null
     var rosterPage: Int = 0
     var rosterSelected: Long? = null
+
+    /** Bot ids in the order the roster rows were last drawn. */
+    var rosterRows: List<Long> = emptyList()
 
     var picker: Picker? = null
 }

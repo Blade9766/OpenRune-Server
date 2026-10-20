@@ -370,11 +370,14 @@ Roles:
   through `supply_area`/`supply_route`). With no task, or a finished one, the bot
   walks to the master and is given a task. The site lists a `hunts` entry per
   task it can work: the task's lowercase name, an area, a route from the bank and
-  what to loot. A task without a hunt is handed back and re-rolled (up to 100
-  times in a row). The bot attacks whatever the slayer module counts for its task,
+  what to loot. A task without a hunt, or whose hunt has had nothing to fight for
+  250 looks, is cancelled at the usual slayer point cost (30, 100 with Mortimer); a
+  bot that cannot afford that goes to `ERROR` rather than taking a free new task.
+  The bot attacks whatever the slayer module counts for its task,
   so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
   Interest for Spria) marked complete when they spawn. `draynor_slayer` uses
-  Spria and hunts goblins and cows near Lumbridge and rats in Draynor; Details
+  Spria and hunts goblins and cows near Lumbridge and rats west of Lumbridge
+  Castle; Details
   shows the current task. It sells at the Grand Exchange, walking north between
   Falador's east wall and the Draynor Manor fence to Barbarian Village and on
   past Edgeville (the River Lum blocks the direct way to Varrock). Each hunt's
@@ -425,12 +428,16 @@ wizards (level 7) next to it, so its kit gives combat level 15: monsters ignore
 players over twice their level.
 
 A bot that is stuck on its route clicks "Open" on a closed door or gate within
-two tiles before rerouting. A route into a fenced area needs a waypoint on each
-side of the gate, at least three tiles from it (a waypoint counts as reached two
-tiles away, so a closer one is ticked off through the fence), and a resource area
-that lies wholly inside the fence; otherwise the pathfinder parks the bot outside
-and it never tries the gate (see the cows hunt in `draynor_slayer`). A bot heading
-home retraces the route it arrived by, so it leaves through the same gate.
+two tiles of the straight line to its next waypoint (and at most 16 tiles away),
+so it never wanders off to open doors that are not in its way. Each door it opens
+counts as one of its five reroutes until it reaches the next waypoint, so a door
+that keeps shutting in its face ends in a "stuck" failure instead of a loop. A route into a fenced area needs a waypoint on each
+side of the gate and a resource area that lies wholly inside the fence. A waypoint
+counts as reached two tiles away, but only when the bot can walk to it, so one just
+past a closed gate is not ticked off through the fence. A bot heading home retraces
+the route it arrived by from the nearest waypoint it can walk to (ties go to the one
+nearer the bank), so it leaves through the same gate, and a bot that has
+drifted outside a pen does not walk back in first.
 
 Routes can go up and down ladders and trapdoors. A waypoint with `climb` (the loc's
 name) and `op` (its option) is used whenever the next waypoint is on another level
@@ -525,8 +532,12 @@ offer screens and the exchange never tries to message them.
 When a bot's bank runs out of its site's `supplies` (feathers, bait, food, essence) it
 restocks on the exchange itself instead of waiting for `::bot give`:
 
-1. It buys `restockqty` of the first supply in the site's list at the lowest ask of
-   another seller, if it has the coins. The offer trades at the sellers' prices.
+1. It buys `restockqty` (capped by the exchange buy limit) of the first supply in
+   the site's list that another seller offers at a fair price (no more than
+   `deviation`% over the guide price). The offer trades at the sellers' prices.
+   When nobody offers any of its supplies fairly, it places a buy offer for the
+   first one at the guide price and leaves it resting until a seller fills it or it
+   times out (then it is aborted, refunded and placed again).
 2. Without enough coins it first withdraws just enough of its sale item to pay for
    them, even below the sale threshold, and lists it like any sale (same pricing).
    It waits at the bank (`WAITING_FOR_SUPPLIES`, "Waiting for sales to afford
@@ -536,11 +547,13 @@ restocks on the exchange itself instead of waiting for `::bot give`:
    still unfilled after `timeout` is aborted and its coins refunded.
 
 It keeps waiting in `WAITING_FOR_SUPPLIES`, rechecking every minute, with the reason
-as its activity, when nobody is selling the supply, the lowest ask is more than
-`deviation`% above the guide price, it has no coins and nothing to sell, selling is
-paused or off, or the exchange is unavailable. A fighter out of food rests while it
-waits. `::bot set <bot> restock off` restores the old behaviour of waiting for an
-administrator.
+as its activity, while its buy offer rests, when its supplies have no guide price and
+nobody sells them, it has no coins and nothing to sell, selling is paused or off, or
+the exchange is unavailable. A fighter out of food rests while it waits. A bot whose
+bank has had no supplies for an hour is parked: it aborts its supply buy offer, is
+disabled with the activity "Parked: no supplies for 60 minutes" and a warning in the
+log, and frees its active slot for a bot that can work. `::bot set <bot> restock off`
+restores the old behaviour of waiting for an administrator.
 
 ## Persistence and safety
 
@@ -568,7 +581,14 @@ a listing whose offer is not in the book is rolled back into the bot's
 inventory (a buy offer's coins into its bank); a collection takes from the exchange only what its target says is
 still owed. A crash at any point therefore neither duplicates nor loses items
 or coins. While the bot file cannot be written, bots leave the exchange alone
-(the error is logged once) and resume when writes succeed again.
+(the error is logged once) and resume when writes succeed again, which is logged too.
+Writes to the bot file are serialized (the shutdown hook saves off the game thread),
+each goes through its own temporary file, a move Windows refuses because another
+program has the file open is retried, and a failed write changes nothing in memory.
+A listing that cannot be rolled back (the bank has no room for the refund) keeps its
+pending entry and puts that bot in `ERROR`, retrying every tick; other bots carry on.
+Death and logout do not heal a bot: its current levels (Hitpoints, Prayer, boosts and
+drains) are saved and restored as they were.
 
 - On restart, bots come back `DISABLED`/`ERROR` with their saved items and are
   respawned (if enabled and the master toggle is on) from `IDLE`. A bot still
@@ -598,7 +618,8 @@ of each depends on the guide price (2,000 of items up to 100 gp down to 1 of ite
 10M). The allocation is written in the same save that marks him initialized, so a restart
 never adds to it. After that, purchases spend his real cash and sales consume his real
 items; nothing is topped up unless the `Refill cash` / `Refill items` switches are on (once
-per 24 hours, logged as an allocation).
+per 24 hours, logged as an allocation; coins and items sitting in his offers and collect
+boxes count as held, so a refill never doubles them).
 
 **Where his things live.** His cash and items are a ledger in `.data/master-meister.json`
 (written like the bot file: temporary file and atomic move), not a player inventory - a bank
@@ -680,6 +701,9 @@ selling are active, the next buy check, unsaved changes, and **Pause buying**,
 Edits to rules and settings are a draft until **Save Changes** (Discard drops them;
 Settings has **Reset defaults**). Saved rules apply to new offers; open offers keep
 their terms. The trading, buying, selling and bot switches marked * apply at once.
+If another administrator saved in the meantime, your edits are applied on top of
+theirs; when both of you changed the same rule (or both changed settings) Save
+Changes refuses, so neither edit is silently lost.
 Every change is logged to `bots.admin`.
 
 **Rule mode.** With **Rule lists only** on (Schedule) he trades only the enabled items on
@@ -770,10 +794,12 @@ filled, cancelled, collected or rolled back, and every allocation.
   or any teleport) rides a wayfinder mage back towards its site (see `wayfinder.md`): it
   walks to the nearest Vaelor or Elowen within 64 tiles and asks for the site's `wayfinder`
   destination key, or the bot-allowed destination nearest its bank. With no mage in reach it
-  casts Home Teleport to Lumbridge and tries again. Only if two Home Teleports have not got
-  it to a mage is it placed at its bank, which is logged as a warning.
+  casts Home Teleport to Lumbridge and tries again. If that does not get it to a mage either,
+  travel fails ("stranded") and the bot ends in `ERROR`; it is never placed anywhere.
 - A bot that dies keeps what the death rules allow; kit gear it kept (a tiara, a weapon)
-  lands in its inventory, and it puts it back on before going back to work.
+  lands in its inventory, and it puts it back on before going back to work. Worn kit gear
+  it lost (an anti-dragon shield) is fetched from its bank if it has a spare there;
+  otherwise the bot goes to `ERROR` instead of going back to die again.
 - On this server Home Teleport has no 30-minute cooldown or long cast (players get the
   same spell), so a bot never waits for it.
 - Bots are restored with at least 10 Hitpoints.

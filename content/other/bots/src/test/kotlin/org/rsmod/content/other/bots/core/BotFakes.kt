@@ -16,6 +16,8 @@ class FakeActor(
     val stackable: Set<Int> = setOf(COINS),
     /** Slayer-like: work needs a task from the supply source, [taskSize] items per task. */
     val taskSize: Int = 0,
+    /** What the bot may buy when its bank runs out, best first. */
+    val buyable: List<Int> = listOfNotNull(supplyItem),
 ) : BotActor {
     var taskLeft = 0
     var rested = false
@@ -161,7 +163,7 @@ class FakeActor(
         return SupplyOutcome.Withdrawn(count)
     }
 
-    override fun supplyToBuy(): Int? = supplyItem
+    override fun suppliesToBuy(): List<Int> = buyable
 
     override fun bankCount(itemId: Int): Long = bank[itemId] ?: 0
 
@@ -276,6 +278,10 @@ class RecordingLog : BotLog {
 
     override fun warn(bot: BotRecord, message: String) {
         lines += "WARN ${bot.name}: $message"
+    }
+
+    override fun notice(message: String) {
+        lines += message
     }
 
     override fun error(message: String) {

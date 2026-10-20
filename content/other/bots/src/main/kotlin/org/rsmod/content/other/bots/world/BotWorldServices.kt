@@ -22,6 +22,7 @@ import org.rsmod.api.registry.loc.LocRegistry
 import org.rsmod.api.registry.npc.NpcRegistry
 import org.rsmod.api.registry.obj.ObjRegistry
 import org.rsmod.api.spells.MagicSpellRegistry
+import org.rsmod.content.other.bots.core.BotGeometry
 import org.rsmod.content.travel.wayfinder.WayfinderTravel
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Npc
@@ -41,7 +42,9 @@ import org.rsmod.game.movement.RouteRequestPathingEntity
 import org.rsmod.game.obj.Obj
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
+import org.rsmod.routefinder.RouteFinding
 import org.rsmod.routefinder.collision.CollisionFlagMap
+import org.rsmod.routefinder.flag.CollisionFlag
 
 /**
  * The bot's "mouse": every click goes through the same interaction and routing objects a client
@@ -65,6 +68,8 @@ constructor(
     private val spells: MagicSpellRegistry,
     val wayfinder: WayfinderTravel,
 ) {
+    private val routeFinding = RouteFinding(collision)
+
     /** Ground objs [player] can see within [radius] of [center]. */
     fun findObjs(player: Player, center: CoordGrid, radius: Int, filter: (Obj) -> Boolean): List<Obj> =
         zonesAround(center, radius)
@@ -90,11 +95,20 @@ constructor(
     /** Runs [block] with [player]'s protected access, as a script triggered by a click would. */
     fun launch(player: Player, block: suspend ProtectedAccess.() -> Unit): Boolean = protectedAccess.launch(player, block = block)
 
-    /** Clicks "Open" on the nearest closed door or gate within [radius] tiles of [player]. */
-    fun openNearbyDoor(player: Player, radius: Int): Boolean {
+    /**
+     * Clicks "Open" on the closed door or gate nearest [player] that lies within [slack] tiles of
+     * the straight line to [toward], no further than [reach] tiles away, so a stuck bot only opens
+     * doors in its way rather than every door in sight.
+     */
+    fun openDoorToward(player: Player, toward: CoordGrid, slack: Int, reach: Int): Boolean {
+        val from = player.coords
         val (loc, type) =
-            findLocs(player.coords, radius) { openOp(it) != null }
-                .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(player.coords) }
+            findLocs(from, reach) { openOp(it) != null }
+                .filter { (loc, _) ->
+                    loc.coords.level == from.level &&
+                        BotGeometry.distanceToSegment(loc.coords.x, loc.coords.z, from.x, from.z, toward.x, toward.z) <= slack
+                }
+                .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(from) }
                 ?: return false
         val op = openOp(type) ?: return false
         return opLoc(player, loc, type, op)
@@ -181,6 +195,26 @@ constructor(
             clearPendingAction()
             eventBus.publish(this, IfOverlayButton(spell.component, comsub = -1, obj = null, op = IfButtonOp.Op1))
         }
+    }
+
+    /**
+     * True when the pathfinder can walk [player] to [dest] with doors as they are now. A waypoint on
+     * a tile nobody can stand on (a tree, a crate) counts once the bot can get next to it.
+     */
+    fun canReach(player: Player, dest: CoordGrid): Boolean {
+        if (dest.level != player.coords.level) {
+            return false
+        }
+        val from = player.coords
+        val route = routeFinding.findRoute(from.level, from.x, from.z, dest.x, dest.z)
+        if (!route.success || !route.alternative) {
+            return route.success
+        }
+        if (collision[dest.x, dest.z, dest.level] and (CollisionFlag.LOC or CollisionFlag.BLOCK_WALK) == 0) {
+            return false
+        }
+        val end = route.waypoints.lastOrNull()?.let { CoordGrid(it.x, it.z, it.level) } ?: from
+        return end.chebyshevDistance(dest) <= 1
     }
 
     fun walkTo(player: Player, dest: CoordGrid) {

@@ -12,6 +12,8 @@ data class BotSave(
     val bank: List<SavedObj> = emptyList(),
     /** Fine xp per stat, keyed by the stat's gameval name. */
     val xp: Map<String, Int> = emptyMap(),
+    /** Current (boosted or drained) level per stat; a stat missing here starts at its base level. */
+    val levels: Map<String, Int> = emptyMap(),
     /** Non-zero permanent varps (quest stages, slayer task) by varp id. */
     val vars: Map<Int, Int> = emptyMap(),
 )

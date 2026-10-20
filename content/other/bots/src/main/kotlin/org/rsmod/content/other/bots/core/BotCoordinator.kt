@@ -274,6 +274,10 @@ class BotCoordinator(
             if (bot.brain.urgent) {
                 persist(id)
             }
+            bot.brain.parkRequest?.let { reason ->
+                bot.brain.parkRequest = null
+                disable(id, reason)
+            }
         }
         if (cycle - lastPeriodicSave >= PERIODIC_SAVE_TICKS) {
             lastPeriodicSave = cycle
@@ -474,6 +478,9 @@ class BotCoordinator(
     private fun write(write: BotWrite): Boolean =
         try {
             store.write(write)
+            if (!storeHealthy) {
+                log.notice("bot store writes work again; exchange work resumes")
+            }
             storeHealthy = true
             true
         } catch (e: Exception) {

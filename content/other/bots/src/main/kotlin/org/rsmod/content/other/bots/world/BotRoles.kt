@@ -29,6 +29,7 @@ import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLevelReq
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLogs
 import org.rsmod.content.slayer.core.SlayerTaskManager
+import org.rsmod.content.slayer.rewards.SlayerRewardsPoints
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.InteractionNpcOp
@@ -666,17 +667,20 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
 
 /**
  * Combat on slayer tasks from the site's master ([BotSite.supplyNpc], visited through the supply
- * route). A bot with no task, or a finished one, goes to the master; a task the site has no
- * [SlayerHunt] for is handed back and re-rolled, at most [MAX_REROLLS] times in a row.
+ * route). A bot with no task, or a finished one, goes to the master. A task the site has no
+ * [SlayerHunt] for, or whose hunt has stayed empty for [BARREN_CHECKS] looks, is cancelled for the usual
+ * slayer point cost; a bot that cannot afford that fails rather than taking a free new task.
  */
 class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(site, world) {
-    private var rerolls = 0
+    private var asks = 0
+    private var barrenTask = 0
+    private var emptyChecks = 0
 
     private fun taskId(player: Player): Int = player.vars[TASK_VARP]
 
     private fun hunt(player: Player): SlayerHunt? {
         val taskId = taskId(player)
-        if (taskId == 0 || player.vars[COUNT_VARP] <= 0) {
+        if (taskId == 0 || player.vars[COUNT_VARP] <= 0 || taskId == barrenTask) {
             return null
         }
         val name = SlayerTaskManager.slayerTargets.firstOrNull { it.id == taskId }?.nameLowercase ?: return null
@@ -718,28 +722,44 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
         if (hunt(player) == null) {
             return GatherStatus.Done
         }
-        return super.gather(player, target)
+        val status = super.gather(player, target)
+        if (status != GatherStatus.NoResource) {
+            emptyChecks = 0
+            return status
+        }
+        if (++emptyChecks >= BARREN_CHECKS) {
+            barrenTask = taskId(player)
+            emptyChecks = 0
+            focus = "nothing to hunt for task $barrenTask; handing it back"
+            return GatherStatus.Done
+        }
+        return status
     }
 
     private fun askForTask(player: Player): GatherStatus {
         if (hunt(player) != null) {
-            rerolls = 0
+            asks = 0
             return GatherStatus.Done
         }
         if (player.isAccessProtected || player.isDelayed) {
             return GatherStatus.Working(0, progressed = true)
         }
-        if (rerolls++ >= MAX_REROLLS) {
-            rerolls = 0
-            return GatherStatus.Failed("no task with a hunt at ${site.key} after $MAX_REROLLS tries")
+        if (asks++ >= MAX_ASKS) {
+            asks = 0
+            return GatherStatus.Failed("the master gave no task with a hunt at ${site.key} after $MAX_ASKS tries")
         }
-        val handBack = taskId(player) != 0 && player.vars[COUNT_VARP] > 0
-        world.launch(player) {
-            if (handBack) {
-                SlayerTaskManager.resetTask(this)
+        val current = taskId(player)
+        if (current != 0 && player.vars[COUNT_VARP] > 0) {
+            val cost = SlayerRewardsPoints.taskCancelCost(player)
+            if (SlayerRewardsPoints.getPoints(player) < cost) {
+                asks = 0
+                return GatherStatus.Failed("task $current has nothing to hunt at ${site.key}, and cancelling it needs $cost slayer points")
             }
-            SlayerTaskManager.assignTask(this, site.supplyNpc)
+            world.launch(player) { SlayerRewardsPoints.cancelTask(this) }
+            return GatherStatus.Working(0, progressed = true)
         }
+        barrenTask = 0
+        world.launch(player) { SlayerTaskManager.assignTask(this, site.supplyNpc) }
         return GatherStatus.Working(0, progressed = true)
     }
 
@@ -747,7 +767,8 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
         private const val TASK_VARP = "varp.slayer_target"
         private const val COUNT_VARP = "varp.slayer_count"
         private const val MASTER_QUEST = "quest_porcineofinterest"
-        private const val MAX_REROLLS = 100
+        private const val MAX_ASKS = 10
+        private const val BARREN_CHECKS = 250
     }
 }
 

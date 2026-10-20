@@ -46,6 +46,8 @@ class BotBrain(
     private var plannedPurchase: PlannedPurchase? = null
     private var reactionCycle = NO_REACTION
     private var now = 0L
+    private var suppliesMissingSince = NOT_WAITING
+    private var failedRollback: String? = null
     private val decisions = ArrayDeque<BotDecision>()
     private val sightings = HashMap<Long, Sighting>()
 
@@ -56,12 +58,17 @@ class BotBrain(
     val state: BotState
         get() = record.state
 
+    /** Set when the bot should be disabled with this reason; the coordinator acts on it. */
+    var parkRequest: String? = null
+
     val hasPendingExchangeWork: Boolean
         get() = record.hasPendingExchangeWork
 
     fun start(cycle: Int, now: Long) {
         this.now = now
         stateFailures = 0
+        suppliesMissingSince = NOT_WAITING
+        parkRequest = null
         if (record.state == BotState.Error) {
             errorUntil = 0
             return
@@ -125,6 +132,10 @@ class BotBrain(
         val problem = actor.requirementProblem()
         if (problem != null) {
             error(problem, now, recoverable = false)
+            return
+        }
+        if (actor.kitToFetch()) {
+            transition(BotState.TravelToBank, cycle, "Fetching its kit from the bank")
             return
         }
         if (gatherLimitReached(now)) {
@@ -202,14 +213,18 @@ class BotBrain(
                     fail("no gathering progress", cycle, now)
                 }
             }
-            GatherStatus.InventoryFull ->
+            GatherStatus.InventoryFull -> {
+                actor.stopActivity()
                 if (gatherTarget == BotDestination.SupplySource) {
                     travelTo(BotDestination.Resource, cycle)
                 } else {
                     transition(BotState.TravelToBank, cycle, "Inventory full")
                 }
-            GatherStatus.NeedsSupplies ->
+            }
+            GatherStatus.NeedsSupplies -> {
+                actor.stopActivity()
                 transition(BotState.TravelToBank, cycle, "Out of supplies")
+            }
             GatherStatus.Hurt -> {
                 actor.stopActivity()
                 transition(BotState.TravelToBank, cycle, "Hurt; going to rest")
@@ -273,6 +288,7 @@ class BotBrain(
                             "deposited ${stats.deposited} in total)",
                     )
                 }
+                actor.fetchKit()
             }
         }
         stateFailures = 0
@@ -296,6 +312,7 @@ class BotBrain(
     /** Returns false when the bot cannot continue gathering yet. */
     private fun restock(now: Long, cycle: Int): Boolean {
         if (!actor.needsSupplies()) {
+            suppliesMissingSince = NOT_WAITING
             gatherTarget = workTarget()
             return true
         }
@@ -306,6 +323,7 @@ class BotBrain(
         return when (actor.withdrawSupplies()) {
             SupplyOutcome.NotNeeded,
             is SupplyOutcome.Withdrawn -> {
+                suppliesMissingSince = NOT_WAITING
                 gatherTarget = workTarget()
                 true
             }
@@ -313,6 +331,10 @@ class BotBrain(
                 if (actor.canWorkWithoutSupplies()) {
                     gatherTarget = workTarget()
                     return true
+                }
+                noteMissingSupplies(cycle)
+                if (parkRequest != null) {
+                    return false
                 }
                 val waiting = purchaseSupplies(now, cycle) ?: return false
                 if (actor.restsWithoutSupplies()) {
@@ -353,6 +375,7 @@ class BotBrain(
         when (actor.withdrawSupplies()) {
             SupplyOutcome.NotNeeded,
             is SupplyOutcome.Withdrawn -> {
+                suppliesMissingSince = NOT_WAITING
                 log.info(record, "supplies restocked")
                 urgent = true
                 travelTo(workTarget(), cycle)
@@ -361,6 +384,10 @@ class BotBrain(
                 if (actor.canWorkWithoutSupplies()) {
                     travelTo(workTarget(), cycle)
                 } else {
+                    noteMissingSupplies(cycle)
+                    if (parkRequest != null) {
+                        return
+                    }
                     val waiting = purchaseSupplies(now, cycle) ?: return
                     setActivity(if (actor.restsWithoutSupplies()) RESTING else waiting)
                 }
@@ -369,27 +396,29 @@ class BotBrain(
     }
 
     /**
-     * Starts restocking supplies the bank has run out of: buys them on the exchange at the lowest
-     * ask, or first lists enough banked products to afford them. Returns null once the bot is on
-     * its way to the exchange, otherwise why it has to keep waiting.
+     * Starts restocking supplies the bank has run out of: buys the first supply someone sells at a
+     * fair lowest ask, or with no fair ask leaves a buy offer resting at the guide price until it
+     * fills or times out. When coins are short it first lists enough banked products to afford
+     * them. Returns null once the bot is on its way to the exchange, otherwise why it has to wait.
      */
     private fun purchaseSupplies(now: Long, cycle: Int): String? {
-        val item = actor.supplyToBuy()
-        if (!record.config.restock.enabled || item == null) {
+        val supplies = actor.suppliesToBuy()
+        if (!record.config.restock.enabled || supplies.isEmpty()) {
             return NO_SUPPLIES
         }
         if (!exchange.available || !storeHealthy() || record.pendingListing != null) {
             return "$NO_SUPPLIES; the exchange is unavailable"
         }
-        if (exchange.offers(owner).any { !it.sell && it.itemId == item }) {
+        if (exchange.offers(owner).any { !it.sell && it.itemId in supplies }) {
             return "Waiting for the supply buy offer to fill"
         }
-        val price = exchange.lowestAsk(item, owner) ?: return "$NO_SUPPLIES; nobody is selling them"
-        val guide = exchange.guidePrice(item)
-        if (guide != null && price > guide * (1 + record.config.pricing.maxDeviationPercent / 100)) {
-            return "$NO_SUPPLIES; they cost $price, far above the guide price of $guide"
+        val quote = supplyQuote(supplies) ?: return "$NO_SUPPLIES; nobody is selling them and they have no guide price"
+        val item = quote.itemId
+        val price = quote.price
+        val wanted = minOf(record.config.restock.quantity, exchange.remainingBuyLimit(owner, item))
+        if (wanted <= 0) {
+            return "$NO_SUPPLIES; the buy limit is reached"
         }
-        val wanted = record.config.restock.quantity
         val coins = actor.coins()
         val selling = saleItemIds().any(::hasOpenSale)
         val affordable =
@@ -401,9 +430,57 @@ class BotBrain(
         if (affordable <= 0) {
             return if (selling) "Waiting for sales to afford supplies" else "$NO_SUPPLIES; no coins or products to buy them"
         }
-        plannedPurchase = PlannedPurchase(item, affordable, price)
-        transition(BotState.TravelToExchange, cycle, "Going to buy $affordable supplies")
+        plannedPurchase = PlannedPurchase(item, affordable, price, quote.resting)
+        val how = if (quote.resting) " at the guide price" else ""
+        transition(BotState.TravelToExchange, cycle, "Going to buy $affordable supplies$how")
         return null
+    }
+
+    private fun supplyQuote(supplies: List<Int>): PlannedPurchase? {
+        val fair = 1 + record.config.pricing.maxDeviationPercent / 100
+        for (item in supplies) {
+            val ask = exchange.lowestAsk(item, owner) ?: continue
+            val guide = exchange.guidePrice(item)
+            if (guide == null || ask <= guide * fair) {
+                return PlannedPurchase(item, 0, ask, resting = false)
+            }
+        }
+        for (item in supplies) {
+            val guide = exchange.guidePrice(item)?.takeIf { it > 0 } ?: continue
+            return PlannedPurchase(item, 0, guide, resting = true)
+        }
+        return null
+    }
+
+    /**
+     * Counts how long the bank has been out of supplies; past [SUPPLY_PARK_TICKS] the bot is parked
+     * so it frees its active slot for bots that can work. Fighters only rest, so they never park.
+     */
+    private fun noteMissingSupplies(cycle: Int) {
+        if (actor.restsWithoutSupplies()) {
+            return
+        }
+        if (suppliesMissingSince == NOT_WAITING) {
+            suppliesMissingSince = cycle
+            return
+        }
+        if (cycle - suppliesMissingSince < SUPPLY_PARK_TICKS || parkRequest != null) {
+            return
+        }
+        if (exchange.available && storeHealthy()) {
+            val supplies = actor.suppliesToBuy()
+            for (offer in exchange.offers(owner)) {
+                if (!offer.sell && offer.isOpen && offer.itemId in supplies && exchange.abort(owner, offer.slot)) {
+                    log.info(record, "aborted supply buy offer in slot ${offer.slot} before parking")
+                }
+            }
+        }
+        val minutes = SUPPLY_PARK_TICKS * TICK_MS / 60_000
+        val reason = "Parked: no supplies for $minutes minutes"
+        log.warn(record, "parked: its bank has had no supplies for $minutes minutes and none could be bought")
+        setActivity(reason)
+        parkRequest = reason
+        urgent = true
     }
 
     /** Takes enough products, below the usual sale threshold if need be, to raise [shortfall] coins. */
@@ -454,7 +531,7 @@ class BotBrain(
         }
         abortStaleOffers(now)
         val ask = exchange.lowestAsk(plan.itemId, owner)
-        if (ask == null || ask > plan.price) {
+        if (!plan.resting && (ask == null || ask > plan.price)) {
             transition(BotState.TravelToBank, cycle, "The supply price changed")
             return
         }
@@ -470,7 +547,8 @@ class BotBrain(
             return
         }
         record = record.copy(pendingListing = pending)
-        log.info(record, "buying $quantity x item ${plan.itemId} at ${plan.price} each")
+        val resting = if (plan.resting) ", resting at the guide price" else ""
+        log.info(record, "buying $quantity x item ${plan.itemId} at ${plan.price} each$resting")
         urgent = true
     }
 
@@ -640,6 +718,10 @@ class BotBrain(
 
     private fun settleListing(now: Long) {
         val pending = record.pendingListing ?: return
+        failedRollback?.let { reason ->
+            rollBackListing(pending, reason, now)
+            return
+        }
         val offer = exchange.offer(owner, pending.slot)
         val ours =
             offer != null && offer.sell != pending.buy && offer.itemId == pending.itemId &&
@@ -678,11 +760,22 @@ class BotBrain(
         }
     }
 
+    /**
+     * Gives back what a listing that never reached the exchange took. When the bank cannot take it
+     * the pending record stays, so nothing is lost, and the bot is parked in error until an
+     * administrator makes room; the rollback is retried every tick until then.
+     */
     private fun rollBackListing(pending: PendingListing, reason: String, now: Long) {
         if (pending.buy) {
-            check(actor.creditBankCoins(pending.cost) == pending.cost) {
-                "Could not refund ${pending.cost} coins after a failed buy offer."
+            val refunded = actor.creditBankCoins(pending.cost)
+            if (refunded != pending.cost) {
+                if (refunded > 0 && !actor.debitBankCoins(refunded)) {
+                    log.error("bot ${record.id}: could not undo a partial refund of $refunded coins")
+                }
+                rollBackFailed("could not refund ${pending.cost} coins after a failed buy offer", now)
+                return
             }
+            failedRollback = null
             record = record.copy(pendingListing = null)
             log.warn(record, "buy offer rolled back ($reason); ${pending.cost} coins refunded")
             listingOutcome = false
@@ -692,14 +785,23 @@ class BotBrain(
         val returned =
             actor.returnHeld(pending.itemId, pending.quantity) ||
                 actor.creditBank(pending.itemId, pending.quantity)
-        check(returned) {
-            "Could not return ${pending.quantity} x ${pending.itemId} after a failed listing."
+        if (!returned) {
+            rollBackFailed("could not return ${pending.quantity} x item ${pending.itemId} after a failed listing", now)
+            return
         }
+        failedRollback = null
         record = record.copy(pendingListing = null)
         log.warn(record, "listing rolled back ($reason); ${pending.quantity} items returned")
         pauseSales("listing failed: $reason", now)
         listingOutcome = false
         urgent = true
+    }
+
+    private fun rollBackFailed(reason: String, now: Long) {
+        failedRollback = reason
+        if (record.state != BotState.Error || record.lastError != reason) {
+            error(reason, now, recoverable = false)
+        }
     }
 
     private fun settleCollects() {
@@ -710,6 +812,11 @@ class BotBrain(
         for (pending in record.pendingCollects) {
             val offer = exchange.offer(owner, pending.slot)?.takeIf { it.createdAt == pending.createdAt }
             if (offer == null) {
+                // Taking a box empty releases the offer before the exchange saves; a crash then
+                // brings the box back, so the record stays until that release is on disk.
+                if (pending.taken && !recovering && exchange.saveCount <= pending.takenAtSave) {
+                    remaining += pending
+                }
                 continue
             }
             val coinsOwed = pending.coinsTarget - offer.coinsCollected
@@ -949,6 +1056,9 @@ class BotBrain(
         const val NO_RESOURCE_TICKS: Int = 300
         const val BUSY_LIMIT_TICKS: Int = 100
         const val SUPPLY_RECHECK_TICKS: Int = 100
+        const val SUPPLY_PARK_TICKS: Int = 6000
+        private const val TICK_MS = 600
+        private const val NOT_WAITING = -1
         private const val RESTING = "Resting until healed"
         private const val NO_SUPPLIES = "Waiting for supplies in the bank"
         private const val EXCHANGE_SLOTS = 8
@@ -961,7 +1071,7 @@ class BotBrain(
     }
 }
 
-private data class PlannedPurchase(val itemId: Int, val quantity: Int, val price: Int)
+private data class PlannedPurchase(val itemId: Int, val quantity: Int, val price: Int, val resting: Boolean)
 
 data class BotDecision(val at: Long, val text: String)
 

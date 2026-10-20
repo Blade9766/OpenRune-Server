@@ -542,18 +542,27 @@ class MeisterTrader(
             )
         if (quantity < 0) {
             val generation = counted.generation + 1
+            val lost = lostSales(offer, counted).takeIf { offer.sell && it.sumOf { f -> f.quantity } == -quantity }
+            val realized = lost?.takeIf { it.isNotEmpty() && it.all { f -> f.realized != null } }?.sumOf { -(it.realized ?: 0L) }
             history.record(
                 base.copy(
                     id = "${offer.offerId}:${counted.completed}>${offer.completed}:r$generation",
                     net = if (offer.sell) gold - tax else -gold,
+                    realized = realized,
                     reversal = true,
                 )
             )
             basis[item] =
-                if (offer.sell) {
-                    before.copy(unknownQuantity = before.unknownQuantity - quantity)
-                } else {
-                    CostBasis((before.knownQuantity + quantity).coerceAtLeast(0), (before.knownCost + gold).coerceAtLeast(0), before.unknownQuantity)
+                when {
+                    !offer.sell ->
+                        CostBasis((before.knownQuantity + quantity).coerceAtLeast(0), (before.knownCost + gold).coerceAtLeast(0), before.unknownQuantity)
+                    lost != null ->
+                        CostBasis(
+                            before.knownQuantity + lost.sumOf { it.knownQuantity },
+                            before.knownCost + lost.sumOf { it.costBasis ?: 0L },
+                            before.unknownQuantity + lost.sumOf { it.unknownQuantity },
+                        )
+                    else -> before.copy(unknownQuantity = before.unknownQuantity - quantity)
                 }
             return generation
         }
@@ -583,6 +592,13 @@ class MeisterTrader(
         basis[item] = after
         return counted.generation
     }
+
+    /** The recorded sales of [offer] the exchange lost in a restart: those after its reloaded fill count. */
+    private fun lostSales(offer: BotOffer, counted: CountedFill): List<MeisterFill> =
+        history.all().filter {
+            !it.reversal && !it.buy && it.offerId == offer.offerId && it.id.endsWith(":${counted.generation}") &&
+                it.filledAfter > offer.completed && it.filledAfter <= counted.completed
+        }
 
     /** What an offer's collect box held when he looked, and the exchange save count at that moment. */
     private class Sighting(val save: Long, val items: Int, val coins: Int)
@@ -1047,15 +1063,20 @@ class MeisterTrader(
             return
         }
         lastReplenishAt = now
-        if (settings.replenishCash && cash < startingCash) {
-            val added = startingCash - cash
-            cash = startingCash
+        val offers = exchange.offers(owner)
+        val owned = cash + committedCoins() + offers.sumOf { it.collectCoins.toLong() }
+        if (settings.replenishCash && owned < startingCash) {
+            val added = startingCash - owned
+            cash += added
             log.info("allocation: refilled $added coins (replenish is on)")
         }
         if (settings.replenishItems) {
             var restored = 0
             for ((id, count) in allocation) {
-                if (holding(id) == 0 && catalog[id] != null) {
+                val listed =
+                    offers.filter { it.itemId == id }.sumOf { (if (it.sell && it.isOpen) it.remaining else 0) + it.collectItems } +
+                        (pendingListing?.takeIf { !it.buy && it.itemId == id }?.quantity ?: 0)
+                if (holding(id) == 0 && listed == 0 && catalog[id] != null) {
                     holdings[id] = count
                     basis[id] = basisOf(id).let { it.copy(unknownQuantity = it.unknownQuantity + count) }
                     restored++

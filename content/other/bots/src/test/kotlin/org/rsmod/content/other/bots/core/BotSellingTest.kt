@@ -340,6 +340,25 @@ class BotSellingTest {
     }
 
     @Test
+    fun `a crash while the released offer is unsaved pays once however long the exchange waits`() {
+        val world = BotTestHarness()
+        val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)
+        world.tickUntil { world.listed(id) }
+        world.playerBuys(qty = 1000, price = 100)
+        world.tickUnsavedUntil { world.record(id).pendingCollects.any { it.taken } }
+        world.tick(20, saveExchange = false)
+        assertTrue(world.offers(id).isEmpty(), "released in memory")
+        assertTrue(world.store.bots.getValue(id).pendingCollects.isNotEmpty(), "kept until the release is saved")
+
+        world.restart()
+        assertEquals(98_000, world.offers(id).single().collectCoins, "the release was never saved")
+        world.tick(50)
+        assertEquals(98_000, world.actor(id).coins())
+        assertTrue(world.offers(id).isEmpty())
+        assertTrue(world.record(id).pendingCollects.isEmpty())
+    }
+
+    @Test
     fun `a crash after the exchange saved the collection pays once`() {
         val world = BotTestHarness()
         val id = world.startBot(BotTestHarness.woodcuttingConfig(quantity = 1000), bankedLogs = 1000)

@@ -15,6 +15,7 @@ bm_button = 45818
 bm_check = 45821
 bm_dot = 45824
 bm_search_stop = 45836
+bm_search_release = 45842
 
 [gamevals.inv]
 bot_view_inv = 1112

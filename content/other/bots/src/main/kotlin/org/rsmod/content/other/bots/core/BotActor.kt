@@ -73,6 +73,12 @@ interface BotActor {
     val focus: String?
         get() = null
 
+    /** True when worn kit gear went missing (a death) but a spare is banked. */
+    fun kitToFetch(): Boolean = false
+
+    /** At bank: takes spares of missing worn kit gear into the inventory to wear. */
+    fun fetchKit() {}
+
     /** True when the bot must visit its site's supply source first (a slayer master for a task). */
     fun needsSourceVisit(): Boolean = false
 
@@ -100,8 +106,8 @@ interface BotActor {
     /** At bank: tops up role supplies (essence). */
     fun withdrawSupplies(): SupplyOutcome
 
-    /** The supply to buy on the exchange once the bank has run out, or null when there is none. */
-    fun supplyToBuy(): Int? = null
+    /** Supplies the bot can buy on the exchange once the bank has run out, best first. */
+    fun suppliesToBuy(): List<Int> = emptyList()
 
     fun bankCount(itemId: Int): Long
 
@@ -136,6 +142,8 @@ interface BotLog {
     fun info(bot: BotRecord, message: String)
 
     fun warn(bot: BotRecord, message: String)
+
+    fun notice(message: String)
 
     fun error(message: String)
 }

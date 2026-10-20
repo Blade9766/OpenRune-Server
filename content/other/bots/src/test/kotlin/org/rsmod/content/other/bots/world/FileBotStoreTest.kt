@@ -2,6 +2,7 @@ package org.rsmod.content.other.bots.world
 
 import java.nio.file.Files
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.rsmod.content.other.bots.core.BotConfig
@@ -38,5 +39,45 @@ class FileBotStoreTest {
         assertEquals(listOf(record), loaded.bots)
         assertEquals(BotGlobalSettings(masterEnabled = true, maxActiveBots = 3), loaded.settings)
         assertTrue(Files.list(dir).use { files -> files.noneMatch { it.fileName.toString().endsWith(".tmp") } })
+    }
+
+    @Test
+    fun `a failed write changes nothing, so a later write cannot bring it back`() {
+        val dir = Files.createTempDirectory("bots")
+        val path = dir.resolve("bots.json")
+        val store = FileBotStore(path)
+        store.load()
+        val config = BotConfig(role = BotRoleType.Mining, site = "varrock_east")
+        store.write(BotWrite(bots = listOf(BotRecord(id = 1, name = "Kept", config = config))))
+        Files.delete(path)
+        Files.createDirectories(path.resolve("blocker"))
+
+        assertThrows(Exception::class.java) {
+            store.write(BotWrite(bots = listOf(BotRecord(id = 2, name = "Failed", config = config))))
+        }
+        Files.delete(path.resolve("blocker"))
+        Files.delete(path)
+        store.write(BotWrite(bots = listOf(BotRecord(id = 3, name = "Later", config = config))))
+
+        assertEquals(listOf("Kept", "Later"), FileBotStore(path).load().bots.map { it.name })
+        assertTrue(Files.list(dir).use { files -> files.noneMatch { it.fileName.toString().endsWith(".tmp") } })
+    }
+
+    @Test
+    fun `writes from two threads never collide`() {
+        val dir = Files.createTempDirectory("bots")
+        val path = dir.resolve("bots.json")
+        val store = FileBotStore(path)
+        store.load()
+        val config = BotConfig(role = BotRoleType.Mining, site = "varrock_east")
+        val threads =
+            (0 until 2).map { t ->
+                Thread {
+                    repeat(50) { i -> store.write(BotWrite(bots = listOf(BotRecord(id = t * 100L + i, name = "B$t$i", config = config)))) }
+                }
+            }
+        threads.forEach(Thread::start)
+        threads.forEach(Thread::join)
+        assertEquals(100, FileBotStore(path).load().bots.size)
     }
 }

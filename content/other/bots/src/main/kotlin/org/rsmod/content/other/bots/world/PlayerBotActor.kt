@@ -94,7 +94,25 @@ class PlayerBotActor(
 
     override fun requirementProblem(): String? {
         rewearKit()
+        val lost = missingKit().filter { bankCount(it) <= 0 }
+        if (lost.isNotEmpty()) {
+            val names = lost.joinToString { ServerCacheManager.getItem(it)?.name ?: "item $it" }
+            return "lost its kit ($names) and has no spare in the bank"
+        }
         return behaviour.requirementProblem(player)
+    }
+
+    /** Worn kit gear neither worn nor carried, as after a death in the Wilderness. */
+    private fun missingKit(): List<Int> =
+        kitWornIds.filter { id -> player.worn.objs.none { it?.id == id } && player.inv.objs.none { it?.id == id } }
+
+    override fun kitToFetch(): Boolean = missingKit().isNotEmpty()
+
+    override fun fetchKit() {
+        for (id in missingKit()) {
+            val slot = bank.indices.firstOrNull { bank[it]?.id == id } ?: continue
+            player.invTransfer(from = bank, fromSlot = slot, count = 1, into = player.inv)
+        }
     }
 
     /** A death leaves the kit's kept gear (a tiara, a weapon) in the inventory; put it back on. */
@@ -151,8 +169,9 @@ class PlayerBotActor(
             world.walkTo(player, plan.first())
         }
         climbing?.let { return climb(it) }
-        while (plan.isNotEmpty() && routeDistance(player.coords, plan.first()) <= reachDistance(plan.first())) {
+        while (plan.isNotEmpty() && reached(plan.first())) {
             val reached = plan.removeFirst()
+            reroutes = 0
             val next = plan.firstOrNull() ?: break
             val climb = climbs[reached]
             if (climb != null && (!walkable(reached, next) || crossesTo(climb, next))) {
@@ -176,15 +195,17 @@ class PlayerBotActor(
         if (player.coords == lastCoords) {
             if (++stillTicks >= STUCK_TICKS) {
                 stillTicks = 0
-                if (world.openNearbyDoor(player, DOOR_RADIUS) || world.openNearbyDoor(player, FAR_DOOR_RADIUS)) {
-                    openedDoor = true
-                    reroutes++
-                    return TravelStatus.Moving
-                }
                 if (++reroutes > MAX_REROUTES) {
                     val at = player.coords
+                    val next = plan.first()
                     resetTravel()
-                    return TravelStatus.Blocked("stuck at ${at.x},${at.z} heading to ${destination.name.lowercase()}")
+                    return TravelStatus.Blocked(
+                        "stuck at ${at.x},${at.z} heading to ${destination.name.lowercase()} (next waypoint ${next.x},${next.z})"
+                    )
+                }
+                if (world.openDoorToward(player, plan.first(), DOOR_PATH_SLACK, DOOR_REACH)) {
+                    openedDoor = true
+                    return TravelStatus.Moving
                 }
                 world.walkTo(player, plan.first())
             }
@@ -225,6 +246,18 @@ class PlayerBotActor(
             world.walkTo(player, pending.from)
         }
         return TravelStatus.Moving
+    }
+
+    /**
+     * A waypoint counts as reached a couple of tiles away, but never through a fence or a closed
+     * door: then the bot walks on until it is stuck there and opens the door in its way.
+     */
+    private fun reached(waypoint: CoordGrid): Boolean {
+        val distance = routeDistance(player.coords, waypoint)
+        if (distance > reachDistance(waypoint)) {
+            return false
+        }
+        return distance == 0 || waypoint in climbs || world.canReach(player, waypoint)
     }
 
     /** A ladder may sit behind a door or wall, so a climb tile only counts once the bot is beside it. */
@@ -306,9 +339,13 @@ class PlayerBotActor(
                     return null
                 }
                 homeTeleports++
-                logger.info { "Bot ${player.displayName}: ${step.reason}; casting Home Teleport." }
                 wayfinder.reset()
-                world.castHomeTeleport(player)
+                if (!world.castHomeTeleport(player)) {
+                    logger.info { "Bot ${player.displayName}: ${step.reason}, and Home Teleport could not be cast." }
+                    endWayfinderTrip()
+                    return null
+                }
+                logger.info { "Bot ${player.displayName}: ${step.reason}; casting Home Teleport." }
                 homeCastTicks = HOME_CAST_TICKS
                 return TravelStatus.Moving
             }
@@ -397,8 +434,8 @@ class PlayerBotActor(
         site.hunts.map { hunt -> hunt.resourceRoute.map { it.toCoords() } + hunt.resource.center() }
 
     /**
-     * Where a trip home starts. A bot leaving the place it walked to retraces that whole route,
-     * so it leaves a fenced field through the gate it came in by rather than at the fence.
+     * Where a trip home starts. A bot leaving the place it walked to retraces that route from the
+     * waypoint nearest to it, so it leaves a fenced field through the gate it came in by.
      */
     private fun wayBack(): Pair<List<CoordGrid>, Int>? {
         val leaving =
@@ -406,24 +443,31 @@ class PlayerBotActor(
                 ?: huntChains()
                     .filter { it.size > 1 && routeDistance(it.last(), player.coords) <= LEAVE_DISTANCE }
                     .minByOrNull { routeDistance(it.last(), player.coords) }
-        return leaving?.let { it to it.lastIndex } ?: nearestChainPoint(allChains())
+        return leaving?.let { nearestChainPoint(listOf(it)) } ?: nearestChainPoint(allChains())
     }
 
-    private fun nearestChainPoint(chains: List<List<CoordGrid>>): Pair<List<CoordGrid>, Int>? =
-        chains
-            .flatMap { chain -> chain.indices.map { chain to it } }
-            .minByOrNull { (chain, i) -> routeDistance(chain[i], player.coords) }
+    /**
+     * The waypoint the bot can walk to that is nearest to it; on a tie the one nearer the bank, so
+     * a bot outside a pen stays out. Waypoints behind a fence or closed gate only count when none
+     * is reachable.
+     */
+    private fun nearestChainPoint(chains: List<List<CoordGrid>>): Pair<List<CoordGrid>, Int>? {
+        val points =
+            chains
+                .flatMap { chain -> chain.indices.map { chain to it } }
+                .sortedWith(compareBy({ (chain, i) -> routeDistance(chain[i], player.coords) }, { (_, i) -> i }))
+        return points.take(REACH_CHECKS).firstOrNull { (chain, i) -> world.canReach(player, chain[i]) } ?: points.firstOrNull()
+    }
 
     /**
      * A stray bot (a death respawn, say) rides a wayfinder mage back towards its site, casting Home
-     * Teleport first when no mage is in reach. Only if that fails too is it put back at its bank,
-     * as a last resort that is logged as a warning.
+     * Teleport first when no mage is in reach. A bot neither gets home is blocked, never placed.
      */
     private fun recoverOffSite(): TravelStatus {
         ride(null)?.let { return it }
-        logger.warn { "Bot ${player.displayName} is stranded at ${player.coords}; no mage or Home Teleport helped, so it is placed at its bank." }
-        world.telejump(player, site.bank.center())
-        return TravelStatus.Moving
+        val at = player.coords
+        logger.warn { "Bot ${player.displayName} is stranded at $at; no mage or Home Teleport gets it home." }
+        return TravelStatus.Blocked("stranded at ${at.x},${at.z}; no wayfinder mage or Home Teleport gets it home")
     }
 
     /** Death respawns and stray teleports leave a bot where no route can reach its site. */
@@ -537,7 +581,7 @@ class PlayerBotActor(
         return SupplyOutcome.Unavailable
     }
 
-    override fun supplyToBuy(): Int? = behaviour.supplyIds().firstOrNull()
+    override fun suppliesToBuy(): List<Int> = behaviour.supplyIds()
 
     override fun bankCount(itemId: Int): Long = bank.objs.sumOf { if (it?.id == itemId) it.count.toLong() else 0L }
 
@@ -650,8 +694,9 @@ class PlayerBotActor(
         private const val RUN_ENERGY_ON = 5000
         private const val RUN_ENERGY_OFF = 1500
         private const val RESTED_PERCENT = 90
-        private const val DOOR_RADIUS = 2
-        private const val FAR_DOOR_RADIUS = 16
+        private const val REACH_CHECKS = 6
+        private const val DOOR_PATH_SLACK = 2
+        private const val DOOR_REACH = 16
         private const val CLIMB_DONE = 20
         private const val CLIMB_REACHED = 1
         private const val MAX_CLIMB_CLICKS = 10

@@ -39,6 +39,7 @@ constructor(
     var coordinator: BotCoordinator? = null
         private set
 
+    @Synchronized
     fun tick() {
         if (halted) return
         val coordinator = coordinator ?: start() ?: return
@@ -69,6 +70,8 @@ constructor(
         world.onDeleted(player)
     }
 
+    /** Runs on the shutdown hook; synchronized so it waits for a tick in progress to finish. */
+    @Synchronized
     fun shutdown() {
         coordinator?.shutdown()
     }
@@ -109,6 +112,10 @@ constructor(
 
         override fun warn(bot: BotRecord, message: String) {
             logger.warn { "[bot ${bot.id} ${bot.name}] $message" }
+        }
+
+        override fun notice(message: String) {
+            logger.info { message }
         }
 
         override fun error(message: String) {

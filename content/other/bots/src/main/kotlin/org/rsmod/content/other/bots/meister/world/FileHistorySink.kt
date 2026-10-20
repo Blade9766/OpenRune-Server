@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.michaelbull.logging.InlineLogger
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.charset.StandardCharsets
@@ -21,6 +22,9 @@ import org.rsmod.content.other.bots.meister.MeisterHistorySink
 class FileHistorySink(private val path: Path, now: Long) : MeisterHistorySink {
     private val logger = InlineLogger()
     private val fills = LinkedHashMap<String, MeisterFill>()
+
+    /** Set when an append failed part-way, so the next one starts on a fresh line. */
+    private var torn = false
 
     override val trackingSince: Long
 
@@ -60,10 +64,20 @@ class FileHistorySink(private val path: Path, now: Long) : MeisterHistorySink {
     override fun all(): List<MeisterFill> = fills.values.toList()
 
     private fun append(text: String) {
-        FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND).use { channel ->
-            channel.write(ByteBuffer.wrap(text.toByteArray(StandardCharsets.UTF_8)))
-            channel.force(true)
+        val line = if (torn) "\n$text" else text
+        try {
+            FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND).use { channel ->
+                val buffer = ByteBuffer.wrap(line.toByteArray(StandardCharsets.UTF_8))
+                while (buffer.hasRemaining()) {
+                    channel.write(buffer)
+                }
+                channel.force(true)
+            }
+        } catch (e: IOException) {
+            torn = true
+            throw e
         }
+        torn = false
     }
 
     private companion object {

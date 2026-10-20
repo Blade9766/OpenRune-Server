@@ -3,6 +3,8 @@ package org.rsmod.content.slayer.rewards
 import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
+import org.rsmod.content.slayer.core.MortimerAssignment
+import org.rsmod.content.slayer.core.SlayerTaskManager
 import org.rsmod.game.entity.Player
 
 /** Slayer reward point balance and client sync. */
@@ -31,6 +33,21 @@ object SlayerRewardsPoints {
         return true
     }
 
+    fun taskCancelCost(player: Player): Int {
+        val master = SlayerTaskManager.getCurrentAssignedMaster(player)
+        return if (MortimerAssignment.isMortimer(master)) MortimerAssignment.CANCEL_COST else CANCEL_TASK_COST
+    }
+
+    /** Cancels the current task for [taskCancelCost] points, as the rewards shop does; false when short. */
+    fun cancelTask(access: ProtectedAccess): Boolean {
+        if (access.vars["varp.slayer_target"] == 0 || !spendPoints(access.player, taskCancelCost(access.player))) {
+            return false
+        }
+        SlayerTaskManager.resetTask(access)
+        syncPoints(access)
+        return true
+    }
+
     fun syncPoints(player: Player) {
         player.runClientScript(SLAYER_REWARDS_SETPOINTS_CS)
     }
@@ -47,6 +64,7 @@ object SlayerRewardsPoints {
     }
 
     const val MAX_POINTS = 64_000
+    const val CANCEL_TASK_COST = 30
 
     private const val SLAYER_REWARDS_SETPOINTS_CS = 409
     private const val SLAYER_REWARDS_TASKS_INIT_CS = 328

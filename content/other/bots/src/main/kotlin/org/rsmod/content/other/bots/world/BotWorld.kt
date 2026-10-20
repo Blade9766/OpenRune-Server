@@ -10,6 +10,7 @@ import dev.or2.central.account.Rights
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.IdentityHashMap
+import org.rsmod.annotations.InternalApi
 import org.rsmod.api.config.constants
 import org.rsmod.api.inv.map.InvMapInit
 import org.rsmod.api.net.rsprot.BotSessions
@@ -158,9 +159,10 @@ constructor(
         val xp = save.xp + (HITPOINTS to maxOf(save.xp[HITPOINTS] ?: 0, minHitpointsXp))
         for ((stat, fineXp) in xp) {
             val level = PlayerSkillXPTable.getLevelFromFineXP(fineXp).coerceIn(1, 99)
+            val current = save.levels[stat]?.coerceIn(if (stat == HITPOINTS) 1 else 0, MAX_BOOSTED_LEVEL) ?: level
             player.statMap.setFineXP(stat, fineXp)
             player.statMap.setBaseLevel(stat, level.toByte())
-            player.statMap.setCurrentLevel(stat, level.toByte())
+            player.statMap.setCurrentLevel(stat, current.toByte())
         }
     }
 
@@ -175,6 +177,7 @@ constructor(
         }
     }
 
+    @OptIn(InternalApi::class)
     private fun toSave(player: Player): BotSave =
         BotSave(
             coords = SavedCoords(player.coords.x, player.coords.z, player.coords.level),
@@ -185,6 +188,11 @@ constructor(
                 ServerCacheManager.getStats().values.associate { stat ->
                     val name = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
                     name to player.statMap.getFineXP(name)
+                },
+            levels =
+                ServerCacheManager.getStats().values.associate { stat ->
+                    val name = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
+                    name to player.statMap.getCurrentLevel(name).toInt()
                 },
             vars =
                 player.vars.backing.int2IntEntrySet()
@@ -199,5 +207,6 @@ constructor(
         private const val BANK = "inv.bank"
         private const val HITPOINTS = "stat.hitpoints"
         private const val MIN_HITPOINTS = 10
+        private const val MAX_BOOSTED_LEVEL = 125
     }
 }

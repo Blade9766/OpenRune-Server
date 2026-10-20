@@ -375,6 +375,52 @@ class MeisterTraderTest {
     }
 
     @Test
+    fun `refilling cash counts the coins tied up in his offers`() {
+        h.settings { it.copy(buyChancePercent = 100, sellChancePercent = 0, maxActiveOffers = 1, replenishCash = true) }
+        h.startingCash = 100_000
+        h.start()
+        h.runDecisions(1)
+        h.tick(3)
+        val committed = h.trader.committedCoins()
+        assertTrue(committed > 0, "a bid holds some of his coins")
+
+        h.trader.updateSettings { it.copy(buyingPaused = true) }
+        h.now += MeisterTrader.DAY_MS * 2
+        h.tick(2)
+        assertEquals(100_000L, h.trader.cash + h.trader.committedCoins())
+    }
+
+    @Test
+    fun `a sale the exchange loses in a restart takes back its realized profit`() {
+        h.settings { it.copy(buyChancePercent = 100, sellChancePercent = 0, maxActiveOffers = 1) }
+        h.catalogItems = listOf(MeisterItem(LOGS, "Logs", 100, 1000))
+        h.startingCash = 1_000_000
+        h.start()
+        h.runDecisions(1)
+        h.tick(3)
+        val bid = h.exchange.raw(MeisterTrader.OWNER_ID).single()
+        h.exchange.place(PLAYER, 0, true, LOGS, bid.total, 1)
+        h.tick(6)
+        assertTrue(h.trader.holding(LOGS) > 0, "bought logs at a known cost")
+
+        h.trader.updateSettings { it.copy(buyChancePercent = 0, sellChancePercent = 100, maxSellQuantity = 1000, flipCooldownHours = 0) }
+        h.now += 2 * 60 * 60_000L
+        h.runDecisions(3)
+        h.tick(3)
+        val sale = h.exchange.raw(MeisterTrader.OWNER_ID).single { it.sell }
+        val before = h.trader.realizedProfit()
+        h.autoSaveExchange = false
+        h.exchange.playerBuys(PLAYER, LOGS, sale.total, sale.price)
+        h.tick(5)
+        assertTrue(h.trader.realizedProfit() != before, "the sale was counted")
+
+        h.restart()
+        h.autoSaveExchange = true
+        h.tick(6)
+        assertEquals(before, h.trader.realizedProfit())
+    }
+
+    @Test
     fun `allocation tiers pick the first tier at or above the price`() {
         val tiers = MeisterAllocation.DEFAULT_TIERS
         assertEquals(2_000, MeisterAllocation.countFor(5, tiers))

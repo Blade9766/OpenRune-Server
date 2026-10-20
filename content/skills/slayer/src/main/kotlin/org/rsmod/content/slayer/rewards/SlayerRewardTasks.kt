@@ -4,7 +4,6 @@ import dev.openrune.rscm.RSCM
 import dev.openrune.rscm.RSCMType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
-import org.rsmod.content.slayer.core.MortimerAssignment
 import org.rsmod.content.slayer.core.SlayerTaskManager
 
 internal object SlayerRewardTasks {
@@ -22,19 +21,13 @@ internal object SlayerRewardTasks {
             access.mes("You do not have a Slayer assignment right now.")
             return
         }
-        val master = SlayerTaskManager.getCurrentAssignedMaster(access.player)
-        val cancelCost =
-            if (MortimerAssignment.isMortimer(master)) MortimerAssignment.CANCEL_COST else CANCEL_TASK_COST
-        if (SlayerRewardsPoints.getPoints(access.player) < cancelCost) {
+        if (!SlayerRewardsPoints.cancelTask(access)) {
+            val cancelCost = SlayerRewardsPoints.taskCancelCost(access.player)
             access.mes(
                 "You do not have enough Slayer Points to cancel your task. You need $cancelCost Slayer Points.",
             )
             return
         }
-
-        SlayerRewardsPoints.spendPoints(access.player, cancelCost)
-        SlayerTaskManager.resetTask(access)
-        SlayerRewardsPoints.syncPoints(access)
         access.mes("Your Slayer assignment has been cancelled.")
     }
 
@@ -92,5 +85,4 @@ internal object SlayerRewardTasks {
     private const val CANCEL_COMSUB = CONFIRM_COMSUB_BASE + 1
     private const val BLOCK_COMSUB = CONFIRM_COMSUB_BASE + 2
     private const val EXTEND_ALL_COMSUB = CONFIRM_COMSUB_BASE + 9
-    private const val CANCEL_TASK_COST = 30
 }

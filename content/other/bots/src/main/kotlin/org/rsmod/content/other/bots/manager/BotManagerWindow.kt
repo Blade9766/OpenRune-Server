@@ -48,6 +48,7 @@ import org.rsmod.content.other.bots.meister.MeisterHistoryView
 import org.rsmod.content.other.bots.meister.MeisterItem
 import org.rsmod.content.other.bots.meister.MeisterKnob
 import org.rsmod.content.other.bots.meister.MeisterKnobs
+import org.rsmod.content.other.bots.meister.MeisterRuleMerge
 import org.rsmod.content.other.bots.meister.MeisterRules
 import org.rsmod.content.other.bots.meister.MeisterSettings
 import org.rsmod.content.other.bots.meister.MeisterStatus
@@ -102,7 +103,7 @@ constructor(
     fun closed(player: Player) {
         open.remove(player)
         painters.remove(player)
-        if (states[player]?.picker != null) stopSearch(player)
+        player.runClientScript(SEARCH_RELEASE.asRSCM(RSCMType.CLIENTSCRIPT))
     }
 
     private fun state(player: Player): ManagerState = states.getOrPut(player) { ManagerState() }
@@ -312,7 +313,7 @@ constructor(
                 }
                 is SettingControl.Input ->
                     Control.Toggle(c.label, enabled = usable) { a ->
-                        val number = a.countDialog(c.prompt)
+                        val number = askCount(a, c.prompt)
                         coordinator.updateConfig(id) { c.apply(it, number) }
                     }
             }
@@ -370,7 +371,7 @@ constructor(
                 .sorted()
         val stat = stats.getOrNull(pick(access, "Which skill?", stats.map { it.replaceFirstChar(Char::uppercaseChar) } + "Cancel")) ?: return null
         val skill = stat.replaceFirstChar(Char::uppercaseChar)
-        val level = access.countDialog("New $skill level (1-99):")
+        val level = askCount(access, "New $skill level (1-99):")
         coordinator.editSave(record.id) { BotKit.setLevel(it, "stat.$stat", level) }?.let { return if (level !in 1..99) "levels go from 1 to 99" else it }
         state(access.player).message = "${record.name}'s $skill is now level $level."
         return null
@@ -395,6 +396,17 @@ constructor(
 
     private fun stopSearch(player: Player) {
         player.runClientScript(SEARCH_STOP.asRSCM(RSCMType.CLIENTSCRIPT))
+    }
+
+    /** The picker's search box holds the chat input; give it back before a typed dialog. */
+    private suspend fun askCount(access: ProtectedAccess, prompt: String): Int {
+        stopSearch(access.player)
+        return access.countDialog(prompt)
+    }
+
+    private suspend fun askText(access: ProtectedAccess, prompt: String): String {
+        stopSearch(access.player)
+        return access.stringDialog(prompt)
     }
 
     private class PickEntry(val key: String, val icon: Int?, val name: String, val info: String)
@@ -583,7 +595,7 @@ constructor(
         val picker = state.picker ?: return
         if (picker.mode == PickerMode.Create) {
             if (action != "set") return
-            val typed = access.stringDialog("Name for the new bot (up to 12 letters or digits):").trim()
+            val typed = askText(access, "Name for the new bot (up to 12 letters or digits):").trim()
             if (typed.isNotEmpty()) {
                 val name = typed.split(" ").filter { it.isNotBlank() }.joinToString(" ") { it.replaceFirstChar(Char::uppercaseChar) }
                 if (BotNames.isAcceptable(name)) {
@@ -599,7 +611,7 @@ constructor(
             when (action) {
                 "dec" -> AMOUNT_STEPS.lastOrNull { it < picker.amount } ?: 1
                 "inc" -> AMOUNT_STEPS.firstOrNull { it > picker.amount } ?: picker.amount
-                else -> access.countDialog("How many?").coerceIn(1, Int.MAX_VALUE)
+                else -> askCount(access, "How many?").coerceIn(1, Int.MAX_VALUE)
             }
         state.picker = state.picker?.copy(amount = amount)
         if (action == "set") open(access) else render(access)
@@ -724,17 +736,25 @@ constructor(
         val trader = meister.trader ?: return
         val draft = state.draft ?: return message(access, "Nothing to save.")
         val admin = access.player.displayName
-        val ruleError = if (draft.rules != trader.rules) trader.updateRules(draft.rules) else null
+        val rules =
+            MeisterRuleMerge.merge(draft.baseRules, draft.rules, trader.rules)
+                ?: return message(access, "<col=ff0000>Not saved: another administrator changed the same rules. Discard and redo your changes.")
+        val settingsChanged = merged(draft.settings, draft.baseSettings) != draft.baseSettings
+        val settingsMoved = merged(trader.settings, draft.baseSettings) != draft.baseSettings
+        if (settingsChanged && settingsMoved && merged(draft.settings, trader.settings) != trader.settings) {
+            return message(access, "<col=ff0000>Not saved: another administrator changed the settings. Discard and redo your changes.")
+        }
+        val ruleError = if (rules != trader.rules) trader.updateRules(rules) else null
         if (ruleError != null) return message(access, "<col=ff0000>Not saved: $ruleError")
         val settingsError =
-            if (merged(draft.settings, trader.settings) != trader.settings) {
+            if (settingsChanged && merged(draft.settings, trader.settings) != trader.settings) {
                 meisterCommands.change(admin, trader, "settings and schedule") { merged(draft.settings, it) }
             } else {
                 null
             }
         if (settingsError != null) return message(access, "<col=ff0000>Rules saved, settings not: $settingsError")
         meister.saveNow()
-        meisterCommands.audit(admin, "saved Master Meister's rules (${draft.rules.buy.size} buy, ${draft.rules.sell.size} sell) and settings")
+        meisterCommands.audit(admin, "saved Master Meister's rules (${rules.buy.size} buy, ${rules.sell.size} sell) and settings")
         state.draft = null
         message(access, "<col=00ff00>Saved.</col> New offers follow the saved rules; open offers keep their terms.")
     }
@@ -962,7 +982,7 @@ constructor(
 
     suspend fun searchRules(access: ProtectedAccess) {
         val state = state(access.player)
-        val text = access.stringDialog("Show rules whose item name contains (blank shows all):").trim()
+        val text = askText(access, "Show rules whose item name contains (blank shows all):").trim()
         if (isBuy(state)) {
             state.buySearch = text
             state.buyPage = 0
@@ -985,12 +1005,15 @@ constructor(
         val message =
             if (!exists) {
                 val qty = defaultQuantity(item.guidePrice)
-                editRules(access, trader) {
+                val added = editRules(access, trader) {
                     if (buy) {
                         it.copy(buy = it.buy + BuyRule(item.id, maxPrice = item.guidePrice.coerceAtLeast(1), quantity = qty, maxHoldings = (trader.holding(item.id).toLong() + qty * 10L).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()))
                     } else {
                         it.copy(sell = it.sell + SellRule(item.id, minPrice = item.guidePrice.coerceAtLeast(1), quantity = qty))
                     }
+                }
+                if (!added) {
+                    return state.message ?: "<col=ff0000>Could not add ${item.name}."
                 }
                 "Added ${item.name}; set its prices below, then Save Changes."
             } else {
@@ -1077,7 +1100,7 @@ constructor(
                 4 -> "Coins he may spend on it per day (0 = global limits only):"
                 else -> return
             }
-        val value = access.countDialog(prompt).toLong()
+        val value = askCount(access, prompt).toLong()
         if (value < 0) return open(access)
         val ok =
             editRules(access, trader) { rules ->
@@ -1336,6 +1359,7 @@ constructor(
         val trader = meister.trader
         paint.text("of_title", "Active Offers")
         val offers = trader?.offers().orEmpty().sortedBy { it.slot }
+        state.offerRows = offers.take(OFFER_ROWS).map { it.slot }
         listOf("Item", "Side", "Price", "Filled", "Status").forEachIndexed { i, h -> paint.text("of_h$i", h) }
         paint.button("of_cancelall", "Cancel all...", if (offers.any { it.isOpen }) ButtonState.Normal else ButtonState.Disabled)
         for (r in 0 until OFFER_ROWS) {
@@ -1343,7 +1367,7 @@ constructor(
             val offer = offers.getOrNull(r)
             paint.hide(row, offer == null)
             if (offer == null || trader == null) continue
-            paint.hide("${row}_bg", offer.slot != state.offerSlot)
+            paint.hide("${row}_bg", offer.slot != state.offerSlot || offer.createdAt != state.offerCreatedAt)
             paint.icon("${row}_icon", offer.itemId)
             paint.text("${row}_c0", trader.itemName(offer.itemId))
             paint.text("${row}_c1", if (offer.sell) "<col=00ff00>Sell</col>" else "<col=5fa8ff>Buy</col>")
@@ -1357,7 +1381,7 @@ constructor(
                 }
             paint.text("${row}_c4", status + if (offer.hasCollectable) " (collecting)" else "")
         }
-        val selected = offers.firstOrNull { it.slot == state.offerSlot }
+        val selected = offers.firstOrNull { it.slot == state.offerSlot && it.createdAt == state.offerCreatedAt }
         if (offers.isEmpty()) {
             paint.text("of_sel", if (trader == null) "Master Meister is not running." else "No offers on the exchange right now.")
         } else if (selected == null) {
@@ -1373,8 +1397,10 @@ constructor(
 
     fun selectOffer(access: ProtectedAccess, row: Int) {
         val state = state(access.player)
-        val offer = meister.trader?.offers()?.sortedBy { it.slot }?.getOrNull(row) ?: return
+        val slot = state.offerRows.getOrNull(row) ?: return
+        val offer = meister.trader?.offers()?.firstOrNull { it.slot == slot } ?: return
         state.offerSlot = offer.slot
+        state.offerCreatedAt = offer.createdAt
         render(access)
     }
 
@@ -1382,6 +1408,10 @@ constructor(
         val state = state(access.player)
         val trader = meister.trader ?: return
         val slot = state.offerSlot ?: return
+        if (trader.offers().none { it.slot == slot && it.createdAt == state.offerCreatedAt }) {
+            state.offerSlot = null
+            return message(access, "<col=ff0000>Not cancelled: that offer has changed; select it again.")
+        }
         val error = trader.cancelOffer(slot, replace, "cancelled by ${access.player.displayName} in the Bot Manager")
         meister.saveNow()
         if (error == null) meisterCommands.audit(access.player.displayName, "cancelled Master Meister's offer in slot $slot${if (replace) " to replace it" else ""}")
@@ -1521,7 +1551,7 @@ constructor(
         state.query =
             when (which) {
                 "search" -> {
-                    val text = access.stringDialog("Show fills whose item name contains (blank shows all):").trim()
+                    val text = askText(access, "Show fills whose item name contains (blank shows all):").trim()
                     q.copy(search = text, itemId = null)
                 }
                 "side" -> q.copy(side = HistorySide.entries[(q.side.ordinal + 1) % HistorySide.entries.size])
@@ -1650,6 +1680,7 @@ constructor(
         val pages = pages(rows.size, ROSTER_ROWS)
         val page = clampPage(state.rosterPage, pages).also { state.rosterPage = it }
         val shown = rows.drop(page * ROSTER_ROWS).take(ROSTER_ROWS)
+        state.rosterRows = shown.map { it.record.id }
         for (r in 0 until ROSTER_ROWS) {
             val row = "ro_r$r"
             val view = shown.getOrNull(r)
@@ -1703,15 +1734,14 @@ constructor(
 
     fun selectBot(access: ProtectedAccess, row: Int) {
         val state = state(access.player)
-        val view = rosterRows(state).drop(state.rosterPage * ROSTER_ROWS).getOrNull(row) ?: return
-        state.rosterSelected = view.record.id
+        state.rosterSelected = state.rosterRows.getOrNull(row) ?: return
         render(access)
     }
 
     suspend fun rosterFilter(access: ProtectedAccess, which: String) {
         val state = state(access.player)
         when (which) {
-            "search" -> state.rosterSearch = access.stringDialog("Show bots whose name contains (blank shows all):").trim()
+            "search" -> state.rosterSearch = askText(access, "Show bots whose name contains (blank shows all):").trim()
             "state" -> state.rosterState = RosterStateFilter.entries[(state.rosterState.ordinal + 1) % RosterStateFilter.entries.size]
             "role" -> {
                 val roles = listOf<String?>(null) + (bots.coordinator?.all().orEmpty().map { it.config.role.key }.distinct().sorted())
@@ -1985,6 +2015,7 @@ constructor(
         private val CREATE_LOG = InlineLogger("bots.admin")
         private const val PICK_QUERY_CHARS = 50
         private const val SEARCH_STOP = "clientscript.bm_search_stop"
+        private const val SEARCH_RELEASE = "clientscript.bm_search_release"
         private val AMOUNT_STEPS = listOf(1, 5, 10, 25, 50, 100, 250, 500, 1_000, 2_500, 5_000, 10_000, 25_000, 50_000, 100_000, 1_000_000)
 
         /** Every named, unnoted item, one per name, for the give picker. */
