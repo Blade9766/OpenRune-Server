@@ -87,7 +87,8 @@ home (an admin tool: teleports a stuck bot to its bank and has it start afresh).
   price), price adjustment, minimum price, max deviation, listing timeout, re-list
   retries and price cut, the pause after giving up, the trade data window, minimum
   trades and volume, and the restock batch.
-- **Tools** (the first three need the bot out of the world): set a skill level,
+- **Tools**: **Appearance** (the appearance editor, below; the bot must be in the
+  world), and, out of the world only, set a skill level,
   **Give an item** (the item picker, below), apply the starter kit, clear an error,
   copy its behaviour settings to every other bot of its role, reset its settings
   (keeps what it sells) and view its items. Copy and Reset ask first.
@@ -97,6 +98,19 @@ Click a setting's name for an explanation. Greyed-out settings and buttons do no
 apply to that bot (for example selling at a site with no exchange route) and say
 why when clicked. Every change is saved at once and applies on the bot's next
 decision; nothing waits for a respawn.
+
+**Appearance editor** - Tools > Appearance opens the game's character designer for
+the bot, titled "Bot Appearance: <name>". The bot is held still while it is open, and
+every arrow, gender and pronoun change shows on the bot in the world at once. When the
+bot is within 14 tiles (the client only draws players that close; use **Go to bot**
+first) the camera swings round so the bot stands beside the window, and resets when it
+closes. In fixed mode the window covers the whole view, so use resizable mode. **Randomize** picks a random look for the current
+gender, **Reset** puts back the look it had when the designer opened, **Apply** saves
+the look with the bot so it survives restarts and respawns, and **Cancel** or closing
+the window undoes every change. Only the designer's own style lists are offered, and
+saved looks are checked against them again when the bot spawns. Each opening and
+change is logged on `bots.admin`. A bot nobody has styled keeps its random look
+generated from its id.
 
 **Item picker** - Give an item and Master Meister's **+ Add item** open it inside the
 window. Click the search box and type: matches with icons appear as you type, eight

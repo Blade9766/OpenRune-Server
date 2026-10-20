@@ -30,6 +30,7 @@ import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.stat.statRestore
 import org.rsmod.api.player.stat.statSetLevel
 import org.rsmod.api.script.onCommand
+import org.rsmod.api.script.onIfClose
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.spells.autocast.MagicSpellbookManager
 import org.rsmod.game.cheat.Cheat
@@ -121,18 +122,18 @@ constructor(
 
         for ((key, part) in DESIGN_PARTS) {
             onIfModalButton("component.player_design:${key}_left") {
-                if (isAdmin()) player.stepStyle(part, -1)
+                if (isAdmin()) PlayerDesign.target(player).stepStyle(part, -1)
             }
             onIfModalButton("component.player_design:${key}_right") {
-                if (isAdmin()) player.stepStyle(part, 1)
+                if (isAdmin()) PlayerDesign.target(player).stepStyle(part, 1)
             }
         }
         for ((key, colour) in DESIGN_COLOURS) {
             onIfModalButton("component.player_design:${key}_left") {
-                if (isAdmin()) player.stepColour(colour, -1)
+                if (isAdmin()) PlayerDesign.target(player).stepColour(colour, -1)
             }
             onIfModalButton("component.player_design:${key}_right") {
-                if (isAdmin()) player.stepColour(colour, 1)
+                if (isAdmin()) PlayerDesign.target(player).stepColour(colour, 1)
             }
         }
         onIfModalButton("component.player_design:gender_male") {
@@ -144,16 +145,26 @@ constructor(
         onIfModalButton(PRONOUN_BUTTONS) {
             val pronoun = it.comsub - PRONOUN_ROW_OFFSET
             if (isAdmin() && pronoun in Appearance.PRONOUN_HE..Appearance.PRONOUN_THEY) {
-                player.appearance.pronoun = pronoun
+                PlayerDesign.target(player).appearance.pronoun = pronoun
                 vars[PRONOUN_SETTING] = pronoun
             }
         }
         onIfModalButton("component.player_design:confirm") {
             if (isAdmin()) {
-                ifCloseSub(DESIGN)
-                mes("Appearance updated.")
+                val session = PlayerDesign.session(player)
+                if (session != null) {
+                    PlayerDesign.markConfirmed(player)
+                    session.confirm(this)
+                } else {
+                    ifCloseSub(DESIGN)
+                    mes("Appearance updated.")
+                }
             }
         }
+        onIfModalButton("component.player_design:main") {
+            if (isAdmin()) PlayerDesign.session(player)?.button(this, it.comsub)
+        }
+        onIfClose(DESIGN) { PlayerDesign.end(player) }
     }
 
     private fun ProtectedAccess.isAdmin(): Boolean {
@@ -462,6 +473,7 @@ constructor(
     }
 
     private fun ProtectedAccess.openDesign() {
+        PlayerDesign.end(player)
         ifOpenMainModal(DESIGN)
         for (component in designButtons()) {
             ifSetEvents(component, -1..-1, IfEvent.Op1)
@@ -485,8 +497,9 @@ constructor(
     }
 
     private fun ProtectedAccess.chooseBodyType(bodyType: Int) {
-        if (player.appearance.bodyType != bodyType) {
-            player.setBodyType(bodyType)
+        val target = PlayerDesign.target(player)
+        if (target.appearance.bodyType != bodyType) {
+            target.setBodyType(bodyType)
         }
         vars[DESIGN_BODY_TYPE] = bodyType
     }
@@ -573,7 +586,7 @@ constructor(
      * `Appearance.bodyType` alone flips the flag while the character keeps wearing the old body's
      * models - which reads in-game as the switch having done nothing.
      */
-    private fun Player.setBodyType(bodyType: Int) {
+    internal fun Player.setBodyType(bodyType: Int) {
         appearance.bodyType = bodyType
         val styles = DefaultAppearance.stylesFor(bodyType)
         for (part in AppearancePart.entries) {

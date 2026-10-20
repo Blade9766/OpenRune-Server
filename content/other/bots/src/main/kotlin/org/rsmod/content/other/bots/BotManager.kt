@@ -57,6 +57,8 @@ constructor(
 
     fun telejump(botId: Long, coords: CoordGrid): Boolean = world.telejump(botId, coords)
 
+    fun keepAppearance(botId: Long) = world.keepAppearance(botId)
+
     fun kill(botId: Long): Boolean = world.kill(botId)
 
     fun onBotLoggedOut(player: Player) {

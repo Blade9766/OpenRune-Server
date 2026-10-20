@@ -1,0 +1,22 @@
+[proc,bot_design_button](int $index, int $y, string $label)
+cc_create(player_design:main, ^iftype_rectangle, $index);
+cc_setposition(184, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(112, 26, ^setsize_abs, ^setsize_abs);
+cc_setcolour(0x2b2218);
+cc_setfill(true);
+cc_create(player_design:main, ^iftype_rectangle, calc($index + 1));
+cc_setposition(184, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(112, 26, ^setsize_abs, ^setsize_abs);
+cc_setcolour(0x6a5a3c);
+cc_create(player_design:main, ^iftype_text, calc($index + 2));
+cc_setposition(184, $y, ^setpos_abs_left, ^setpos_abs_top);
+cc_setsize(112, 26, ^setsize_abs, ^setsize_abs);
+cc_settextfont(p12_full);
+cc_settextalign(^settextalign_centre, ^settextalign_centre, 0);
+cc_setcolour(0xff981f);
+cc_settextshadow(true);
+cc_settext($label);
+cc_setop(1, $label);
+cc_setopbase("");
+cc_setonmouseover("cc_colour_swapper(event_com, cc_getid, 16777215)");
+cc_setonmouseleave("cc_colour_swapper(event_com, cc_getid, 16750623)");

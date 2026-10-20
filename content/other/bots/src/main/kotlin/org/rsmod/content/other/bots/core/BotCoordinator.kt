@@ -46,6 +46,7 @@ class BotCoordinator(
     private var nextId = 1L
     private var lastPeriodicSave = 0
     private var lastCycle = 0
+    private val posing = HashSet<Long>()
 
     var settings: BotGlobalSettings = BotGlobalSettings()
         private set
@@ -237,6 +238,26 @@ class BotCoordinator(
         return null
     }
 
+    /**
+     * Holds a live bot still (no decisions, nothing in progress) while an administrator styles it,
+     * so the preview stays in view; releasing it lets it carry on from where it stood.
+     */
+    fun pose(id: Long, hold: Boolean): String? {
+        val bot = live[id] ?: return "the bot is not in the world"
+        if (hold) {
+            posing += id
+            bot.actor.stopActivity()
+        } else {
+            posing -= id
+        }
+        return null
+    }
+
+    /** Has a live bot saved with the next write, after a change to its character (its look). */
+    fun saveSoon(id: Long) {
+        live[id]?.brain?.urgent = true
+    }
+
     /** Drops what a live bot was doing and has it decide afresh, as if it had just logged in. */
     fun restart(id: Long): String? {
         val bot = live[id] ?: return "the bot is not in the world"
@@ -266,7 +287,7 @@ class BotCoordinator(
         reconcileActive(cycle)
         val now = clock()
         for ((id, bot) in live) {
-            if (id in stopping || cycle < bot.nextActionCycle) {
+            if (id in stopping || id in posing || cycle < bot.nextActionCycle) {
                 continue
             }
             bot.nextActionCycle = cycle + bot.brain.record.config.actionIntervalTicks

@@ -9,6 +9,7 @@ import dev.openrune.types.varp.VarpLifetime
 import dev.or2.central.account.Rights
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Collections
 import java.util.IdentityHashMap
 import org.rsmod.annotations.InternalApi
 import org.rsmod.api.config.constants
@@ -50,8 +51,14 @@ constructor(
     private val logger = InlineLogger()
     private val actors = HashMap<Long, PlayerBotActor>()
     private val byPlayer = IdentityHashMap<Player, Long>()
+    private val styled: MutableSet<Player> = Collections.newSetFromMap(IdentityHashMap())
 
     fun botIdOf(player: Player): Long? = byPlayer[player]
+
+    /** From now on [botId]'s current look is saved with it instead of being generated from its id. */
+    fun keepAppearance(botId: Long) {
+        actors[botId]?.player?.let { styled += it }
+    }
 
     fun player(botId: Long): Player? = actors[botId]?.player
 
@@ -81,7 +88,13 @@ constructor(
         player.coords = record.save.coords?.let { CoordGrid(it.x, it.z, it.level) } ?: site.bank.center()
         invMapInit.init(player)
         restore(player, record.save)
-        BotAppearance.randomize(player, record.id)
+        val saved = record.save.appearance
+        if (saved != null) {
+            BotAppearance.apply(player, saved)
+            styled += player
+        } else {
+            BotAppearance.randomize(player, record.id)
+        }
         player.runEnergy = constants.run_max_energy
         player.slotId = slot
         sessions.attach(player)
@@ -109,6 +122,7 @@ constructor(
         byPlayer.remove(actor.player)
         val save = toSave(actor.player)
         val player = actor.player
+        styled -= player
         if (player.slotId != -1 && !player.loggingOut) {
             eventBus.publish(SessionStateEvent.Logout(player))
             playerRegistry.del(player)
@@ -194,6 +208,7 @@ constructor(
                     val name = RSCM.getReverseMapping(RSCMType.STAT, stat.id)
                     name to player.statMap.getCurrentLevel(name).toInt()
                 },
+            appearance = if (player in styled) BotAppearance.snapshot(player) else null,
             vars =
                 player.vars.backing.int2IntEntrySet()
                     .filter { it.intValue != 0 && ServerCacheManager.getVarp(it.intKey)?.scope == VarpLifetime.Perm }

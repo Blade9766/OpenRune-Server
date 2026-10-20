@@ -13,3 +13,5 @@
 45836	[clientscript,bm_search_stop]
 45839	[proc,bm_search_idle]
 45842	[clientscript,bm_search_release]
+45845	[clientscript,bot_design_init]
+45848	[proc,bot_design_button]

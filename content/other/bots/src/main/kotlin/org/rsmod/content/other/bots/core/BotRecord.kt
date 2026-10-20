@@ -4,6 +4,14 @@ data class SavedObj(val slot: Int, val id: Int, val count: Int, val vars: Int = 
 
 data class SavedCoords(val x: Int, val z: Int, val level: Int = 0)
 
+/** A bot's chosen look: body type, pronoun, ident-kit style per slot and colour per area. */
+data class SavedAppearance(
+    val bodyType: Int = 0,
+    val pronoun: Int = 0,
+    val kits: List<Int> = emptyList(),
+    val colours: List<Int> = emptyList(),
+)
+
 /** Everything about the bot's character that must survive a restart. */
 data class BotSave(
     val coords: SavedCoords? = null,
@@ -16,6 +24,8 @@ data class BotSave(
     val levels: Map<String, Int> = emptyMap(),
     /** Non-zero permanent varps (quest stages, slayer task) by varp id. */
     val vars: Map<Int, Int> = emptyMap(),
+    /** Set once an administrator styles the bot; until then its look is generated from its id. */
+    val appearance: SavedAppearance? = null,
 )
 
 data class BotStats(

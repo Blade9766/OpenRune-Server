@@ -94,6 +94,7 @@ constructor(
 ) {
     var windows: BotWindows? = null
     private val meisterCommands = MeisterCommands(meister)
+    private val appearance = BotAppearanceEditor(bots) { access -> open(access, Section.BotTools) }
     private val states = WeakHashMap<Player, ManagerState>()
     private val painters = WeakHashMap<Player, Painter>()
     private val open = WeakHashMap<Player, Boolean>()
@@ -327,6 +328,15 @@ constructor(
         val others = coordinator.all().filter { it.id != id && it.config.role == record.config.role }
         val role = record.config.role.key
         return listOf(
+            KnobRow(
+                "Appearance",
+                if (live) "edit live" else "<col=9f9f9f>in the world only",
+                "Opens the character designer for this bot. Changes show on the bot in the world while you edit; Apply saves the look.${if (live) "" else " <col=ff0000>Enable it first so the preview has a bot to show on.</col>"}",
+                Control.Toggle("Edit...", enabled = live) { a ->
+                    appearance.open(a, id)?.let { return@Toggle it }
+                    LEFT_WINDOW
+                },
+            ),
             KnobRow("Skill level", if (live) "<col=9f9f9f>in the world" else "out of the world", "Set one of its skills to a level from 1 to 99.$outOfWorld", Control.Toggle("Set...", enabled = !live) { a -> setLevel(a, coordinator, record) }),
             KnobRow("Give an item", if (live) "<col=9f9f9f>in the world" else "out of the world", "Put an item in its inventory, worn slots or bank.$outOfWorld", Control.Toggle("Give...", enabled = !live) { a ->
                 openPicker(a, PickerMode.Give(id))
