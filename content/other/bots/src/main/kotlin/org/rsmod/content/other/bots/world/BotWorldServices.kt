@@ -99,20 +99,29 @@ constructor(
     }
 
     /**
-     * Clicks [op] on the loc named [name] nearest [at] (a ladder or trapdoor), or "Open" on it when
-     * it is closed and has no [op] yet.
+     * Clicks [op] on the loc named [name] nearest [at] (a ladder, trapdoor or obstacle), or "Open"
+     * on it when it is closed and has no [op] yet. Names and ops are read from the variant [player]
+     * sees, so multilocs such as Shilo Village's broken cart match too.
      */
     fun climb(player: Player, at: CoordGrid, name: String, op: String): Boolean {
-        val candidates = findLocs(at, CLIMB_RADIUS) { it.name.equals(name, ignoreCase = true) }
+        val candidates =
+            findLocs(at, CLIMB_RADIUS) { true }
+                .map { (loc, type) -> Triple(loc, type, visibleType(player, loc, type)) }
+                .filter { (_, _, seen) -> seen.name.equals(name, ignoreCase = true) }
         for (action in listOf(op, "Open")) {
-            val (loc, type) =
+            val (loc, type, seen) =
                 candidates
-                    .filter { (_, type) -> namedOp(type, action) != null }
-                    .minByOrNull { (loc, _) -> loc.coords.chebyshevDistance(at) }
+                    .filter { (_, _, seen) -> namedOp(seen, action) != null }
+                    .minByOrNull { (loc, _, _) -> loc.coords.chebyshevDistance(at) }
                     ?: continue
-            return opLoc(player, loc, type, namedOp(type, action)!!)
+            return opLoc(player, loc, type, namedOp(seen, action)!!)
         }
         return false
+    }
+
+    private fun visibleType(player: Player, loc: LocInfo, type: ObjectServerType): ObjectServerType {
+        val multi = locInteractions.multiLoc(BoundLocInfo(loc, type), type, player.vars) ?: return type
+        return ServerCacheManager.getObject(multi.id) ?: type
     }
 
     private fun openOp(type: ObjectServerType): InteractionOp? = namedOp(type, "Open")

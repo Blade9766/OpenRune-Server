@@ -467,6 +467,15 @@ object AgilityShortcuts {
                 move = crawl,
             ),
             AgilityShortcut(
+                name = "Rocks",
+                level = 79,
+                xp = 0.0,
+                locs = listOf("loc.shortcut_shilo_rocks_top", "loc.shortcut_shilo_rocks_bottom"),
+                sideA = tile(2871, 3003),
+                sideB = tile(2871, 3008),
+                move = scramble,
+            ),
+            AgilityShortcut(
                 name = "Strange floor",
                 level = 80,
                 xp = 12.5,

@@ -294,6 +294,7 @@ return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
 | `draynor_slayer` | slayer (Spria) | Draynor | bones, cowhides | walking |
 | `edgeville_dungeon_slayer` | slayer (Vannaka) | Edgeville | big bones, limpwurt roots | walking |
 | `chaos_altar` | runecrafting (35) | Edgeville | chaos runes | walking |
+| `nature_altar` | runecrafting (44, Agility 79) | Shilo Village | nature runes | teleport |
 | `taverley_blue_dragons` | combat (75, Agility 70) | Falador West | dragon bones, ensouled dragon heads | teleport |
 | `wilderness_green_dragons` | combat (70) | Edgeville | dragon bones, ensouled dragon heads | walking |
 | `edgeville_dungeon_druids` | combat (40) | Edgeville | ensouled chaos druid heads, bones | walking |
@@ -308,11 +309,11 @@ Runecrafting sites other than `earth_altar` start with 1,000 pure essence in the
 bank and then buy essence on the exchange; run a `varrock_essence_mine` bot to
 keep essence listed for them. `chaos_altar` walks from Edgeville over the
 Wilderness ditch to the ruins in the level 9 Wilderness, where other players can
-attack it. These altars have no site:
+attack it. `nature_altar` banks in Shilo Village, walks out of the village's
+open north-west side and climbs the Agility 79 rocks shortcut up to the ruins
+(its kit gives the Agility).
+These altars have no site:
 
-- **Nature**: Shilo Village bank is the only one in reach, and its gatehouse has
-  permanent aggressive Undead ones (level 68-73, spawned in `karamja.toml`) that
-  kill a runecrafter on the way out; in OSRS they are gone once the quest is done.
 - **Law**: Entrana has no bank, and the Port Sarim monks' boat is a dialogue,
   which bots cannot answer.
 - **Death**: the only way in is the Temple of Light puzzle under the Mourner
@@ -435,9 +436,11 @@ so a bot walking the route in either direction climbs back the way it came:
 resource_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3100, z = 9852 }]
 ```
 
-Obstacles you cross on the same level (the Wilderness ditch, an agility pipe) work
+Obstacles you cross on the same level (the Wilderness ditch, agility pipes and rocks)
+work
 the same way: two consecutive waypoints with the same `climb` name, one on each
-side, make the bot click it instead of walking, and it carries on once it is
+side, make the bot click it instead of walking (names and options are those the
+player sees, so multilocs work), and it carries on once it is
 closer to the far tile than the near one:
 
 ```toml

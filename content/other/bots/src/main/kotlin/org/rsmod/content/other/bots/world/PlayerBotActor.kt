@@ -124,7 +124,7 @@ class PlayerBotActor(
             world.walkTo(player, plan.first())
         }
         climbing?.let { return climb(it) }
-        while (plan.isNotEmpty() && player.coords.chebyshevDistance(plan.first()) <= reachDistance(plan.first())) {
+        while (plan.isNotEmpty() && routeDistance(player.coords, plan.first()) <= reachDistance(plan.first())) {
             val reached = plan.removeFirst()
             val next = plan.firstOrNull() ?: break
             val climb = climbs[reached]
@@ -210,6 +210,10 @@ class PlayerBotActor(
             player.coords.chebyshevDistance(next) < player.coords.chebyshevDistance(pending.from)
     }
 
+    /** Waypoints on another level (a watchtower walkway above the path) are never "near". */
+    private fun routeDistance(a: CoordGrid, b: CoordGrid): Int =
+        if (a.level == b.level) a.chebyshevDistance(b) else OTHER_LEVEL_DISTANCE
+
     private fun walkable(from: CoordGrid, to: CoordGrid): Boolean =
         from.level == to.level && from.chebyshevDistance(to) <= OFF_SITE_DISTANCE
 
@@ -260,8 +264,8 @@ class PlayerBotActor(
             return
         }
         val chain = chainTo(destination) ?: return
-        val nearest = chain.indices.minByOrNull { chain[it].chebyshevDistance(player.coords) } ?: return
-        if (chain[nearest].chebyshevDistance(player.coords) > REJOIN_DISTANCE &&
+        val nearest = chain.indices.minByOrNull { routeDistance(chain[it], player.coords) } ?: return
+        if (routeDistance(chain[nearest], player.coords) > REJOIN_DISTANCE &&
             !site.bank.contains(player.coords)
         ) {
             val (back, index) = wayBack() ?: (emptyList<CoordGrid>() to -1)
@@ -310,17 +314,17 @@ class PlayerBotActor(
      */
     private fun wayBack(): Pair<List<CoordGrid>, Int>? {
         val leaving =
-            arrivedVia?.takeIf { it.size > 1 && it.last().chebyshevDistance(player.coords) <= LEAVE_DISTANCE }
+            arrivedVia?.takeIf { it.size > 1 && routeDistance(it.last(), player.coords) <= LEAVE_DISTANCE }
                 ?: huntChains()
-                    .filter { it.size > 1 && it.last().chebyshevDistance(player.coords) <= LEAVE_DISTANCE }
-                    .minByOrNull { it.last().chebyshevDistance(player.coords) }
+                    .filter { it.size > 1 && routeDistance(it.last(), player.coords) <= LEAVE_DISTANCE }
+                    .minByOrNull { routeDistance(it.last(), player.coords) }
         return leaving?.let { it to it.lastIndex } ?: nearestChainPoint(allChains())
     }
 
     private fun nearestChainPoint(chains: List<List<CoordGrid>>): Pair<List<CoordGrid>, Int>? =
         chains
             .flatMap { chain -> chain.indices.map { chain to it } }
-            .minByOrNull { (chain, i) -> chain[i].chebyshevDistance(player.coords) }
+            .minByOrNull { (chain, i) -> routeDistance(chain[i], player.coords) }
 
     /**
      * A stray bot rides a wayfinder mage back towards its site; if no mage or destination works
@@ -564,6 +568,7 @@ class PlayerBotActor(
         private const val CLIMB_DONE = 20
         private const val CLIMB_REACHED = 1
         private const val MAX_CLIMB_CLICKS = 10
+        private const val OTHER_LEVEL_DISTANCE = 10_000
     }
 }
 
