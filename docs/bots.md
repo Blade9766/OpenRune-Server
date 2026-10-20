@@ -340,10 +340,11 @@ These altars have no site:
   tunnels.
 - **Wrath**: the ruins are in the Myths' Guild basement; Dragon Slayer II and the
   guild are not implemented.
-- **Soul**: the Arceuus soul altar takes dark essence fragments from dense
-  essence blocks, which are not implemented, and has no ruins or tiara for
-  `RunecraftingBehaviour`.
-- **Blood** and **astral**: the same story (Arceuus dark essence, Lunar Isle).
+- **Soul** and **blood** (Arceuus): the dense essence chain works for players
+  (see [arceuus-runecrafting.md](arceuus-runecrafting.md)), but these open-air
+  altars have no ruins or tiara and no bank in the loop, so `RunecraftingBehaviour`
+  cannot run them yet.
+- **Astral**: Lunar Isle is not reachable for bots.
 
 Every site can carry a starter kit, applied when a bot is created there and by
 `::bot kit` / Manage > Apply starter kit. It only tops up: items already there

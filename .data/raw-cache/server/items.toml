@@ -53536,3 +53536,8 @@ contentGroup = "content.slayer_helmet"
 id = "obj.pvpa_slayer_helm_i_hooded"
 inherit = "obj.pvpa_slayer_helm_i_hooded"
 contentGroup = "content.slayer_helmet"
+
+[[item]]
+id = "obj.bigblankrune"
+inherit = "obj.bigblankrune"
+stacks = "always"
