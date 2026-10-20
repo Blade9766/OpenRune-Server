@@ -242,7 +242,7 @@ constructor(
 
     /**
      * Clicks Home Teleport in the spellbook, as an `If3Button` packet would: the spell script
-     * applies its own checks, animation, delay and destination.
+     * applies its own checks, 30-minute cooldown, interruptible cast and destination.
      */
     fun castHomeTeleport(player: Player): Boolean {
         val obj = runCatching { ServerCacheManager.getItem(HOME_TELEPORT.asRSCM(RSCMType.OBJ)) }.getOrNull() ?: return false

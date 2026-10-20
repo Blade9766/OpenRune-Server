@@ -36,6 +36,8 @@ class FakeActor(
     var stopped = 0
     var acting = false
     var gatherCalls = 0
+    var exchangeHold: String? = null
+    var waitingOn: BotDestination? = null
 
     private var travelling: BotDestination? = null
     private var travelProgress = 0
@@ -58,7 +60,12 @@ class FakeActor(
 
     override fun needsRest(): Boolean = hitpointsPercent < 90
 
+    override fun exchangeTripHold(): String? = exchangeHold
+
     override fun travel(destination: BotDestination): TravelStatus {
+        if (destination == waitingOn) {
+            return TravelStatus.Waiting("waiting to travel to ${destination.name}")
+        }
         if (destination in blocked) {
             return TravelStatus.Blocked("path to ${destination.name} is blocked")
         }

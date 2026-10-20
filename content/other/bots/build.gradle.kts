@@ -13,6 +13,7 @@ dependencies {
     implementation(projects.content.other.cheatMenu)
     implementation(projects.content.other.grandExchange)
     implementation(projects.content.quest)
+    implementation(projects.content.skills.magic.spellTeleports)
     implementation(projects.content.skills.mining)
     implementation(projects.content.skills.slayer)
     implementation(projects.content.skills.smithing)

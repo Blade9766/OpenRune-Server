@@ -16,6 +16,7 @@ import org.rsmod.api.invtx.invTransaction
 import org.rsmod.api.invtx.select
 import org.rsmod.api.player.hook.PlayerTeleportValidator
 import org.rsmod.api.player.hook.TeleportType
+import org.rsmod.api.player.isInCombat
 import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.output.clearMapFlag
 import org.rsmod.api.player.output.mes
@@ -46,6 +47,9 @@ constructor(
         }
         onPlayerQueueWithArgs<PendingSpellTeleport>(TeleportQueue) {
             processQueuedTeleport(it.args)
+        }
+        onPlayerQueueWithArgs<HomeTeleportCast>(HomeTeleportCooldown.CAST_QUEUE) {
+            continueHomeTeleport(it.args)
         }
     }
 
@@ -87,6 +91,11 @@ constructor(
             return
         }
 
+        if (teleport.home) {
+            startHomeTeleport(destination)
+            return
+        }
+
         if (!consumeRequirements(spell, teleport)) {
             return
         }
@@ -110,6 +119,48 @@ constructor(
         val endAnim = task.teleport.style.endAnim
         if (endAnim != null) anim(endAnim) else resetAnim()
         statAdvance("stat.magic", spell.castXp)
+    }
+
+    /**
+     * Home teleports take a 24-tick cast in five stages, each a weak queue, so walking, clicking
+     * anything else or being attacked cancels it before the shared cooldown is spent.
+     */
+    private fun ProtectedAccess.startHomeTeleport(destination: CoordGrid) {
+        if (player.isInCombat() ||
+            (player.preventLogoutMessage == null && mapClock <= player.preventLogoutUntil)
+        ) {
+            mes("You can't use this teleport after being in combat recently.")
+            return
+        }
+        val minutes = HomeTeleportCooldown.minutesLeft(player)
+        if (minutes > 0) {
+            mes(HomeTeleportCooldown.message(minutes))
+            return
+        }
+        clearWeakQueue(HomeTeleportCooldown.CAST_QUEUE)
+        continueHomeTeleport(HomeTeleportCast(destination.packed, stage = 0))
+    }
+
+    private fun ProtectedAccess.continueHomeTeleport(cast: HomeTeleportCast) {
+        val stage = HomeTeleportStage.entries.getOrNull(cast.stage)
+        if (stage == null) {
+            finishHomeTeleport(CoordGrid(cast.destination))
+            return
+        }
+        anim(stage.anim)
+        spotanim(stage.spotanim)
+        stage.sound?.let(::soundSynth)
+        weakQueue(HomeTeleportCooldown.CAST_QUEUE, stage.ticks, cast.copy(stage = cast.stage + 1))
+    }
+
+    private fun ProtectedAccess.finishHomeTeleport(destination: CoordGrid) {
+        if (!canTeleport()) {
+            resetAnim()
+            return
+        }
+        HomeTeleportCooldown.recordCast(player)
+        telejump(destination)
+        resetAnim()
     }
 
     private fun ProtectedAccess.arrive(task: PendingSpellTeleport) {
@@ -195,10 +246,12 @@ constructor(
         val lockedMessage: String = "You need to complete the required quest to cast this spell.",
         val missingDestinationMessage: String = "That teleport is not implemented yet.",
         val style: TeleportStyle = TeleportStyle.Standard,
+        val home: Boolean = false,
     ) {
         Home(
             "obj.48_home_teleport",
-            CoordGrid(3222, 3222, 0),
+            CoordGrid(3221, 3218, 0),
+            home = true,
         ),
         Varrock(
             "obj.25_varrock_teleport",
@@ -272,7 +325,7 @@ constructor(
             lockedMessage = "You need to complete Pandemonium to cast this spell.",
             missingDestinationMessage = "Boat teleports need boat-location support before they can be cast.",
         ),
-        EdgevilleHome("obj.01_zaros_home_tele", CoordGrid(3087, 3496, 0), style = TeleportStyle.Ancient),
+        EdgevilleHome("obj.01_zaros_home_tele", CoordGrid(3087, 3496, 0), home = true),
         Paddewwa("obj.54_paddewwa_teleport", style = TeleportStyle.Ancient),
         Senntisten("obj.60_senntisten_teleport", style = TeleportStyle.Ancient),
         Kharyrll("obj.66_kharyllyl_teleport", style = TeleportStyle.Ancient),
@@ -284,7 +337,7 @@ constructor(
         ArceuusHome(
             "obj.deadman_level99_lamp",
             CoordGrid(1699, 3879, 0),
-            style = TeleportStyle.Arceuus,
+            home = true,
         ),
         ArceuusLibrary("obj.br_mithril_platebody", style = TeleportStyle.Arceuus),
         DraynorManor("obj.br_mithril_platelegs", style = TeleportStyle.Arceuus),
@@ -366,6 +419,21 @@ constructor(
         val destinationLevel: Int? = null,
         val missingDestinationMessage: String = "That teleport is not implemented yet.",
     )
+
+    private data class HomeTeleportCast(val destination: Int, val stage: Int)
+
+    private enum class HomeTeleportStage(
+        val anim: String,
+        val spotanim: String,
+        val sound: String?,
+        val ticks: Int,
+    ) {
+        DrawCircle("seq.aide_drawing_chalk_circle", "spotanim.aide_chalk_circle", "synth.aide_teleport_chalk", 8),
+        SitDown("seq.aide_sitting_down_crosslegged", "spotanim.aide_chalk_circle_static", "synth.aide_teleport_sitdown", 3),
+        TakeBook("seq.aide_player_getting_book", "spotanim.aide_player_book_get", "synth.aide_teleport_book", 4),
+        Recite("seq.aide_reciting_incantation", "spotanim.aide_player_book_portal", "synth.aide_teleport_portal", 7),
+        Vanish("seq.aide_player_teleporting", "spotanim.aide_player_teleport", null, 3),
+    }
 
     private enum class TeleportStyle(
         val startAnim: String,

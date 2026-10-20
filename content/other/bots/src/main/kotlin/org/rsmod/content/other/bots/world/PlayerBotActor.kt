@@ -25,6 +25,7 @@ import org.rsmod.content.other.bots.core.GatherStatus
 import org.rsmod.content.other.bots.core.SupplyLoads
 import org.rsmod.content.other.bots.core.SupplyOutcome
 import org.rsmod.content.other.bots.core.TravelStatus
+import org.rsmod.content.skills.magic.spell.teleports.HomeTeleportCooldown
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.Inventory
 import org.rsmod.game.movement.MoveSpeed
@@ -73,7 +74,8 @@ class PlayerBotActor(
     /** The destination an exchange trip is riding to; kept until it lands, wherever a Home Teleport puts it. */
     private var tripGoal: String? = null
     private var homeTeleports = 0
-    private var homeCastTicks = 0
+    private var homeWait: String? = null
+    private var homeWaitTicks = 0
 
     override val inventoryUsed: Int
         get() = player.inv.occupiedSpace()
@@ -163,6 +165,9 @@ class PlayerBotActor(
     private fun hurtBelow(percent: Int): Boolean = player.hitpoints * 100 < player.baseHitpointsLvl * percent
 
     override fun travel(destination: BotDestination): TravelStatus {
+        if (HomeTeleportCooldown.isCasting(player)) {
+            return TravelStatus.Moving
+        }
         pace()
         if (behaviour.escape(player, destination)) {
             return TravelStatus.Moving
@@ -355,9 +360,7 @@ class PlayerBotActor(
         if (!site.exchangeByWayfinder) {
             return null
         }
-        val exchange = site.exchange.center()
-        val nearExchange =
-            player.coords.level == exchange.level && player.coords.chebyshevDistance(exchange) <= EXCHANGE_RANGE
+        val nearExchange = nearExchange()
         val wanted = if (destination == BotDestination.Exchange) EXCHANGE_DESTINATION else site.wayfinder
         if (tripGoal != wanted) {
             tripGoal = null
@@ -378,19 +381,35 @@ class PlayerBotActor(
         return status ?: TravelStatus.Blocked("no wayfinder or Home Teleport gets it to $goal")
     }
 
+    private fun nearExchange(): Boolean {
+        val exchange = site.exchange.center()
+        return player.coords.level == exchange.level && player.coords.chebyshevDistance(exchange) <= EXCHANGE_RANGE
+    }
+
+    /** A far site's exchange trip needs Home Teleport unless a mage is in reach; it waits for the recharge at work. */
+    override fun exchangeTripHold(): String? {
+        if (!site.exchangeByWayfinder || tripGoal != null || nearExchange() || wayfinder.mageInReach()) {
+            return null
+        }
+        val minutes = HomeTeleportCooldown.minutesLeft(player)
+        return if (minutes > 0) "Home Teleport recharges in $minutes min" else null
+    }
+
     /**
      * Rides a wayfinder mage to [goal] (the site's own destination when null). With no mage in
-     * reach the bot casts Home Teleport to Lumbridge, where Elowen stands, and tries again; null
-     * once that has not helped either.
+     * reach the bot casts Home Teleport to Lumbridge, where Elowen stands, waiting out its cooldown
+     * first, and tries again; null once that has not helped either.
      */
     private fun ride(goal: String?): TravelStatus? {
         if (goal != wayfinderGoal) {
             endWayfinderTrip()
             wayfinderGoal = goal
         }
-        if (homeCastTicks > 0) {
-            homeCastTicks--
-            return TravelStatus.Moving
+        homeWait?.let { reason ->
+            if (--homeWaitTicks > 0) {
+                return TravelStatus.Waiting(reason)
+            }
+            homeWait = null
         }
         when (val step = wayfinder.tick(goal)) {
             BotWayfinder.Step.Moving -> return TravelStatus.Moving
@@ -404,6 +423,13 @@ class PlayerBotActor(
                     endWayfinderTrip()
                     return null
                 }
+                val minutes = HomeTeleportCooldown.minutesLeft(player)
+                if (minutes > 0) {
+                    wayfinder.reset()
+                    homeWait = "Waiting $minutes min for Home Teleport (${step.reason})"
+                    homeWaitTicks = HOME_WAIT_RECHECK_TICKS
+                    return TravelStatus.Waiting(homeWait!!)
+                }
                 homeTeleports++
                 wayfinder.reset()
                 if (!world.castHomeTeleport(player)) {
@@ -412,7 +438,6 @@ class PlayerBotActor(
                     return null
                 }
                 logger.info { "Bot ${player.displayName}: ${step.reason}; casting Home Teleport." }
-                homeCastTicks = HOME_CAST_TICKS
                 return TravelStatus.Moving
             }
         }
@@ -422,7 +447,8 @@ class PlayerBotActor(
         wayfinder.reset()
         wayfinderGoal = null
         homeTeleports = 0
-        homeCastTicks = 0
+        homeWait = null
+        homeWaitTicks = 0
     }
 
     private fun arrive(destination: BotDestination) {
@@ -766,7 +792,7 @@ class PlayerBotActor(
         private const val EXCHANGE_RANGE = 30
         private const val EXCHANGE_DESTINATION = "grand_exchange"
         private const val MAX_HOME_TELEPORTS = 2
-        private const val HOME_CAST_TICKS = 8
+        private const val HOME_WAIT_RECHECK_TICKS = 50
         private const val FLEE_PERCENT = 50
         private const val RUN_ENERGY_ON = 5000
         private const val RUN_ENERGY_OFF = 1500

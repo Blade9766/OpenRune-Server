@@ -107,7 +107,7 @@ to retire a destination. No dialogue, interface or bot code changes are needed.
 ## Bots
 
 A bot more than 64 tiles from its site (after a death respawn in Lumbridge, say) used to telejump
-straight to its bank. Now it first walks to the nearest wayfinder within 64 tiles, asks for a
+straight to its bank. Now it first walks to the nearest wayfinder within 96 tiles, asks for a
 destination by key through the same `WayfinderTravel` service (bots never click the interface),
 and walks its normal route from where it lands. The destination is the site's `wayfinder` key in
 `bot-sites.toml` if set, else the bot-allowed destination nearest the site's bank that lands within

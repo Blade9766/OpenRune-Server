@@ -269,7 +269,7 @@ Bots never use free or admin teleports at work. Sites too far to walk to the
 exchange (Catherby, Ardougne, Al Kharid, Zanaris, Shilo Village, Taverley Dungeon)
 set `exchange_by_wayfinder` and travel like a player: with no wayfinder mage in
 reach the bot casts the normal Home Teleport (the spellbook button, so the spell's
-own checks, animation and delay apply) to Lumbridge, asks Arcanist Elowen for the
+own checks, 30-minute cooldown and interruptible 24-tick cast apply) to Lumbridge, asks Arcanist Elowen for the
 Grand Exchange, lists its items, walks to Archmage Vaelor at Edgeville and asks for
 the site's `wayfinder` destination, then walks `return_route` (a bank-relative chain
 ending where that destination lands) home. Their `exchange_route` is just the
@@ -874,7 +874,8 @@ filled, cancelled, collected or rolled back, and every allocation.
   as was the `draynor_slayer` exchange route.
 - A bot more than 64 tiles from its bank and every route point (after a death respawn
   or any teleport) rides a wayfinder mage back towards its site (see `wayfinder.md`): it
-  walks to the nearest Vaelor or Elowen within 64 tiles and asks for the site's `wayfinder`
+  walks to the nearest Vaelor or Elowen within 96 tiles (far enough to walk from the Grand
+  Exchange to Edgeville) and asks for the site's `wayfinder`
   destination key, or the bot-allowed destination nearest its bank. With no mage in reach it
   casts Home Teleport to Lumbridge and tries again. If that does not get it to a mage either,
   travel fails ("stranded") and the bot ends in `ERROR`; it is never placed anywhere.
@@ -882,8 +883,12 @@ filled, cancelled, collected or rolled back, and every allocation.
   lands in its inventory, and it puts it back on before going back to work. Worn kit gear
   it lost (an anti-dragon shield) is fetched from its bank if it has a spare there;
   otherwise the bot goes to `ERROR` instead of going back to die again.
-- On this server Home Teleport has no 30-minute cooldown or long cast (players get the
-  same spell), so a bot never waits for it.
+- Home Teleport works as in OSRS for bots and players alike: a 24-tick cast that any click
+  cancels, then a 30-minute cooldown shared by every spellbook's home teleport
+  (`varp.aide_tele_timer`). A bot does nothing else while casting. While it recharges, a far
+  site's bot with no mage in reach keeps gathering and banking its loot ("Home Teleport
+  recharges in N min"), and starts the exchange trip once it is ready; a bot that already
+  needs it (stranded, or mid-trip) waits where it is without counting it as a travel failure.
 - Bots are restored with at least 10 Hitpoints.
 - Bots are visible through the session-less player-info avatar
   (`BotSessions`) that castle-wars bots also use.

@@ -59,6 +59,9 @@ class BotWayfinder(
         rejected.clear()
     }
 
+    /** True when a wayfinder mage stands within reach, so no Home Teleport is needed. */
+    fun mageInReach(): Boolean = chooseMage() != null
+
     /** Advances the trip to [goal], a destination key, or to the site's own destination when null. */
     fun tick(goal: String? = null): Step {
         engaged = true
@@ -77,7 +80,7 @@ class BotWayfinder(
             return begin()
         }
         if (player.coords == lastCoords && phaseTicks % REROUTE_TICKS == 0) {
-            player.routeRequest = RouteRequestPathingEntity(target.avatar)
+            approach(target)
         }
         lastCoords = player.coords
         return Step.Moving
@@ -93,10 +96,18 @@ class BotWayfinder(
         destination = chosen
         mage = found
         phaseTicks = 0
-        world.walkTo(player, found.coords)
-        player.routeRequest = RouteRequestPathingEntity(found.avatar)
+        approach(found)
         logger.info { "Bot ${player.displayName} heading to ${WayfinderMages.name(found)} for ${chosen.key}." }
         return Step.Moving
+    }
+
+    /** The pathfinder only searches 64 tiles around the walker, so a farther mage is walked to in hops. */
+    private fun approach(target: Npc) {
+        if (player.coords.chebyshevDistance(target.coords) > WALK_HOP) {
+            world.walkTo(player, hopToward(player.coords, target.coords))
+        } else {
+            player.routeRequest = RouteRequestPathingEntity(target.avatar)
+        }
     }
 
     private fun request(target: Npc): Step {
@@ -166,12 +177,26 @@ class BotWayfinder(
         private val logger = InlineLogger("bots")
 
         private const val MAX_ATTEMPTS = 3
-        private const val WALK_BUDGET = 120
+        private const val WALK_BUDGET = 200
+        private const val WALK_HOP = 48
         private const val CAST_BUDGET = 20
         private const val REQUEST_DISTANCE = 2
         private const val REROUTE_TICKS = 5
-        private const val MAGE_SEARCH_RADIUS = 64
+
+        /** Far enough to walk from the Grand Exchange to Vaelor at Edgeville rather than spend a Home Teleport. */
+        private const val MAGE_SEARCH_RADIUS = 96
         private const val ARRIVAL_RANGE = 40
+
+        /** The tile [maxHop] tiles from [from] on the straight line to [to], or [to] when it is closer. */
+        fun hopToward(from: CoordGrid, to: CoordGrid, maxHop: Int = WALK_HOP): CoordGrid {
+            val distance = from.chebyshevDistance(to)
+            if (distance <= maxHop) {
+                return to
+            }
+            val x = from.x + (to.x - from.x) * maxHop / distance
+            val z = from.z + (to.z - from.z) * maxHop / distance
+            return CoordGrid(x, z, from.level)
+        }
 
         /**
          * The site's [configured] destination, else the bot-allowed one closest to [bank] that

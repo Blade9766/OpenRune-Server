@@ -184,6 +184,10 @@ class BotBrain(
                     fail("timed out travelling to ${target.name.lowercase()}", cycle, now)
                 }
             is TravelStatus.Blocked -> fail(status.reason, cycle, now)
+            is TravelStatus.Waiting -> {
+                stateCycle = cycle
+                setActivity(status.reason)
+            }
         }
     }
 
@@ -299,6 +303,7 @@ class BotBrain(
             transition(BotState.PrepareSale, cycle, "Sale threshold reached")
             return
         }
+        heldSale()?.let { remember("Sale waits: $it") }
         if (!restock(now, cycle)) {
             return
         }
@@ -409,6 +414,7 @@ class BotBrain(
         if (!exchange.available || !storeHealthy() || record.pendingListing != null) {
             return "$NO_SUPPLIES; the exchange is unavailable"
         }
+        actor.exchangeTripHold()?.let { return "$NO_SUPPLIES; $it" }
         if (exchange.offers(owner).any { !it.sell && it.itemId in supplies }) {
             return "Waiting for the supply buy offer to fill"
         }
@@ -931,8 +937,14 @@ class BotBrain(
         return ordered.distinct().mapNotNull(items)
     }
 
+    private fun heldSale(): String? =
+        actor.exchangeTripHold()?.takeIf {
+            saleItemIds().any { item -> actor.bankCount(item) >= record.config.sale.threshold }
+        }
+
     private fun saleAllowed(now: Long): Boolean =
-        saleItemIds().isNotEmpty() && exchange.available && storeHealthy() && now >= record.salePausedUntil
+        saleItemIds().isNotEmpty() && exchange.available && storeHealthy() && now >= record.salePausedUntil &&
+            actor.exchangeTripHold() == null
 
     /** Items banked past the sale threshold with no listing open yet, as many as there are free slots. */
     private fun dueSaleItems(now: Long): List<Int> {

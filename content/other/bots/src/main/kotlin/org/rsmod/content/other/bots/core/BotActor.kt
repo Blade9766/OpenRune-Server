@@ -13,6 +13,9 @@ sealed class TravelStatus {
     data object Moving : TravelStatus()
 
     data class Blocked(val reason: String) : TravelStatus()
+
+    /** Holding still for something that comes with time (Home Teleport recharging); never a failure. */
+    data class Waiting(val reason: String) : TravelStatus()
 }
 
 sealed class GatherStatus {
@@ -95,6 +98,9 @@ interface BotActor {
     fun needsSupplies(): Boolean
 
     fun travel(destination: BotDestination): TravelStatus
+
+    /** Why a trip to the exchange cannot start yet (its Home Teleport is recharging), or null. */
+    fun exchangeTripHold(): String? = null
 
     fun gather(target: BotDestination): GatherStatus
 

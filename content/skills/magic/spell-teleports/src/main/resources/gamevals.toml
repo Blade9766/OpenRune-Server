@@ -1,2 +1,3 @@
 [gamevals.queue]
 spell_teleport = 59
+home_teleport_cast = 65480
