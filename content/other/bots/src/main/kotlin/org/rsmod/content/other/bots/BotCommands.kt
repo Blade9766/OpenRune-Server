@@ -17,6 +17,7 @@ import org.rsmod.content.other.bots.world.BotSites
 import org.rsmod.content.other.bots.world.KitTarget
 import org.rsmod.content.slayer.core.SlayerTaskManager
 import org.rsmod.game.entity.Player
+import org.rsmod.map.CoordGrid
 
 /** `::bot` sub-commands. Every change is logged with the administrator's name. */
 class BotCommands(private val manager: BotManager, private val takenNames: () -> Set<String>) {
@@ -50,6 +51,8 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "kit" -> change(player, coordinator, rest[0], "applied the starter kit to") { applyKit(coordinator, it) }
             "sites" -> sites(player, rest.firstOrNull() == "reload")
             "trace" -> trace(player, coordinator, rest[0])
+            "tele" -> tele(player, coordinator, rest)
+            "die" -> die(player, coordinator, rest[0])
             "here" -> player.mes("{ x = ${player.coords.x}, z = ${player.coords.z}, level = ${player.coords.level} }")
             else -> player.mes(USAGE)
         }
@@ -186,6 +189,25 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
                 save
             }
         report(player, "removed ${removed.formatAmount} x $itemName from ${bot.name}", error, bot)
+    }
+
+    private fun tele(player: Player, coordinator: BotCoordinator, args: List<String>) {
+        val bot = coordinator.find(args[0]) ?: return player.mes("No bot '${args[0]}'.")
+        val coords = CoordGrid(args[1].toInt(), args[2].toInt(), args.getOrNull(3)?.toInt() ?: 0)
+        if (!manager.telejump(bot.id, coords)) {
+            return player.mes("${bot.name} is not in the world.")
+        }
+        audit.info { "${player.username} teleported bot ${bot.id} ${bot.name} to $coords" }
+        player.mes("Teleported ${bot.name} to ${coords.x},${coords.z},${coords.level}.")
+    }
+
+    private fun die(player: Player, coordinator: BotCoordinator, idOrName: String) {
+        val bot = coordinator.find(idOrName) ?: return player.mes("No bot '$idOrName'.")
+        if (!manager.kill(bot.id)) {
+            return player.mes("${bot.name} is not in the world.")
+        }
+        audit.info { "${player.username} killed bot ${bot.id} ${bot.name}" }
+        player.mes("Killed ${bot.name}.")
     }
 
     private fun level(player: Player, coordinator: BotCoordinator, args: List<String>) {
@@ -329,6 +351,6 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
         const val USAGE: String =
             "::bot [status <bot>|list|create <role> <site> [name]|enable|disable|remove <bot> [force]|" +
                 "clear <bot>|kit <bot>|master on|off|max <n>|set <bot> <key> <value>|give|take <bot> <item> [n] [inv|worn|bank]|" +
-                "level <bot> <stat> <lvl>|trace <bot>|sites [reload]|here]"
+                "level <bot> <stat> <lvl>|trace <bot>|tele <bot> <x> <z> [level]|die <bot>|sites [reload]|here]"
     }
 }

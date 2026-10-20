@@ -192,8 +192,9 @@ target_op = 1
 tools = ["obj.lobster_pot"]
 resource_route = [{ x = 2825, z = 3436 }, { x = 2840, z = 3432 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
-return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+exchange_by_wayfinder = true
+wayfinder = "catherby"
+return_route = []
 
 [[site]]
 key = "catherby_swordfish"
@@ -209,8 +210,9 @@ target_op = 3
 tools = ["obj.harpoon"]
 resource_route = [{ x = 2825, z = 3436 }, { x = 2840, z = 3432 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
-return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+exchange_by_wayfinder = true
+wayfinder = "catherby"
+return_route = []
 
 [[site]]
 key = "catherby_sharks"
@@ -226,8 +228,9 @@ target_op = 3
 tools = ["obj.harpoon"]
 resource_route = [{ x = 2825, z = 3436 }, { x = 2840, z = 3432 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
-return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+exchange_by_wayfinder = true
+wayfinder = "catherby"
+return_route = []
 
 [[site]]
 key = "ardougne_silk"
@@ -242,7 +245,8 @@ targets = ["loc.silkthiefstall"]
 target_op = 2
 resource_route = [{ x = 2660, z = 3296 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2661, z = 3300 } }
+exchange_by_wayfinder = true
+wayfinder = "east_ardougne"
 return_route = [{ x = 2660, z = 3296 }]
 
 [[site]]
@@ -258,7 +262,8 @@ targets = ["loc.gemthiefstall"]
 target_op = 2
 resource_route = [{ x = 2660, z = 3296 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2661, z = 3300 } }
+exchange_by_wayfinder = true
+wayfinder = "east_ardougne"
 return_route = [{ x = 2660, z = 3296 }]
 
 [[site]]
@@ -340,7 +345,8 @@ kit = { worn = [{ item = "obj.tiara_fire" }], bank = [{ item = "obj.blankrune_hi
 altar_loc = "loc.fire_altar"
 resource_route = [{ x = 3278, z = 3180 }, { x = 3290, z = 3210 }, { x = 3303, z = 3238 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 3278, z = 3172 } }
+exchange_by_wayfinder = true
+wayfinder = "al_kharid"
 return_route = []
 
 [[site]]
@@ -364,12 +370,13 @@ resource = { x = 2408, z = 4378, radius = 6 }
 bank = { x = 2381, z = 4455, radius = 3 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.cosmicrune"]
-kit = { worn = [{ item = "obj.tiara_cosmic" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 27 } }
+kit = { worn = [{ item = "obj.tiara_cosmic" }, { item = "obj.dramen_staff" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 27 } }
 altar_loc = "loc.cosmic_altar"
 resource_route = [{ x = 2386, z = 4449 }, { x = 2390, z = 4440 }, { x = 2398, z = 4435 }, { x = 2405, z = 4410 }, { x = 2399, z = 4396 }, { x = 2404, z = 4388 }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2386, z = 4449 } }
-return_route = []
+exchange_by_wayfinder = true
+wayfinder = "lumbridge"
+return_route = [{ x = 2390, z = 4458 }, { x = 2420, z = 4466 }, { x = 2451, z = 4472 }, { x = 3201, z = 3169, climb = "Door", op = "Open" }, { x = 3215, z = 3172 }, { x = 3232, z = 3182 }, { x = 3238, z = 3200 }, { x = 3233, z = 3218 }]
 
 [[site]]
 key = "edgeville_dungeon_slayer"
@@ -506,8 +513,9 @@ kit = { worn = [{ item = "obj.tiara_nature" }], bank = [{ item = "obj.blankrune_
 altar_loc = "loc.nature_altar"
 resource_route = [{ x = 2849, z = 2966 }, { x = 2848, z = 2984 }, { x = 2863, z = 2986 }, { x = 2865, z = 2999 }, { x = 2871, z = 3003, climb = "Rocks", op = "Climb" }, { x = 2871, z = 3008, climb = "Rocks", op = "Climb" }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2852, z = 2957 } }
-return_route = []
+exchange_by_wayfinder = true
+wayfinder = "nature_altar"
+return_route = [{ x = 2849, z = 2966 }, { x = 2848, z = 2984 }, { x = 2863, z = 2986 }, { x = 2865, z = 2999 }, { x = 2871, z = 3003, climb = "Rocks", op = "Climb" }, { x = 2871, z = 3008, climb = "Rocks", op = "Climb" }]
 
 [[site]]
 key = "taverley_blue_dragons"
@@ -524,7 +532,8 @@ supplies = ["obj.shark", "obj.monkfish", "obj.lobster", "obj.swordfish", "obj.tr
 supply_amount = 10
 resource_route = [{ x = 2955, z = 3380 }, { x = 2965, z = 3387 }, { x = 2966, z = 3400 }, { x = 2952, z = 3420 }, { x = 2943, z = 3440 }, { x = 2939, z = 3450 }, { x = 2931, z = 3450 }, { x = 2910, z = 3430 }, { x = 2895, z = 3410 }, { x = 2885, z = 3396, climb = "Ladder", op = "Climb-down" }, { x = 2884, z = 9798, climb = "Ladder", op = "Climb-up" }, { x = 2886, z = 9799, climb = "Obstacle pipe", op = "Squeeze-through" }, { x = 2892, z = 9799, climb = "Obstacle pipe", op = "Squeeze-through" }]
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2964, z = 3380 } }
+exchange_by_wayfinder = true
+wayfinder = "falador"
 return_route = [{ x = 2955, z = 3378 }]
 
 [[site]]

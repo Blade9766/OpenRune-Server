@@ -40,6 +40,8 @@ class PlayerBotActor(
     private val world: BotWorldServices,
 ) : BotActor {
     private val coinsId = COINS.asRSCM(RSCMType.OBJ)
+    private val kitWornIds: List<Int> =
+        site.kit?.worn.orEmpty().mapNotNull { runCatching { it.item.asRSCM(RSCMType.OBJ) }.getOrNull() }
     private val bank: Inventory = player.invMap.getOrPut(BANK)
 
     private var travelDestination: BotDestination? = null
@@ -58,6 +60,14 @@ class PlayerBotActor(
             .filter { it.climb.isNotBlank() }
             .associateBy { it.toCoords() }
     private val wayfinder = BotWayfinder(player, site, world) { allChains().flatten() + site.bank.center() }
+    private val returnLanding: CoordGrid? =
+        if (site.exchangeByWayfinder) world.wayfinder.registry[site.wayfinder]?.coords else null
+    private var wayfinderGoal: String? = null
+
+    /** The destination an exchange trip is riding to; kept until it lands, wherever a Home Teleport puts it. */
+    private var tripGoal: String? = null
+    private var homeTeleports = 0
+    private var homeCastTicks = 0
 
     override val inventoryUsed: Int
         get() = player.inv.occupiedSpace()
@@ -82,7 +92,24 @@ class PlayerBotActor(
     override val focus: String?
         get() = behaviour.focus
 
-    override fun requirementProblem(): String? = behaviour.requirementProblem(player)
+    override fun requirementProblem(): String? {
+        rewearKit()
+        return behaviour.requirementProblem(player)
+    }
+
+    /** A death leaves the kit's kept gear (a tiara, a weapon) in the inventory; put it back on. */
+    private fun rewearKit() {
+        if (player.isAccessProtected || player.isDelayed) {
+            return
+        }
+        for (id in kitWornIds) {
+            if (player.worn.objs.any { it?.id == id }) {
+                continue
+            }
+            val slot = player.inv.indices.firstOrNull { player.inv[it]?.id == id } ?: continue
+            world.wear(player, slot)
+        }
+    }
 
     override fun needsSupplies(): Boolean = behaviour.needsSupplies(player)
 
@@ -105,13 +132,13 @@ class PlayerBotActor(
             arrive(destination)
             return TravelStatus.Arrived
         }
-        exchangeTeleport(destination)?.let { return it }
+        exchangeTrip(destination)?.let { return it }
         if (isOffSite()) {
             resetTravel()
             return recoverOffSite()
         }
         if (wayfinder.engaged) {
-            wayfinder.reset()
+            endWayfinderTrip()
         }
         if (travelDestination != destination || plan.isEmpty()) {
             travelDestination = destination
@@ -185,12 +212,16 @@ class PlayerBotActor(
         if (player.interaction != null) {
             return TravelStatus.Moving
         }
-        if (++pending.clicks > MAX_CLIMB_CLICKS) {
+        if (pending.clicks > MAX_CLIMB_CLICKS || pending.waits > MAX_CLIMB_WAIT_TICKS) {
             climbing = null
             resetTravel()
             return TravelStatus.Blocked("could not ${pending.tile.op.lowercase()} the ${pending.tile.climb.lowercase()} at ${pending.from.x},${pending.from.z}")
         }
-        if (!world.climb(player, pending.from, pending.tile.climb, pending.tile.op)) {
+        if (world.climb(player, pending.from, pending.tile.climb, pending.tile.op)) {
+            pending.clicks++
+        } else {
+            // Someone else may have left it in another state (a door standing open); it resets.
+            pending.waits++
             world.walkTo(player, pending.from)
         }
         return TravelStatus.Moving
@@ -217,21 +248,78 @@ class PlayerBotActor(
     private fun walkable(from: CoordGrid, to: CoordGrid): Boolean =
         from.level == to.level && from.chebyshevDistance(to) <= OFF_SITE_DISTANCE
 
-    /** A site too far to walk to the exchange teleports there, and back towards its bank after. */
-    private fun exchangeTeleport(destination: BotDestination): TravelStatus? {
-        val teleport = site.exchangeTeleport ?: return null
+    /**
+     * A site too far to walk to the exchange rides a wayfinder mage there, and Vaelor back to the
+     * site's own destination after, walking [BotSite.returnRoute] home from where it lands.
+     */
+    private fun exchangeTrip(destination: BotDestination): TravelStatus? {
+        if (!site.exchangeByWayfinder) {
+            return null
+        }
         val exchange = site.exchange.center()
         val nearExchange =
-            player.coords.level == exchange.level && player.coords.chebyshevDistance(exchange) <= TELEPORT_RANGE
-        val landing =
-            when {
-                destination == BotDestination.Exchange && !nearExchange -> teleport.to
-                destination != BotDestination.Exchange && nearExchange -> teleport.back
-                else -> return null
-            }
+            player.coords.level == exchange.level && player.coords.chebyshevDistance(exchange) <= EXCHANGE_RANGE
+        val wanted = if (destination == BotDestination.Exchange) EXCHANGE_DESTINATION else site.wayfinder
+        if (tripGoal != wanted) {
+            tripGoal = null
+        }
+        val goal =
+            tripGoal
+                ?: when {
+                    destination == BotDestination.Exchange && !nearExchange -> wanted
+                    destination != BotDestination.Exchange && nearExchange -> wanted
+                    else -> return null
+                }
+        tripGoal = goal
         resetTravel()
-        world.teleport(player, landing.toCoords())
-        return TravelStatus.Moving
+        val status = ride(goal)
+        if (status == null || wayfinderGoal == null) {
+            tripGoal = null
+        }
+        return status ?: TravelStatus.Blocked("no wayfinder or Home Teleport gets it to $goal")
+    }
+
+    /**
+     * Rides a wayfinder mage to [goal] (the site's own destination when null). With no mage in
+     * reach the bot casts Home Teleport to Lumbridge, where Elowen stands, and tries again; null
+     * once that has not helped either.
+     */
+    private fun ride(goal: String?): TravelStatus? {
+        if (goal != wayfinderGoal) {
+            endWayfinderTrip()
+            wayfinderGoal = goal
+        }
+        if (homeCastTicks > 0) {
+            homeCastTicks--
+            return TravelStatus.Moving
+        }
+        when (val step = wayfinder.tick(goal)) {
+            BotWayfinder.Step.Moving -> return TravelStatus.Moving
+            BotWayfinder.Step.Arrived -> {
+                endWayfinderTrip()
+                return TravelStatus.Moving
+            }
+            is BotWayfinder.Step.Failed -> {
+                if (homeTeleports >= MAX_HOME_TELEPORTS) {
+                    logger.info { "Bot ${player.displayName}: ${step.reason}, even after Home Teleport." }
+                    endWayfinderTrip()
+                    return null
+                }
+                homeTeleports++
+                logger.info { "Bot ${player.displayName}: ${step.reason}; casting Home Teleport." }
+                wayfinder.reset()
+                world.castHomeTeleport(player)
+                homeCastTicks = HOME_CAST_TICKS
+                return TravelStatus.Moving
+            }
+        }
+    }
+
+    private fun endWayfinderTrip() {
+        wayfinder.reset()
+        wayfinderGoal = null
+        homeTeleports = 0
+        homeCastTicks = 0
     }
 
     private fun arrive(destination: BotDestination) {
@@ -303,7 +391,7 @@ class PlayerBotActor(
         ) + huntChains()
 
     private fun returnChain(): List<CoordGrid>? =
-        site.exchangeTeleport?.let { teleport -> site.returnRoute.map { it.toCoords() } + teleport.back.toCoords() }
+        returnLanding?.let { landing -> site.returnRoute.map { it.toCoords() } + landing }
 
     private fun huntChains(): List<List<CoordGrid>> =
         site.hunts.map { hunt -> hunt.resourceRoute.map { it.toCoords() } + hunt.resource.center() }
@@ -327,19 +415,15 @@ class PlayerBotActor(
             .minByOrNull { (chain, i) -> routeDistance(chain[i], player.coords) }
 
     /**
-     * A stray bot rides a wayfinder mage back towards its site; if no mage or destination works
-     * out, it falls back to a telejump to its bank so it never wanders indefinitely.
+     * A stray bot (a death respawn, say) rides a wayfinder mage back towards its site, casting Home
+     * Teleport first when no mage is in reach. Only if that fails too is it put back at its bank,
+     * as a last resort that is logged as a warning.
      */
     private fun recoverOffSite(): TravelStatus {
-        when (val step = wayfinder.tick()) {
-            BotWayfinder.Step.Moving,
-            BotWayfinder.Step.Arrived -> return TravelStatus.Moving
-            is BotWayfinder.Step.Failed -> {
-                logger.info { "Bot ${player.displayName}: ${step.reason}; returning to its bank directly." }
-                world.telejump(player, site.bank.center())
-                return TravelStatus.Moving
-            }
-        }
+        ride(null)?.let { return it }
+        logger.warn { "Bot ${player.displayName} is stranded at ${player.coords}; no mage or Home Teleport helped, so it is placed at its bank." }
+        world.telejump(player, site.bank.center())
+        return TravelStatus.Moving
     }
 
     /** Death respawns and stray teleports leave a bot where no route can reach its site. */
@@ -558,7 +642,10 @@ class PlayerBotActor(
         private const val STUCK_TICKS = 8
         private const val MAX_REROUTES = 5
         private const val OFF_SITE_DISTANCE = 64
-        private const val TELEPORT_RANGE = 30
+        private const val EXCHANGE_RANGE = 30
+        private const val EXCHANGE_DESTINATION = "grand_exchange"
+        private const val MAX_HOME_TELEPORTS = 2
+        private const val HOME_CAST_TICKS = 8
         private const val FLEE_PERCENT = 50
         private const val RUN_ENERGY_ON = 5000
         private const val RUN_ENERGY_OFF = 1500
@@ -568,10 +655,12 @@ class PlayerBotActor(
         private const val CLIMB_DONE = 20
         private const val CLIMB_REACHED = 1
         private const val MAX_CLIMB_CLICKS = 10
+        private const val MAX_CLIMB_WAIT_TICKS = 600
         private const val OTHER_LEVEL_DISTANCE = 10_000
     }
 }
 
 private class PendingClimb(val from: CoordGrid, val tile: SiteTile) {
     var clicks = 0
+    var waits = 0
 }

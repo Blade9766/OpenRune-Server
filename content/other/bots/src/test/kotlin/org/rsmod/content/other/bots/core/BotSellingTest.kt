@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
+private const val ESSENCE = 7936
+
 class BotSellingTest {
     private fun BotTestHarness.startBot(config: BotConfig, bankedLogs: Int): Long {
         val id = createBot(config).id
@@ -46,6 +48,22 @@ class BotSellingTest {
             exchange.save()
         }
         error("condition not reached; log=${log.lines.takeLast(15)}")
+    }
+
+    @Test
+    fun `a bot back at the bank with a full load of supplies sells on its next visit`() {
+        val world = BotTestHarness(actorFactory = { FakeActor(supplyItem = ESSENCE) })
+        val id = world.createBot(BotTestHarness.woodcuttingConfig()).id
+        world.coordinator.editSave(id) {
+            it.copy(inv = listOf(SavedObj(0, ESSENCE, 28)), bank = listOf(SavedObj(0, LOGS, 1000)))
+        }
+        world.coordinator.enable(id)
+        world.coordinator.setMaster(true)
+
+        world.tickUntil { world.listed(id) }
+        assertFalse(world.log.lines.any { "selling paused" in it }, world.log.lines.toString())
+        assertTrue(world.record(id).stats.gathered >= 28, "crafted the essence it was carrying first")
+        assertEquals(1000, world.offers(id).single().total)
     }
 
     @Test

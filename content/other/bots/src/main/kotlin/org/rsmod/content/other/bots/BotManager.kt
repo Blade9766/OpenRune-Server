@@ -16,6 +16,7 @@ import org.rsmod.content.other.grandexchange.GeExchange
 import org.rsmod.content.other.grandexchange.GeItemData
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Player
+import org.rsmod.map.CoordGrid
 
 /**
  * Owns the [BotCoordinator] and connects it to the game: the Grand Exchange book players use, the
@@ -52,6 +53,10 @@ constructor(
     fun botIdOf(player: Player): Long? = world.botIdOf(player)
 
     fun playerOf(botId: Long): Player? = world.player(botId)
+
+    fun telejump(botId: Long, coords: CoordGrid): Boolean = world.telejump(botId, coords)
+
+    fun kill(botId: Long): Boolean = world.kill(botId)
 
     fun onBotLoggedOut(player: Player) {
         val coordinator = coordinator ?: return

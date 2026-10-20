@@ -539,6 +539,11 @@ class BotBrain(
             travelTo(gatherTarget, cycle)
             return
         }
+        if (actor.inventoryUsed >= actor.inventoryCapacity) {
+            log.info(record, "no room to take items for sale; selling on the next bank visit")
+            travelTo(gatherTarget, cycle)
+            return
+        }
         var withdrawn = 0
         var unpriced: String? = null
         for (item in due) {

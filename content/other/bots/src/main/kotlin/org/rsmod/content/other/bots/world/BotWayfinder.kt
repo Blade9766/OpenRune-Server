@@ -12,15 +12,15 @@ import org.rsmod.game.movement.RouteRequestPathingEntity
 import org.rsmod.map.CoordGrid
 
 /**
- * Gets a bot that has strayed far from its site (a death respawn, say) back home through the
- * wayfinder mages instead of a raw telejump: walk to the nearest mage it can reach, ask for the
- * bot-allowed destination closest to its site by registry key, and let the same
+ * Gets a bot to a wayfinder destination the way a player would: walk to the nearest mage it can
+ * reach, ask for the destination (the exchange, or the bot-allowed one closest to its site), and
+ * let the same
  * [org.rsmod.content.travel.wayfinder.WayfinderTravel] that serves players validate and cast it.
  *
  * Everything is bounded: [MAX_ATTEMPTS] requests per trip, [WALK_BUDGET] ticks to reach a mage and
  * [CAST_BUDGET] ticks for the cast. A mage the bot fails to reach and a destination the service
- * rejects are not tried again on the same trip; once the budget is gone the caller falls back to
- * its telejump.
+ * rejects are not tried again on the same trip; once the budget is gone the caller casts Home
+ * Teleport to Lumbridge, where Elowen stands, and tries again.
  */
 class BotWayfinder(
     private val player: Player,
@@ -36,6 +36,7 @@ class BotWayfinder(
         data class Failed(val reason: String) : Step()
     }
 
+    private var goal: String? = null
     private var mage: Npc? = null
     private var destination: WayfinderDestination? = null
     private var result: WayfinderResult? = null
@@ -58,8 +59,10 @@ class BotWayfinder(
         rejected.clear()
     }
 
-    fun tick(): Step {
+    /** Advances the trip to [goal], a destination key, or to the site's own destination when null. */
+    fun tick(goal: String? = null): Step {
         engaged = true
+        this.goal = goal
         if (casting) {
             return cast()
         }
@@ -152,7 +155,7 @@ class BotWayfinder(
     }
 
     private fun chooseDestination(): WayfinderDestination? =
-        pickDestination(world.wayfinder.registry, site.wayfinder, site.bank.center(), anchors(), rejected)
+        pickDestination(world.wayfinder.registry, goal ?: site.wayfinder, site.bank.center(), anchors(), rejected)
 
     private fun chooseMage(): Npc? =
         world

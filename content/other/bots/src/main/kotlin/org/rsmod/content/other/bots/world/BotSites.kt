@@ -89,13 +89,19 @@ data class BotSite(
     /** How many supplies to carry; 0 fills the free inventory. */
     @JsonProperty("supply_amount") val supplyAmount: Int = 0,
     val kit: StarterKit? = null,
-    /** Wayfinder destination key a stray bot asks for; blank picks the bot-allowed one nearest the bank. */
+    /**
+     * Wayfinder destination key a stray bot, or one coming back from an [exchangeByWayfinder] trip,
+     * asks for; blank picks the bot-allowed one nearest the bank.
+     */
     val wayfinder: String = "",
     /** Slayer: the tasks this site can work; [supplyNpc] is the slayer master. */
     val hunts: List<SlayerHunt> = emptyList(),
-    /** Sites too far to walk to the exchange teleport there and back instead. */
-    @JsonProperty("exchange_teleport") val exchangeTeleport: SiteTeleport? = null,
-    /** From the bank to where [exchangeTeleport] lands on the way back. */
+    /**
+     * Sites too far to walk to the exchange travel like a player: a wayfinder mage (after a Home
+     * Teleport to Lumbridge when none is in reach) to the exchange, and Vaelor back to [wayfinder].
+     */
+    @JsonProperty("exchange_by_wayfinder") val exchangeByWayfinder: Boolean = false,
+    /** From the bank to where the [wayfinder] destination lands on the way back. */
     @JsonProperty("return_route") val returnRoute: List<SiteTile> = emptyList(),
 ) {
     val roleType: BotRoleType?
@@ -105,10 +111,6 @@ data class BotSite(
     val allProducts: Set<String>
         get() = (products + hunts.flatMap { it.products }).toSet()
 }
-
-/** Where a site's exchange teleport lands: [to] by the exchange, [back] near the site's bank. */
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class SiteTeleport(val to: SiteTile = SiteTile(), val back: SiteTile = SiteTile())
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 private data class BotSiteFile(@JsonProperty("site") val sites: List<BotSite> = emptyList())

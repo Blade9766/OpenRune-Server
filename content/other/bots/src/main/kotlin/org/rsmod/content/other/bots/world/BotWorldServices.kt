@@ -8,7 +8,6 @@ import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
 import org.rsmod.annotations.InternalApi
 import org.rsmod.api.npc.isInCombat
-import org.rsmod.api.player.hook.TeleportType
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
@@ -17,10 +16,12 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.protect.clearPendingAction
 import org.rsmod.api.player.ui.IfModalButton
+import org.rsmod.api.player.ui.IfOverlayButton
 import org.rsmod.api.player.ui.ifCloseInputDialog
 import org.rsmod.api.registry.loc.LocRegistry
 import org.rsmod.api.registry.npc.NpcRegistry
 import org.rsmod.api.registry.obj.ObjRegistry
+import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.content.travel.wayfinder.WayfinderTravel
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Npc
@@ -61,6 +62,7 @@ constructor(
     private val objInteractions: ObjInteractions,
     private val heldInteractions: HeldInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
+    private val spells: MagicSpellRegistry,
     val wayfinder: WayfinderTravel,
 ) {
     /** Ground objs [player] can see within [radius] of [center]. */
@@ -136,6 +138,13 @@ constructor(
             else -> null
         }
 
+    /** Uses op 2 ("Wear"/"Wield") on the obj in [slot], exactly as the inventory button would. */
+    fun wear(player: Player, slot: Int): Boolean =
+        protectedAccess.launch(player) {
+            clearPendingAction()
+            heldInteractions.interact(this, player.inv, slot, HeldOp.Op2)
+        }
+
     /** Uses op 1 ("Eat"/"Drink") on the obj in [slot], exactly as the inventory button would. */
     fun eat(player: Player, slot: Int): Boolean =
         protectedAccess.launch(player) {
@@ -161,17 +170,18 @@ constructor(
         PathingEntityCommon.telejump(player, collision, dest)
     }
 
-    /** Casts a standard-spellbook teleport to [dest], with the spell's animation, graphic and delay. */
-    fun teleport(player: Player, dest: CoordGrid): Boolean =
-        protectedAccess.launch(player) {
+    /**
+     * Clicks Home Teleport in the spellbook, as an `If3Button` packet would: the spell script
+     * applies its own checks, animation, delay and destination.
+     */
+    fun castHomeTeleport(player: Player): Boolean {
+        val obj = runCatching { ServerCacheManager.getItem(HOME_TELEPORT.asRSCM(RSCMType.OBJ)) }.getOrNull() ?: return false
+        val spell = spells.getObjSpell(obj) ?: return false
+        return protectedAccess.launch(player) {
             clearPendingAction()
-            anim(TELEPORT_ANIM)
-            spotanim(TELEPORT_SPOTANIM, height = TELEPORT_SPOTANIM_HEIGHT)
-            soundSynth(TELEPORT_SOUND)
-            delay(TELEPORT_DELAY)
-            telejump(dest, TeleportType.Exempt)
-            anim(TELEPORT_END_ANIM)
+            eventBus.publish(this, IfOverlayButton(spell.component, comsub = -1, obj = null, op = IfButtonOp.Op1))
         }
+    }
 
     fun walkTo(player: Player, dest: CoordGrid) {
         if ((player.interaction != null || player.weakQueueList.isNotEmpty) && !player.isDelayed) {
@@ -294,12 +304,7 @@ constructor(
         private const val ATTACKER_RADIUS = 10
         private const val CLAIM_MARGIN = 4
         private const val CLIMB_RADIUS = 3
-        private const val TELEPORT_DELAY = 4
-        private const val TELEPORT_ANIM = "seq.human_castteleport"
-        private const val TELEPORT_END_ANIM = "seq.human_castteleport_reverse"
-        private const val TELEPORT_SPOTANIM = "spotanim.teleport_casting"
-        private const val TELEPORT_SPOTANIM_HEIGHT = 92
-        private const val TELEPORT_SOUND = "synth.teleport_all"
+        private const val HOME_TELEPORT = "obj.48_home_teleport"
     }
 }
 

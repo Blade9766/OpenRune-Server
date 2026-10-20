@@ -70,10 +70,9 @@ constructor(
         if (shuttingDown) return
         val player = ensurePlayer(config) ?: return
         val cycle = mapClock.cycle
-        if (!config.area.contains(player.coords)) {
-            logger.warn { "[Master Meister] left his area at ${player.coords}; returning him to his spawn." }
-            home(player, config)
-            return
+        if (!config.area.contains(player.coords) && target == null) {
+            logger.warn { "[Master Meister] left his area at ${player.coords}; walking him back to his spawn." }
+            walkTo(player, config.spawn.toCoords(), null)
         }
         if (player.coords != lastCoords) {
             lastCoords = player.coords
@@ -195,9 +194,12 @@ constructor(
         }
         target = null
         targetBooth = null
-        if (++failures >= MAX_FAILURES) {
-            logger.warn { "[Master Meister] stuck at ${player.coords} $failures times; returning him to his spawn." }
+        if (++failures >= MAX_FAILURES * 2) {
+            logger.warn { "[Master Meister] could not walk back to his spawn from ${player.coords}; placing him there." }
             home(player, config)
+        } else if (failures >= MAX_FAILURES) {
+            logger.warn { "[Master Meister] stuck at ${player.coords} $failures times; walking him back to his spawn." }
+            walkTo(player, config.spawn.toCoords(), null)
         }
     }
 

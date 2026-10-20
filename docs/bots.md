@@ -70,7 +70,7 @@ refills, price margins, spending and quantity caps), which wait for Save Changes
 **Bot page** - Configure opens the selected bot's page inside the Bot Manager. Its
 header shows its state, inventory, open offers and coins; **Roster** (the last tab) or
 **Back to roster** in the footer returns. The footer also has Enable/Disable and Send
-home (teleports a stuck bot to its bank and has it start afresh). Four tabs:
+home (an admin tool: teleports a stuck bot to its bank and has it start afresh). Four tabs:
 
 - **Behaviour**:
 
@@ -129,6 +129,8 @@ often they act.
 ::bot take <bot> <item> [n] [inv|worn|bank]   bot must be disabled
 ::bot level <bot> <stat> <level>        bot must be disabled
 ::bot trace <bot>                       current focus and the last decisions with their reasons
+::bot tele <bot> <x> <z> [level]        move a bot (to test how it finds its way back)
+::bot die <bot>                         kill a bot (to test what it does after a death)
 ::bot sites [reload]                    list sites / re-read the override file
 ::bot here                              print your tile, for writing routes
 ```
@@ -249,18 +251,22 @@ Sites with an `exchange_route` sell by default: bots created there start with
 selling on. A site with no `exchange_route` does not sell: bots created there
 start with selling off and keep their loot in the bank.
 
-Sites too far to walk to the exchange (Catherby, Ardougne, Al Kharid, Zanaris,
-Shilo Village) set `exchange_teleport`: the bot casts a standard-spellbook teleport
-(the spell's animation, graphic and sound; no runes are used) to `to` beside the
-Grand Exchange, lists its items, and teleports to `back` near its bank, walking
-`return_route` (a bank-relative chain ending at `back`) home. Their
-`exchange_route` is just the landing tile, which also marks the site as one that
-sells.
+Bots never use free or admin teleports at work. Sites too far to walk to the
+exchange (Catherby, Ardougne, Al Kharid, Zanaris, Shilo Village, Taverley Dungeon)
+set `exchange_by_wayfinder` and travel like a player: with no wayfinder mage in
+reach the bot casts the normal Home Teleport (the spellbook button, so the spell's
+own checks, animation and delay apply) to Lumbridge, asks Arcanist Elowen for the
+Grand Exchange, lists its items, walks to Archmage Vaelor at Edgeville and asks for
+the site's `wayfinder` destination, then walks `return_route` (a bank-relative chain
+ending where that destination lands) home. Their `exchange_route` is just the
+exchange tile, which also marks the site as one that sells. The cosmic bots wear a
+dramen staff and come home through the Lumbridge Swamp shed door.
 
 ```toml
 exchange_route = [{ x = 3164, z = 3487 }]
-exchange_teleport = { to = { x = 3164, z = 3487 }, back = { x = 2757, z = 3477 } }
-return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
+exchange_by_wayfinder = true
+wayfinder = "catherby"
+return_route = []
 ```
 
 ### Bundled sites
@@ -278,24 +284,24 @@ return_route = [{ x = 2795, z = 3446 }, { x = 2772, z = 3466 }]
 | `mind_altar` | runecrafting (2) | Edgeville | mind runes | walking |
 | `water_altar` | runecrafting (5) | Draynor | water runes | walking |
 | `body_altar` | runecrafting (20) | Edgeville | body runes | walking |
-| `fire_altar` | runecrafting (14) | Al Kharid | fire runes | teleport |
-| `cosmic_altar` | runecrafting (27) | Zanaris | cosmic runes | teleport |
+| `fire_altar` | runecrafting (14) | Al Kharid | fire runes | wayfinder |
+| `cosmic_altar` | runecrafting (27) | Zanaris | cosmic runes | wayfinder |
 | `barbarian_village_fly` | fishing | Edgeville | trout, salmon | walking |
 | `draynor_net` | fishing | Draynor | shrimps, anchovies | walking |
-| `catherby_lobsters` | fishing (40) | Catherby | lobsters | teleport |
-| `catherby_swordfish` | fishing (50) | Catherby | tuna, swordfish | teleport |
-| `catherby_sharks` | fishing (76) | Catherby | sharks | teleport |
+| `catherby_lobsters` | fishing (40) | Catherby | lobsters | wayfinder |
+| `catherby_swordfish` | fishing (50) | Catherby | tuna, swordfish | wayfinder |
+| `catherby_sharks` | fishing (76) | Catherby | sharks | wayfinder |
 | `varrock_tea_stall` | thieving | Varrock East | cups of tea | walking |
-| `ardougne_silk` | thieving (20) | Ardougne South | silk | teleport |
-| `ardougne_gems` | thieving (75) | Ardougne South | uncut gems | teleport |
+| `ardougne_silk` | thieving (20) | Ardougne South | silk | wayfinder |
+| `ardougne_gems` | thieving (75) | Ardougne South | uncut gems | wayfinder |
 | `barbarian_village_fighters` | combat | Edgeville | bones | walking |
 | `falador_cows` | combat | Falador East | cowhides | walking |
 | `falador_chickens` | combat | Falador East | feathers, raw chicken | walking |
 | `draynor_slayer` | slayer (Spria) | Draynor | bones, cowhides | walking |
 | `edgeville_dungeon_slayer` | slayer (Vannaka) | Edgeville | big bones, limpwurt roots | walking |
 | `chaos_altar` | runecrafting (35) | Edgeville | chaos runes | walking |
-| `nature_altar` | runecrafting (44, Agility 79) | Shilo Village | nature runes | teleport |
-| `taverley_blue_dragons` | combat (75, Agility 70) | Falador West | dragon bones, ensouled dragon heads | teleport |
+| `nature_altar` | runecrafting (44, Agility 79) | Shilo Village | nature runes | wayfinder |
+| `taverley_blue_dragons` | combat (75, Agility 70) | Falador West | dragon bones, ensouled dragon heads | wayfinder |
 | `wilderness_green_dragons` | combat (70) | Edgeville | dragon bones, ensouled dragon heads | walking |
 | `edgeville_dungeon_druids` | combat (40) | Edgeville | ensouled chaos druid heads, bones | walking |
 | `varrock_bronze_arrowtips` | smithing (5) | Varrock West | bronze arrowtips | walking |
@@ -429,7 +435,8 @@ home retraces the route it arrived by, so it leaves through the same gate.
 Routes can go up and down ladders and trapdoors. A waypoint with `climb` (the loc's
 name) and `op` (its option) is used whenever the next waypoint is on another level
 or more than 64 tiles away: the bot clicks the nearest such loc within three tiles,
-clicking "Open" first on a closed trapdoor. Put a climb on the tile on each side,
+clicking "Open" first on a closed trapdoor. A climb loc that is missing for now (a
+door someone left open) is waited for, up to 600 ticks. Put a climb on the tile on each side,
 so a bot walking the route in either direction climbs back the way it came:
 
 ```toml
@@ -640,7 +647,8 @@ is the ledger - so leaving the world loses nothing. He walks with the normal pat
 strolls a few tiles at a time, thinks, nods and calls out now and then, and when he places an
 offer walks to the nearest Exchange booth, faces it and reaches over the counter (he does not
 open the exchange interface; his offers go straight into the book like every bot's). A walk
-that stalls is abandoned; three in a row, or leaving his area, put him back at his spawn tile.
+that stalls is abandoned; three in a row, or leaving his area, have him walk back to his spawn
+tile. Only if that walk fails too is he placed there, which is logged as a warning.
 If the engine removes him he comes back within 100 ticks, at his last position.
 
 **Bot Manager.** His sections in `::bot` share a header with his portrait, trading
@@ -761,8 +769,13 @@ filled, cancelled, collected or rolled back, and every allocation.
 - A bot more than 64 tiles from its bank and every route point (after a death respawn
   or any teleport) rides a wayfinder mage back towards its site (see `wayfinder.md`): it
   walks to the nearest Vaelor or Elowen within 64 tiles and asks for the site's `wayfinder`
-  destination key, or the bot-allowed destination nearest its bank. With no mage, no usable
-  destination or three failed requests it telejumps back to its bank as before.
+  destination key, or the bot-allowed destination nearest its bank. With no mage in reach it
+  casts Home Teleport to Lumbridge and tries again. Only if two Home Teleports have not got
+  it to a mage is it placed at its bank, which is logged as a warning.
+- A bot that dies keeps what the death rules allow; kit gear it kept (a tiara, a weapon)
+  lands in its inventory, and it puts it back on before going back to work.
+- On this server Home Teleport has no 30-minute cooldown or long cast (players get the
+  same spell), so a bot never waits for it.
 - Bots are restored with at least 10 Hitpoints.
 - Bots are visible through the session-less player-info avatar
   (`BotSessions`) that castle-wars bots also use.

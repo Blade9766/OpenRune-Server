@@ -167,7 +167,7 @@ class FakeActor(
 
     override fun withdrawNoted(itemId: Int, count: Int): Int {
         val moved = minOf(count.toLong(), bankCount(itemId)).toInt()
-        if (moved <= 0) {
+        if (moved <= 0 || (inventoryUsed >= inventoryCapacity && itemId + NOTE_OFFSET !in inv)) {
             return 0
         }
         bank[itemId] = bankCount(itemId) - moved

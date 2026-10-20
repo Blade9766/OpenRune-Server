@@ -13,6 +13,7 @@ import java.util.IdentityHashMap
 import org.rsmod.api.config.constants
 import org.rsmod.api.inv.map.InvMapInit
 import org.rsmod.api.net.rsprot.BotSessions
+import org.rsmod.api.player.queueDeath
 import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.registry.player.isSuccess
 import org.rsmod.content.other.bots.core.BotActor
@@ -52,6 +53,20 @@ constructor(
     fun botIdOf(player: Player): Long? = byPlayer[player]
 
     fun player(botId: Long): Player? = actors[botId]?.player
+
+    /** Moves a bot as `::tele` would; for testing how it finds its way back. */
+    fun telejump(botId: Long, coords: CoordGrid): Boolean {
+        val player = player(botId) ?: return false
+        services.telejump(player, coords)
+        return true
+    }
+
+    /** Kills a bot as `::die pvm` would; for testing what it does after a death. */
+    fun kill(botId: Long): Boolean {
+        val player = player(botId) ?: return false
+        player.queueDeath()
+        return true
+    }
 
     override fun spawn(record: BotRecord): BotActor? {
         val site = BotSites[record.config.site]

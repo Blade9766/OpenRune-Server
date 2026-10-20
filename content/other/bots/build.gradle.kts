@@ -8,6 +8,7 @@ dependencies {
     implementation(projects.api.invPlugin)
     implementation(projects.api.net)
     implementation(projects.api.registry)
+    implementation(projects.api.spells)
     implementation(projects.content.interfaces.bank)
     implementation(projects.content.other.cheatMenu)
     implementation(projects.content.other.grandExchange)
