@@ -300,6 +300,7 @@ return_route = []
 | `body_altar` | runecrafting (20) | Edgeville | body runes | walking |
 | `fire_altar` | runecrafting (14) | Al Kharid | fire runes | wayfinder |
 | `cosmic_altar` | runecrafting (27) | Zanaris | cosmic runes | wayfinder |
+| `law_altar` | runecrafting (54) | Draynor | law runes | walking |
 | `barbarian_village_fly` | fishing | Edgeville | trout, salmon | walking |
 | `draynor_net` | fishing | Draynor | shrimps, anchovies | walking |
 | `catherby_lobsters` | fishing (40) | Catherby | lobsters | wayfinder |
@@ -331,11 +332,12 @@ keep essence listed for them. `chaos_altar` walks from Edgeville over the
 Wilderness ditch to the ruins in the level 9 Wilderness, where other players can
 attack it. `nature_altar` banks in Shilo Village, walks out of the village's
 open north-west side and climbs the Agility 79 rocks shortcut up to the ruins
-(its kit gives the Agility).
+(its kit gives the Agility). `law_altar` banks at Draynor, walks to the Port
+Sarim jetty and sails to Entrana by talking to the monks, carrying nothing but
+essence and the law tiara so the search lets it aboard; it sails back with the
+Entrana monks.
 These altars have no site:
 
-- **Law**: Entrana has no bank, and the Port Sarim monks' boat is a dialogue,
-  which bots cannot answer.
 - **Death**: the only way in is the Temple of Light puzzle under the Mourner
   tunnels.
 - **Wrath**: the ruins are in the Myths' Guild basement; Dragon Slayer II and the
@@ -497,6 +499,31 @@ closer to the far tile than the near one:
 ```toml
 { x = 3087, z = 3519, climb = "Wilderness Ditch", op = "Cross" }, { x = 3087, z = 3523, climb = "Wilderness Ditch", op = "Cross" }
 ```
+
+Boats and other travel that goes through a conversation use a `talk` waypoint: the
+npc (a gameval or `name:`), its option (`op`, `Talk-to` by default) and the chat
+menu lines to answer (`options`). It is used, like a climb, when the next waypoint
+is on another level or more than 64 tiles away. The bot clicks the nearest such npc
+within eight tiles and answers the conversation the way a client does, through the
+same resume-pause-button input: it continues every chat and message page and, on
+each chat menu, picks the first `options` line the menu offers (case, colour tags,
+spacing and end punctuation ignored; a line may be the start of a longer option).
+A menu offering none of them, or a conversation of more than 40 screens, closes the
+dialogue and blocks the bot with the menu's lines in its error, so it never clicks
+something it was not told to. Once the conversation has carried it away, the bot
+carries on from the route waypoint nearest to where it landed, so each side of a
+boat trip lists its own deck and the far side's deck is skipped:
+
+```toml
+{ x = 3048, z = 3234, talk = "npc.shipmonk", op = "Talk-to", options = ["Yes, okay, I'm ready to go."] },
+{ x = 3048, z = 3231, level = 1, climb = "Gangplank", op = "Cross" },
+{ x = 2834, z = 3331, level = 1, climb = "Gangplank", op = "Cross" },
+{ x = 2834, z = 3335, talk = "npc.shipmonk2", op = "Talk-to", options = ["Yes, I'm ready to go."] }
+```
+
+Outside a `talk` step bots still close any dialogue that opens on them. The chat
+menu's lines only ever go to the client (`chatbox_multi_init`), so every bot's client
+is wrapped in a tap that keeps the last menu it was sent.
 
 Each bot gets a random body type, clothing and colours, seeded by its id so it
 keeps the same look across restarts. Styles come only from the original

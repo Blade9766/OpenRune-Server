@@ -8,6 +8,7 @@ import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
 import org.rsmod.annotations.InternalApi
 import org.rsmod.api.npc.isInCombat
+import org.rsmod.api.player.input.ResumePauseButtonInput
 import org.rsmod.api.player.interact.HeldInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
@@ -23,6 +24,7 @@ import org.rsmod.api.registry.npc.NpcRegistry
 import org.rsmod.api.registry.obj.ObjRegistry
 import org.rsmod.api.spells.MagicSpellRegistry
 import org.rsmod.content.other.bots.core.BotGeometry
+import org.rsmod.content.other.bots.core.DialogueScreen
 import org.rsmod.content.travel.wayfinder.WayfinderTravel
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Npc
@@ -40,6 +42,7 @@ import org.rsmod.game.movement.RouteRequestCoord
 import org.rsmod.game.movement.RouteRequestLoc
 import org.rsmod.game.movement.RouteRequestPathingEntity
 import org.rsmod.game.obj.Obj
+import org.rsmod.game.ui.UserInterface
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
 import org.rsmod.routefinder.RouteFinding
@@ -178,6 +181,59 @@ constructor(
         }
         return true
     }
+
+    /**
+     * Answers [player]'s paused modal (a make-x menu) with [component] and [sub], as a
+     * `ResumePauseButton` packet would; false when no script is waiting on it.
+     */
+    @OptIn(InternalApi::class)
+    fun resumePauseButton(player: Player, component: String, sub: Int): Boolean {
+        if (player.activeCoroutine?.isSuspended != true) {
+            return false
+        }
+        val packed = runCatching { component.asRSCM(RSCMType.COMPONENT) }.getOrNull() ?: return false
+        val modal = player.ui.modals.getComponent(UserInterface(ServerCacheManager.fromInterface(packed))) ?: return false
+        player.ui.queueClose(modal)
+        player.resumeActiveCoroutine(ResumePauseButtonInput(component, sub))
+        return true
+    }
+
+    /** The dialogue [player] has open, or null when its modal is something else. */
+    fun dialogueScreen(player: Player, tap: BotDialogueTap): DialogueScreen? {
+        if (player.ui.containsModal(CHAT_MENU)) {
+            return DialogueScreen.Choice(tap.choices)
+        }
+        val page = DIALOGUE_PAGES.entries.firstOrNull { player.ui.containsModal(it.key) } ?: return null
+        return DialogueScreen.Page(page.value)
+    }
+
+    /** Clicks the option named [op] on the nearest npc matching [npc] (a gameval or `name:`) within [radius] of [at]. */
+    fun talkTo(player: Player, at: CoordGrid, radius: Int, npc: String, op: String): Boolean {
+        val matches = npcMatcher(npc) ?: return false
+        val target =
+            findNpcs(at, radius) { matches(it) && namedNpcOp(it, op) != null }.minByOrNull { it.coords.chebyshevDistance(player.coords) }
+                ?: return false
+        return opNpc(player, target, namedNpcOp(target, op)!!)
+    }
+
+    private fun npcMatcher(npc: String): ((Npc) -> Boolean)? {
+        if (npc.startsWith(NAME_PREFIX)) {
+            val name = npc.removePrefix(NAME_PREFIX)
+            return { it.type.name.equals(name, ignoreCase = true) }
+        }
+        val id = runCatching { npc.asRSCM(RSCMType.NPC) }.getOrNull() ?: return null
+        return { it.type.id == id }
+    }
+
+    private fun namedNpcOp(npc: Npc, action: String): InteractionOp? =
+        when ((0 until 5).firstOrNull { npc.type.actions.getOpOrNull(it).equals(action, ignoreCase = true) }) {
+            0 -> InteractionOp.Op1
+            1 -> InteractionOp.Op2
+            2 -> InteractionOp.Op3
+            3 -> InteractionOp.Op4
+            4 -> InteractionOp.Op5
+            else -> null
+        }
 
     fun telejump(player: Player, dest: CoordGrid) {
         player.clearPendingAction(eventBus)
@@ -339,6 +395,15 @@ constructor(
         private const val CLAIM_MARGIN = 4
         private const val CLIMB_RADIUS = 3
         private const val HOME_TELEPORT = "obj.48_home_teleport"
+        private const val NAME_PREFIX = "name:"
+        private const val CHAT_MENU = "interface.chatmenu"
+        private val DIALOGUE_PAGES =
+            mapOf(
+                "interface.chat_left" to "component.chat_left:continue",
+                "interface.chat_right" to "component.chat_right:continue",
+                "interface.messagebox" to "component.messagebox:continue",
+                "interface.objectbox" to "component.objectbox:universe",
+            )
     }
 }
 

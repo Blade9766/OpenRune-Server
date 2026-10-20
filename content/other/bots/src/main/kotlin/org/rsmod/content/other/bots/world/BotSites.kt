@@ -18,9 +18,16 @@ data class SiteTile(
     val level: Int = 0,
     /** A ladder or trapdoor (display name) the bot uses here to reach the next waypoint. */
     val climb: String = "",
-    /** The [climb] loc's option, such as `Climb-down`. */
+    /** The [climb] loc's or [talk] npc's option, such as `Climb-down` or `Talk-to`. */
     val op: String = "",
+    /** An npc (gameval or `name:`) the bot talks to here to travel to the next waypoint, like a ferryman. */
+    val talk: String = "",
+    /** What the bot answers on each of the [talk] npc's chat menus, first offered wins. */
+    val options: List<String> = emptyList(),
 ) {
+    val travels: Boolean
+        get() = climb.isNotBlank() || talk.isNotBlank()
+
     fun toCoords(): CoordGrid = CoordGrid(x, z, level)
 }
 

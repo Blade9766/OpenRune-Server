@@ -389,6 +389,22 @@ exchange_by_wayfinder = true
 wayfinder = "lumbridge"
 return_route = [{ x = 2390, z = 4458 }, { x = 2420, z = 4466 }, { x = 2451, z = 4472 }, { x = 3201, z = 3169, climb = "Door", op = "Open" }, { x = 3215, z = 3172 }, { x = 3232, z = 3182 }, { x = 3238, z = 3200 }, { x = 3233, z = 3218 }]
 
+# Entrana: the Port Sarim monks' boat is a conversation. The bot talks to them on the jetty, lands
+# on the Entrana deck and crosses the gangplank; coming back it talks to the Entrana monks, lands
+# on the Port Sarim deck and crosses that gangplank. Each side skips the other side's deck.
+[[site]]
+key = "law_altar"
+role = "runecrafting"
+description = "Law runes at the ruins on Entrana, banking at Draynor and sailing with the monks"
+resource = { x = 2858, z = 3378, radius = 6 }
+bank = { x = 3092, z = 3243, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.lawrune"]
+kit = { worn = [{ item = "obj.tiara_law" }], bank = [{ item = "obj.blankrune_high", count = 1000 }], levels = { runecrafting = 54 } }
+altar_loc = "loc.law_altar"
+resource_route = [{ x = 3080, z = 3250 }, { x = 3062, z = 3250 }, { x = 3048, z = 3234, talk = "npc.shipmonk", op = "Talk-to", options = ["Yes, okay, I'm ready to go."] }, { x = 3048, z = 3231, level = 1, climb = "Gangplank", op = "Cross" }, { x = 2834, z = 3331, level = 1, climb = "Gangplank", op = "Cross" }, { x = 2834, z = 3335, talk = "npc.shipmonk2", op = "Talk-to", options = ["Yes, I'm ready to go."] }, { x = 2840, z = 3352 }]
+exchange_route = [{ x = 3104, z = 3262 }, { x = 3108, z = 3290 }, { x = 3108, z = 3320 }, { x = 3083, z = 3330 }, { x = 3077, z = 3358 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
 [[site]]
 key = "edgeville_dungeon_slayer"
 role = "slayer"

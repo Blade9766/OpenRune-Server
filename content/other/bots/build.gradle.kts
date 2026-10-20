@@ -22,4 +22,5 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.dataformat.toml)
     implementation(libs.jackson.module.kotlin)
+    implementation(libs.rsprot.api)
 }

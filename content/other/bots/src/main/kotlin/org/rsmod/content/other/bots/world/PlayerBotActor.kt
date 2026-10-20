@@ -18,7 +18,9 @@ import org.rsmod.api.player.vars.varMoveSpeed
 import org.rsmod.content.interfaces.bank.bankCapacity
 import org.rsmod.content.other.bots.core.BotActor
 import org.rsmod.content.other.bots.core.BotDestination
+import org.rsmod.content.other.bots.core.BotDialogue
 import org.rsmod.content.other.bots.core.DepositOutcome
+import org.rsmod.content.other.bots.core.DialogueReply
 import org.rsmod.content.other.bots.core.GatherStatus
 import org.rsmod.content.other.bots.core.SupplyOutcome
 import org.rsmod.content.other.bots.core.TravelStatus
@@ -38,6 +40,7 @@ class PlayerBotActor(
     private val site: BotSite,
     private val behaviour: BotRoleBehaviour,
     private val world: BotWorldServices,
+    private val tap: BotDialogueTap,
 ) : BotActor {
     private val coinsId = COINS.asRSCM(RSCMType.OBJ)
     private val kitWornIds: List<Int> =
@@ -52,12 +55,14 @@ class PlayerBotActor(
     private var reroutes = 0
     private var gatherBaseline: Map<Int, Int>? = null
     private var climbing: PendingClimb? = null
+    private var dialogue: BotDialogue? = null
+    private var dialogueFailure: String? = null
 
     /** A door that walks the bot through and shuts again leaves it standing still on the far side. */
     private var openedDoor = false
     private val climbs: Map<CoordGrid, SiteTile> =
         (site.resourceRoute + site.exchangeRoute + site.supplyRoute + site.returnRoute + site.hunts.flatMap { it.resourceRoute })
-            .filter { it.climb.isNotBlank() }
+            .filter { it.travels }
             .associateBy { it.toCoords() }
     private val wayfinder = BotWayfinder(player, site, world) { allChains().flatten() + site.bank.center() }
     private val returnLanding: CoordGrid? =
@@ -78,13 +83,28 @@ class PlayerBotActor(
     override val isBusy: Boolean
         get() {
             if (player.ui.modals.isNotEmpty() && !player.isDelayed) {
-                if (!behaviour.answerModal(player)) {
+                if (!answerDialogue() && !behaviour.answerModal(player)) {
                     player.clearPendingAction(world.eventBus)
                 }
                 return true
             }
             return player.isAccessProtected || player.isDelayed
         }
+
+    /** Answers the dialogue of a route step's conversation; false when there is none to answer. */
+    private fun answerDialogue(): Boolean {
+        val talk = dialogue ?: return false
+        val screen = world.dialogueScreen(player, tap) ?: return false
+        return when (val reply = talk.reply(screen)) {
+            is DialogueReply.Continue -> world.resumePauseButton(player, reply.button, CONTINUE_SUB)
+            is DialogueReply.Pick -> world.resumePauseButton(player, CHAT_MENU_OPTIONS, reply.option)
+            is DialogueReply.GiveUp -> {
+                dialogueFailure = reply.reason
+                dialogue = null
+                false
+            }
+        }
+    }
 
     override val isActing: Boolean
         get() = player.interaction != null || player.weakQueueList.isNotEmpty
@@ -227,16 +247,27 @@ class PlayerBotActor(
             crossed(pending)
         ) {
             climbing = null
+            dialogue = null
+            if (pending.tile.talk.isNotBlank()) {
+                skipToNearestWaypoint()
+            }
             plan.firstOrNull()?.let { world.walkTo(player, it) }
             return TravelStatus.Moving
         }
         if (player.interaction != null) {
             return TravelStatus.Moving
         }
-        if (pending.clicks > MAX_CLIMB_CLICKS || pending.waits > MAX_CLIMB_WAIT_TICKS) {
-            climbing = null
+        dialogueFailure?.let { reason ->
             resetTravel()
-            return TravelStatus.Blocked("could not ${pending.tile.op.lowercase()} the ${pending.tile.climb.lowercase()} at ${pending.from.x},${pending.from.z}")
+            return TravelStatus.Blocked("talking to ${pending.tile.talk} at ${pending.from.x},${pending.from.z}: $reason")
+        }
+        if (pending.clicks > MAX_CLIMB_CLICKS || pending.waits > MAX_CLIMB_WAIT_TICKS) {
+            val what = pending.tile.climb.ifBlank { pending.tile.talk }
+            resetTravel()
+            return TravelStatus.Blocked("could not ${pending.tile.op.lowercase()} the ${what.lowercase()} at ${pending.from.x},${pending.from.z}")
+        }
+        if (pending.tile.talk.isNotBlank()) {
+            return talk(pending)
         }
         if (world.climb(player, pending.from, pending.tile.climb, pending.tile.op)) {
             pending.clicks++
@@ -246,6 +277,28 @@ class PlayerBotActor(
             world.walkTo(player, pending.from)
         }
         return TravelStatus.Moving
+    }
+
+    /**
+     * Talks to a ferryman-like npc, answering its dialogue with the tile's options, until the
+     * conversation has carried the bot away.
+     */
+    private fun talk(pending: PendingClimb): TravelStatus {
+        val op = pending.tile.op.ifBlank { TALK_OP }
+        if (world.talkTo(player, pending.from, TALK_RADIUS, pending.tile.talk, op)) {
+            pending.clicks++
+            dialogue = BotDialogue(pending.tile.options)
+        } else {
+            pending.waits++
+            world.walkTo(player, pending.from)
+        }
+        return TravelStatus.Moving
+    }
+
+    /** A boat lands the bot on a later stretch of the route; it carries on from the waypoint nearest to it. */
+    private fun skipToNearestWaypoint() {
+        val nearest = plan.indices.minByOrNull { routeDistance(plan[it], player.coords) } ?: return
+        repeat(nearest) { plan.removeFirst() }
     }
 
     /**
@@ -278,7 +331,7 @@ class PlayerBotActor(
 
     /** A ditch or pipe: the next waypoint is the obstacle's other side, a climb tile of the same loc. */
     private fun crossesTo(climb: SiteTile, next: CoordGrid): Boolean =
-        climbs[next]?.climb.equals(climb.climb, ignoreCase = true)
+        climb.climb.isNotBlank() && climbs[next]?.climb.equals(climb.climb, ignoreCase = true)
 
     private fun crossed(pending: PendingClimb): Boolean {
         val next = plan.firstOrNull() ?: return false
@@ -504,6 +557,8 @@ class PlayerBotActor(
     private fun resetTravel() {
         travelDestination = null
         climbing = null
+        dialogue = null
+        dialogueFailure = null
         openedDoor = false
         plan.clear()
         stillTicks = 0
@@ -714,6 +769,10 @@ class PlayerBotActor(
         private const val MAX_CLIMB_CLICKS = 10
         private const val MAX_CLIMB_WAIT_TICKS = 600
         private const val OTHER_LEVEL_DISTANCE = 10_000
+        private const val TALK_OP = "Talk-to"
+        private const val TALK_RADIUS = 8
+        private const val CONTINUE_SUB = -1
+        private const val CHAT_MENU_OPTIONS = "component.chatmenu:options"
     }
 }
 

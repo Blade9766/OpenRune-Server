@@ -98,6 +98,8 @@ constructor(
         player.runEnergy = constants.run_max_energy
         player.slotId = slot
         sessions.attach(player)
+        val tap = BotDialogueTap(player.client)
+        player.client = tap
         val result = playerRegistry.add(player)
         if (!result.isSuccess()) {
             sessions.detach(player)
@@ -109,7 +111,7 @@ constructor(
         eventBus.publish(SessionStateEvent.Login(player))
         eventBus.publish(SessionStateEvent.EngineLogin(player))
         player.rebuildAppearance()
-        val actor = PlayerBotActor(player, site, behaviour, services)
+        val actor = PlayerBotActor(player, site, behaviour, services, tap)
         actors[record.id] = actor
         byPlayer[player] = record.id
         return actor
