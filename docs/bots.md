@@ -297,7 +297,7 @@ return_route = []
 | `barbarian_village_fighters` | combat | Edgeville | bones | walking |
 | `falador_cows` | combat | Falador East | cowhides | walking |
 | `falador_chickens` | combat | Falador East | feathers, raw chicken | walking |
-| `draynor_slayer` | slayer (Spria) | Draynor | bones, cowhides | walking |
+| `draynor_slayer` | slayer (Spria) | Draynor | bones, cowhides, feathers, furs | walking |
 | `edgeville_dungeon_slayer` | slayer (Vannaka) | Edgeville | big bones, limpwurt roots | walking |
 | `chaos_altar` | runecrafting (35) | Edgeville | chaos runes | walking |
 | `nature_altar` | runecrafting (44, Agility 79) | Shilo Village | nature runes | wayfinder |
@@ -376,8 +376,20 @@ Roles:
   The bot attacks whatever the slayer module counts for its task,
   so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
   Interest for Spria) marked complete when they spawn. `draynor_slayer` uses
-  Spria and hunts goblins and cows near Lumbridge and rats west of Lumbridge
-  Castle; Details
+  Spria, who awards no points, so a task without a hunt parks the bot in `ERROR`.
+  It hunts goblins and cows near Lumbridge, rats and spiders west of Lumbridge
+  Castle, birds in Fred's chicken pen, zombies and skeletons in the Draynor Sewers
+  (trapdoor north of the bank), scorpions in the Dwarven Mine (stairs east of
+  Falador), sourhogs down Spria's Strange hole, ghosts upstairs in Draynor Manor
+  (in and out through the back door, since the front doors only open from
+  outside), the dog in the farm south of Falador, and dwarves, icefiends and dark
+  bears around Ice Mountain (by the Monastery path west of Edgeville). Spria's
+  other tasks have no hunt within walking reach: bats (Silvarea and dungeons),
+  wolves (White Wolf Mountain, the desert past Shantay Pass), monkeys (Karamja),
+  kalphites and lizards (the desert), minotaurs (Stronghold of Security, behind
+  its question doors), crawling hands and banshees (Morytania), and cave bugs,
+  cave crawlers and cave slimes (Lumbridge Swamp Caves, which need a light
+  source). A bot given one of those parks until `::bot clear`. Details
   shows the current task. It sells at the Grand Exchange, walking north between
   Falador's east wall and the Draynor Manor fence to Barbarian Village and on
   past Edgeville (the River Lum blocks the direct way to Varrock). Each hunt's
