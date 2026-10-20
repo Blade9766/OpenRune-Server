@@ -461,9 +461,18 @@ Bones and ensouled heads come from these combat sites:
 Superior dragon bones and dagannoth bones have no site. Superior bones only drop
 from Vorkath (only his sleeping form is spawned; Dragon Slayer II is not
 implemented) and frost dragons (Grimstone dungeon has no entrance). Dagannoth
-bones only drop from the Dagannoth Kings, behind Waterbirth Island's unimplemented
-dungeon entrance and doors; ordinary dagannoths drop plain bones and
-ensouled dagannoth heads.
+bones only drop from the Dagannoth Kings (always, one per kill); ordinary
+dagannoths drop plain bones and ensouled dagannoth heads.
+
+Dagannoth bones are now obtainable: Waterbirth Island Dungeon is implemented
+(`content/areas/misc/waterbirth-island`). Jarvald sails from the Rellekka pier
+(2620,3685; 1,000 coins unless The Fremennik Trials counts as complete), the cave
+mouth at 2523,3740 leads to sublevel 1, the pressure doors need a player or a
+dropped pet rock on both plates, and the ladder-room door-supports fall to an
+attack from another path or a rune thrownaxe Chainhit special. The 85 Agility
+rocks + mountain cave skip the doors. The ladder chain then runs through
+sublevels 2-5 to the Kings' ladder at 1911,4367 (lair at 2900,4449). A bot site
+would need the door handling (or 85 Agility) and a team able to tank the Kings.
 
 The Catacombs of Kourend are now reachable (statue in the Kourend Castle
 courtyard, 1639,3673 → 1666,10050; vine ladder back up), so a dagannoth /

@@ -31,7 +31,8 @@ import org.rsmod.game.type.getOrNull
  * The bow, crossbow and thrown-weapon specials: Snapshot (magic shortbow), Powershot (magic
  * longbow and comp bow), Soulshot (Seercull), Snipe (Dorgeshuun crossbow), Annihilate (dragon
  * crossbow), Armadyl Eye (Armadyl crossbow), Evoke (Zaryte crossbow), Concentrated Shot
- * (ballistas), Duality (dragon knife) and Momentum Throw (dragon thrownaxe).
+ * (ballistas), Duality (dragon knife), Chainhit (rune thrownaxe) and Momentum Throw (dragon
+ * thrownaxe).
  */
 class RangedSpecialAttacks
 @Inject
@@ -68,6 +69,7 @@ constructor(
         registerRanged("obj.dragon_knife_p+", Duality(manager, ammunition, DRAGON_KNIFE_TRAVEL_P))
         registerRanged("obj.dragon_knife_p++", Duality(manager, ammunition, DRAGON_KNIFE_TRAVEL_P))
 
+        registerRanged("obj.rune_thrownaxe", Chainhit(manager, ammunition, npcSearch))
         registerRanged("obj.dragon_thrownaxe", MomentumThrow(manager, ammunition))
     }
 
@@ -451,6 +453,57 @@ constructor(
         }
     }
 
+    /**
+     * Rune thrownaxe, Chainhit: in a multicombat area the axe ricochets from its target to up to
+     * four other npcs within three tiles of it, in random order. Each bounce costs the special's
+     * energy again and the chain ends at the first bounce that misses. This is how a lone player
+     * knocks down every door-support in Waterbirth Island Dungeon from one side.
+     */
+    private class Chainhit(
+        manager: SpecialAttackManager,
+        ammunition: RangedAmmoManager,
+        private val npcSearch: NpcSearch,
+    ) : ThrownSpecial(manager, ammunition, required = 1) {
+        override fun ProtectedAccess.throwAt(
+            target: PathingEntity,
+            attack: CombatAttack.Ranged,
+            weapon: ItemServerType,
+        ) {
+            specialAnim("seq.chainhit")
+            spotanim("spotanim.sp_attack_chainhit_launch_spotanim", height = 96, slot = COMBAT_SLOT)
+            val damage = manager.rollRangedDamage(this, target, attack)
+            manager.giveCombatXp(this, target, attack, damage)
+            throwOne(target, weapon, CHAINHIT_TRAVEL, damage)
+            if (target !is Npc || !mapMultiway()) {
+                return
+            }
+            val bounceEnergy = manager.getSpecialEnergyRequirement("obj.rune_thrownaxe") ?: return
+            val bounces =
+                npcSearch
+                    .findAllAny(target.coords, distance = CHAINHIT_RADIUS, vis = HuntVis.Off)
+                    .filter { it != target && it.isValidTarget() && it.visType.hasOp(2) }
+                    .toList()
+                    .shuffled()
+                    .take(CHAINHIT_MAX_BOUNCES)
+            for (npc in bounces) {
+                if (!manager.hasSpecialEnergy(this, bounceEnergy)) {
+                    break
+                }
+                val hits =
+                    manager.rollRangedAccuracy(this, npc, attack.type, attack.style, attack.type, 1.0)
+                if (!hits) {
+                    break
+                }
+                manager.takeSpecialEnergy(this, bounceEnergy)
+                val bounce =
+                    manager.rollRangedMaxHit(this, npc, attack.type, attack.style, 1.0, 0)
+                manager.giveCombatXp(this, npc, attack, bounce)
+                val proj = manager.spawnProjectile(this, npc, CHAINHIT_TRAVEL, "projanim.thrown")
+                manager.queueRangedDamage(this, npc, null, bounce, proj.serverCycles)
+            }
+        }
+    }
+
     /** Dragon thrownaxe: +25% accuracy, and the next attack is ready on the very next tick. */
     private class MomentumThrow(manager: SpecialAttackManager, ammunition: RangedAmmoManager) :
         ThrownSpecial(manager, ammunition, required = 1) {
@@ -475,5 +528,8 @@ constructor(
         private const val DRAGON_KNIFE_TRAVEL_P = "spotanim.dragon_tknife_travel_spec_p"
         private const val ANNIHILATE_MAX_EXTRA_TARGETS = 8
         private const val MOMENTUM_ATTACK_DELAY = 1
+        private const val CHAINHIT_TRAVEL = "spotanim.sp_attack_chainhit_travel_spotanim"
+        private const val CHAINHIT_RADIUS = 3
+        private const val CHAINHIT_MAX_BOUNCES = 4
     }
 }
