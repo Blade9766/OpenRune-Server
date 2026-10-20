@@ -9,7 +9,6 @@ import dev.openrune.types.ItemServerType
 import dev.openrune.types.StatType
 import dev.or2.central.account.Rights
 import jakarta.inject.Inject
-import kotlin.math.max
 import org.rsmod.api.combat.commons.magic.Spellbook
 import org.rsmod.api.config.Constants
 import org.rsmod.api.invtx.invAdd
@@ -24,20 +23,18 @@ import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.output.runClientScript
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.player.stat.PlayerSkillXP
+import org.rsmod.api.player.stat.XpSource
 import org.rsmod.api.player.stat.stat
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.stat.statRestore
-import org.rsmod.api.player.stat.statSub
-import org.rsmod.api.player.ui.PlayerInterfaceUpdates
+import org.rsmod.api.player.stat.statSetLevel
 import org.rsmod.api.script.onCommand
 import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.spells.autocast.MagicSpellbookManager
 import org.rsmod.game.cheat.Cheat
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.Appearance
-import org.rsmod.game.stat.PlayerSkillXPTable
 import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -566,30 +563,7 @@ constructor(
     }
 
     private fun Player.setStatLevel(stat: StatType, level: Int) {
-        val internal = stat.internal()
-        val target = level.coerceIn(stat.minLevel, stat.maxLevel)
-        val targetXp = PlayerSkillXPTable.getXPFromLevel(target)
-        if (statBase(internal) > target) {
-            statRevert(internal, target, targetXp)
-            return
-        }
-        val xpDelta = targetXp - statMap.getXP(internal)
-        statMap.setCurrentLevel(internal, target.toByte())
-        statAdvance(internal, xpDelta.toDouble(), rate = 1.0, globalRate = 1.0)
-    }
-
-    /**
-     * Lowers [stat] to [targetLevel] and [targetXp]. There is deliberately no shared helper for
-     * this: xp reduction is not a standard gameplay operation and only exists for admin tooling.
-     */
-    private fun Player.statRevert(stat: String, targetLevel: Int, targetXp: Int) {
-        statMap.setCurrentLevel(stat, statBase(stat).toByte())
-        val levelDelta = stat(stat) - targetLevel
-        statMap.setXP(stat, targetXp)
-        statMap.setBaseLevel(stat, targetLevel.toByte())
-        statSub(stat, constant = max(0, levelDelta), percent = 0)
-        appearance.combatLevel = PlayerSkillXP.calculateCombatLevel(this)
-        PlayerInterfaceUpdates.updateCombatLevel(this)
+        statSetLevel(stat.internal(), level, XpSource.Natural)
     }
 
     /**

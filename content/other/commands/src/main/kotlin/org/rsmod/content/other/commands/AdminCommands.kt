@@ -10,9 +10,7 @@ import dev.openrune.types.ItemServerType
 import dev.openrune.types.NpcMode
 import dev.openrune.types.StatType
 import jakarta.inject.Inject
-import kotlin.math.max
 import kotlin.math.min
-import org.rsmod.annotations.InternalApi
 import org.rsmod.api.area.checker.AreaChecker
 import org.rsmod.api.death.NpcDeathKillContext
 import org.rsmod.api.death.NpcDeathKillHook
@@ -39,12 +37,8 @@ import org.rsmod.api.player.output.soundSynth
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.queueDeath
-import org.rsmod.api.player.stat.PlayerSkillXP
-import org.rsmod.api.player.stat.XpSource
 import org.rsmod.api.player.stat.stat
-import org.rsmod.api.player.stat.statAdvance
-import org.rsmod.api.player.stat.statSub
-import org.rsmod.api.player.ui.PlayerInterfaceUpdates
+import org.rsmod.api.player.stat.statSetLevel
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.player.vars.resyncVar
@@ -64,7 +58,6 @@ import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocShape
 import org.rsmod.game.map.Direction
-import org.rsmod.game.stat.PlayerSkillXPTable
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.square.MapSquareGrid
 import org.rsmod.map.square.MapSquareKey
@@ -772,33 +765,9 @@ constructor(
         }
     }
 
-    @OptIn(InternalApi::class)
     private fun Player.setStatLevel(statInternal: String, level: Int) {
-        val stat = ServerCacheManager.getStats(statInternal.asRSCM(RSCMType.STAT)) ?: return
-        val targetLevel = max(stat.minLevel, level)
-        val xp = PlayerSkillXPTable.getXPFromLevel(targetLevel)
-        val baseLevel = statMap.getBaseLevel(statInternal)
-        if (baseLevel > targetLevel) {
-            statRevert(statInternal, targetLevel, xp)
-            return
-        }
-        val xpDelta = xp - statMap.getXP(statInternal)
-        statMap.setCurrentLevel(statInternal, targetLevel.toByte())
-        statAdvance(statInternal, xpDelta.toDouble(), rate = 1.0, source = XpSource.Manual)
-    }
-
-    // There is, by design, no helper function to decrease stat xp, as xp reduction is not a
-    // standard operation in normal gameplay.
-    @OptIn(InternalApi::class)
-    private fun Player.statRevert(stat: String, targetLevel: Int, targetXp: Int) {
-        statMap.setCurrentLevel(stat, statMap.getBaseLevel(stat))
-        val levelDelta = stat(stat) - targetLevel
-        require(levelDelta > 0) { "This function can only be used to reduce stat levels." }
-        statMap.setXP(stat, targetXp)
-        statMap.setBaseLevel(stat, targetLevel.toByte())
-        statSub(stat, constant = levelDelta, percent = 0)
-        appearance.combatLevel = PlayerSkillXP.calculateCombatLevel(this)
-        PlayerInterfaceUpdates.updateCombatLevel(this)
+        if (ServerCacheManager.getStats(statInternal.asRSCM(RSCMType.STAT)) == null) return
+        statSetLevel(statInternal, level)
     }
 
     private fun reboot(cheat: Cheat) {
