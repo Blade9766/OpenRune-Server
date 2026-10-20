@@ -49,6 +49,36 @@ object LinkedPassages {
                         landing = CoordGrid(3407, 10145),
                     ),
             ),
+            LinkedPassage(
+                name = "Forthos Dungeon",
+                a =
+                    PassageEnd(
+                        "loc.hosdun_entrance_spiral_steps_hole",
+                        CoordGrid(1670, 3567),
+                        landing = CoordGrid(1670, 3569),
+                    ),
+                b =
+                    PassageEnd(
+                        "loc.hosdun_entrance_spiral_stairs",
+                        CoordGrid(1800, 9966),
+                        landing = CoordGrid(1800, 9968),
+                    ),
+            ),
+            LinkedPassage(
+                name = "Giants' Den",
+                a =
+                    PassageEnd(
+                        "loc.giants_den_entrance_ladder_hole",
+                        CoordGrid(1420, 3588),
+                        landing = CoordGrid(1420, 3588),
+                    ),
+                b =
+                    PassageEnd(
+                        "loc.giants_den_entrance_ladder",
+                        CoordGrid(1432, 9914),
+                        landing = CoordGrid(1432, 9913),
+                    ),
+            ),
         )
 }
 

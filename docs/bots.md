@@ -442,9 +442,17 @@ Superior dragon bones and dagannoth bones have no site. Superior bones only drop
 from Vorkath (only his sleeping form is spawned; Dragon Slayer II is not
 implemented) and frost dragons (Grimstone dungeon has no entrance). Dagannoth
 bones only drop from the Dagannoth Kings, behind Waterbirth Island's unimplemented
-dungeon entrance and doors; ordinary dagannoths drop plain bones and their
-ensouled heads sit in the Catacombs of Kourend (no entrance) or the Lighthouse
-(Horror from the Deep).
+dungeon entrance and doors; ordinary dagannoths drop plain bones and
+ensouled dagannoth heads.
+
+The Catacombs of Kourend are now reachable (statue in the Kourend Castle
+courtyard, 1639,3673 → 1666,10050; vine ladder back up), so a dagannoth /
+ensouled-head site is possible but not built yet: the dagannoths stand around
+1656-1674,9994-10002, a short walk south of the arrival tile. Catacomb kills also
+roll ancient shards and dark totem pieces, and buried bones restore Prayer there.
+Brutal dragons, moss giants and metal dragons share the same entrance. The side
+holes on the surface only open once that vine has been climbed from inside
+(`varbit.cata_hole*`), so a bot should use the statue.
 
 Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving, smithing) run
 to the bank when something drops them below 50% Hitpoints and rest there until
