@@ -460,7 +460,9 @@ counts as one of its five reroutes until it reaches the next waypoint, so a door
 that keeps shutting in its face ends in a "stuck" failure instead of a loop. A route into a fenced area needs a waypoint on each
 side of the gate and a resource area that lies wholly inside the fence. A waypoint
 counts as reached two tiles away, but only when the bot can walk to it, so one just
-past a closed gate is not ticked off through the fence. A bot heading home retraces
+past a closed gate is not ticked off through the fence. When the next waypoint cannot be
+reached with doors as they are, the bot opens the door on the line to it before it
+walks, rather than letting the pathfinder lead it to the nearest tile on the wrong side. A bot heading home retraces
 the route it arrived by from the nearest waypoint it can walk to (ties go to the one
 nearer the bank), so it leaves through the same gate, and a bot that has
 drifted outside a pen does not walk back in first.

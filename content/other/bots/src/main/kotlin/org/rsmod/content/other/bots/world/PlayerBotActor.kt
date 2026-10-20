@@ -166,7 +166,7 @@ class PlayerBotActor(
             if (plan.isEmpty()) {
                 return TravelStatus.Blocked("site has no route to ${destination.name.lowercase()}")
             }
-            world.walkTo(player, plan.first())
+            head(plan.first())
         }
         climbing?.let { return climb(it) }
         while (plan.isNotEmpty() && reached(plan.first())) {
@@ -178,7 +178,7 @@ class PlayerBotActor(
                 climbing = PendingClimb(reached, climb)
                 return climb(climbing!!)
             }
-            world.walkTo(player, next)
+            head(next)
         }
         if (plan.isEmpty()) {
             if (!isAt(destination)) {
@@ -246,6 +246,18 @@ class PlayerBotActor(
             world.walkTo(player, pending.from)
         }
         return TravelStatus.Moving
+    }
+
+    /**
+     * Walks to [target], first opening a door on the way when the pathfinder cannot get there with
+     * doors as they are; otherwise it would lead the bot to the nearest tile on the wrong side.
+     */
+    private fun head(target: CoordGrid) {
+        if (!world.canReach(player, target) && world.openDoorToward(player, target, DOOR_PATH_SLACK, DOOR_REACH)) {
+            openedDoor = true
+            return
+        }
+        world.walkTo(player, target)
     }
 
     /**
