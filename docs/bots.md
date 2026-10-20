@@ -131,7 +131,7 @@ often they act.
 ::bot                                   open the status interface
 ::bot list                              one line per bot
 ::bot status <bot>                      details (config, totals, last error)
-::bot create <role> <site> [name]       role: woodcutting | mining | runecrafting | fishing | thieving | combat | slayer
+::bot create <role> <site> [name]       role: woodcutting | mining | runecrafting | fishing | thieving | combat | slayer | smithing | smelting
 ::bot enable|disable <bot>
 ::bot remove <bot> [force]              force also cancels open offers (forfeits them)
 ::bot clear <bot>                       clear an ERROR so it can run again
@@ -325,6 +325,12 @@ return_route = []
 | `varrock_mithril_arrowtips` | smithing (55) | Varrock West | mithril arrowtips | walking |
 | `varrock_adamant_arrowtips` | smithing (75) | Varrock West | adamant arrowtips | walking |
 | `varrock_rune_arrowtips` | smithing (90) | Varrock West | rune arrowtips | walking |
+| `edgeville_bronze_bars` | smelting (1) | Edgeville | bronze bars | walking |
+| `edgeville_iron_bars` | smelting (15) | Edgeville | iron bars | walking |
+| `edgeville_steel_bars` | smelting (30) | Edgeville | steel bars | walking |
+| `edgeville_mithril_bars` | smelting (50) | Edgeville | mithril bars | walking |
+| `edgeville_adamant_bars` | smelting (70) | Edgeville | adamantite bars | walking |
+| `edgeville_rune_bars` | smelting (85) | Edgeville | runite bars | walking |
 
 Runecrafting sites other than `earth_altar` start with 1,000 pure essence in the
 bank and then buy essence on the exchange; run a `varrock_essence_mine` bot to
@@ -429,6 +435,18 @@ Roles:
   anvils south of Varrock West bank; their kits give a hammer, 270 bars and the
   Smithing level for the tier.
 
+- **smelting**: smelts the site's product, a bar, at the nearest furnace
+  (`category.furnace`) in its resource area, closing the loop between the mining
+  bots that sell ore and the smithing bots that buy bars. The ores and coal come
+  from the bar's `smithing_bars` cache row and are withdrawn as whole sets (9 iron
+  ore and 18 coal for steel), so a trip never carries ore without its coal. The bot
+  clicks Smelt on the furnace and picks its bar on the make menu (which also lists
+  iron beside steel), so the furnace script runs with the usual levels, timing, xp
+  and iron's 50% failure. Everything is banked; once the bank runs short the bot
+  buys whichever part it lacks on the exchange. The `edgeville_*_bars` sites use
+  the furnace east of Edgeville bank; their kits give the Smithing level and some
+  starting ore.
+
 Bones and ensouled heads come from these combat sites:
 
 - `taverley_blue_dragons` leaves Falador through the north-west city gate, takes
@@ -456,7 +474,7 @@ Brutal dragons, moss giants and metal dragons share the same entrance. The side
 holes on the surface only open once that vine has been climbed from inside
 (`varbit.cata_hole*`), so a bot should use the statue.
 
-Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving, smithing) run
+Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving, smithing, smelting) run
 to the bank when something drops them below 50% Hitpoints and rest there until
 they are back to 90%. A bot that dies keeps only what the death rules allow; if
 that loses its tool it stops with an error naming the tool, and Manage > Apply

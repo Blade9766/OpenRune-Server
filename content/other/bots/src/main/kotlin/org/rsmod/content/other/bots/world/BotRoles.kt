@@ -15,16 +15,20 @@ import org.rsmod.api.player.stat.miningLvl
 import org.rsmod.api.player.stat.smithingLvl
 import org.rsmod.api.player.stat.woodcuttingLvl
 import org.rsmod.api.table.runecrafting.RunecraftingAltarsRow
+import org.rsmod.api.table.smithing.SmithingBarsRow
 import org.rsmod.content.other.bots.core.BotDestination
 import org.rsmod.content.other.bots.core.BotRoleType
 import org.rsmod.content.other.bots.core.BotTargeting
 import org.rsmod.content.other.bots.core.EssenceSource
 import org.rsmod.content.other.bots.core.GatherStatus
+import org.rsmod.content.other.bots.core.SupplyLoads
+import org.rsmod.content.other.bots.core.SupplyPart
 import org.rsmod.content.quest.manager.Quest
 import org.rsmod.content.skills.mining.configs.MiningRocks
 import org.rsmod.content.skills.mining.scripts.Mining
 import org.rsmod.content.skills.smithing.util.SmithingData
 import org.rsmod.content.skills.smithing.util.SmithingProductMeta
+import org.rsmod.content.skills.validButtons
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLevelReq
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLogs
@@ -58,6 +62,12 @@ interface BotRoleBehaviour {
 
     /** How many of a supply to carry when the inventory has [free] slots. */
     fun supplyAmount(free: Int): Int = free
+
+    /** Supplies used up together (an ore and its coal), withdrawn as whole sets instead of one by one. */
+    fun supplySet(): List<SupplyPart> = emptyList()
+
+    /** Supplies worth buying once the bank has run out, best first; [banked] counts the bank. */
+    fun suppliesToBuy(banked: (Int) -> Long): List<Int> = supplyIds()
 
     fun isAt(player: Player, destination: BotDestination): Boolean = false
 
@@ -93,6 +103,7 @@ interface BotRoleBehaviour {
                 BotRoleType.Combat -> CombatBehaviour(site, world)
                 BotRoleType.Slayer -> SlayerBehaviour(site, world)
                 BotRoleType.Smithing -> SmithingBehaviour(site, world)
+                BotRoleType.Smelting -> SmeltingBehaviour(site, world)
             }
     }
 }
@@ -850,6 +861,91 @@ class SmithingBehaviour(private val site: BotSite, private val world: BotWorldSe
 
     private companion object {
         private const val HAMMER = "obj.hammer"
+    }
+}
+
+/**
+ * Smelts the site's first product, a bar, at the nearest furnace in the resource area: it withdraws
+ * whole sets of the bar's ores (and coal) from the bank, clicks Smelt on the furnace and picks the bar
+ * on the make menu, which also lists any other bar its ores make (iron beside steel).
+ */
+class SmeltingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+    private val bar: SmithingBarsRow? by lazy {
+        val wanted = site.products.firstOrNull()
+        SmithingBarsRow.all().firstOrNull { it.output.internalName == wanted }
+    }
+    private val parts: List<SupplyPart> by lazy {
+        val bar = bar ?: return@lazy emptyList()
+        bar.input.zip(bar.inputAmount).filter { (_, count) -> count > 0 }.map { (obj, count) -> SupplyPart(obj.id, count) }
+    }
+    private val furnaceCategory by lazy { runCatching { FURNACE_CATEGORY.asRSCM(RSCMType.CATEGORY) }.getOrNull() }
+
+    override var focus: String? = null
+        private set
+
+    override fun requirementProblem(player: Player): String? {
+        val bar = bar ?: return "site product is not a bar"
+        val level = bar.statReq.first().t1
+        return if (player.smithingLvl < level) "needs Smithing level $level" else null
+    }
+
+    override fun keep(itemId: Int): Boolean = false
+
+    override fun needsSupplies(player: Player): Boolean = parts.isEmpty() || !canSmelt(player, bar!!)
+
+    override fun supplyIds(): List<Int> = parts.map { it.itemId }
+
+    override fun supplySet(): List<SupplyPart> = parts
+
+    override fun suppliesToBuy(banked: (Int) -> Long): List<Int> = SupplyLoads.shortfall(parts, banked).ifEmpty { supplyIds() }
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        destination == BotDestination.Resource && site.resource.contains(player.coords)
+
+    /** Picks the bar on the make menu, whose buttons follow the bar table's order of what the inventory can smelt. */
+    override fun answerModal(player: Player): Boolean {
+        val bar = bar ?: return false
+        if (!player.ui.containsModal(SKILL_MULTI)) {
+            return false
+        }
+        val offered = SmithingBarsRow.all().filter { it.output.internalName != LOVAKITE_BAR && canSmelt(player, it) }
+        val button = validButtons.getOrNull(offered.indexOf(bar)) ?: return false
+        world.resumePauseButton(player, button, SMELT_ALL)
+        return true
+    }
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus {
+        if (needsSupplies(player)) {
+            return GatherStatus.NeedsSupplies
+        }
+        if (player.isActing() || player.queueList.isNotEmpty) {
+            return GatherStatus.Working(0)
+        }
+        val category = furnaceCategory ?: return GatherStatus.Failed("unknown furnace category")
+        val furnaces = world.findLocs(site.resource.center(), site.resource.radius) { it.category == category }
+        val claims = world.claims(player, site.resource.center(), site.resource.radius)
+        val (loc, type) =
+            BotTargeting.pick(
+                furnaces,
+                Random,
+                distance = { (loc, _) -> loc.coords.chebyshevDistance(player.coords) },
+                crowd = { (loc, _) -> claims.on(loc) },
+            ) ?: return GatherStatus.NoResource
+        if (!world.opLoc(player, loc, type, InteractionOp.Op2)) {
+            return GatherStatus.NoResource
+        }
+        focus = "${bar?.output?.name}: ${describe(type.name, loc.coords, claims.on(loc), furnaces.size)}"
+        return GatherStatus.Working(0)
+    }
+
+    private fun canSmelt(player: Player, bar: SmithingBarsRow): Boolean =
+        bar.input.zip(bar.inputAmount).all { (obj, count) -> player.inv.count(obj.internalName) >= count }
+
+    private companion object {
+        private const val FURNACE_CATEGORY = "category.furnace"
+        private const val SKILL_MULTI = "interface.skillmulti"
+        private const val LOVAKITE_BAR = "obj.lovakite_bar"
+        private const val SMELT_ALL = 28
     }
 }
 

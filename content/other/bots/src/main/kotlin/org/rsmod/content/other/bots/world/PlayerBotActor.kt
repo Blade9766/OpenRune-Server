@@ -22,6 +22,7 @@ import org.rsmod.content.other.bots.core.BotDialogue
 import org.rsmod.content.other.bots.core.DepositOutcome
 import org.rsmod.content.other.bots.core.DialogueReply
 import org.rsmod.content.other.bots.core.GatherStatus
+import org.rsmod.content.other.bots.core.SupplyLoads
 import org.rsmod.content.other.bots.core.SupplyOutcome
 import org.rsmod.content.other.bots.core.TravelStatus
 import org.rsmod.game.entity.Player
@@ -634,6 +635,15 @@ class PlayerBotActor(
         if (free == 0) {
             return SupplyOutcome.NoSpace
         }
+        val set = behaviour.supplySet()
+        if (set.isNotEmpty()) {
+            val load = SupplyLoads.plan(set, free, ::bankCount)
+            if (load.isEmpty() || !withdrawLoad(player, bank, load)) {
+                return SupplyOutcome.Unavailable
+            }
+            gatherBaseline = null
+            return SupplyOutcome.Withdrawn(load.values.sum())
+        }
         for (id in supplies) {
             val slot = bank.indices.firstOrNull { bank[it]?.id == id } ?: continue
             val wanted = behaviour.supplyAmount(free)
@@ -648,7 +658,7 @@ class PlayerBotActor(
         return SupplyOutcome.Unavailable
     }
 
-    override fun suppliesToBuy(): List<Int> = behaviour.supplyIds()
+    override fun suppliesToBuy(): List<Int> = behaviour.suppliesToBuy(::bankCount)
 
     override fun bankCount(itemId: Int): Long = bank.objs.sumOf { if (it?.id == itemId) it.count.toLong() else 0L }
 

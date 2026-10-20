@@ -512,6 +512,87 @@ supplies = ["obj.runite_bar"]
 resource_route = [{ x = 3184, z = 3430 }]
 exchange_route = [{ x = 3183, z = 3450 }, { x = 3172, z = 3467 }, { x = 3165, z = 3482 }]
 
+# Smelting sites smelt their bar at the Edgeville furnace east of the bank. The ores and coal come
+# from the bar's cache recipe; kits stock some, then the bots buy more on the exchange.
+
+[[site]]
+key = "edgeville_bronze_bars"
+role = "smelting"
+description = "Bronze bars at the Edgeville furnace, banking at Edgeville"
+resource = { x = 3108, z = 3499, radius = 3 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.bronze_bar"]
+kit = { bank = [{ item = "obj.copper_ore", count = 140 }, { item = "obj.tin_ore", count = 140 }], levels = { smithing = 1 } }
+supplies = ["obj.copper_ore", "obj.tin_ore"]
+resource_route = [{ x = 3103, z = 3496 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_iron_bars"
+role = "smelting"
+description = "Iron bars at the Edgeville furnace, banking at Edgeville"
+resource = { x = 3108, z = 3499, radius = 3 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.iron_bar"]
+kit = { bank = [{ item = "obj.iron_ore", count = 280 }], levels = { smithing = 15 } }
+supplies = ["obj.iron_ore"]
+resource_route = [{ x = 3103, z = 3496 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_steel_bars"
+role = "smelting"
+description = "Steel bars at the Edgeville furnace, banking at Edgeville"
+resource = { x = 3108, z = 3499, radius = 3 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.steel_bar"]
+kit = { bank = [{ item = "obj.iron_ore", count = 135 }, { item = "obj.coal", count = 270 }], levels = { smithing = 30 } }
+supplies = ["obj.iron_ore", "obj.coal"]
+resource_route = [{ x = 3103, z = 3496 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_mithril_bars"
+role = "smelting"
+description = "Mithril bars at the Edgeville furnace, banking at Edgeville"
+resource = { x = 3108, z = 3499, radius = 3 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.mithril_bar"]
+kit = { bank = [{ item = "obj.mithril_ore", count = 60 }, { item = "obj.coal", count = 240 }], levels = { smithing = 50 } }
+supplies = ["obj.mithril_ore", "obj.coal"]
+resource_route = [{ x = 3103, z = 3496 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_adamant_bars"
+role = "smelting"
+description = "Adamantite bars at the Edgeville furnace, banking at Edgeville"
+resource = { x = 3108, z = 3499, radius = 3 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.adamantite_bar"]
+kit = { bank = [{ item = "obj.adamantite_ore", count = 40 }, { item = "obj.coal", count = 240 }], levels = { smithing = 70 } }
+supplies = ["obj.adamantite_ore", "obj.coal"]
+resource_route = [{ x = 3103, z = 3496 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "edgeville_rune_bars"
+role = "smelting"
+description = "Runite bars at the Edgeville furnace, banking at Edgeville"
+resource = { x = 3108, z = 3499, radius = 3 }
+bank = { x = 3094, z = 3492, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.runite_bar"]
+kit = { bank = [{ item = "obj.runite_ore", count = 30 }, { item = "obj.coal", count = 240 }], levels = { smithing = 85 } }
+supplies = ["obj.runite_ore", "obj.coal"]
+resource_route = [{ x = 3103, z = 3496 }]
+exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
 # Wilderness routes cross the ditch north of Edgeville: a climb tile on each side of the same
 # obstacle makes the bot click Cross instead of walking (the Taverley pipe works the same way).
 [[site]]
