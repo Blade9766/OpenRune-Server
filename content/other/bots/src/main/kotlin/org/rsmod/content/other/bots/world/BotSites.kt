@@ -101,6 +101,8 @@ data class BotSite(
     val supplies: List<String> = emptyList(),
     /** How many supplies to carry; 0 fills the free inventory. */
     @JsonProperty("supply_amount") val supplyAmount: Int = 0,
+    /** Products carried that send the bot to bank; 0 waits for a full inventory (stacking loot never fills it). */
+    @JsonProperty("trip_load") val tripLoad: Int = 0,
     val kit: StarterKit? = null,
     /**
      * Wayfinder destination key a stray bot, or one coming back from an [exchangeByWayfinder] trip,

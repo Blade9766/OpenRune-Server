@@ -313,6 +313,7 @@ return_route = []
 | `catherby_swordfish` | fishing (50) | Catherby | tuna, swordfish | wayfinder |
 | `catherby_sharks` | fishing (76) | Catherby | sharks | wayfinder |
 | `varrock_tea_stall` | thieving | Varrock East | cups of tea | walking |
+| `draynor_seed_stall` | thieving (27) | Draynor | farming seeds (potato to guam) | walking |
 | `ardougne_silk` | thieving (20) | Ardougne South | silk | wayfinder |
 | `ardougne_gems` | thieving (75) | Ardougne South | uncut gems | wayfinder |
 | `barbarian_village_fighters` | combat | Edgeville | bones | walking |
@@ -388,6 +389,7 @@ Fishing, thieving and combat sites also use:
 | `tools` | The bot needs one of these carried or worn; never banked |
 | `supplies` | Withdrawn from the bank before a trip, best first (bait, feathers, food) |
 | `supply_amount` | How many supplies to carry; `0` fills the free inventory |
+| `trip_load` | Thieving: how many products carried send the bot to bank; `0` waits for a full inventory, which stacking loot such as seeds never fills |
 
 Roles:
 

@@ -302,6 +302,21 @@ wayfinder = "catherby"
 return_route = []
 
 [[site]]
+key = "draynor_seed_stall"
+role = "thieving"
+description = "Seeds from the two seed stalls in Draynor market, banking at Draynor"
+resource = { x = 3077, z = 3251, radius = 4 }
+bank = { x = 3092, z = 3243, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.potato_seed", "obj.onion_seed", "obj.cabbage_seed", "obj.tomato_seed", "obj.sweetcorn_seed", "obj.strawberry_seed", "obj.watermelon_seed", "obj.marigold_seed", "obj.rosemary_seed", "obj.nasturtium_seed", "obj.woad_seed", "obj.limpwurt_seed", "obj.barley_seed", "obj.hammerstone_hop_seed", "obj.asgarnian_hop_seed", "obj.jute_seed", "obj.yanillian_hop_seed", "obj.krandorian_hop_seed", "obj.guam_seed", "obj.marrentill_seed"]
+kit = { levels = { thieving = 27 } }
+trip_load = 300
+targets = ["loc.seed_stall"]
+target_op = 2
+resource_route = []
+exchange_route = [{ x = 3104, z = 3262 }, { x = 3108, z = 3290 }, { x = 3108, z = 3320 }, { x = 3083, z = 3330 }, { x = 3077, z = 3358 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
 key = "ardougne_silk"
 role = "thieving"
 description = "Silk from the stalls in Ardougne market, banking at Ardougne south"

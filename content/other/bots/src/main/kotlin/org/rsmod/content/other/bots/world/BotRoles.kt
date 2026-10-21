@@ -672,6 +672,7 @@ class FishingBehaviour(private val site: BotSite, private val world: BotWorldSer
 /** Steals from the nearest stocked stall loc in the resource area; emptied stalls are skipped. */
 class StallThievingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
     private val targets by lazy { SiteTargets(site.targets, RSCMType.LOC) }
+    private val productIds by lazy { resolveIds(site.products, RSCMType.OBJ) }
 
     override var focus: String? = null
         private set
@@ -684,7 +685,7 @@ class StallThievingBehaviour(private val site: BotSite, private val world: BotWo
         destination == BotDestination.Resource && site.resource.contains(player.coords)
 
     override fun gather(player: Player, target: BotDestination): GatherStatus {
-        if (player.inv.isFull()) {
+        if (player.inv.isFull() || (site.tripLoad > 0 && carriedLoad(player) >= site.tripLoad)) {
             return GatherStatus.InventoryFull
         }
         if (player.isActing()) {
@@ -705,6 +706,9 @@ class StallThievingBehaviour(private val site: BotSite, private val world: BotWo
         focus = describe(type.name, loc.coords, claims.on(loc), stalls.size)
         return GatherStatus.Working(0)
     }
+
+    private fun carriedLoad(player: Player): Long =
+        player.inv.objs.sumOf { obj -> if (obj != null && obj.id in productIds) obj.count.toLong() else 0L }
 }
 
 /**
