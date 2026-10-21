@@ -50,15 +50,12 @@ constructor(
         }
     }
 
-    /** Using the dream potion on the brazier works just like handing it to Cyrisus there. */
-    suspend fun ProtectedAccess.potionOnBrazier() {
+    fun ProtectedAccess.potionOnBrazier() {
         if (dreamMentor.stage(player) != STAGE_POTION) {
             mes("Nothing interesting happens.")
             return
         }
-        var entry = Entry.None
-        startDialogue { entry = atBrazier() }
-        enter(entry)
+        mes("Cyrisus is the one who knows what to do with the potion. Talk to him by the brazier.")
     }
 
     private enum class Entry {

@@ -437,6 +437,14 @@ class DreamMentorInteractionTest {
         fight.cleanup(f.player)
     }
 
+    @Test fun `jack turns away a player without a seal instead of opening the bank`() {
+        respectingProgress {
+            val f = Fixture(STAGE_GOT_CHEST)
+            f.bankWith(BirdsEyeJack.JACK)
+            assertTrue(f.said("No Seal of Passage, no service."))
+        }
+    }
+
     @Test fun `jack banks only for seal holders until the quest is complete`() {
         respectingProgress {
             val f = Fixture(STAGE_NEEDS_ARMOUR)
@@ -657,6 +665,13 @@ class DreamMentorInteractionTest {
             val npc = Npc(type, at)
             npcRepo.add(npc, Int.MAX_VALUE)
             publish(NpcEvents.Op1(npc))
+            if (npc.isSlotAssigned) npcRepo.del(npc, Int.MAX_VALUE)
+        }
+
+        fun bankWith(type: String, at: CoordGrid = player.coords.translateX(1)) {
+            val npc = Npc(type, at)
+            npcRepo.add(npc, Int.MAX_VALUE)
+            publish(NpcEvents.Op3(npc))
             if (npc.isSlotAssigned) npcRepo.del(npc, Int.MAX_VALUE)
         }
 

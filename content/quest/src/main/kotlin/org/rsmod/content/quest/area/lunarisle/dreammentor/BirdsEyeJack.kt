@@ -14,6 +14,7 @@ import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorQuest.Compa
 import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorQuest.Companion.STAGE_ARMED
 import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorQuest.Companion.STAGE_GOT_CHEST
 import org.rsmod.content.quest.area.lunarisle.dreammentor.DreamMentorQuest.Companion.STAGE_NEEDS_ARMOUR
+import org.rsmod.game.entity.Npc
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -31,10 +32,10 @@ constructor(
     override fun ScriptContext.startup() {
         onOpNpc1(JACK) { startDialogue(it.npc) { talk() } }
         onApNpc1(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) startDialogue(it.npc) { talk() } }
-        onOpNpc3(JACK) { bank() }
-        onApNpc3(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) bank() }
-        onOpNpc4(JACK) { collect() }
-        onApNpc4(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) collect() }
+        onOpNpc3(JACK) { bank(it.npc) }
+        onApNpc3(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) bank(it.npc) }
+        onOpNpc4(JACK) { collect(it.npc) }
+        onApNpc4(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) collect(it.npc) }
     }
 
     fun mayBank(player: org.rsmod.game.entity.Player): Boolean =
@@ -42,16 +43,16 @@ constructor(
 
     private fun ProtectedAccess.mayBank(): Boolean = mayBank(player)
 
-    private suspend fun ProtectedAccess.bank() {
-        if (mayBank()) tryOpenBank() else refuse()
+    private suspend fun ProtectedAccess.bank(npc: Npc) {
+        if (mayBank()) tryOpenBank() else refuse(npc)
     }
 
-    private suspend fun ProtectedAccess.collect() {
-        if (mayBank()) ifOpenMainModal(COLLECTION_BOX) else refuse()
+    private suspend fun ProtectedAccess.collect(npc: Npc) {
+        if (mayBank()) ifOpenMainModal(COLLECTION_BOX) else refuse(npc)
     }
 
-    private suspend fun ProtectedAccess.refuse() {
-        startDialogue {
+    private suspend fun ProtectedAccess.refuse(npc: Npc) {
+        startDialogue(npc) {
             chatNpc(neutral, "No Seal of Passage, no service. Moon Clan rules, not mine.")
         }
     }
