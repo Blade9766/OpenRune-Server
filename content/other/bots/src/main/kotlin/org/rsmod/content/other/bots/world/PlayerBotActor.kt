@@ -270,7 +270,8 @@ class PlayerBotActor(
         }
         dialogueFailure?.let { reason ->
             resetTravel()
-            return TravelStatus.Blocked("talking to ${pending.tile.talk} at ${pending.from.x},${pending.from.z}: $reason")
+            val partner = pending.tile.talk.ifBlank { pending.tile.climb }
+            return TravelStatus.Blocked("talking to $partner at ${pending.from.x},${pending.from.z}: $reason")
         }
         if (pending.clicks > MAX_CLIMB_CLICKS || pending.waits > MAX_CLIMB_WAIT_TICKS) {
             val what = pending.tile.climb.ifBlank { pending.tile.talk }
@@ -282,6 +283,9 @@ class PlayerBotActor(
         }
         if (world.climb(player, pending.from, pending.tile.climb, pending.tile.op)) {
             pending.clicks++
+            if (pending.tile.options.isNotEmpty()) {
+                dialogue = BotDialogue(pending.tile.options)
+            }
         } else {
             // Someone else may have left it in another state (a door standing open); it resets. A
             // bot already at it stays put: a guild door vanishes while its script walks the bot through.

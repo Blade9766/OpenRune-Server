@@ -48,6 +48,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             "give" -> give(player, coordinator, rest)
             "take" -> take(player, coordinator, rest)
             "level" -> level(player, coordinator, rest)
+            "task" -> clearTask(player, coordinator, rest)
             "kit" -> change(player, coordinator, rest[0], "applied the starter kit to") { applyKit(coordinator, it) }
             "sites" -> sites(player, rest.firstOrNull() == "reload")
             "trace" -> trace(player, coordinator, rest[0])
@@ -218,6 +219,16 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
         report(player, "set ${args[1]} to $level on ${bot.name}", error, bot)
     }
 
+    private fun clearTask(player: Player, coordinator: BotCoordinator, args: List<String>) {
+        if (args.getOrNull(1) != "clear") {
+            return player.mes("Use ::bot task <bot> clear")
+        }
+        val bot = coordinator.find(args[0]) ?: return player.mes("No bot '${args[0]}'.")
+        val varps = listOf(SLAYER_TARGET, SLAYER_COUNT, SLAYER_COUNT_ORIGINAL).map { it.asRSCM(RSCMType.VARP) }
+        val error = coordinator.editSave(bot.id) { it.copy(vars = it.vars - varps.toSet()) }
+        report(player, "cleared the slayer task of ${bot.name}", error, bot)
+    }
+
     private fun details(player: Player, coordinator: BotCoordinator, idOrName: String) {
         val view = coordinator.status().firstOrNull { it.record.id.toString() == idOrName || it.record.name.equals(idOrName, true) }
             ?: return player.mes("No bot '$idOrName'.")
@@ -339,6 +350,7 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
     companion object {
         private const val SLAYER_TARGET = "varp.slayer_target"
         private const val SLAYER_COUNT = "varp.slayer_count"
+        private const val SLAYER_COUNT_ORIGINAL = "varp.slayer_count_original"
 
         val SETTING_KEYS: List<String> =
             listOf(
@@ -351,6 +363,6 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
         const val USAGE: String =
             "::bot [status <bot>|list|create <role> <site> [name]|enable|disable|remove <bot> [force]|" +
                 "clear <bot>|kit <bot>|master on|off|max <n>|set <bot> <key> <value>|give|take <bot> <item> [n] [inv|worn|bank]|" +
-                "level <bot> <stat> <lvl>|trace <bot>|tele <bot> <x> <z> [level]|die <bot>|sites [reload]|here]"
+                "level <bot> <stat> <lvl>|task <bot> clear|trace <bot>|tele <bot> <x> <z> [level]|die <bot>|sites [reload]|here]"
     }
 }

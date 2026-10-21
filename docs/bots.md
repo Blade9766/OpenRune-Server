@@ -142,6 +142,7 @@ often they act.
 ::bot give <bot> <item> [n] [inv|worn|bank]   bot must be disabled
 ::bot take <bot> <item> [n] [inv|worn|bank]   bot must be disabled
 ::bot level <bot> <stat> <level>        bot must be disabled
+::bot task <bot> clear                  drop a slayer bot's task so its master gives a new one (bot must be disabled)
 ::bot trace <bot>                       current focus and the last decisions with their reasons
 ::bot tele <bot> <x> <z> [level]        move a bot (to test how it finds its way back)
 ::bot die <bot>                         kill a bot (to test what it does after a death)
@@ -413,32 +414,60 @@ Roles:
   bot that cannot afford that goes to `ERROR` rather than taking a free new task.
   The bot attacks whatever the slayer module counts for its task,
   so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
-  Interest for Spria) marked complete when they spawn. `draynor_slayer` uses
-  Spria, who awards no points, so a task without a hunt parks the bot in `ERROR`.
-  It hunts goblins and cows near Lumbridge, rats and spiders west of Lumbridge
-  Castle, birds in Fred's chicken pen, zombies and skeletons in the Draynor Sewers
-  (trapdoor north of the bank), scorpions in the Dwarven Mine (stairs east of
-  Falador), sourhogs down Spria's Strange hole, ghosts upstairs in Draynor Manor
-  (in and out through the back door, since the front doors only open from
-  outside), the dog in the farm south of Falador, and dwarves, icefiends and dark
-  bears around Ice Mountain (by the Monastery path west of Edgeville). Spria's
-  other tasks have no hunt within walking reach: bats (Silvarea and dungeons),
-  wolves (White Wolf Mountain, the desert past Shantay Pass), monkeys (Karamja),
-  kalphites and lizards (the desert), minotaurs (Stronghold of Security, behind
-  its question doors), crawling hands and banshees (Morytania), and cave bugs,
-  cave crawlers and cave slimes (Lumbridge Swamp Caves, which need a light
-  source). A bot given one of those parks until `::bot clear`. Details
-  shows the current task. It sells at the Grand Exchange, walking north between
-  Falador's east wall and the Draynor Manor fence to Barbarian Village and on
-  past Edgeville (the River Lum blocks the direct way to Varrock). Each hunt's
-  route also counts as a way home, so a bot can walk back to the master or bank
-  from any hunt area.
+  Interest for Spria) and Priest in Peril, with Drezel's blessing, marked complete
+  when they spawn, so the Morytania hunts can pass the Salve barrier.
+  `draynor_slayer` uses Spria, who awards no points, so a task without a hunt parks
+  the bot in `ERROR`. It hunts goblins and cows near Lumbridge, rats and spiders
+  west of Lumbridge Castle, birds in Fred's chicken pen, zombies and skeletons in
+  the Draynor Sewers (trapdoor north of the bank), scorpions in the Dwarven Mine
+  (stairs east of Falador), sourhogs down Spria's Strange hole, ghosts upstairs in
+  Draynor Manor (in and out through the back door, since the front doors only open
+  from outside), the dog in the farm south of Falador, dwarves, icefiends and dark
+  bears around Ice Mountain (by the Monastery path west of Edgeville), cave bugs,
+  cave crawlers and cave slime in the Lumbridge Swamp Caves (the kit's tinderbox and
+  lit candle lantern are tools, so they stay in the inventory: without the tinderbox
+  the cave asks for confirmation, without a light the bot goes dark), giant bats in
+  Taverley Dungeon (through Falador and the Taverley gate), white wolves on White
+  Wolf Mountain, minotaurs on the first floor of the Stronghold of Security (its
+  doors' questions are answered with the full list of correct answers), and banshees
+  and crawling hands in the Slayer Tower (the kit's earmuffs block the banshees'
+  scream). The Morytania route goes Draynor - Grand Exchange - Varrock - Paterdomus,
+  down the trapdoor north of the temple, through the two mausoleum gates and the
+  holy barrier; it comes back through the trapdoor in the small mausoleum on the
+  Morytania bank. Spria's tasks without a hunt: kalphites (neither the Kalphite Cave
+  entrance nor the Kalphite Lair burrow has a handler on this server), lizards (the
+  desert heat needs waterskins that run dry, and a lizard only dies to an ice
+  cooler, which bots cannot use) and monkeys (Karamja: the Port Sarim seamen are
+  multi-npcs whose ops the bot does not see, so it cannot board yet; the hunt and
+  the kit's coins for the fare are in place). A bot given one of those parks until
+  `::bot task <bot> clear` and `::bot clear`. Details shows the current task. It
+  sells at the Grand Exchange, walking north between Falador's east wall and the
+  Draynor Manor fence to Barbarian Village and on past Edgeville (the River Lum
+  blocks the direct way to Varrock). Each hunt's route also counts as a way home, so
+  a bot can walk back to the master or bank from any hunt area.
   `edgeville_dungeon_slayer` takes tasks from Vannaka in Edgeville Dungeon (down the
   trapdoor south of Edgeville bank, north past the giant spiders and through the
   gate at 3103,9909) and hunts hill giants, reached through the brass-key house
   north of Barbarian Village and its ladder; its kit carries the brass key as a
-  tool. The hill giants hunt also loots ensouled giant heads. Moss giants are only reachable through the pipe shortcut, so that task is
-  re-rolled.
+  tool. The hill giants hunt also loots ensouled giant heads. It also hunts
+  hobgoblins, ice giants and ice warriors in the Asgarnian Ice Dungeon (through
+  Draynor and Port Sarim to the Mudskipper Point trapdoor) and ghouls outside the
+  Slayer Tower (the Morytania route). Vannaka awards points, so a task without a
+  hunt is cancelled once the bot has 30; until then (no points before the fifth
+  task of a streak) it parks in `ERROR` like a Spria bot. Only five of Vannaka's
+  46 tasks have a hunt, so this site parks often; `::bot task <bot> clear` (bot
+  disabled) drops the task as an administrator, and `::bot clear` sends the bot
+  back to its master. Unsupported for now: moss giants (behind
+  the Edgeville Dungeon obstacle pipe, which does nothing on this server, or a
+  Varrock Sewers web the bot cannot slash); kurask, basilisks, cockatrice,
+  pyrefiends, jellies and turoth (the Fremennik Slayer Dungeon entrance does
+  nothing); kalphites, crocodiles and dust devils (no cave handlers, desert heat);
+  the Slayer Tower's upper floors (aberrant spectres, bloodveld, infernal mages,
+  nechryael, gargoyles, abyssal demons); and the far-off or quest-locked rest (blue
+  dragons, fire giants, lesser demons, trolls, ogres, crabs, dagannoth, elves,
+  fever spiders, gryphons, harpie bug swarms, hellhounds, jungle horrors, mogres,
+  molanisks, otherworldly beings, sea snakes, shades, shadow warriors, spiritual
+  creatures, terror dogs, vampyres, werewolves).
 
 - **smithing**: smiths the site's product at the nearest anvil (`category.anvil`) in
   its resource area. It clicks the anvil with a full inventory of the product's bar
@@ -570,7 +599,11 @@ boat trip lists its own deck and the far side's deck is skipped:
 { x = 2834, z = 3335, talk = "npc.shipmonk2", op = "Talk-to", options = ["Yes, I'm ready to go."] }
 ```
 
-Outside a `talk` step bots still close any dialogue that opens on them. The chat
+A `climb` step may carry `options` too, for a door or gate that asks something
+before it opens: the Stronghold of Security doors ask a random security question,
+and listing every correct answer (longest first, so a short answer such as "No."
+cannot claim the start of a wrong one) answers whichever comes up. Outside a `talk`
+or such a `climb` step bots still close any dialogue that opens on them. The chat
 menu's lines only ever go to the client (`chatbox_multi_init`), so every bot's client
 is wrapped in a tap that keeps the last menu it was sent.
 

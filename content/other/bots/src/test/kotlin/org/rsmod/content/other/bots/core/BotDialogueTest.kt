@@ -50,6 +50,19 @@ class BotDialogueTest {
     }
 
     @Test
+    fun `a door's list of every correct answer picks the right one, longest first`() {
+        val answers = listOf("Virus scan my device then change my password.", "Nobody.", "No.")
+        val menu =
+            listOf(
+                "Virus scan my device then change my password.",
+                "Change my password then virus scan my device.",
+                "Nothing, it will go away on its own.",
+            )
+        assertEquals(DialogueReply.Pick(1), BotDialogue(answers).reply(DialogueScreen.Choice(menu)))
+        assertEquals(DialogueReply.Pick(3), BotDialogue(listOf("No.") + answers).reply(DialogueScreen.Choice(menu)))
+    }
+
+    @Test
     fun `gives up on a menu offering nothing it was told to pick`() {
         val dialogue = BotDialogue(listOf("Yes, I'm ready to go."))
         val reply = dialogue.reply(DialogueScreen.Choice(listOf("Will you keep them safe for me?", "I'll leave them somewhere myself.")))

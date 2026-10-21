@@ -869,7 +869,12 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
     }
 
     override fun prepare(player: Player) {
-        Quest.get(MASTER_QUEST)?.let { if (!it.isQuestCompleted(player)) it.jumpToStage(player, it.maxSteps) }
+        for (key in UNLOCK_QUESTS) {
+            Quest.get(key)?.let { if (!it.isQuestCompleted(player)) it.jumpToStage(player, it.maxSteps) }
+        }
+        Quest.get(PRIEST_IN_PERIL)?.let { quest ->
+            for (name in PRIEST_IN_PERIL_UNLOCKS) quest.attribute(name, false).set(player, true)
+        }
     }
 
     override fun needsSourceVisit(player: Player): Boolean = hunt(player) == null
@@ -947,7 +952,9 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
     private companion object {
         private const val TASK_VARP = "varp.slayer_target"
         private const val COUNT_VARP = "varp.slayer_count"
-        private const val MASTER_QUEST = "quest_porcineofinterest"
+        private const val PRIEST_IN_PERIL = "quest_priestinperil"
+        private val PRIEST_IN_PERIL_UNLOCKS = listOf("BLESSED", "WEST_GATE_UNLOCKED")
+        private val UNLOCK_QUESTS = listOf("quest_porcineofinterest", PRIEST_IN_PERIL)
         private const val MAX_ASKS = 10
         private const val BARREN_CHECKS = 250
     }
