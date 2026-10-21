@@ -491,7 +491,7 @@ class BotBrain(
             }
         }
         val minutes = SUPPLY_PARK_TICKS * TICK_MS / 60_000
-        val reason = "Parked: no supplies for $minutes minutes"
+        val reason = "Parked: no supplies for $minutes minutes; tries again in 2 hours"
         log.warn(record, "parked: its bank has had no supplies for $minutes minutes and none could be bought")
         setActivity(reason)
         parkRequest = reason

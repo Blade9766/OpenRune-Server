@@ -283,9 +283,12 @@ class PlayerBotActor(
         if (world.climb(player, pending.from, pending.tile.climb, pending.tile.op)) {
             pending.clicks++
         } else {
-            // Someone else may have left it in another state (a door standing open); it resets.
+            // Someone else may have left it in another state (a door standing open); it resets. A
+            // bot already at it stays put: a guild door vanishes while its script walks the bot through.
             pending.waits++
-            world.walkTo(player, pending.from)
+            if (player.coords.chebyshevDistance(pending.from) > 1) {
+                world.walkTo(player, pending.from)
+            }
         }
         return TravelStatus.Moving
     }

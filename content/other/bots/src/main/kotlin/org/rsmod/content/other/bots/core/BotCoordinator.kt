@@ -133,7 +133,7 @@ class BotCoordinator(
         }
         stopping.remove(id)
         val updated =
-            currentOf(record).copy(enabled = true).let {
+            currentOf(record).copy(enabled = true, wakeAt = 0).let {
                 if (it.state == BotState.Error && id !in live) {
                     it.copy(state = BotState.Disabled, lastError = null, errorRecoveries = 0)
                 } else {
@@ -153,12 +153,12 @@ class BotCoordinator(
     }
 
     /** Disables a bot; it leaves the world once it is not mid-action. Items stay with the bot. */
-    fun disable(id: Long, reason: String = "Disabled by an administrator"): String? {
+    fun disable(id: Long, reason: String = "Disabled by an administrator", wakeAt: Long = 0): String? {
         val record = records[id] ?: return "no such bot"
-        put(currentOf(record).copy(enabled = false))
+        put(currentOf(record).copy(enabled = false, wakeAt = wakeAt))
         if (id in live) {
             stopping[id] = StopRequest(reason)
-            live[id]?.brain?.updateRecord { it.copy(enabled = false) }
+            live[id]?.brain?.updateRecord { it.copy(enabled = false, wakeAt = wakeAt) }
         } else {
             put(records.getValue(id).copy(state = BotState.Disabled, activity = reason))
             persist(id)
@@ -297,11 +297,12 @@ class BotCoordinator(
             }
             bot.brain.parkRequest?.let { reason ->
                 bot.brain.parkRequest = null
-                disable(id, reason)
+                disable(id, reason, wakeAt = now + PARK_WAKE_MS)
             }
         }
         if (cycle - lastPeriodicSave >= PERIODIC_SAVE_TICKS) {
             lastPeriodicSave = cycle
+            wakeParked(now)
             for ((id, bot) in live) {
                 if (bot.brain.dirty) {
                     persist(id)
@@ -417,6 +418,18 @@ class BotCoordinator(
         }
     }
 
+    private fun wakeParked(now: Long) {
+        val due = records.values.filter { !it.enabled && it.wakeAt in 1..now }
+        for (record in due) {
+            log.info(record, "waking from its supply park to try buying again")
+            enable(record.id)?.let {
+                put(record.copy(wakeAt = 0))
+                persist(record.id)
+                log.warn(record, "could not wake: $it")
+            }
+        }
+    }
+
     private fun reconcileActive(cycle: Int) {
         if (!settings.masterEnabled) {
             return
@@ -526,5 +539,6 @@ class BotCoordinator(
         private const val SPAWN_RETRY_TICKS = 100
         private const val EXIT_WINDOW_MS = 60 * 60_000L
         private const val MAX_EXITS_PER_WINDOW = 3
+        private const val PARK_WAKE_MS = 2 * 60 * 60_000L
     }
 }

@@ -176,6 +176,41 @@ class BotRestockTest {
     }
 
     @Test
+    fun `a parked bot wakes two hours later to try buying again, even across a restart`() {
+        val world = fisher()
+        world.exchange.guide = null
+        val id = world.startBot(bankedLogs = 0, coins = 1000)
+        world.tickUntil { world.state(id) == BotState.WaitingForSupplies }
+        world.tickUntil(limit = BotBrain.SUPPLY_PARK_TICKS * 2) { !world.coordinator.isLive(id) }
+        assertFalse(world.record(id).enabled)
+        assertTrue(world.record(id).wakeAt > world.now)
+
+        world.restart()
+        world.tick(200)
+        assertFalse(world.coordinator.isLive(id), "still parked before the wake time")
+        world.now = world.record(id).wakeAt
+        world.tickUntil { world.coordinator.isLive(id) }
+        assertTrue(world.record(id).enabled)
+        assertEquals(0L, world.record(id).wakeAt)
+        assertTrue(world.log.lines.any { "waking" in it })
+    }
+
+    @Test
+    fun `disabling a parked bot by hand cancels its wake-up`() {
+        val world = fisher()
+        world.exchange.guide = null
+        val id = world.startBot(bankedLogs = 0, coins = 1000)
+        world.tickUntil { world.state(id) == BotState.WaitingForSupplies }
+        world.tickUntil(limit = BotBrain.SUPPLY_PARK_TICKS * 2) { !world.coordinator.isLive(id) }
+        world.coordinator.disable(id)
+        assertEquals(0L, world.record(id).wakeAt)
+        world.now += 3 * 60 * 60_000L
+        world.tick(200)
+        assertFalse(world.record(id).enabled)
+        assertFalse(world.coordinator.isLive(id))
+    }
+
+    @Test
     fun `a refund that does not fit parks the bot in error and keeps the pending record`() {
         val world = fisher()
         world.featherSeller()

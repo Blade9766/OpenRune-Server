@@ -293,6 +293,10 @@ return_route = []
 | `varrock_east_mine` | mining | Varrock East | copper, tin, iron ore | walking |
 | `barbarian_village_coal` | mining (30) | Edgeville | coal | walking |
 | `varrock_essence_mine` | mining (30) | Varrock East | pure essence | walking |
+| `mining_guild_coal` | mining (60) | Mining Guild chest | coal | walking |
+| `mining_guild_mithril` | mining (60) | Mining Guild chest | mithril ore | walking |
+| `mining_guild_adamantite` | mining (70) | Mining Guild chest | adamantite ore | walking |
+| `mining_guild_runite` | mining (85) | Mining Guild chest | runite ore | walking |
 | `earth_altar` | runecrafting (9) | Varrock East | earth runes | walking |
 | `air_altar` | runecrafting (1) | Falador East | air runes | walking |
 | `mind_altar` | runecrafting (2) | Edgeville | mind runes | walking |
@@ -660,9 +664,24 @@ as its activity, while its buy offer rests, when its supplies have no guide pric
 nobody sells them, it has no coins and nothing to sell, selling is paused or off, or
 the exchange is unavailable. A fighter out of food rests while it waits. A bot whose
 bank has had no supplies for an hour is parked: it aborts its supply buy offer, is
-disabled with the activity "Parked: no supplies for 60 minutes" and a warning in the
-log, and frees its active slot for a bot that can work. `::bot set <bot> restock off`
+disabled with the activity "Parked: no supplies for 60 minutes; tries again in 2
+hours" and a warning in the log, and frees its active slot for a bot that can work.
+Two hours later it re-enables itself to try buying again (the wake time survives
+restarts); disabling or enabling it by hand cancels the wake-up. `::bot set <bot> restock off`
 restores the old behaviour of waiting for an administrator.
+
+### Supply chain
+
+Smiths, smelters and essence runecrafters buy their supplies on the exchange, so
+they only work while other bots sell them: essence miners (`varrock_essence_mine`)
+feed the runecrafters, ore and coal miners (`varrock_east_mine`,
+`barbarian_village_coal` and the four Mining Guild sites) feed the smelters, and the
+smelters feed the arrowtip smiths. Keep a miner or two per consumer; when a link is
+missing the consumers park and retry every two hours. The Mining Guild sites bank at
+the chest by the south rocks: coal and mithril sit north of the guild's inner door,
+which their routes cross, and every guild trip to the exchange leaves by the ladder.
+`essence mine` only works for runecrafting sites with a route to Aubury
+(`earth_altar`); the others buy essence.
 
 ## Persistence and safety
 

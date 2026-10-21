@@ -88,6 +88,8 @@ data class BotRecord(
     val salesCounted: Map<Long, Int> = emptyMap(),
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
+    /** When a bot parked for want of supplies comes back to try buying again; 0 when it stays off. */
+    val wakeAt: Long = 0,
 ) {
     /** The exchange owner id: bots use negative account ids, which no real account has. */
     val ownerId: Int

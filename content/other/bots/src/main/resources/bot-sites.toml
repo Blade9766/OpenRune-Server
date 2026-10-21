@@ -190,6 +190,54 @@ resource_route = [{ x = 3094, z = 3470 }, { x = 3092, z = 3445 }, { x = 3084, z 
 exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
 
 [[site]]
+key = "mining_guild_coal"
+role = "mining"
+description = "Coal in the Mining Guild, banking at the guild's bank chest"
+resource = { x = 3046, z = 9745, radius = 7 }
+bank = { x = 3013, z = 9718, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.coal"]
+kit = { inv = [{ item = "obj.adamant_pickaxe" }], levels = { mining = 60 } }
+resource_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 3019, z = 9733, climb = "Door", op = "Open" }]
+exchange_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 3019, z = 9733, climb = "Door", op = "Open" }, { x = 3021, z = 9739, climb = "Ladder", op = "Climb-up" }, { x = 3021, z = 3341, climb = "Ladder", op = "Climb-down" }, { x = 3023, z = 3348 }, { x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "mining_guild_mithril"
+role = "mining"
+description = "Mithril in the Mining Guild, banking at the guild's bank chest"
+resource = { x = 3049, z = 9736, radius = 6 }
+bank = { x = 3013, z = 9718, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.mithril_ore"]
+kit = { inv = [{ item = "obj.adamant_pickaxe" }], levels = { mining = 60 } }
+resource_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 3019, z = 9733, climb = "Door", op = "Open" }]
+exchange_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 3019, z = 9733, climb = "Door", op = "Open" }, { x = 3021, z = 9739, climb = "Ladder", op = "Climb-up" }, { x = 3021, z = 3341, climb = "Ladder", op = "Climb-down" }, { x = 3023, z = 3348 }, { x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "mining_guild_adamantite"
+role = "mining"
+description = "Adamantite in the Mining Guild, banking at the guild's bank chest"
+resource = { x = 3039, z = 9727, radius = 9 }
+bank = { x = 3013, z = 9718, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.adamantite_ore"]
+kit = { inv = [{ item = "obj.rune_pickaxe" }], levels = { mining = 70 } }
+resource_route = []
+exchange_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 3019, z = 9733, climb = "Door", op = "Open" }, { x = 3021, z = 9739, climb = "Ladder", op = "Climb-up" }, { x = 3021, z = 3341, climb = "Ladder", op = "Climb-down" }, { x = 3023, z = 3348 }, { x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
+key = "mining_guild_runite"
+role = "mining"
+description = "Runite in the Mining Guild's two rune rocks, banking at the guild's bank chest"
+resource = { x = 3055, z = 9723, radius = 3 }
+bank = { x = 3013, z = 9718, radius = 3 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.runite_ore"]
+kit = { inv = [{ item = "obj.rune_pickaxe" }], levels = { mining = 85 } }
+resource_route = []
+exchange_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 3019, z = 9733, climb = "Door", op = "Open" }, { x = 3021, z = 9739, climb = "Ladder", op = "Climb-up" }, { x = 3021, z = 3341, climb = "Ladder", op = "Climb-down" }, { x = 3023, z = 3348 }, { x = 3030, z = 3363 }, { x = 3055, z = 3370 }, { x = 3076, z = 3389 }, { x = 3082, z = 3410 }, { x = 3084, z = 3426 }, { x = 3092, z = 3445 }, { x = 3094, z = 3470 }, { x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+[[site]]
 key = "catherby_lobsters"
 role = "fishing"
 description = "Lobsters by cage on the Catherby shore, banking at Catherby"
