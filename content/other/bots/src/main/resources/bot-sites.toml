@@ -227,7 +227,7 @@ exchange_route = [{ x = 3019, z = 9732, climb = "Door", op = "Open" }, { x = 301
 key = "mining_guild_adamantite"
 role = "mining"
 description = "Adamantite in the Mining Guild, banking at the guild's bank chest"
-resource = { x = 3039, z = 9727, radius = 9 }
+resource = { x = 3038, z = 9720, radius = 7 }
 bank = { x = 3013, z = 9718, radius = 3 }
 exchange = { x = 3165, z = 3487, radius = 6 }
 products = ["obj.adamantite_ore"]

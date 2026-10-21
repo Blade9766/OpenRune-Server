@@ -658,11 +658,14 @@ at 15%, so they jog between sites and recover while they work.
 PREPARE_SALE, TRAVEL_TO_EXCHANGE, LISTING, BUYING_SUPPLIES, WAITING_FOR_SUPPLIES, ERROR`.
 
 Every state has a budget (travel 1000 ticks, no gathering progress 200 ticks,
-no resources 300 ticks, stuck mid-action 100 ticks). A blown budget is retried
+no resources 1500 ticks, long enough for runite rocks to respawn, stuck mid-action
+100 ticks). A blown budget is retried
 three times, then the bot goes to `ERROR`, recovers automatically up to three
 times five minutes apart, and then waits for `::bot clear`. Missing tools,
 levels, equipment, a full bank or no inventory space for supplies go straight
-to `ERROR` without auto-recovery.
+to `ERROR` without auto-recovery. The last error stays on the bot (Bot Manager, `::bot status`)
+until it next reaches its bank, which clears it, so a bot that recovered by itself
+no longer shows an old error.
 
 ## Selling and pricing
 

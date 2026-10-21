@@ -302,7 +302,7 @@ class BotBrain(
             }
         }
         stateFailures = 0
-        record = record.copy(errorRecoveries = 0)
+        record = record.copy(errorRecoveries = 0, lastError = null)
         urgent = true
 
         if (dueSaleItems(now).isNotEmpty() && !actor.needsRest()) {
@@ -1074,7 +1074,7 @@ class BotBrain(
     companion object {
         const val TRAVEL_BUDGET_TICKS: Int = 1000
         const val GATHER_STALL_TICKS: Int = 200
-        const val NO_RESOURCE_TICKS: Int = 300
+        const val NO_RESOURCE_TICKS: Int = 1500
         const val BUSY_LIMIT_TICKS: Int = 100
         const val SUPPLY_RECHECK_TICKS: Int = 100
         const val SUPPLY_PARK_TICKS: Int = 6000

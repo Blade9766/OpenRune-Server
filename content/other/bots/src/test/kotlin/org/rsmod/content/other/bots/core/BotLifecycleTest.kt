@@ -3,6 +3,7 @@ package org.rsmod.content.other.bots.core
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -191,6 +192,23 @@ class BotLifecycleTest {
         assertEquals(BotState.Error, world.state(id))
         val failures = world.log.lines.count { "TRAVEL_TO_RESOURCE failed" in it }
         assertTrue(failures <= BotBrain.MAX_STATE_FAILURES * (recoveries + 1), "failures=$failures")
+    }
+
+    @Test
+    fun `a bot that recovers and banks again clears its last error`() {
+        val world = BotTestHarness()
+        val id = world.readyBot()
+        world.coordinator.enable(id)
+        world.coordinator.setMaster(true)
+        world.tick()
+        world.actor(id).blocked = setOf(BotDestination.Resource)
+        world.tickUntil(limit = 100) { world.state(id) == BotState.Error }
+        assertNotNull(world.record(id).lastError)
+
+        world.actor(id).blocked = emptySet()
+        world.now += BotBrain.ERROR_COOLDOWN_MS
+        world.tickUntil { world.log.lines.any { "deposited" in it } }
+        assertNull(world.record(id).lastError)
     }
 
     @Test

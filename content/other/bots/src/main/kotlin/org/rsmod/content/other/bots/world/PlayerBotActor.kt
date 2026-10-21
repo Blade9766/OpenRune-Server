@@ -265,7 +265,8 @@ class PlayerBotActor(
             plan.firstOrNull()?.let { world.walkTo(player, it) }
             return TravelStatus.Moving
         }
-        if (player.interaction != null) {
+        // Clicking again mid-script (the Zanaris shed's fairy vanish) would cancel the teleport.
+        if (player.interaction != null || player.isAccessProtected || player.isDelayed) {
             return TravelStatus.Moving
         }
         dialogueFailure?.let { reason ->
