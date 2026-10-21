@@ -8,7 +8,9 @@ import java.util.IdentityHashMap
 import kotlin.random.Random
 import org.rsmod.api.npc.isInCombat
 import org.rsmod.api.player.isInCombat as isPlayerInCombat
+import org.rsmod.api.player.stat.baseCraftingLvl
 import org.rsmod.api.player.stat.baseHitpointsLvl
+import org.rsmod.api.player.stat.baseMiningLvl
 import org.rsmod.api.player.stat.baseRunecraftingLvl
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.miningLvl
@@ -57,6 +59,9 @@ interface BotRoleBehaviour {
 
     fun needsSupplies(player: Player): Boolean = false
 
+    /** True when the role gathers its own supplies at the site's supply source instead of the bank. */
+    fun minesOwnSupplies(): Boolean = false
+
     /** Item ids withdrawn from the bank as supplies, best first. */
     fun supplyIds(): List<Int> = emptyList()
 
@@ -97,7 +102,12 @@ interface BotRoleBehaviour {
                 BotRoleType.Woodcutting -> WoodcuttingBehaviour(site, world)
                 BotRoleType.Mining ->
                     if (site.supplyNpc.isNotBlank()) EssenceMiningBehaviour(site, world) else MiningBehaviour(site, world)
-                BotRoleType.Runecrafting -> RunecraftingBehaviour(site, essence, world)
+                BotRoleType.Runecrafting ->
+                    if (ArceuusRunecraftingBehaviour.isDarkEssenceAltar(site)) {
+                        ArceuusRunecraftingBehaviour(site, world)
+                    } else {
+                        RunecraftingBehaviour(site, essence, world)
+                    }
                 BotRoleType.Fishing -> FishingBehaviour(site, world)
                 BotRoleType.Thieving -> StallThievingBehaviour(site, world)
                 BotRoleType.Combat -> CombatBehaviour(site, world)
@@ -397,6 +407,166 @@ class EssenceMiningBehaviour(private val site: BotSite, world: BotWorldServices)
         destination != BotDestination.Resource && mine.leave(player)
 
     override fun gather(player: Player, target: BotDestination): GatherStatus = mine.mine(player)
+}
+
+/**
+ * Binds soul or blood runes at an open-air Arceuus altar from dark essence fragments it makes
+ * itself: it chips dense essence at the runestones (the site's supply area), walks [BotSite.craftRoute]
+ * past the Dark Altar, venerates the blocks there and chisels them into fragments on the spot, then
+ * binds the fragments at the site's altar.
+ */
+class ArceuusRunecraftingBehaviour(private val site: BotSite, private val world: BotWorldServices) : BotRoleBehaviour {
+    private val altar: RunecraftingAltarsRow? by lazy {
+        RunecraftingAltarsRow.all().firstOrNull { it.altarObject.internalName == site.altarLoc }
+    }
+    private val dense by lazy { DENSE_BLOCK.asRSCM(RSCMType.OBJ) }
+    private val dark by lazy { DARK_BLOCK.asRSCM(RSCMType.OBJ) }
+    private val fragments by lazy { FRAGMENTS.asRSCM(RSCMType.OBJ) }
+    private val chisel by lazy { CHISEL.asRSCM(RSCMType.OBJ) }
+    private val darkAltar by lazy { DARK_ALTAR.asRSCM(RSCMType.LOC) }
+
+    /** Clicks at the Dark Altar that changed nothing; past [MAX_ALTAR_CLICKS] the bot walks on. */
+    private var altarClicks = 0
+    private var lastBlocks = -1
+
+    override var focus: String? = null
+        private set
+
+    override fun requirementProblem(player: Player): String? {
+        val altar = altar ?: return "site has no valid altar_loc"
+        val level = altar.rune.statReq.first().t1
+        return when {
+            player.baseRunecraftingLvl < level -> "needs Runecrafting level $level"
+            player.baseMiningLvl < BLOCK_LEVEL -> "needs Mining level $BLOCK_LEVEL"
+            player.baseCraftingLvl < BLOCK_LEVEL -> "needs Crafting level $BLOCK_LEVEL"
+            Mining.findPickaxe(player) == null -> "needs a pickaxe it has the Mining level to use"
+            !player.carriesAny(setOf(chisel)) -> "needs a chisel"
+            else -> null
+        }
+    }
+
+    override fun keep(itemId: Int): Boolean =
+        itemId == dense || itemId == dark || itemId == fragments || itemId == chisel || nameOf(itemId).endsWith("pickaxe")
+
+    override fun needsSupplies(player: Player): Boolean = count(player, fragments) == 0 && blocks(player) == 0
+
+    override fun minesOwnSupplies(): Boolean = true
+
+    override fun isAt(player: Player, destination: BotDestination): Boolean =
+        when (destination) {
+            BotDestination.Resource -> site.resource.contains(player.coords)
+            BotDestination.SupplySource -> site.supplyArea?.contains(player.coords) == true
+            else -> false
+        }
+
+    /** Carrying blocks, the way to the altar runs from the runestones past the Dark Altar. */
+    override fun resourceRoute(player: Player): List<SiteTile>? {
+        if (blocks(player) == 0) {
+            return null
+        }
+        val mine = site.supplyArea ?: return null
+        return site.supplyRoute + SiteTile(mine.x, mine.z, mine.level) + site.craftRoute
+    }
+
+    /** On the way to the altar: venerates at the Dark Altar and chisels the dark blocks, then walks on. */
+    override fun escape(player: Player, destination: BotDestination): Boolean {
+        if (destination != BotDestination.Resource) {
+            return false
+        }
+        if (player.isActing() || player.queueList.isNotEmpty || player.isDelayed || player.isAccessProtected) {
+            return blocks(player) > 0
+        }
+        val held = count(player, dense) * BLOCK_KEY + count(player, dark)
+        if (held != lastBlocks) {
+            lastBlocks = held
+            altarClicks = 0
+        }
+        if (count(player, dense) > 0) {
+            val (loc, type) =
+                world.findLocs(player.coords, ALTAR_REACH) { it.id == darkAltar }.firstOrNull() ?: return false
+            if (++altarClicks > MAX_ALTAR_CLICKS) {
+                return false
+            }
+            focus = "venerating ${count(player, dense)} dense blocks at the Dark Altar"
+            return world.opLoc(player, loc, type, InteractionOp.Op1)
+        }
+        return count(player, dark) > 0 && ++altarClicks <= MAX_ALTAR_CLICKS && chiselBlocks(player)
+    }
+
+    override fun gather(player: Player, target: BotDestination): GatherStatus =
+        if (target == BotDestination.SupplySource) chip(player) else bind(player)
+
+    private fun chip(player: Player): GatherStatus {
+        if (player.inv.isFull()) {
+            return GatherStatus.InventoryFull
+        }
+        if (player.isActing()) {
+            return GatherStatus.Working(0, progressed = true)
+        }
+        val area = site.supplyArea ?: return GatherStatus.Failed("site has no supply_area")
+        if (!world.clickNamedLoc(player, area.center(), area.radius, RUNESTONE, CHIP)) {
+            return GatherStatus.NoResource
+        }
+        focus = "chipping dense essence (${count(player, dense)} blocks)"
+        return GatherStatus.Working(0)
+    }
+
+    private fun bind(player: Player): GatherStatus {
+        val altar = altar ?: return GatherStatus.Failed("site has no valid altar_loc")
+        if (player.isActing() || player.queueList.isNotEmpty || player.isDelayed || player.isAccessProtected) {
+            return GatherStatus.Working(0, progressed = true)
+        }
+        if (count(player, fragments) == 0) {
+            if (count(player, dark) > 0 && chiselBlocks(player)) {
+                return GatherStatus.Working(0, progressed = true)
+            }
+            if (count(player, dense) > 0) {
+                return GatherStatus.Failed("reached the altar with dense blocks it never venerated")
+            }
+            return GatherStatus.NeedsSupplies
+        }
+        val altarId = altar.altarObject.id
+        val clicked = world.clickNearestLoc(player, site.resource.center(), site.resource.radius + ALTAR_REACH) { it.id == altarId }
+        focus = "binding ${count(player, fragments)} fragments"
+        return if (clicked) GatherStatus.Working(0) else GatherStatus.Failed("altar not found")
+    }
+
+    private fun chiselBlocks(player: Player): Boolean {
+        val tool = player.inv.indices.firstOrNull { player.inv[it]?.id == chisel } ?: return false
+        val block = player.inv.indices.firstOrNull { player.inv[it]?.id == dark } ?: return false
+        if (count(player, fragments) + FRAGMENTS_PER_BLOCK > MAX_FRAGMENTS) {
+            return false
+        }
+        focus = "chiselling ${count(player, dark)} dark blocks"
+        return world.useHeldOn(player, tool, block)
+    }
+
+    private fun blocks(player: Player): Int = count(player, dense) + count(player, dark)
+
+    private fun count(player: Player, itemId: Int): Int =
+        player.inv.objs.sumOf { if (it != null && it.id == itemId) it.count else 0 }
+
+    companion object {
+        private const val DENSE_BLOCK = "obj.arceuus_essence_block"
+        private const val DARK_BLOCK = "obj.arceuus_essence_block_dark"
+        private const val FRAGMENTS = "obj.bigblankrune"
+        private const val CHISEL = "obj.chisel"
+        private const val DARK_ALTAR = "loc.archeus_altar_dark"
+        private const val RUNESTONE = "Dense runestone"
+        private const val CHIP = "Chip"
+        private const val BLOCK_LEVEL = 38
+        private const val FRAGMENTS_PER_BLOCK = 4
+        private const val MAX_FRAGMENTS = 108
+        private const val ALTAR_REACH = 10
+        private const val MAX_ALTAR_CLICKS = 5
+        private const val BLOCK_KEY = 1000
+
+        /** Altars bound from dark essence fragments stand in the open, with no ruins or tiara. */
+        fun isDarkEssenceAltar(site: BotSite): Boolean =
+            RunecraftingAltarsRow.all()
+                .firstOrNull { it.altarObject.internalName == site.altarLoc }
+                ?.rune?.input?.any { it.internalName == FRAGMENTS } == true
+    }
 }
 
 private fun BotWorldServices.clickNearestLoc(

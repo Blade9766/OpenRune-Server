@@ -38,6 +38,7 @@ class BotBrain(
     private var stateCycle = 0
     private var lastProgressCycle = 0
     private var busyTicks = 0
+    private var busyMark = 0
     private var stateFailures = 0
     private var gatherTarget = BotDestination.Resource
     private var travelTarget = BotDestination.Resource
@@ -100,6 +101,11 @@ class BotBrain(
             return
         }
         if (actor.isBusy) {
+            val mark = actor.progressMark
+            if (mark != busyMark) {
+                busyMark = mark
+                busyTicks = 0
+            }
             if (++busyTicks > BUSY_LIMIT_TICKS) {
                 busyTicks = 0
                 actor.stopActivity()
@@ -156,7 +162,7 @@ class BotBrain(
             return
         }
         if (actor.needsSupplies()) {
-            if (record.config.essenceSource == EssenceSource.Mine) {
+            if (minesSupplies()) {
                 travelTo(BotDestination.SupplySource, cycle)
             } else {
                 transition(BotState.TravelToBank, cycle, "Fetching supplies")
@@ -321,7 +327,7 @@ class BotBrain(
             gatherTarget = workTarget()
             return true
         }
-        if (record.config.essenceSource == EssenceSource.Mine) {
+        if (minesSupplies()) {
             gatherTarget = BotDestination.SupplySource
             return true
         }
@@ -357,6 +363,9 @@ class BotBrain(
             }
         }
     }
+
+    private fun minesSupplies(): Boolean =
+        record.config.essenceSource == EssenceSource.Mine || actor.minesOwnSupplies()
 
     private fun workTarget(): BotDestination =
         if (actor.needsSourceVisit()) BotDestination.SupplySource else BotDestination.Resource

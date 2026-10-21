@@ -675,3 +675,82 @@ supplies = ["obj.shark", "obj.lobster", "obj.swordfish", "obj.salmon", "obj.trou
 supply_amount = 6
 resource_route = [{ x = 3094, z = 3478 }, { x = 3096, z = 3470, climb = "Trapdoor", op = "Climb-down" }, { x = 3096, z = 9868, climb = "Ladder", op = "Climb-up" }, { x = 3097, z = 9888 }, { x = 3099, z = 9909 }, { x = 3108, z = 9910 }, { x = 3128, z = 9909 }, { x = 3130, z = 9914 }, { x = 3132, z = 9922 }, { x = 3128, z = 9929 }]
 exchange_route = [{ x = 3115, z = 3490 }, { x = 3140, z = 3488 }, { x = 3160, z = 3487 }]
+
+# Arceuus bank; the Catacombs of Kourend open under King Rada's statue in the castle courtyard.
+[[site]]
+key = "catacombs_dagannoths"
+role = "combat"
+description = "Dagannoths in the Catacombs of Kourend for ensouled dagannoth heads, banking at Arceuus"
+resource = { x = 1665, z = 9998, radius = 8 }
+bank = { x = 1629, z = 3745, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.arceuus_corpse_dagannoth", "obj.bones"]
+kit = { worn = [{ item = "obj.rune_scimitar" }, { item = "obj.rune_full_helm" }, { item = "obj.rune_platebody" }, { item = "obj.rune_platelegs" }, { item = "obj.rune_kiteshield" }], bank = [{ item = "obj.shark", count = 200 }], levels = { attack = 80, strength = 80, defence = 80, hitpoints = 80 } }
+targets = ["name:Dagannoth"]
+target_op = 2
+supplies = ["obj.shark", "obj.monkfish", "obj.lobster", "obj.swordfish", "obj.trout"]
+supply_amount = 15
+resource_route = [{ x = 1629, z = 3737 }, { x = 1625, z = 3722 }, { x = 1621, z = 3707 }, { x = 1628, z = 3692 }, { x = 1633, z = 3674, climb = "Statue", op = "Investigate" }, { x = 1666, z = 10050, climb = "Vine ladder", op = "Climb-up" }, { x = 1681, z = 10047 }, { x = 1686, z = 10037 }, { x = 1691, z = 10022 }, { x = 1689, z = 10007 }, { x = 1679, z = 9997 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_by_wayfinder = true
+wayfinder = "great_kourend"
+return_route = [{ x = 1629, z = 3737 }, { x = 1625, z = 3722 }, { x = 1621, z = 3707 }, { x = 1628, z = 3692 }, { x = 1628, z = 3677 }, { x = 1617, z = 3668 }]
+
+[[site]]
+key = "catacombs_moss_giants"
+role = "combat"
+description = "Moss giants in the Catacombs of Kourend for ensouled giant heads, banking at Arceuus"
+resource = { x = 1662, z = 10017, radius = 7 }
+bank = { x = 1629, z = 3745, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.arceuus_corpse_giant", "obj.big_bones"]
+kit = { worn = [{ item = "obj.adamant_scimitar" }, { item = "obj.adamant_full_helm" }, { item = "obj.adamant_platebody" }, { item = "obj.adamant_platelegs" }], bank = [{ item = "obj.lobster", count = 200 }], levels = { attack = 45, strength = 45, defence = 45, hitpoints = 45 } }
+targets = ["name:Moss giant"]
+target_op = 2
+supplies = ["obj.shark", "obj.monkfish", "obj.lobster", "obj.swordfish", "obj.trout"]
+supply_amount = 6
+resource_route = [{ x = 1629, z = 3737 }, { x = 1625, z = 3722 }, { x = 1621, z = 3707 }, { x = 1628, z = 3692 }, { x = 1633, z = 3674, climb = "Statue", op = "Investigate" }, { x = 1666, z = 10050, climb = "Vine ladder", op = "Climb-up" }, { x = 1663, z = 10035 }, { x = 1663, z = 10022 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_by_wayfinder = true
+wayfinder = "great_kourend"
+return_route = [{ x = 1629, z = 3737 }, { x = 1625, z = 3722 }, { x = 1621, z = 3707 }, { x = 1628, z = 3692 }, { x = 1628, z = 3677 }, { x = 1617, z = 3668 }]
+
+# Open-air Arceuus altars: chip dense essence at the runestones, venerate and chisel at the Dark
+# Altar on the way (craft_route), bind the fragments, bank the runes at Arceuus.
+[[site]]
+key = "blood_altar"
+role = "runecrafting"
+description = "Blood runes at the Arceuus blood altar from dark essence it makes itself, banking at Arceuus"
+resource = { x = 1722, z = 3831, radius = 5 }
+bank = { x = 1629, z = 3745, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.bloodrune"]
+kit = { inv = [{ item = "obj.chisel" }], worn = [{ item = "obj.rune_pickaxe" }], levels = { runecrafting = 77, mining = 41, crafting = 38, attack = 40, strength = 40, defence = 40, hitpoints = 40 } }
+altar_loc = "loc.archeus_altar_blood"
+supply_area = { x = 1761, z = 3851, radius = 8 }
+supply_route = [{ x = 1621, z = 3758 }, { x = 1606, z = 3773 }, { x = 1591, z = 3781 }, { x = 1590, z = 3796 }, { x = 1594, z = 3811 }, { x = 1597, z = 3826 }, { x = 1612, z = 3841 }, { x = 1627, z = 3851 }, { x = 1632, z = 3866 }, { x = 1647, z = 3877 }, { x = 1662, z = 3880 }, { x = 1677, z = 3876 }, { x = 1692, z = 3878 }, { x = 1707, z = 3880 }, { x = 1722, z = 3878 }, { x = 1737, z = 3873 }, { x = 1752, z = 3873 }, { x = 1767, z = 3878 }, { x = 1782, z = 3870 }, { x = 1784, z = 3855 }, { x = 1779, z = 3842 }, { x = 1777, z = 3857 }, { x = 1768, z = 3869 }, { x = 1754, z = 3863 }, { x = 1757, z = 3848 }]
+craft_route = [{ x = 1757, z = 3848 }, { x = 1754, z = 3863 }, { x = 1768, z = 3869 }, { x = 1777, z = 3857 }, { x = 1779, z = 3842 }, { x = 1784, z = 3855 }, { x = 1782, z = 3870 }, { x = 1767, z = 3878 }, { x = 1752, z = 3873 }, { x = 1737, z = 3873 }, { x = 1722, z = 3880 }, { x = 1702, z = 3880 }, { x = 1687, z = 3878 }, { x = 1672, z = 3878 }, { x = 1657, z = 3877 }, { x = 1665, z = 3862 }, { x = 1680, z = 3856 }, { x = 1695, z = 3855 }, { x = 1710, z = 3856 }, { x = 1725, z = 3853 }, { x = 1735, z = 3845 }, { x = 1734, z = 3833 }]
+resource_route = [{ x = 1621, z = 3758 }, { x = 1606, z = 3773 }, { x = 1591, z = 3781 }, { x = 1590, z = 3796 }, { x = 1594, z = 3811 }, { x = 1597, z = 3826 }, { x = 1612, z = 3841 }, { x = 1627, z = 3851 }, { x = 1632, z = 3866 }, { x = 1647, z = 3877 }, { x = 1658, z = 3871 }, { x = 1671, z = 3859 }, { x = 1686, z = 3854 }, { x = 1701, z = 3856 }, { x = 1716, z = 3856 }, { x = 1731, z = 3853 }, { x = 1730, z = 3839 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_by_wayfinder = true
+wayfinder = "great_kourend"
+return_route = [{ x = 1629, z = 3737 }, { x = 1625, z = 3722 }, { x = 1621, z = 3707 }, { x = 1628, z = 3692 }, { x = 1628, z = 3677 }, { x = 1617, z = 3668 }]
+
+[[site]]
+key = "soul_altar"
+role = "runecrafting"
+description = "Soul runes at the Arceuus soul altar from dark essence it makes itself, banking at Arceuus"
+resource = { x = 1813, z = 3858, radius = 5 }
+bank = { x = 1629, z = 3745, radius = 4 }
+exchange = { x = 3165, z = 3487, radius = 6 }
+products = ["obj.soulrune"]
+kit = { inv = [{ item = "obj.chisel" }], worn = [{ item = "obj.rune_pickaxe" }], levels = { runecrafting = 90, mining = 41, crafting = 38, attack = 40, strength = 40, defence = 40, hitpoints = 40 } }
+altar_loc = "loc.archeus_altar_soul"
+supply_area = { x = 1761, z = 3851, radius = 8 }
+supply_route = [{ x = 1621, z = 3758 }, { x = 1606, z = 3773 }, { x = 1591, z = 3781 }, { x = 1590, z = 3796 }, { x = 1594, z = 3811 }, { x = 1597, z = 3826 }, { x = 1612, z = 3841 }, { x = 1627, z = 3851 }, { x = 1632, z = 3866 }, { x = 1647, z = 3877 }, { x = 1662, z = 3880 }, { x = 1677, z = 3876 }, { x = 1692, z = 3878 }, { x = 1707, z = 3880 }, { x = 1722, z = 3878 }, { x = 1737, z = 3873 }, { x = 1752, z = 3873 }, { x = 1767, z = 3878 }, { x = 1782, z = 3870 }, { x = 1784, z = 3855 }, { x = 1779, z = 3842 }, { x = 1777, z = 3857 }, { x = 1768, z = 3869 }, { x = 1754, z = 3863 }, { x = 1757, z = 3848 }]
+craft_route = [{ x = 1757, z = 3848 }, { x = 1754, z = 3863 }, { x = 1768, z = 3869 }, { x = 1777, z = 3857 }, { x = 1779, z = 3842 }, { x = 1784, z = 3855 }, { x = 1782, z = 3870 }, { x = 1767, z = 3878 }, { x = 1752, z = 3873 }, { x = 1737, z = 3873 }, { x = 1722, z = 3880 }, { x = 1733, z = 3888 }, { x = 1748, z = 3892 }, { x = 1763, z = 3895 }, { x = 1778, z = 3893 }, { x = 1793, z = 3890 }, { x = 1808, z = 3889 }, { x = 1823, z = 3885 }, { x = 1825, z = 3872 }]
+resource_route = [{ x = 1621, z = 3758 }, { x = 1606, z = 3773 }, { x = 1591, z = 3781 }, { x = 1590, z = 3796 }, { x = 1594, z = 3811 }, { x = 1597, z = 3826 }, { x = 1612, z = 3841 }, { x = 1627, z = 3851 }, { x = 1632, z = 3866 }, { x = 1647, z = 3877 }, { x = 1662, z = 3880 }, { x = 1677, z = 3876 }, { x = 1692, z = 3878 }, { x = 1707, z = 3880 }, { x = 1722, z = 3880 }, { x = 1733, z = 3888 }, { x = 1748, z = 3892 }, { x = 1763, z = 3895 }, { x = 1778, z = 3893 }, { x = 1793, z = 3890 }, { x = 1808, z = 3889 }, { x = 1823, z = 3885 }, { x = 1825, z = 3872 }]
+exchange_route = [{ x = 3164, z = 3487 }]
+exchange_by_wayfinder = true
+wayfinder = "great_kourend"
+return_route = [{ x = 1629, z = 3737 }, { x = 1625, z = 3722 }, { x = 1621, z = 3707 }, { x = 1628, z = 3692 }, { x = 1628, z = 3677 }, { x = 1617, z = 3668 }]

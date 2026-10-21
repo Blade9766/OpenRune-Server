@@ -319,6 +319,10 @@ return_route = []
 | `taverley_blue_dragons` | combat (75, Agility 70) | Falador West | dragon bones, ensouled dragon heads | wayfinder |
 | `wilderness_green_dragons` | combat (70) | Edgeville | dragon bones, ensouled dragon heads | walking |
 | `edgeville_dungeon_druids` | combat (40) | Edgeville | ensouled chaos druid heads, bones | walking |
+| `catacombs_dagannoths` | combat (80) | Arceuus | ensouled dagannoth heads, bones | wayfinder |
+| `catacombs_moss_giants` | combat (45) | Arceuus | ensouled giant heads, big bones | wayfinder |
+| `blood_altar` | runecrafting (77, Mining 41, Crafting 38) | Arceuus | blood runes | wayfinder |
+| `soul_altar` | runecrafting (90, Mining 41, Crafting 38) | Arceuus | soul runes | wayfinder |
 | `varrock_bronze_arrowtips` | smithing (5) | Varrock West | bronze arrowtips | walking |
 | `varrock_iron_arrowtips` | smithing (20) | Varrock West | iron arrowtips | walking |
 | `varrock_steel_arrowtips` | smithing (35) | Varrock West | steel arrowtips | walking |
@@ -342,16 +346,23 @@ open north-west side and climbs the Agility 79 rocks shortcut up to the ruins
 Sarim jetty and sails to Entrana by talking to the monks, carrying nothing but
 essence and the law tiara so the search lets it aboard; it sails back with the
 Entrana monks.
+
+`blood_altar` and `soul_altar` make their own essence, as players do: the bot chips
+dense essence at the Arceuus runestones (the site's `supply_area`) until its inventory
+is full, walks `craft_route` from there past the Dark Altar, venerates the blocks and
+chisels them into fragments on the spot, then binds the fragments at the open-air
+altar. Their kits give a worn rune pickaxe, a chisel and the levels. It banks the
+runes at Arceuus between trips (keeping the pickaxe, chisel, blocks and fragments) and
+never takes essence from the bank, whatever its essence setting. The clicks are the
+player's own: chipping, venerating and chiselling run the dense-essence scripts with
+their levels, depletion and fragment cap.
+
 These altars have no site:
 
 - **Death**: the only way in is the Temple of Light puzzle under the Mourner
   tunnels.
 - **Wrath**: the ruins are in the Myths' Guild basement; Dragon Slayer II and the
   guild are not implemented.
-- **Soul** and **blood** (Arceuus): the dense essence chain works for players
-  (see [arceuus-runecrafting.md](arceuus-runecrafting.md)), but these open-air
-  altars have no ruins or tiara and no bank in the loop, so `RunecraftingBehaviour`
-  cannot run them yet.
 - **Astral**: Lunar Isle is not reachable for bots.
 
 Every site can carry a starter kit, applied when a bot is created there and by
@@ -458,30 +469,37 @@ Bones and ensouled heads come from these combat sites:
 - `edgeville_dungeon_druids` fights the chaos druids north of Vannaka for
   ensouled chaos druid heads.
 
-Superior dragon bones and dagannoth bones have no site. Superior bones only drop
-from Vorkath (only his sleeping form is spawned; Dragon Slayer II is not
-implemented) and frost dragons (Grimstone dungeon has no entrance). Dagannoth
-bones only drop from the Dagannoth Kings (always, one per kill); ordinary
-dagannoths drop plain bones and ensouled dagannoth heads.
+- `catacombs_dagannoths` and `catacombs_moss_giants` bank at Arceuus (the castle has
+  no bank), walk south to King Rada's statue in the Kourend Castle courtyard and
+  Investigate it to climb into the Catacombs of Kourend (1666,10050); they climb back
+  out by the vine ladder. The dagannoths (levels 74 and 92) stand in the south pit,
+  reached by the loop east past the jellies; the moss giants are just south of the
+  arrival tile. Catacomb kills also roll ancient shards and dark totem pieces. The
+  side holes on the surface only open once their vine has been climbed from inside
+  (`varbit.cata_hole*`), so the bots use the statue. They sell through the wayfinder
+  (`great_kourend` lands west of the castle).
 
-Dagannoth bones are now obtainable: Waterbirth Island Dungeon is implemented
-(`content/areas/misc/waterbirth-island`). Jarvald sails from the Rellekka pier
-(2620,3685; 1,000 coins unless The Fremennik Trials counts as complete), the cave
-mouth at 2523,3740 leads to sublevel 1, the pressure doors need a player or a
-dropped pet rock on both plates, and the ladder-room door-supports fall to an
-attack from another path or a rune thrownaxe Chainhit special. The 85 Agility
-rocks + mountain cave skip the doors. The ladder chain then runs through
-sublevels 2-5 to the Kings' ladder at 1911,4367 (lair at 2900,4449). A bot site
-would need the door handling (or 85 Agility) and a team able to tank the Kings.
+Superior dragon bones have no site: they only drop from Vorkath (only his sleeping
+form is spawned; Dragon Slayer II is not implemented) and frost dragons (Grimstone
+dungeon has no entrance).
 
-The Catacombs of Kourend are now reachable (statue in the Kourend Castle
-courtyard, 1639,3673 → 1666,10050; vine ladder back up), so a dagannoth /
-ensouled-head site is possible but not built yet: the dagannoths stand around
-1656-1674,9994-10002, a short walk south of the arrival tile. Catacomb kills also
-roll ancient shards and dark totem pieces, and buried bones restore Prayer there.
-Brutal dragons, moss giants and metal dragons share the same entrance. The side
-holes on the surface only open once that vine has been climbed from inside
-(`varbit.cata_hole*`), so a bot should use the statue.
+Dagannoth bones have no site either. They only drop from the Dagannoth Kings (one
+per kill); ordinary dagannoths drop plain bones and ensouled dagannoth heads, which
+`catacombs_dagannoths` covers. Waterbirth Island Dungeon is implemented
+(`content/areas/misc/waterbirth-island`), and the way in is within a bot's reach: a
+`talk` step to Jarvald at the Rellekka pier, the cave mouth at 2523,3740, the
+Agility 85 rocks and mountain cave that skip the sublevel 1 doors, and the ladder
+chain to the Kings' ladder at 1911,4367. The fight is not. The three Kings share
+one multi-combat lair and attack together, and each takes damage from one style
+only (Rex magic, Prime ranged, Supreme melee), so a melee bot can only kill Supreme
+while Rex and Prime keep hitting it at level 303 each. Players handle this with
+protection prayers, switches and safespots; bots do not pray, switch styles or use
+safespots, so a bot would burn its food and die every trip. A Kings site needs those
+first (a protection-prayer and style-switch combat behaviour).
+
+Bots play with auto-retaliate off: the engine's auto-retaliate turns a player back to
+fight even while it walks, which kept bots from leaving aggressive monsters. Combat
+bots fight back on their own (see **combat** above); the rest walk away.
 
 Bots that do not fight (woodcutting, mining, runecrafting, fishing, thieving, smithing, smelting) run
 to the bank when something drops them below 50% Hitpoints and rest there until

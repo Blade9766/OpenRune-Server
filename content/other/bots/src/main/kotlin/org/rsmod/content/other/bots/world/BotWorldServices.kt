@@ -10,6 +10,7 @@ import org.rsmod.annotations.InternalApi
 import org.rsmod.api.npc.isInCombat
 import org.rsmod.api.player.input.ResumePauseButtonInput
 import org.rsmod.api.player.interact.HeldInteractions
+import org.rsmod.api.player.interact.HeldUInteractions
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
 import org.rsmod.api.player.interact.ObjInteractions
@@ -67,6 +68,7 @@ constructor(
     private val objRegistry: ObjRegistry,
     private val objInteractions: ObjInteractions,
     private val heldInteractions: HeldInteractions,
+    private val heldUInteractions: HeldUInteractions,
     private val protectedAccess: ProtectedAccessLauncher,
     private val spells: MagicSpellRegistry,
     val wayfinder: WayfinderTravel,
@@ -136,6 +138,31 @@ constructor(
             return opLoc(player, loc, type, namedOp(seen, action)!!)
         }
         return false
+    }
+
+    /** Clicks [op] on the nearest loc within [radius] of [at] that [player] sees named [name]. */
+    fun clickNamedLoc(player: Player, at: CoordGrid, radius: Int, name: String, op: String): Boolean {
+        val (loc, type, seen) =
+            findLocs(at, radius) { true }
+                .map { (loc, type) -> Triple(loc, type, visibleType(player, loc, type)) }
+                .filter { (_, _, seen) -> seen.name.equals(name, ignoreCase = true) && namedOp(seen, op) != null }
+                .minByOrNull { (loc, _, _) -> loc.coords.chebyshevDistance(player.coords) }
+                ?: return false
+        return opLoc(player, loc, type, namedOp(seen, op)!!)
+    }
+
+    /** Uses the obj in [selectedSlot] on the one in [targetSlot], as the inventory's "Use" would. */
+    fun useHeldOn(player: Player, selectedSlot: Int, targetSlot: Int): Boolean {
+        val selected = player.inv[selectedSlot]?.let { ServerCacheManager.getItem(it.id) } ?: return false
+        val target = player.inv[targetSlot]?.let { ServerCacheManager.getItem(it.id) } ?: return false
+        if (player.isDelayed || player.isAccessProtected) {
+            return false
+        }
+        player.clearPendingAction(eventBus)
+        return protectedAccess.launch(player) {
+            clearPendingAction()
+            heldUInteractions.interact(this, player.inv, selected, selectedSlot, target, targetSlot)
+        }
     }
 
     private fun visibleType(player: Player, loc: LocInfo, type: ObjectServerType): ObjectServerType {

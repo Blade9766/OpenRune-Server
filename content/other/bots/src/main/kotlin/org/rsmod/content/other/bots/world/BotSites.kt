@@ -85,6 +85,8 @@ data class BotSite(
     @JsonProperty("supply_npc") val supplyNpc: String = "",
     @JsonProperty("supply_area") val supplyArea: SiteArea? = null,
     @JsonProperty("supply_route") val supplyRoute: List<SiteTile> = emptyList(),
+    /** Arceuus runecrafting: from [supplyArea] past the Dark Altar to [resource], walked while carrying blocks. */
+    @JsonProperty("craft_route") val craftRoute: List<SiteTile> = emptyList(),
     /** Npc or loc gamevals (`npc.`, `loc.` or `content.`) the bot clicks to gather here. */
     val targets: List<String> = emptyList(),
     /** Which op (1-5) of a target the bot clicks. */

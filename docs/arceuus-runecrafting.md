@@ -36,10 +36,14 @@ The Jagex obj is `stackable=never`, yet OSRS keeps the fragments in one slot wit
 server-side `items.toml` entry sets `stacks = "always"` for `obj.bigblankrune` so transactions merge
 them into one stack (needs `buildCache`).
 
+## Bots
+
+The `blood_altar` and `soul_altar` bot sites run the whole chain through
+`ArceuusRunecraftingBehaviour` (see `docs/bots.md`).
+
 ## Not done
 
 - The Kourend & Kebos medium diary's 5% chance of a second block (that diary is not implemented).
 - Re-randomising the runestones when the player re-enters the mine (they reset on relog instead).
-- Bots: open-air altars with no bank in the loop need their own behaviour (see `docs/bots.md`).
 - Exact OSRS chat messages for venerating, chipping and depletion are not documented on the wiki;
   the ones used are close paraphrases.

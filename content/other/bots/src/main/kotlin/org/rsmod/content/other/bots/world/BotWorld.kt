@@ -16,6 +16,7 @@ import org.rsmod.api.config.constants
 import org.rsmod.api.inv.map.InvMapInit
 import org.rsmod.api.net.rsprot.BotSessions
 import org.rsmod.api.player.queueDeath
+import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.registry.player.isSuccess
 import org.rsmod.content.other.bots.core.BotActor
@@ -110,6 +111,8 @@ constructor(
         behaviour.prepare(player)
         eventBus.publish(SessionStateEvent.Login(player))
         eventBus.publish(SessionStateEvent.EngineLogin(player))
+        // Auto-retaliate turns a walking player back to fight; bots pick their own fights.
+        VarPlayerIntMapSetter.set(player, AUTO_RETALIATE_OFF, 1)
         player.rebuildAppearance()
         val actor = PlayerBotActor(player, site, behaviour, services, tap)
         actors[record.id] = actor
@@ -222,6 +225,7 @@ constructor(
 
     private companion object {
         private const val BANK = "inv.bank"
+        private const val AUTO_RETALIATE_OFF = "varp.option_nodef"
         private const val HITPOINTS = "stat.hitpoints"
         private const val MIN_HITPOINTS = 10
         private const val MAX_BOOSTED_LEVEL = 125

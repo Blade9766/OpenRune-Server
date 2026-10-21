@@ -109,6 +109,9 @@ class PlayerBotActor(
         }
     }
 
+    override val progressMark: Int
+        get() = player.inv.objs.fold(1) { acc, obj -> 31 * acc + (obj?.let { it.id * 31 + it.count } ?: 0) }
+
     override val isActing: Boolean
         get() = player.interaction != null || player.weakQueueList.isNotEmpty
 
@@ -155,6 +158,8 @@ class PlayerBotActor(
     override fun needsSupplies(): Boolean = behaviour.needsSupplies(player)
 
     override fun needsSourceVisit(): Boolean = behaviour.needsSourceVisit(player)
+
+    override fun minesOwnSupplies(): Boolean = behaviour.minesOwnSupplies()
 
     override fun canWorkWithoutSupplies(): Boolean = behaviour.canWorkWithoutSupplies(player)
 

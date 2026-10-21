@@ -57,6 +57,27 @@ class BotLifecycleTest {
     }
 
     @Test
+    fun `a long script that keeps changing the inventory is not stuck, a frozen one is`() {
+        val world = BotTestHarness()
+        val id = world.readyBot()
+        world.coordinator.setMaster(true)
+        world.coordinator.enable(id)
+        world.tickUntil { world.state(id) == BotState.Gathering }
+        val actor = world.actor(id)
+
+        actor.busy = true
+        repeat(BotBrain.BUSY_LIMIT_TICKS * 3) {
+            actor.mark++
+            world.tick()
+        }
+        assertEquals(BotState.Gathering, world.state(id))
+        assertTrue(world.log.lines.none { "stuck mid-action" in it })
+
+        world.tick(BotBrain.BUSY_LIMIT_TICKS + 1)
+        assertTrue(world.log.lines.any { "stuck mid-action" in it })
+    }
+
+    @Test
     fun `a bot re-enabled with unnoted gathered items keeps gathering instead of listing them`() {
         val world = BotTestHarness()
         val id = world.readyBot()
@@ -268,6 +289,34 @@ class BotLifecycleTest {
         world.coordinator.setMaster(true)
         world.tickUntil(limit = 2000) { world.live(id) { it.bankCount(556) >= 28 } }
         assertNotNull(world.actor(id))
+    }
+
+    @Test
+    fun `a role that mines its own supplies never waits on the bank for them`() {
+        val world =
+            BotTestHarness(
+                actorFactory = {
+                    FakeActor(gatheredItem = 565, tools = emptySet(), supplyItem = 13446, stackable = setOf(COINS, 565))
+                        .apply { minesOwn = true }
+                },
+            )
+        val config =
+            BotConfig(
+                role = BotRoleType.Runecrafting,
+                site = "blood_altar",
+                essenceSource = EssenceSource.Bank,
+                sale = SaleConfig(enabled = false),
+            )
+        val id = world.createBot(config).id
+        world.coordinator.enable(id)
+        world.coordinator.setMaster(true)
+        world.tickUntil(limit = 3000) { world.live(id) { it.bankCount(565) >= 3 } }
+
+        val actor = world.actor(id)
+        assertEquals(0L, actor.bankCount(13446), "fragments never come from the bank")
+        assertEquals(actor.mined.toLong(), actor.total(565) + actor.total(13446), "every fragment mined is a rune or still held")
+        assertTrue(world.log.lines.none { "paused: no supplies" in it })
+        assertTrue(world.state(id) != BotState.WaitingForSupplies)
     }
 
     @Test

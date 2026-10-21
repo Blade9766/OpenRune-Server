@@ -38,6 +38,9 @@ class FakeActor(
     var gatherCalls = 0
     var exchangeHold: String? = null
     var waitingOn: BotDestination? = null
+    var minesOwn = false
+    var mark = 0
+    var mined = 0
 
     private var travelling: BotDestination? = null
     private var travelProgress = 0
@@ -50,11 +53,16 @@ class FakeActor(
     override val isBusy: Boolean
         get() = busy
 
+    override val progressMark: Int
+        get() = mark
+
     override fun requirementProblem(): String? = if (missingTool) "missing a tool" else null
 
     override fun needsSupplies(): Boolean = supplyItem != null && (inv[supplyItem] ?: 0) == 0
 
     override fun needsSourceVisit(): Boolean = taskSize > 0 && taskLeft == 0
+
+    override fun minesOwnSupplies(): Boolean = minesOwn
 
     override fun canWorkWithoutSupplies(): Boolean = rested
 
@@ -110,6 +118,7 @@ class FakeActor(
                 return GatherStatus.InventoryFull
             }
             add(supplyItem!!, 1)
+            mined++
             return GatherStatus.Working(1)
         }
         if (supplyItem != null && !rested) {

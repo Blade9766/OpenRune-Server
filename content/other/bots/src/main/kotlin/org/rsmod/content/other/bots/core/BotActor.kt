@@ -65,6 +65,10 @@ interface BotActor {
     /** True while the character is mid-script (delayed or holding protected access). */
     val isBusy: Boolean
 
+    /** Changes whenever the inventory does; a long script that keeps changing it is not stuck. */
+    val progressMark: Int
+        get() = 0
+
     /** Missing tool, equipment or level; the bot cannot work at all until fixed. */
     fun requirementProblem(): String?
 
@@ -93,6 +97,9 @@ interface BotActor {
 
     /** True while a bot that does not fight is too hurt to go back to work. */
     fun needsRest(): Boolean = false
+
+    /** True when the role gathers its supplies at the site's supply source whatever its essence setting. */
+    fun minesOwnSupplies(): Boolean = false
 
     /** True when the role consumes something (essence) the inventory has run out of. */
     fun needsSupplies(): Boolean
