@@ -35,6 +35,7 @@ import org.rsmod.content.skills.woodcutting.scripts.Woodcutting
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLevelReq
 import org.rsmod.content.skills.woodcutting.scripts.Woodcutting.Companion.treeLogs
 import org.rsmod.content.slayer.core.SlayerTaskManager
+import org.rsmod.content.slayer.dialogue.SlayerMasterProfiles
 import org.rsmod.content.slayer.rewards.SlayerRewardsPoints
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
@@ -87,6 +88,11 @@ interface BotRoleBehaviour {
     fun resourceArea(player: Player): SiteArea? = null
 
     fun resourceRoute(player: Player): List<SiteTile>? = null
+
+    /** Where the bot's supply source is right now, when that is not the site's own (a reroll master). */
+    fun supplyArea(player: Player): SiteArea? = null
+
+    fun supplyRoute(player: Player): List<SiteTile>? = null
 
     /** Takes one step out of an instance-like area (altar, essence mine); true while escaping. */
     fun escape(player: Player, destination: BotDestination): Boolean = false
@@ -850,7 +856,9 @@ open class CombatBehaviour(protected val site: BotSite, protected val world: Bot
  * Combat on slayer tasks from the site's master ([BotSite.supplyNpc], visited through the supply
  * route). A bot with no task, or a finished one, goes to the master. A task the site has no
  * [SlayerHunt] for, or whose hunt has stayed empty for [BARREN_CHECKS] looks, is cancelled for the usual
- * slayer point cost; a bot that cannot afford that fails rather than taking a free new task.
+ * slayer point cost; a bot that cannot afford that takes it to the site's reroll master
+ * ([BotSite.rerollNpc]) for a free swap when there is one, and otherwise fails rather than taking a
+ * free new task.
  */
 class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(site, world) {
     private var asks = 0
@@ -895,11 +903,42 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
         return interactionOp((index ?: 1) + 1)
     }
 
+    override fun supplyArea(player: Player): SiteArea? = if (wantsReroll(player)) site.rerollArea else null
+
+    override fun supplyRoute(player: Player): List<SiteTile>? = if (wantsReroll(player)) site.rerollRoute else null
+
     override fun isAt(player: Player, destination: BotDestination): Boolean =
         when (destination) {
-            BotDestination.SupplySource -> site.supplyArea?.contains(player.coords) == true
+            BotDestination.SupplySource -> (supplyArea(player) ?: site.supplyArea)?.contains(player.coords) == true
             else -> super.isAt(player, destination)
         }
+
+    /**
+     * True when the task has no hunt here and the bot cannot pay to cancel it, but the site's
+     * reroll master swaps it for one of their own for free, as Turael does for other masters' tasks.
+     */
+    private fun wantsReroll(player: Player): Boolean {
+        val current = taskId(player)
+        if (site.rerollArea == null || current == 0 || player.vars[COUNT_VARP] <= 0 || hunt(player) != null) {
+            return false
+        }
+        if (SlayerRewardsPoints.getPoints(player) >= SlayerRewardsPoints.taskCancelCost(player)) {
+            return false
+        }
+        val npc = runCatching { site.rerollNpc.asRSCM(RSCMType.NPC) }.getOrNull() ?: return false
+        val master = SlayerTaskManager.findMasterByNpc(site.rerollNpc) ?: return false
+        return SlayerMasterProfiles.forNpc(npc)?.supportsTaskSkip == true &&
+            SlayerTaskManager.tasks[master].orEmpty().none { it.task.id == current }
+    }
+
+    private fun rerollTask(player: Player) {
+        val wilderness = SlayerTaskManager.getCurrentAssignedMaster(player)?.let(SlayerTaskManager::isWildernessMaster) == true
+        world.launch(player) {
+            if (SlayerTaskManager.assignTask(this, site.rerollNpc)) {
+                SlayerTaskManager.resetStreak(this, wilderness)
+            }
+        }
+    }
 
     override fun gather(player: Player, target: BotDestination): GatherStatus {
         if (target == BotDestination.SupplySource) {
@@ -938,6 +977,15 @@ class SlayerBehaviour(site: BotSite, world: BotWorldServices) : CombatBehaviour(
         if (current != 0 && player.vars[COUNT_VARP] > 0) {
             val cost = SlayerRewardsPoints.taskCancelCost(player)
             if (SlayerRewardsPoints.getPoints(player) < cost) {
+                if (wantsReroll(player)) {
+                    asks = 0
+                    if (site.rerollArea?.contains(player.coords) != true) {
+                        focus = "task $current has no hunt here; taking it to the reroll master"
+                        return GatherStatus.Done
+                    }
+                    rerollTask(player)
+                    return GatherStatus.Working(0, progressed = true)
+                }
                 asks = 0
                 return GatherStatus.Failed("task $current has nothing to hunt at ${site.key}, and cancelling it needs $cost slayer points")
             }

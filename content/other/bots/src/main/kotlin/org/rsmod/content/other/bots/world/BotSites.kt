@@ -52,6 +52,10 @@ data class SlayerHunt(
     val products: List<String> = emptyList(),
 )
 
+/** Another site whose hunts a slayer site also works, reached from this site's bank by [route]. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class HuntSource(val site: String = "", val route: List<SiteTile> = emptyList())
+
 /** What a new bot at a site starts with; applying it tops up to these counts and levels. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class StarterKit(
@@ -105,6 +109,15 @@ data class BotSite(
     val wayfinder: String = "",
     /** Slayer: the tasks this site can work; [supplyNpc] is the slayer master. */
     val hunts: List<SlayerHunt> = emptyList(),
+    /** Slayer: hunts borrowed from another site; merged into [hunts] when the sites load. */
+    @JsonProperty("hunts_from") val huntsFrom: HuntSource? = null,
+    /**
+     * Slayer: a master who swaps another master's task for one of their own for free (Turael),
+     * visited when a task has no hunt and the bot cannot pay [supplyNpc] to cancel it.
+     */
+    @JsonProperty("reroll_npc") val rerollNpc: String = "",
+    @JsonProperty("reroll_area") val rerollArea: SiteArea? = null,
+    @JsonProperty("reroll_route") val rerollRoute: List<SiteTile> = emptyList(),
     /**
      * Sites too far to walk to the exchange travel like a player: a wayfinder mage (after a Home
      * Teleport to Lumbridge when none is in reach) to the exchange, and Vaelor back to [wayfinder].
@@ -154,7 +167,18 @@ object BotSites {
                 logger.error(e) { "Could not read $OVERRIDE; using bundled bot sites." }
             }
         }
+        sites.replaceAll { _, site -> site.withBorrowedHunts(sites) }
         cached = sites
         return sites
+    }
+
+    private fun BotSite.withBorrowedHunts(sites: Map<String, BotSite>): BotSite {
+        val source = huntsFrom ?: return this
+        val other = sites[source.site.lowercase()] ?: return this
+        val borrowed =
+            other.hunts
+                .filter { hunt -> hunts.none { it.task.equals(hunt.task, ignoreCase = true) } }
+                .map { it.copy(resourceRoute = source.route + it.resourceRoute) }
+        return copy(hunts = hunts + borrowed)
     }
 }

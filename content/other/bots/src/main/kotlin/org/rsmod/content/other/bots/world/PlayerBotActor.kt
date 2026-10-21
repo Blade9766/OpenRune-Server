@@ -63,7 +63,7 @@ class PlayerBotActor(
     /** A door that walks the bot through and shuts again leaves it standing still on the far side. */
     private var openedDoor = false
     private val climbs: Map<CoordGrid, SiteTile> =
-        (site.resourceRoute + site.exchangeRoute + site.supplyRoute + site.returnRoute + site.hunts.flatMap { it.resourceRoute })
+        (site.resourceRoute + site.exchangeRoute + site.supplyRoute + site.rerollRoute + site.returnRoute + site.hunts.flatMap { it.resourceRoute })
             .filter { it.travels }
             .associateBy { it.toCoords() }
     private val wayfinder = BotWayfinder(player, site, world) { allChains().flatten() + site.bank.center() }
@@ -518,8 +518,11 @@ class PlayerBotActor(
                 route.map { it.toCoords() } + area.center()
             }
             BotDestination.Exchange -> site.exchangeRoute.map { it.toCoords() } + site.exchange.center()
-            BotDestination.SupplySource ->
-                site.supplyArea?.let { area -> site.supplyRoute.map { it.toCoords() } + area.center() }
+            BotDestination.SupplySource -> {
+                val area = behaviour.supplyArea(player) ?: site.supplyArea
+                val route = behaviour.supplyRoute(player) ?: site.supplyRoute
+                area?.let { route.map { it.toCoords() } + it.center() }
+            }
             BotDestination.Bank -> null
         }
 
@@ -528,8 +531,13 @@ class PlayerBotActor(
             chainTo(BotDestination.Resource),
             chainTo(BotDestination.Exchange),
             chainTo(BotDestination.SupplySource),
+            siteSupplyChain(),
             returnChain(),
         ) + huntChains()
+
+    /** The site's own supply route, a way home even while the bot heads for another source (a reroll master). */
+    private fun siteSupplyChain(): List<CoordGrid>? =
+        site.supplyArea?.let { area -> site.supplyRoute.map { it.toCoords() } + area.center() }
 
     private fun returnChain(): List<CoordGrid>? =
         returnLanding?.let { landing -> site.returnRoute.map { it.toCoords() } + landing }
@@ -544,6 +552,7 @@ class PlayerBotActor(
     private fun wayBack(): Pair<List<CoordGrid>, Int>? {
         val leaving =
             arrivedVia?.takeIf { it.size > 1 && routeDistance(it.last(), player.coords) <= LEAVE_DISTANCE }
+                ?: chainTo(BotDestination.Resource)?.takeIf { it.size > 1 && routeDistance(it.last(), player.coords) <= LEAVE_DISTANCE }
                 ?: huntChains()
                     .filter { it.size > 1 && routeDistance(it.last(), player.coords) <= LEAVE_DISTANCE }
                     .minByOrNull { routeDistance(it.last(), player.coords) }

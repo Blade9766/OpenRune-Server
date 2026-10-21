@@ -3,6 +3,7 @@ package org.rsmod.content.other.bots.world
 import dev.openrune.ServerCacheManager
 import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
+import dev.openrune.types.NpcServerType
 import dev.openrune.types.ObjectServerType
 import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
@@ -238,22 +239,27 @@ constructor(
     fun talkTo(player: Player, at: CoordGrid, radius: Int, npc: String, op: String): Boolean {
         val matches = npcMatcher(npc) ?: return false
         val target =
-            findNpcs(at, radius) { matches(it) && namedNpcOp(it, op) != null }.minByOrNull { it.coords.chebyshevDistance(player.coords) }
+            findNpcs(at, radius) { matches(it, visibleType(player, it)) && namedNpcOp(visibleType(player, it), op) != null }
+                .minByOrNull { it.coords.chebyshevDistance(player.coords) }
                 ?: return false
-        return opNpc(player, target, namedNpcOp(target, op)!!)
+        return opNpc(player, target, namedNpcOp(visibleType(player, target), op)!!)
     }
 
-    private fun npcMatcher(npc: String): ((Npc) -> Boolean)? {
+    /** The form of [npc] that [player]'s vars show, as the client draws it (Port Sarim's crew are multinpcs). */
+    private fun visibleType(player: Player, npc: Npc): NpcServerType =
+        npcInteractions.multiNpc(npc.visType, player.vars) ?: npc.visType
+
+    private fun npcMatcher(npc: String): ((Npc, NpcServerType) -> Boolean)? {
         if (npc.startsWith(NAME_PREFIX)) {
             val name = npc.removePrefix(NAME_PREFIX)
-            return { it.type.name.equals(name, ignoreCase = true) }
+            return { _, visible -> visible.name.equals(name, ignoreCase = true) }
         }
         val id = runCatching { npc.asRSCM(RSCMType.NPC) }.getOrNull() ?: return null
-        return { it.type.id == id }
+        return { it, visible -> it.type.id == id || visible.id == id }
     }
 
-    private fun namedNpcOp(npc: Npc, action: String): InteractionOp? =
-        when ((0 until 5).firstOrNull { npc.type.actions.getOpOrNull(it).equals(action, ignoreCase = true) }) {
+    private fun namedNpcOp(type: NpcServerType, action: String): InteractionOp? =
+        when ((0 until 5).firstOrNull { type.actions.getOpOrNull(it).equals(action, ignoreCase = true) }) {
             0 -> InteractionOp.Op1
             1 -> InteractionOp.Op2
             2 -> InteractionOp.Op3

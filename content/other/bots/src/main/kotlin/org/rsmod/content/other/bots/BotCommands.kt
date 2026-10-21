@@ -220,13 +220,23 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
     }
 
     private fun clearTask(player: Player, coordinator: BotCoordinator, args: List<String>) {
-        if (args.getOrNull(1) != "clear") {
-            return player.mes("Use ::bot task <bot> clear")
+        if (args.size < 2) {
+            return player.mes("Use ::bot task <bot> clear|<task name> [count]")
         }
         val bot = coordinator.find(args[0]) ?: return player.mes("No bot '${args[0]}'.")
         val varps = listOf(SLAYER_TARGET, SLAYER_COUNT, SLAYER_COUNT_ORIGINAL).map { it.asRSCM(RSCMType.VARP) }
-        val error = coordinator.editSave(bot.id) { it.copy(vars = it.vars - varps.toSet()) }
-        report(player, "cleared the slayer task of ${bot.name}", error, bot)
+        if (args[1] == "clear") {
+            val error = coordinator.editSave(bot.id) { it.copy(vars = it.vars - varps.toSet()) }
+            return report(player, "cleared the slayer task of ${bot.name}", error, bot)
+        }
+        val count = args.last().toIntOrNull()
+        val name = args.drop(1).dropLast(if (count != null) 1 else 0).joinToString(" ")
+        val task = SlayerTaskManager.slayerTargets.firstOrNull { it.nameLowercase.equals(name, ignoreCase = true) }
+            ?: return player.mes("No slayer task '$name'.")
+        val amount = count ?: DEFAULT_TASK_COUNT
+        val values = listOf(task.id, amount, amount)
+        val error = coordinator.editSave(bot.id) { it.copy(vars = it.vars + varps.zip(values)) }
+        report(player, "gave ${bot.name} the task ${task.nameLowercase} x$amount", error, bot)
     }
 
     private fun details(player: Player, coordinator: BotCoordinator, idOrName: String) {
@@ -360,9 +370,10 @@ class BotCommands(private val manager: BotManager, private val takenNames: () ->
             )
 
         private const val TRACE_LINES = 8
+        private const val DEFAULT_TASK_COUNT = 10
         const val USAGE: String =
             "::bot [status <bot>|list|create <role> <site> [name]|enable|disable|remove <bot> [force]|" +
                 "clear <bot>|kit <bot>|master on|off|max <n>|set <bot> <key> <value>|give|take <bot> <item> [n] [inv|worn|bank]|" +
-                "level <bot> <stat> <lvl>|task <bot> clear|trace <bot>|tele <bot> <x> <z> [level]|die <bot>|sites [reload]|here]"
+                "level <bot> <stat> <lvl>|task <bot> clear|<task> [n]|trace <bot>|tele <bot> <x> <z> [level]|die <bot>|sites [reload]|here]"
     }
 }

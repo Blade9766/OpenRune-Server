@@ -143,6 +143,7 @@ often they act.
 ::bot take <bot> <item> [n] [inv|worn|bank]   bot must be disabled
 ::bot level <bot> <stat> <level>        bot must be disabled
 ::bot task <bot> clear                  drop a slayer bot's task so its master gives a new one (bot must be disabled)
+::bot task <bot> <task name> [n]        give a disabled slayer bot that task (n kills, default 10), for testing hunts
 ::bot trace <bot>                       current focus and the last decisions with their reasons
 ::bot tele <bot> <x> <z> [level]        move a bot (to test how it finds its way back)
 ::bot die <bot>                         kill a bot (to test what it does after a death)
@@ -410,8 +411,13 @@ Roles:
   walks to the master and is given a task. The site lists a `hunts` entry per
   task it can work: the task's lowercase name, an area, a route from the bank and
   what to loot. A task without a hunt, or whose hunt has had nothing to fight for
-  250 looks, is cancelled at the usual slayer point cost (30, 100 with Mortimer); a
-  bot that cannot afford that goes to `ERROR` rather than taking a free new task.
+  250 looks, is cancelled at the usual slayer point cost (30, 100 with Mortimer). A
+  bot that cannot afford that walks to the site's `reroll_npc` (`reroll_area`,
+  `reroll_route`) when it has one and takes the free task swap Turael offers for
+  other masters' tasks, which resets the task streak as it does for players;
+  otherwise it goes to `ERROR` rather than taking a free new task. `hunts_from =
+  { site, route }` borrows another site's hunts, each behind `route` (this site's
+  bank to the other's); a site's own hunt for the same task wins.
   The bot attacks whatever the slayer module counts for its task,
   so every kill counts. Slayer bots get the master's unlock quest (A Porcine of
   Interest for Spria) and Priest in Peril, with Drezel's blessing, marked complete
@@ -437,9 +443,11 @@ Roles:
   Morytania bank. Spria's tasks without a hunt: kalphites (neither the Kalphite Cave
   entrance nor the Kalphite Lair burrow has a handler on this server), lizards (the
   desert heat needs waterskins that run dry, and a lizard only dies to an ice
-  cooler, which bots cannot use) and monkeys (Karamja: the Port Sarim seamen are
-  multi-npcs whose ops the bot does not see, so it cannot board yet; the hunt and
-  the kit's coins for the fare are in place). A bot given one of those parks until
+  cooler, which bots cannot use). Monkeys are hunted west of Musa Point on Karamja:
+  the bot pays the 30-coin fare (the kit's coins are a tool) with the Port Sarim
+  crew's Travel option and comes back the same way through the customs officer; the
+  monkeys further south are walled off from Musa Point on this map. A bot given
+  kalphites or lizards parks until
   `::bot task <bot> clear` and `::bot clear`. Details shows the current task. It
   sells at the Grand Exchange, walking north between Falador's east wall and the
   Draynor Manor fence to Barbarian Village and on past Edgeville (the River Lum
@@ -452,22 +460,33 @@ Roles:
   tool. The hill giants hunt also loots ensouled giant heads. It also hunts
   hobgoblins, ice giants and ice warriors in the Asgarnian Ice Dungeon (through
   Draynor and Port Sarim to the Mudskipper Point trapdoor) and ghouls outside the
-  Slayer Tower (the Morytania route). Vannaka awards points, so a task without a
-  hunt is cancelled once the bot has 30; until then (no points before the fifth
-  task of a streak) it parks in `ERROR` like a Spria bot. Only five of Vannaka's
-  46 tasks have a hunt, so this site parks often; `::bot task <bot> clear` (bot
-  disabled) drops the task as an administrator, and `::bot clear` sends the bot
-  back to its master. Unsupported for now: moss giants (behind
-  the Edgeville Dungeon obstacle pipe, which does nothing on this server, or a
-  Varrock Sewers web the bot cannot slash); kurask, basilisks, cockatrice,
-  pyrefiends, jellies and turoth (the Fremennik Slayer Dungeon entrance does
-  nothing); kalphites, crocodiles and dust devils (no cave handlers, desert heat);
-  the Slayer Tower's upper floors (aberrant spectres, bloodveld, infernal mages,
-  nechryael, gargoyles, abyssal demons); and the far-off or quest-locked rest (blue
-  dragons, fire giants, lesser demons, trolls, ogres, crabs, dagannoth, elves,
-  fever spiders, gryphons, harpie bug swarms, hellhounds, jungle horrors, mogres,
-  molanisks, otherworldly beings, sea snakes, shades, shadow warriors, spiritual
-  creatures, terror dogs, vampyres, werewolves).
+  Slayer Tower (the Morytania route). It also hunts bloodveld on the Slayer Tower's
+  first floor (up the main staircase, clicked from its west side) and feral
+  vampyres east of Canifis; the kit wears a rune chainbody and platelegs and the
+  site takes 18 food a trip. Vannaka awards points, so a task without a hunt is
+  cancelled once the bot has 30; until then (no points before the fifth task of a
+  streak) the bot walks on to Turael in Burthorpe and swaps the task for one of his
+  there. Turael's tasks come from `draynor_slayer`'s hunts: the ones near Edgeville
+  or Taverley (Ice Mountain, the Stronghold of Security, Taverley Dungeon bats, White
+  Wolf Mountain, the Slayer Tower) start from Edgeville, the rest through Draynor
+  (`hunts_from`). The kit carries the tinderbox, lit lantern, earmuffs and fare
+  coins those hunts need; `::bot kit <bot>` tops up an existing bot. Kalphites
+  (Turael gives them too, so he will not swap them) and Turael's lizards still park
+  the bot; `::bot task <bot> clear` (bot disabled)
+  drops the task as an administrator, and `::bot clear` sends the bot back to its
+  master. Vannaka's tasks without a hunt (all swapped at Turael): lesser demons,
+  blue dragons and infernal mages (tried on 2026-10-21: a Defence 45 bot made about
+  one kill per 18 food, and the Taverley lesser demons sit past aggressive chaos
+  dwarves and magic axes); moss giants (behind the Edgeville Dungeon obstacle pipe,
+  which does nothing on this server, or a Varrock Sewers web the bot cannot slash);
+  kurask, basilisks, cockatrice, pyrefiends, jellies and turoth (the Fremennik Slayer
+  Dungeon entrance does nothing); kalphites, crocodiles and dust devils (no cave
+  handlers, desert heat); the Slayer Tower's higher floors (aberrant spectres,
+  nechryael, gargoyles, abyssal demons); and the far-off or quest-locked rest (fire
+  giants, trolls, ogres, crabs, dagannoth, elves, fever spiders, gryphons, harpie
+  bug swarms, hellhounds, jungle horrors, mogres, molanisks, otherworldly beings,
+  sea snakes, shades, shadow warriors, spiritual creatures, terror dogs,
+  werewolves).
 
 - **smithing**: smiths the site's product at the nearest anvil (`category.anvil`) in
   its resource area. It clicks the anvil with a full inventory of the product's bar

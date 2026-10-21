@@ -243,7 +243,7 @@ class BotBrain(
                 if (gatherTarget == BotDestination.SupplySource && actor.needsSupplies()) {
                     transition(BotState.TravelToBank, cycle, "Fetching supplies")
                 } else if (gatherTarget == BotDestination.SupplySource) {
-                    travelTo(BotDestination.Resource, cycle)
+                    travelTo(if (actor.needsSourceVisit()) BotDestination.SupplySource else BotDestination.Resource, cycle)
                 } else {
                     transition(BotState.TravelToBank, cycle, "Finished here")
                 }
