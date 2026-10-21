@@ -3,6 +3,9 @@ package org.rsmod.content.quest.area.lunarisle.dreammentor
 import jakarta.inject.Inject
 import org.rsmod.api.player.dialogue.Dialogue
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.script.onApNpc1
+import org.rsmod.api.script.onApNpc3
+import org.rsmod.api.script.onApNpc4
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.script.onOpNpc4
@@ -27,14 +30,25 @@ constructor(
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpNpc1(JACK) { startDialogue(it.npc) { talk() } }
-        onOpNpc3(JACK) { if (mayBank()) tryOpenBank() else refuse() }
-        onOpNpc4(JACK) { if (mayBank()) ifOpenMainModal(COLLECTION_BOX) else refuse() }
+        onApNpc1(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) startDialogue(it.npc) { talk() } }
+        onOpNpc3(JACK) { bank() }
+        onApNpc3(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) bank() }
+        onOpNpc4(JACK) { collect() }
+        onApNpc4(JACK) { if (isWithinApRange(it.npc, BOOTH_REACH)) collect() }
     }
 
     fun mayBank(player: org.rsmod.game.entity.Player): Boolean =
         dreamMentor.unlocked(player) || SEAL_OF_PASSAGE in player.inv || SEAL_OF_PASSAGE in player.worn
 
     private fun ProtectedAccess.mayBank(): Boolean = mayBank(player)
+
+    private suspend fun ProtectedAccess.bank() {
+        if (mayBank()) tryOpenBank() else refuse()
+    }
+
+    private suspend fun ProtectedAccess.collect() {
+        if (mayBank()) ifOpenMainModal(COLLECTION_BOX) else refuse()
+    }
 
     private suspend fun ProtectedAccess.refuse() {
         startDialogue {
@@ -132,5 +146,8 @@ constructor(
     companion object {
         const val JACK = "npc.dream_birds_eye_jack"
         const val COLLECTION_BOX = "interface.ge_collect"
+
+        /** Jack stands behind his bank booth; he is reached across it, like the other bankers. */
+        const val BOOTH_REACH = 2
     }
 }

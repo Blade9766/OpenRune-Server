@@ -5,7 +5,6 @@ import dev.openrune.rscm.RSCM.asRSCM
 import dev.openrune.rscm.RSCMType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.awt.Color
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.queueHit
 import org.rsmod.api.npc.interact.AiPlayerInteractions
@@ -20,7 +19,6 @@ import org.rsmod.api.player.stat.statHeal
 import org.rsmod.api.player.ui.ifCloseOverlay
 import org.rsmod.api.player.ui.ifOpenOverlay
 import org.rsmod.api.player.ui.ifSetHide
-import org.rsmod.api.player.ui.setColour
 import org.rsmod.api.random.GameRandom
 import org.rsmod.api.repo.npc.NpcRepository
 import org.rsmod.events.EventBus
@@ -247,9 +245,7 @@ constructor(
     private fun showCourage(player: Player) {
         val segments = courage(player)
         for (segment in 1..COURAGE_SEGMENTS) {
-            val component = "component.dream_couragebar:courage$segment"
-            player.ifSetHide(component, false)
-            player.setColour(component, if (segment <= segments) FULL_COLOUR else EMPTY_COLOUR)
+            player.ifSetHide("component.dream_couragebar:couragebar$segment", segment > segments)
         }
     }
 
@@ -390,9 +386,6 @@ constructor(
         private const val STOMPED_SPOT = "spotanim.dream_illusive_stomped_spotanim"
         private const val VENGEANCE_OTHER_SEQ = "seq.vengeance_spell_anim_nostalling"
         private const val VENGEANCE_OTHER_SPOT = "spotanim.quest_lunar_spellbook_vengeance_other_spot_anim"
-
-        private val FULL_COLOUR = Color(0x00C000)
-        private val EMPTY_COLOUR = Color(0x800000)
 
         val FEAR_LINES =
             listOf(

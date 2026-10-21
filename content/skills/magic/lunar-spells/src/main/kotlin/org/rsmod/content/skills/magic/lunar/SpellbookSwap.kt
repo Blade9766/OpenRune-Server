@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.magic.lunar
 
+import dev.openrune.types.aconverted.interf.IfButtonOp
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.combat.commons.magic.MagicSpell
@@ -67,7 +68,14 @@ constructor(
     private val questRequirements: Set<SpellQuestRequirement>,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
-        onIfOverlayButton(LunarDreamSpell.SpellbookSwap.component) { chooseBook() }
+        onIfOverlayButton(LunarDreamSpell.SpellbookSwap.component) {
+            when (it.op) {
+                IfButtonOp.Op2 -> swapTo(Spellbook.Standard)
+                IfButtonOp.Op3 -> swapTo(Spellbook.Ancients)
+                IfButtonOp.Op4 -> swapTo(Spellbook.Arceuus)
+                else -> chooseBook()
+            }
+        }
         onPlayerSoftTimer(SpellbookSwap.SWAP_TIMER) {
             if (swap.isSwapped(player)) {
                 player.mes("Your borrowed spellbook returns to the Lunar spells.")
@@ -77,18 +85,24 @@ constructor(
         onPlayerLogout { swap.returnBook(player) }
     }
 
+    private fun ProtectedAccess.canUse(book: Spellbook): Boolean =
+        book != Spellbook.Ancients || questRequirements.all { it.hasCompleted(player, DESERT_TREASURE) }
+
+    private fun ProtectedAccess.swapTo(book: Spellbook) {
+        if (!canUse(book)) {
+            mes("You need to complete Desert Treasure to use the Ancient spellbook.")
+            return
+        }
+        val spell = LunarDreamSpell.SpellbookSwap.resolve(spells) ?: return
+        cast(spell, book)
+    }
+
     private suspend fun ProtectedAccess.chooseBook() {
         val spell = LunarDreamSpell.SpellbookSwap.resolve(spells) ?: return
         if (!runes.canCastSpell(player, spell)) {
             return
         }
-        val books = buildList {
-            add("Standard" to Spellbook.Standard)
-            if (questRequirements.all { it.hasCompleted(player, DESERT_TREASURE) }) {
-                add("Ancient" to Spellbook.Ancients)
-            }
-            add("Arceuus" to Spellbook.Arceuus)
-        }
+        val books = BOOKS.filter { canUse(it.second) }
         var picked: Spellbook? = null
         startDialogue {
             picked =
@@ -99,6 +113,10 @@ constructor(
                 }
         }
         val book = picked ?: return
+        cast(spell, book)
+    }
+
+    private fun ProtectedAccess.cast(spell: MagicSpell, book: Spellbook) {
         if (runes.attemptCast(player, spell).isFailure()) {
             return
         }
@@ -110,5 +128,8 @@ constructor(
 
     private companion object {
         const val DESERT_TREASURE = "quest_deserttreasure"
+
+        val BOOKS =
+            listOf("Standard" to Spellbook.Standard, "Ancient" to Spellbook.Ancients, "Arceuus" to Spellbook.Arceuus)
     }
 }

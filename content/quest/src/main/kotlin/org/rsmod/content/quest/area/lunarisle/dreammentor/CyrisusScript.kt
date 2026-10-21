@@ -152,8 +152,13 @@ constructor(
     /* Spirit */
 
     private suspend fun Dialogue.lift(npc: Npc) {
-        chatPlayer(neutral, "Can you hear me?")
-        chatNpc(sad, "Just about.")
+        if (dreamMentor.stage(player) < STAGE_STANDING) {
+            chatPlayer(neutral, "Can you hear me?")
+            chatNpc(sad, "Just about.")
+        } else {
+            chatPlayer(neutral, "How are you feeling?")
+            chatNpc(neutral, "Better, but I'm still a bit shaky.")
+        }
         if (!CyrisusRecovery.wantsCompany(player, dreamMentor.stage(player))) {
             return
         }
